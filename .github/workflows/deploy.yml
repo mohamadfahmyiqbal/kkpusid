@@ -23,6 +23,8 @@ jobs:
 
       - name: Build React app
         run: npm run build
+        env:
+          CI: false
 
       - name: Clean /var/www/kkpus.id folder on VPS
         uses: appleboy/ssh-action@v0.1.8
