@@ -3,7 +3,7 @@ name: Deploy React to VPS (kkpus.id)
 on:
   push:
     branches:
-      - main # sesuaikan branch kamu
+      - main
 
 jobs:
   deploy:
@@ -34,7 +34,7 @@ jobs:
           script: |
             rm -rf /var/www/kkpus.id/*
 
-      - name: Upload build contents to VPS
+      - name: Upload build contents to VPS /var/www/kkpus.id
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.VPS_HOST }}
