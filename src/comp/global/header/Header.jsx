@@ -77,7 +77,6 @@ export default function Header({ onSidebarToggle, onUserChange }) {
       document.body.classList.remove("show-sidebar");
     };
   }, []);
-  console.log(user);
 
   return (
     <header className="topbar">
