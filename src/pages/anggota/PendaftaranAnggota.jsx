@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import {
@@ -18,14 +19,52 @@ import CardAnggota from "../../comp/dashboard/CardAnggota";
 import CardTraining from "../../comp/training/CardTraining";
 import CardArticle from "../../comp/article/CardArticle";
 import Footer from "../../comp/global/Footer";
+import { jwtEncode } from "../../routes/helpers";
+import UAnggota from "../../utils/UAnggota";
+
+// Fungsi sederhana untuk "enkripsi" path (misal base64)
+function encryptPath(path) {
+  return btoa(path);
+}
 
 export default function PendaftaranAnggota() {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // Optimized: useCallback to prevent unnecessary re-renders
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
   }, []);
+
+  // Fungsi untuk handle navigasi dengan path terenkripsi
+  const handleNavigateEncrypted = async () => {
+    try {
+      const res = await UAnggota.cekPendaftaranAnggota(user);
+      if (res && res.status === 200) {
+        // Jika status 200, arahkan ke stepSummary dengan data dari res.data
+        const token = jwtEncode({
+          page: "formPendaftaranAnggota",
+          step: "stepSummary",
+          data: res.data,
+        });
+        navigate(`/page/${token}`);
+      } else {
+        // Jika tidak, arahkan ke step1
+        const token = jwtEncode({
+          page: "formPendaftaranAnggota",
+          step: "step1",
+        });
+        navigate(`/page/${token}`);
+      }
+    } catch (error) {
+      // Jika error, juga arahkan ke step1
+      const token = jwtEncode({
+        page: "formPendaftaranAnggota",
+        step: "step1",
+      });
+      navigate(`/page/${token}`);
+    }
+  };
 
   return (
     <div id="main-wrapper">
@@ -54,9 +93,7 @@ export default function PendaftaranAnggota() {
                   </CardText>
                   <Button
                     className="bg-blue700 text-white fw-bold w-100 mb-2"
-                    onClick={() =>
-                      (window.location.href = "/formPendaftaranAnggota")
-                    }
+                    onClick={handleNavigateEncrypted}
                   >
                     Daftar Sekarang
                   </Button>

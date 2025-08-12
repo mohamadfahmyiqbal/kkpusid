@@ -1,6 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
+import { useCallback, useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -10,327 +8,209 @@ import {
   Col,
   Container,
   Row,
-  Form as BsForm,
-  Spinner,
+  ProgressBar,
 } from "react-bootstrap";
-import Footer from "../../comp/global/Footer";
-
-const initialFormState = Object.freeze({
-  nik: "",
-  phone: "",
-  email: "",
-  currentAddress: "",
-  ktpUpload: null,
-  job: "",
-  workplace: "",
-  workAddress: "",
-  bank: "",
-  accountNumber: "",
-  accountHolder: "",
-  commitment: false,
-});
-
-const fieldConfigs = [
-  {
-    section: "Personal Info",
-    fields: [
-      {
-        controlId: "nik",
-        label: "Nomor Induk Kependudukan",
-        type: "text",
-        name: "nik",
-        placeholder: "Masukkan NIK",
-        required: true,
-        minLength: 16,
-        maxLength: 16,
-        feedback: "NIK wajib diisi (16 digit).",
-      },
-      {
-        controlId: "phone",
-        label: "No Telepon / HP",
-        type: "text",
-        name: "phone",
-        placeholder: "Masukkan No Telepon",
-        required: true,
-        feedback: "No Telepon wajib diisi.",
-      },
-      {
-        controlId: "email",
-        label: "Email",
-        type: "email",
-        name: "email",
-        placeholder: "Masukkan Email",
-        required: true,
-        feedback: "Email wajib diisi.",
-      },
-      {
-        controlId: "currentAddress",
-        label: "Alamat Tempat Tinggal Saat Ini",
-        type: "text",
-        name: "currentAddress",
-        placeholder: "Masukkan Alamat",
-        required: true,
-        feedback: "Alamat wajib diisi.",
-      },
-      {
-        controlId: "ktpUpload",
-        label: "Upload Foto KTP",
-        type: "file",
-        name: "ktpUpload",
-        accept: "image/*",
-        required: true,
-        feedback: "Foto KTP wajib diupload.",
-      },
-    ],
-  },
-  {
-    section: "Job Info",
-    fields: [
-      {
-        controlId: "job",
-        label: "Pekerjaan",
-        type: "text",
-        name: "job",
-        placeholder: "Masukkan Pekerjaan",
-        required: true,
-        feedback: "Pekerjaan wajib diisi.",
-      },
-      {
-        controlId: "workplace",
-        label: "Tempat Kerja",
-        type: "text",
-        name: "workplace",
-        placeholder: "Masukkan Tempat Kerja",
-        required: true,
-        feedback: "Tempat Kerja wajib diisi.",
-      },
-      {
-        controlId: "workAddress",
-        label: "Alamat Tempat Kerja",
-        type: "text",
-        name: "workAddress",
-        placeholder: "Masukkan Alamat Tempat Kerja",
-        required: true,
-        feedback: "Alamat Tempat Kerja wajib diisi.",
-      },
-    ],
-  },
-  {
-    section: "Bank Info",
-    fields: [
-      {
-        controlId: "bank",
-        label: "Bank",
-        type: "text",
-        name: "bank",
-        placeholder: "Masukkan Nama Bank",
-        required: true,
-        feedback: "Nama Bank wajib diisi.",
-      },
-      {
-        controlId: "accountNumber",
-        label: "No Rekening",
-        type: "text",
-        name: "accountNumber",
-        placeholder: "Masukkan No Rekening",
-        required: true,
-        feedback: "No Rekening wajib diisi.",
-      },
-      {
-        controlId: "accountHolder",
-        label: "Nama Nasabah",
-        type: "text",
-        name: "accountHolder",
-        placeholder: "Masukkan Nama Nasabah",
-        required: true,
-        feedback: "Nama Nasabah wajib diisi.",
-      },
-    ],
-  },
-];
+import Header from "../../comp/global/header/Header";
+import Sidebar from "../../comp/global/Sidebar";
+import { STEP_CONFIGS } from "../../comp/anggota/formPendaftaran/formConfig";
+import UAnggota from "../../utils/UAnggota";
+import StepCamera from "../../comp/anggota/formPendaftaran/stepCamera";
+import StepSummary from "../../comp/anggota/formPendaftaran/stepSummary";
+import StepForm from "../../comp/anggota/formPendaftaran/stepForm";
+import notification from "../../comp/global/Notification";
+import { jwtEncode } from "../../routes/helpers";
+import { useNavigate } from "react-router-dom";
 
 export default function FormPendaftaranAnggota() {
   const [user, setUser] = useState(null);
-  const [form, setForm] = useState(initialFormState);
-  const [loading, setLoading] = useState(false);
-  const [validated, setValidated] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [fields, setFields] = useState({});
+  const [previews, setPreviews] = useState({});
+  const [step, setStep] = useState(1);
+  const totalSteps = STEP_CONFIGS.length;
 
+  const navigate = useNavigate();
+
+  // Set fields from user info when user changes
+  useEffect(() => {
+    if (user?.nama) {
+      setFields((prev) => ({
+        ...prev,
+        nama: user.nama || "",
+        no_tlp: user.no_tlp || "",
+        email: user.email || "",
+      }));
+    }
+  }, [user]);
+
+  // Callback untuk handle perubahan user dari Header
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
   }, []);
 
-  const handleChange = useCallback((e) => {
-    const { name, value, type, checked, files } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox" ? checked : type === "file" ? files[0] : value,
-    }));
-  }, []);
-
-  // Validasi lebih optimal dan terstruktur
-  const validateForm = useCallback((form) => {
-    // Cek field kosong
-    for (const key in initialFormState) {
-      if (
-        key !== "ktpUpload" &&
-        key !== "commitment" &&
-        (form[key] === "" || form[key] === null)
-      ) {
-        return false;
+  // Callback untuk handle perubahan input (fields dan previews)
+  const handleChange = useCallback((name, value, isPreviewOnly = false) => {
+    if (name === "ktp" && value instanceof File) {
+      if (!["image/jpeg", "image/png"].includes(value.type)) {
+        alert("Hanya boleh upload file JPG atau PNG.");
+        return;
       }
-    }
-    if (!form.ktpUpload) return false;
-    if (!form.commitment) return false;
-    // Validasi NIK
-    if (!/^\d{16}$/.test(form.nik)) return false;
-    // Validasi email sederhana
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return false;
-    // Validasi nomor telepon (minimal 8 digit angka)
-    if (!/^\d{8,}$/.test(form.phone)) return false;
-    return true;
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setValidated(true);
-    setError(null);
-    setSuccess(false);
-
-    if (!validateForm(form)) {
-      setError("Mohon lengkapi semua field dengan benar dan centang komitmen.");
+      if (value.size > 2 * 1024 * 1024) {
+        alert("Ukuran file maksimal 2MB.");
+        return;
+      }
+      const blobUrl = URL.createObjectURL(value);
+      setPreviews((prev) => ({ ...prev, ktp: blobUrl }));
+      // Simpan file ke fields supaya bisa dikirim
+      setFields((prev) => ({ ...prev, ktp: value }));
       return;
     }
+    if (name === "foto_preview") {
+      setPreviews((prev) => ({ ...prev, foto: value }));
+      return;
+    }
+    if (name === "foto" && value instanceof File) {
+      const blobUrl = URL.createObjectURL(value);
+      setPreviews((prev) => ({ ...prev, foto: blobUrl }));
+    }
+    setFields((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
-    setLoading(true);
+  // Validasi tiap step
+  const isStepValid = () => {
+    const { fields: stepFields, title } = STEP_CONFIGS[step - 1];
+    if (title === "Summary") return fields.komitmen === true;
+    if (title === "Ambil Foto") return fields.foto instanceof File;
+    return stepFields.every((f) => {
+      const val = fields[f.name];
+      if (f.required) {
+        if (f.type === "file") return val instanceof File;
+        if (typeof val === "string") return val.trim() !== "";
+        return val !== undefined && val !== null;
+      }
+      return true;
+    });
+  };
+
+  const nextStep = () => {
+    if (!isStepValid()) {
+      alert("Mohon lengkapi semua field wajib di step ini.");
+      return;
+    }
+    setStep((prev) => Math.min(prev + 1, totalSteps));
+  };
+
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const handleSubmit = async () => {
+    if (!isStepValid()) {
+      alert("Mohon lengkapi semua field wajib.");
+      return;
+    }
     try {
-      // Simulasi API call
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setSuccess(true);
-      setForm(initialFormState);
-      setValidated(false);
-    } catch (err) {
-      setError("Terjadi kesalahan saat mengirim data.");
-    } finally {
-      setLoading(false);
+      // Pastikan data utama dari user di-sync ke fields sebelum submit
+      const submitData = {
+        ...fields,
+        nia: user?.nik || "",
+        nama: user?.nama || fields.nama || "",
+      };
+
+      const res = await UAnggota.daftarAnggota(submitData);
+      notification(res, "Pendaftaran anggota berhasil!");
+
+      setTimeout(() => {
+        const token = jwtEncode({ page: "dashboard" });
+        navigate(`/page/${token}`);
+      }, 3000);
+    } catch (error) {
+      notification(
+        error?.response,
+        "Terjadi kesalahan saat mendaftar anggota."
+      );
+      // console.error(error);
     }
   };
 
-  // Memoize form rendering for optimization
-  const renderFormFields = useMemo(
-    () =>
-      fieldConfigs.map((section, idx) => (
-        <div key={section.section}>
-          <div className="border-top border-bottom">
-            <h4 className={idx === 0 ? "mb-3" : "my-4"}>{section.section}</h4>
-          </div>
-          {section.fields.map((field) => (
-            <BsForm.Group controlId={field.controlId} key={field.controlId}>
-              <BsForm.Label>{field.label}</BsForm.Label>
-              <BsForm.Control
-                type={field.type}
-                name={field.name}
-                placeholder={field.placeholder}
-                value={
-                  field.type === "file" ? undefined : form[field.name] ?? ""
-                }
-                onChange={handleChange}
-                required={field.required}
-                minLength={field.minLength}
-                maxLength={field.maxLength}
-                accept={field.accept}
-                isInvalid={validated && !form[field.name]}
-              />
-              <BsForm.Control.Feedback type="invalid">
-                {field.feedback}
-              </BsForm.Control.Feedback>
-            </BsForm.Group>
-          ))}
-        </div>
-      )),
-    [form, handleChange, validated]
-  );
+  const currentConfig = STEP_CONFIGS[step - 1];
 
   return (
     <div id="main-wrapper">
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
+
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
-            <Col xs={12}>
+            <Col>
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
+
           <Row className="mt-4">
-            <Col md={12} lg={12} className="mb-3">
-              <Card className="border shadow mb-3s">
+            <Col>
+              <Card className="border shadow">
                 <CardHeader className="bg-blue700 text-white">
-                  <CardTitle>Formulir Pendaftaran Anggota</CardTitle>
+                  <CardTitle>
+                    Step {step} dari {totalSteps}
+                  </CardTitle>
                 </CardHeader>
                 <CardBody>
-                  <BsForm
-                    noValidate
-                    validated={validated}
-                    onSubmit={handleSubmit}
-                    encType="multipart/form-data"
-                  >
-                    {renderFormFields}
+                  <ProgressBar
+                    now={(step / totalSteps) * 100}
+                    className="mb-4"
+                  />
 
-                    {/* Commitment Checkbox */}
-                    <BsForm.Group controlId="commitment" className="my-4">
-                      <BsForm.Check
-                        type="checkbox"
-                        name="commitment"
-                        label="Siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba"
-                        checked={form.commitment}
+                  {currentConfig.title === "Ambil Foto" && (
+                    <StepCamera onChange={handleChange} previews={previews} />
+                  )}
+                  {currentConfig.title === "Summary" && (
+                    <StepSummary
+                      values={fields}
+                      onChange={handleChange}
+                      previews={previews}
+                    />
+                  )}
+                  {currentConfig.fields.length > 0 &&
+                    currentConfig.title !== "Ambil Foto" &&
+                    currentConfig.title !== "Summary" && (
+                      <StepForm
+                        config={currentConfig}
+                        values={fields}
                         onChange={handleChange}
-                        required
-                        feedback="Anda harus menyetujui komitmen ini."
-                        feedbackType="invalid"
-                        isInvalid={validated && !form.commitment}
+                        previews={previews}
                       />
-                    </BsForm.Group>
-
-                    {error && (
-                      <div className="alert alert-danger py-2">{error}</div>
-                    )}
-                    {success && (
-                      <div className="alert alert-success py-2">
-                        Pendaftaran berhasil dikirim!
-                      </div>
                     )}
 
+                  <div className="mt-4 d-flex justify-content-between">
                     <Button
-                      variant="primary"
-                      className="w-100"
-                      type="submit"
-                      disabled={loading}
+                      variant="secondary"
+                      onClick={prevStep}
+                      disabled={step === 1}
                     >
-                      {loading ? (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />{" "}
-                          Mengirim...
-                        </>
-                      ) : (
-                        "Submit"
-                      )}
+                      Previous
                     </Button>
-                  </BsForm>
+                    {step < totalSteps ? (
+                      <Button
+                        variant="primary"
+                        onClick={nextStep}
+                        disabled={!isStepValid()}
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="success"
+                        onClick={handleSubmit}
+                        disabled={!isStepValid()}
+                      >
+                        Submit
+                      </Button>
+                    )}
+                  </div>
                 </CardBody>
               </Card>
             </Col>
           </Row>
         </Container>
-        <Footer />
       </div>
     </div>
   );

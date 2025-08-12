@@ -1,60 +1,67 @@
 import http from "./common";
 
-export default new (class UAnggota {
+class UAnggota {
+  // Helper: kirim request dengan JSON
+  postJSON(url, data) {
+    return http.post(url, data, {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Helper: kirim request dengan FormData
+  postFormData(url, data) {
+    const formData = new FormData();
+    Object.entries(data || {}).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    return http.post(url, formData, {
+      // Biarkan axios set boundary untuk multipart
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+
   logout(fields) {
-    return http.post("/logout", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/logout", fields);
   }
+
   login(fields) {
-    return http.post("/login", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/login", fields);
   }
+
   forgot(fields) {
-    return http.post("/forgot", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/forgot", fields);
   }
+
   verifikasiOTP(fields) {
-    return http.post("/verifikasiOTP", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/verifikasiOTP", fields);
   }
+
   resetPassword(fields) {
-    return http.post("/resetPassword", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/resetPassword", fields);
   }
+
   register(fields) {
-    return http.post("/register", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/register", fields);
   }
+
   findAnggotaByToken(fields) {
-    return http.post("/findAnggotaByToken", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/findAnggotaByToken", fields);
   }
+
   anggotaList(fields) {
-    return http.post("/anggotaList", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return this.postJSON("/anggotaList", fields);
   }
-})();
+
+  cekPendaftaranAnggota(fields) {
+    return this.postJSON("/cekPendaftaranAnggota", fields);
+  }
+
+  daftarAnggota(fields) {
+    console.log(fields);
+
+    return this.postFormData("/daftarAnggota", fields);
+  }
+}
+
+export default new UAnggota();

@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { jwtEncode } from "../../routes/helpers";
 
 // Data menu untuk menghindari duplikasi dan memudahkan penambahan menu baru
 const menuData = [
@@ -107,8 +109,12 @@ const menuData = [
   },
 ];
 
+// Secret key untuk jwtEncode (gunakan sesuai kebutuhan, bisa diambil dari env)
+const JWT_SECRET = "secret-key-sidebar";
+
 export default function Sidebar() {
   const [openDropdown, setOpenDropdown] = useState({});
+  const navigate = useNavigate();
 
   // Toggle dropdown
   const handleDropdown = useCallback((key, e) => {
@@ -121,6 +127,26 @@ export default function Sidebar() {
 
   // Cek apakah dropdown terbuka
   const isOpen = useCallback((key) => !!openDropdown[key], [openDropdown]);
+
+  // Handler klik menu leaf, gunakan navigate dan jwtEncode
+  const handleMenuClick = useCallback(
+    (item, parentKey = "", e) => {
+      e.preventDefault();
+      if (item.href && item.href !== "#") {
+        // Encode payload menu dengan jwtEncode
+        const payload = {
+          label: item.label,
+          href: item.href,
+          parentKey,
+          timestamp: Date.now(),
+        };
+        const token = jwtEncode(payload, JWT_SECRET);
+        // Navigasi ke halaman dengan query token
+        navigate(`${item.href}?token=${token}`);
+      }
+    },
+    [navigate]
+  );
 
   // Render menu secara rekursif
   const renderMenu = (items, parentKey = "") =>
@@ -152,7 +178,13 @@ export default function Sidebar() {
       const leafKey = `${parentKey}-${item.label}-${idx}`;
       return (
         <li key={leafKey}>
-          <a href={item.href} aria-expanded="false">
+          <a
+            href={item.href}
+            aria-expanded="false"
+            onClick={(e) => handleMenuClick(item, parentKey, e)}
+            tabIndex={0}
+            role="button"
+          >
             <span className="hide-menu">{item.label}</span>
           </a>
         </li>
