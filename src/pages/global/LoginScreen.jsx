@@ -108,9 +108,7 @@ export default function LoginScreen() {
             >
               <Card.Body className="p-4">
                 <div className="mb-4">
-                  <h2 className="fw-bold text-white mb-1">
-                    Masuk Ke Akun PUS 2
-                  </h2>
+                  <h2 className="fw-bold text-white mb-1">Masuk Ke Akun PUS</h2>
                   <p className="text-white-50 mb-0">
                     Silakan masukkan email/nomor HP dan password Anda
                   </p>
