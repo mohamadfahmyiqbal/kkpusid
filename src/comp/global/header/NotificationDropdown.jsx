@@ -1,7 +1,18 @@
 import { NavDropdown } from "react-bootstrap";
 import { FaBell, FaLink } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { jwtEncode } from "../../../routes/helpers";
 
 export default function NotificationDropdown() {
+  const navigate = useNavigate();
+
+  // Handler untuk navigasi ke halaman notifikasi
+  const handleClick = (e) => {
+    e.preventDefault();
+    const token = jwtEncode({ page: "notifikasi" });
+    navigate(`/page/${token}`);
+  };
+
   return (
     <NavDropdown
       as="li"
@@ -24,7 +35,7 @@ export default function NotificationDropdown() {
       <div className="mailbox animated bounceInDown" style={{ minWidth: 300 }}>
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           <li>
-            <div className="drop-title">Notifications</div>
+            <div className="drop-title">Notifikasi</div>
           </li>
           <li>
             <div
@@ -58,8 +69,14 @@ export default function NotificationDropdown() {
             </div>
           </li>
           <li>
-            <a className="nav-link text-center" href="#!">
-              <strong>Check all notifications</strong>
+            <a
+              className="nav-link text-center"
+              href="#!"
+              onClick={handleClick}
+              role="button"
+              tabIndex={0}
+            >
+              <strong>Lihat semua notifikasi</strong>
               <i className="fa fa-angle-right"></i>
             </a>
           </li>
