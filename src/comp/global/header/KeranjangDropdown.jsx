@@ -1,7 +1,19 @@
 import { NavDropdown } from "react-bootstrap";
-import { FaBell, FaFileAlt, FaLink } from "react-icons/fa";
+import { FaFileAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { jwtEncode } from "../../../routes/helpers";
+import PropTypes from "prop-types";
 
-export default function KeranjangDropdown(user) {
+export default function KeranjangDropdown({ user }) {
+  const navigate = useNavigate();
+
+  // Handler untuk navigasi ke halaman PusatTagihan
+  const handleClick = (e) => {
+    e.preventDefault();
+    const token = jwtEncode({ page: "PusatTagihan" });
+    navigate(`/page/${token}`);
+  };
+
   return (
     <NavDropdown
       as="li"
@@ -17,14 +29,14 @@ export default function KeranjangDropdown(user) {
           </div>
         </span>
       }
-      id="dropdown-messages"
+      id="dropdown-keranjang"
       align="end"
       className="nav-item"
     >
       <div className="mailbox animated bounceInDown" style={{ minWidth: 300 }}>
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           <li>
-            <div className="drop-title">Notifications</div>
+            <div className="drop-title">Pusat Tagihan</div>
           </li>
           <li>
             <div
@@ -33,34 +45,34 @@ export default function KeranjangDropdown(user) {
                 position: "relative",
                 overflow: "hidden",
                 width: "auto",
-                height: "250px",
+                height: "120px",
               }}
             >
               <div
-                className="message-center"
+                className="message-center d-flex align-items-center justify-content-center"
                 style={{
                   overflow: "hidden",
                   width: "auto",
-                  height: "250px",
+                  height: "100%",
+                  minHeight: "100px",
                 }}
               >
-                <a href="#!">
-                  <div className="btn btn-danger btn-circle">
-                    <FaLink />
-                  </div>
-                  <div className="mail-contnet">
-                    <h6>Launch Admin</h6>
-                    <span className="mail-desc">Just see my new admin!</span>
-                    <span className="time">9:30 AM</span>
-                  </div>
-                </a>
+                <span className="text-muted">
+                  {user && user.nama
+                    ? `Halo, ${user.nama}!`
+                    : "Belum ada tagihan baru."}
+                </span>
               </div>
             </div>
           </li>
           <li>
-            <a className="nav-link text-center" href="#!">
-              <strong>Check all notifications</strong>
-              <i className="fa fa-angle-right"></i>
+            <a
+              className="nav-link text-center"
+              href="#!"
+              onClick={handleClick}
+            >
+              <strong>Lihat Semua Tagihan</strong>
+              <i className="fa fa-angle-right ms-2"></i>
             </a>
           </li>
         </ul>
@@ -68,3 +80,7 @@ export default function KeranjangDropdown(user) {
     </NavDropdown>
   );
 }
+
+KeranjangDropdown.propTypes = {
+  user: PropTypes.object,
+};

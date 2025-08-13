@@ -8,7 +8,7 @@ import CardTraining from "../../comp/training/CardTraining";
 import CardArticle from "../../comp/article/CardArticle";
 import Footer from "../../comp/global/Footer";
 
-export default function DashboardScreen() {
+export default function KeranjangScreen() {
   const [user, setUser] = useState(null);
 
   // Optimized: useCallback to prevent unnecessary re-renders
