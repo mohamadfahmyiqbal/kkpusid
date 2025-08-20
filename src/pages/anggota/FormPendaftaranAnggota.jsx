@@ -1,4 +1,3 @@
-import { useCallback, useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -7,30 +6,34 @@ import {
   CardTitle,
   Col,
   Container,
+  Form,
   Row,
   ProgressBar,
+  Image,
 } from "react-bootstrap";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import { STEP_CONFIGS } from "../../comp/anggota/formPendaftaran/formConfig";
-import UAnggota from "../../utils/UAnggota";
+import { useCallback, useState, useEffect } from "react";
 import StepCamera from "../../comp/anggota/formPendaftaran/stepCamera";
-import StepSummary from "../../comp/anggota/formPendaftaran/stepSummary";
-import StepForm from "../../comp/anggota/formPendaftaran/stepForm";
+import UAnggota from "../../utils/UAnggota";
 import notification from "../../comp/global/Notification";
-import { jwtEncode } from "../../routes/helpers";
 import { useNavigate } from "react-router-dom";
+import { jwtEncode } from "../../routes/helpers";
+import SelAnggota from "../../comp/anggota/SelAnggota";
 
 export default function FormPendaftaranAnggota() {
   const [user, setUser] = useState(null);
+  const [step, setStep] = useState(1);
   const [fields, setFields] = useState({});
   const [previews, setPreviews] = useState({});
-  const [step, setStep] = useState(1);
-  const totalSteps = STEP_CONFIGS.length;
+
+  const handleUserChange = useCallback((newUser) => {
+    setUser(newUser);
+  }, []);
 
   const navigate = useNavigate();
 
-  // Set fields from user info when user changes
+  // Sinkronisasi fields dengan user jika user berubah
   useEffect(() => {
     if (user?.nama) {
       setFields((prev) => ({
@@ -42,12 +45,7 @@ export default function FormPendaftaranAnggota() {
     }
   }, [user]);
 
-  // Callback untuk handle perubahan user dari Header
-  const handleUserChange = useCallback((newUser) => {
-    setUser(newUser);
-  }, []);
-
-  // Callback untuk handle perubahan input (fields dan previews)
+  // handleChange disesuaikan dengan StepCamera dan upload file
   const handleChange = useCallback((name, value, isPreviewOnly = false) => {
     if (name === "ktp" && value instanceof File) {
       if (!["image/jpeg", "image/png"].includes(value.type)) {
@@ -60,52 +58,26 @@ export default function FormPendaftaranAnggota() {
       }
       const blobUrl = URL.createObjectURL(value);
       setPreviews((prev) => ({ ...prev, ktp: blobUrl }));
-      // Simpan file ke fields supaya bisa dikirim
       setFields((prev) => ({ ...prev, ktp: value }));
-      return;
+    } else if (isPreviewOnly) {
+      setPreviews((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else {
+      setFields((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-    if (name === "foto_preview") {
-      setPreviews((prev) => ({ ...prev, foto: value }));
-      return;
-    }
-    if (name === "foto" && value instanceof File) {
-      const blobUrl = URL.createObjectURL(value);
-      setPreviews((prev) => ({ ...prev, foto: blobUrl }));
-    }
-    setFields((prev) => ({ ...prev, [name]: value }));
+    // Preview untuk StepCamera dihandle oleh StepCamera
   }, []);
 
-  // Validasi tiap step
-  const isStepValid = () => {
-    const { fields: stepFields, title } = STEP_CONFIGS[step - 1];
-    if (title === "Summary") return fields.komitmen === true;
-    if (title === "Ambil Foto") return fields.foto instanceof File;
-    return stepFields.every((f) => {
-      const val = fields[f.name];
-      if (f.required) {
-        if (f.type === "file") return val instanceof File;
-        if (typeof val === "string") return val.trim() !== "";
-        return val !== undefined && val !== null;
-      }
-      return true;
-    });
-  };
+  const nextStep = () => setStep((s) => Math.min(s + 1, 5));
+  const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  const nextStep = () => {
-    if (!isStepValid()) {
-      alert("Mohon lengkapi semua field wajib di step ini.");
-      return;
-    }
-    setStep((prev) => Math.min(prev + 1, totalSteps));
-  };
-
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
-
-  const handleSubmit = async () => {
-    if (!isStepValid()) {
-      alert("Mohon lengkapi semua field wajib.");
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       // Pastikan data utama dari user di-sync ke fields sebelum submit
       const submitData = {
@@ -118,25 +90,164 @@ export default function FormPendaftaranAnggota() {
       notification(res, "Pendaftaran anggota berhasil!");
 
       setTimeout(() => {
-        const token = jwtEncode({ page: "dashboard" });
+        // Kirimkan fields ke detail pendaftaran anggota sebagai data
+        const token = jwtEncode({
+          page: "detailPendaftaranAnggota",
+          data: submitData,
+        });
         navigate(`/page/${token}`);
       }, 3000);
     } catch (error) {
       notification(
         error?.response,
-        "Terjadi kesalahan saat mendaftar anggota."
+        `Terjadi kesalahan saat mendaftar anggota. ${JSON.stringify(error)}`
       );
       // console.error(error);
     }
   };
 
-  const currentConfig = STEP_CONFIGS[step - 1];
+  // console.log(fields);
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <h4 className="mb-3">Personal Info</h4>
+            <SelAnggota
+              value={fields.jenis_anggota || ""}
+              onChange={(val) => handleChange("jenis_anggota", val)}
+            />
+            <Form.Group>
+              <Form.Label>NIK</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.nik || ""}
+                onChange={(e) => handleChange("nik", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>No HP</Form.Label>
+              <Form.Control type="text" value={user?.no_tlp} readOnly />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Email</Form.Label>
+              <Form.Control type="email" value={user?.email || ""} readOnly />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Alamat</Form.Label>
+              <Form.Control
+                as="textarea"
+                value={fields.alamat || ""}
+                onChange={(e) => handleChange("alamat", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Upload KTP</Form.Label>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleChange("ktp", e.target.files[0])}
+              />
+              {previews.ktp && (
+                <div className="mt-2">
+                  <Image
+                    src={previews.ktp}
+                    alt="Preview KTP"
+                    thumbnail
+                    style={{ maxWidth: "250px" }}
+                  />
+                </div>
+              )}
+            </Form.Group>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h4 className="mb-3">Job Info</h4>
+            <Form.Group>
+              <Form.Label>Pekerjaan</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.pekerjaan || ""}
+                onChange={(e) => handleChange("pekerjaan", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Tempat Kerja</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.tempat_kerja || ""}
+                onChange={(e) => handleChange("tempat_kerja", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Alamat Kerja</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.alamat_kerja || ""}
+                onChange={(e) => handleChange("alamat_kerja", e.target.value)}
+              />
+            </Form.Group>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h4 className="mb-3">Bank Info</h4>
+            <Form.Group>
+              <Form.Label>Bank</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.bank || ""}
+                onChange={(e) => handleChange("bank", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>No Rekening</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.no_rekening || ""}
+                onChange={(e) => handleChange("no_rekening", e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Nama Nasabah</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.nama_nasabah || ""}
+                onChange={(e) => handleChange("nama_nasabah", e.target.value)}
+              />
+            </Form.Group>
+          </>
+        );
+      case 4:
+        // StepCamera sudah mengatur preview dan handleChange sesuai kebutuhan
+        return <StepCamera onChange={handleChange} previews={previews} />;
+      case 5:
+        return (
+          <>
+            <h4 className="mb-3">Komitmen</h4>
+            <Form.Group>
+              <Form.Check
+                type="checkbox"
+                label="Siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba"
+                checked={fields.komitmen || false}
+                onChange={(e) => handleChange("komitmen", e.target.checked)}
+              />
+            </Form.Group>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div id="main-wrapper">
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
-
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
@@ -144,68 +255,39 @@ export default function FormPendaftaranAnggota() {
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
-
           <Row className="mt-4">
             <Col>
               <Card className="border shadow">
                 <CardHeader className="bg-blue700 text-white">
-                  <CardTitle>
-                    Step {step} dari {totalSteps}
-                  </CardTitle>
+                  <CardTitle>Form Pendaftaran Anggota</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <ProgressBar
-                    now={(step / totalSteps) * 100}
+                    now={(step / 5) * 100}
+                    label={`Langkah ${step} dari 5`}
                     className="mb-4"
                   />
-
-                  {currentConfig.title === "Ambil Foto" && (
-                    <StepCamera onChange={handleChange} previews={previews} />
-                  )}
-                  {currentConfig.title === "Summary" && (
-                    <StepSummary
-                      values={fields}
-                      onChange={handleChange}
-                      previews={previews}
-                    />
-                  )}
-                  {currentConfig.fields.length > 0 &&
-                    currentConfig.title !== "Ambil Foto" &&
-                    currentConfig.title !== "Summary" && (
-                      <StepForm
-                        config={currentConfig}
-                        values={fields}
-                        onChange={handleChange}
-                        previews={previews}
-                      />
-                    )}
-
-                  <div className="mt-4 d-flex justify-content-between">
-                    <Button
-                      variant="secondary"
-                      onClick={prevStep}
-                      disabled={step === 1}
-                    >
-                      Previous
-                    </Button>
-                    {step < totalSteps ? (
+                  <Form onSubmit={handleSubmit}>
+                    {renderStep()}
+                    <div className="d-flex justify-content-between mt-4">
                       <Button
-                        variant="primary"
-                        onClick={nextStep}
-                        disabled={!isStepValid()}
+                        variant="secondary"
+                        onClick={prevStep}
+                        disabled={step === 1}
                       >
-                        Next
+                        Sebelumnya
                       </Button>
-                    ) : (
-                      <Button
-                        variant="success"
-                        onClick={handleSubmit}
-                        disabled={!isStepValid()}
-                      >
-                        Submit
-                      </Button>
-                    )}
-                  </div>
+                      {step < 5 ? (
+                        <Button variant="primary" onClick={nextStep}>
+                          Selanjutnya
+                        </Button>
+                      ) : (
+                        <Button variant="success" type="submit">
+                          Submit
+                        </Button>
+                      )}
+                    </div>
+                  </Form>
                 </CardBody>
               </Card>
             </Col>

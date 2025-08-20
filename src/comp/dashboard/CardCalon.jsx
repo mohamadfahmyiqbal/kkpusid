@@ -2,15 +2,18 @@ import { Card, Col, Container, Row } from "react-bootstrap";
 import { FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
+import { useEffect, useState, useCallback } from "react";
+import UAnggota from "../../utils/UAnggota";
 
-export default function CardCalon() {
+export default function CardCalon({ user }) {
   const navigate = useNavigate();
+  const [detail, setDetail] = useState(null);
 
-  const handleNavigate = () => {
-    // Enkripsi path menggunakan jwtEncode
+  // Optimasi: gunakan useCallback untuk handleNavigate
+  const handleNavigate = useCallback(() => {
     const token = jwtEncode({ page: "pendaftaranAnggota" });
     navigate(`/page/${token}`);
-  };
+  }, [navigate]);
 
   return (
     <Container fluid>
@@ -39,6 +42,7 @@ export default function CardCalon() {
                 onKeyPress={(e) => {
                   if (e.key === "Enter" || e.key === " ") handleNavigate();
                 }}
+                aria-label="Daftar Anggota"
               >
                 <FaChevronRight
                   color="white"

@@ -14,6 +14,7 @@ import Notification from "../../comp/global/Notification";
 
 const INITIAL_FORM = { password: "", rePassword: "" };
 
+// Validasi password: minimal 6 karakter, boleh huruf, angka, dan simbol
 const validate = ({ password, rePassword }) => {
   const errors = {};
   const trimmedPassword = (password || "").trim();
@@ -21,14 +22,15 @@ const validate = ({ password, rePassword }) => {
 
   if (!trimmedPassword) {
     errors.password = "Password wajib diisi";
-  } else if (!/^\d{6}$/.test(trimmedPassword)) {
-    errors.password = "Password harus berupa 6 digit angka";
+  } else if (trimmedPassword.length < 6) {
+    errors.password = "Password minimal 6 karakter (huruf, angka, simbol)";
   }
 
   if (!trimmedRePassword) {
     errors.rePassword = "Retype Password wajib diisi";
-  } else if (!/^\d{6}$/.test(trimmedRePassword)) {
-    errors.rePassword = "Retype Password harus berupa 6 digit angka";
+  } else if (trimmedRePassword.length < 6) {
+    errors.rePassword =
+      "Retype Password minimal 6 karakter (huruf, angka, simbol)";
   }
 
   if (
@@ -56,10 +58,10 @@ export default function ResetPasswordScreen() {
     }
   }, []);
 
+  // Tidak ada pembatasan karakter, hanya batasi panjang maksimal 32 karakter
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    // Hanya izinkan angka dan maksimal 6 digit
-    const sanitized = value.replace(/\D/g, "").slice(0, 6);
+    const sanitized = value.slice(0, 32); // batasi maksimal 32 karakter
     setFormData((prev) => ({ ...prev, [name]: sanitized }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   }, []);
@@ -111,14 +113,15 @@ export default function ResetPasswordScreen() {
     [formData, loading, otp]
   );
 
+  // Password minimal 6 karakter, tidak harus angka, boleh huruf/simbol
   const isSubmitDisabled = useMemo(
     () =>
       loading ||
       !(
         formData.password &&
         formData.rePassword &&
-        formData.password.length === 6 &&
-        formData.rePassword.length === 6 &&
+        formData.password.length >= 6 &&
+        formData.rePassword.length >= 6 &&
         formData.password === formData.rePassword
       ),
     [loading, formData.password, formData.rePassword]
@@ -178,7 +181,8 @@ export default function ResetPasswordScreen() {
                 <div className="mb-4">
                   <h2 className="fw-bold text-white mb-1">Reset Password</h2>
                   <p className="text-white-50 mb-0">
-                    Silakan masukkan password baru 6 digit angka.
+                    Silakan masukkan password baru (minimal 6 karakter, boleh
+                    huruf, angka, dan simbol).
                   </p>
                   {!otp && (
                     <div className="alert alert-warning mt-3 py-2 px-3">
@@ -194,8 +198,6 @@ export default function ResetPasswordScreen() {
                     <Form.Control
                       type="password"
                       name="password"
-                      inputMode="numeric"
-                      pattern="\d{6}"
                       placeholder="Password"
                       value={formData.password}
                       onChange={handleChange}
@@ -203,7 +205,8 @@ export default function ResetPasswordScreen() {
                       disabled={loading}
                       autoComplete="new-password"
                       spellCheck={false}
-                      maxLength={6}
+                      minLength={6}
+                      maxLength={32}
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.password}
@@ -216,16 +219,14 @@ export default function ResetPasswordScreen() {
                     <Form.Control
                       type="password"
                       name="rePassword"
-                      inputMode="numeric"
-                      pattern="\d{6}"
                       placeholder="Retype Password"
                       value={formData.rePassword}
                       onChange={handleChange}
                       isInvalid={!!errors.rePassword}
                       disabled={loading}
                       autoComplete="new-password"
-                      spellCheck={false}
-                      maxLength={6}
+                      minLength={6}
+                      maxLength={32}
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.rePassword}

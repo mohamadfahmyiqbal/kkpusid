@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import { Col, Container, Row, Spinner } from "react-bootstrap";
+import { Col, Container, Image, Row, Spinner } from "react-bootstrap";
 import CardCalon from "../../comp/dashboard/CardCalon";
 import CardAnggota from "../../comp/dashboard/CardAnggota";
 import CardTraining from "../../comp/training/CardTraining";
@@ -21,7 +21,19 @@ export default function DashboardScreen() {
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
       <div className="page-wrapper">
-        <Container fluid>
+        <Container>
+          <Row className="border-bottom mb-3">
+            <Col xs={2} className="text-center">
+              <Image src="/assets/icons/pus.png" alt="Logo PUS" height={40} />
+            </Col>
+            <Col xs={8} className="text-center">
+              <h5>KOPERASI KONSUMEN "PAGUYUBAN USAHA SUKSES"</h5>
+              <h6>No Badan Hukum : AHU-0000852.AH.01.29. TAHUN 2024"</h6>
+            </Col>
+            <Col xs={2} className="text-center">
+              <Image src="/assets/icons/pus.png" alt="Logo PUS" height={40} />
+            </Col>
+          </Row>
           <Row className="border-bottom mb-3">
             <Col md={12} xs={12}>
               <h1 className="fw-bold mb-0">Assalamualaikum</h1>
@@ -30,8 +42,8 @@ export default function DashboardScreen() {
           </Row>
           <Row className="mt-4">
             <Col md={12} xs={12} className="mb-3">
-              {user?.roles === "calon" ? (
-                <CardCalon />
+              {user?.roles === "1" ? (
+                <CardCalon user={user} />
               ) : (
                 <CardAnggota user={user} />
               )}
