@@ -57,15 +57,29 @@
   background: linear-gradient(180deg, #F46B45 0%, #EEA849 100%)
 }
 
-.apprv-ok {
-  width: 40;
-  height: 40;
+/* ApprovalIcons.css */
+.circle-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #6c757d;
   border-radius: 50%;
-  background-color: #0d6efd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
-  display: "flex";
-  align-items: "center";
-  justify-content: "center";
-  font-weight: "bold";
-  font-size: 18,
+  font-size: 28px;
+  margin: 0 auto 10px;
+}
+
+.circle-icon_success {
+  width: 60px;
+  height: 60px;
+  background-color: green;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  margin: 0 auto 10px;
 }

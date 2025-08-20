@@ -45,8 +45,16 @@ class UAnggota {
     return this.postJSON("/register", fields);
   }
 
+  getAnggotaCategory(fields) {
+    return this.postJSON("/getAnggotaCategory", fields);
+  }
+
   findAnggotaByToken(fields) {
     return this.postJSON("/findAnggotaByToken", fields);
+  }
+
+  getDetailAnggotaByToken(fields) {
+    return this.postJSON("/getDetailAnggotaByToken", fields);
   }
 
   anggotaList(fields) {
@@ -58,8 +66,6 @@ class UAnggota {
   }
 
   daftarAnggota(fields) {
-    console.log(fields);
-
     return this.postFormData("/daftarAnggota", fields);
   }
 }

@@ -51,7 +51,7 @@ export default function LoginScreen() {
       try {
         const res = await UAnggota.login(formData);
         Notification(res);
-
+        localStorage.setItem("token", res.data.token);
         // Enkripsi data sebelum berpindah halaman
         const token = jwtEncode({ page: "dashboard" });
 

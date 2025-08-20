@@ -1,6 +1,8 @@
 import { CardTitle, Form, Image } from "react-bootstrap";
 
 export default function StepSummary({ values, onChange, previews }) {
+  console.log(previews);
+
   return (
     <>
       <CardTitle className="fw-bold mb-3">Detail Pendaftaran Anggota</CardTitle>

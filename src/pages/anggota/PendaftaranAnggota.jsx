@@ -1,7 +1,5 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
 import {
   Button,
   Card,
@@ -12,59 +10,58 @@ import {
   Col,
   Container,
   Row,
+  Alert,
   Spinner,
 } from "react-bootstrap";
-import CardCalon from "../../comp/dashboard/CardCalon";
-import CardAnggota from "../../comp/dashboard/CardAnggota";
-import CardTraining from "../../comp/training/CardTraining";
-import CardArticle from "../../comp/article/CardArticle";
-import Footer from "../../comp/global/Footer";
-import { jwtEncode } from "../../routes/helpers";
-import UAnggota from "../../utils/UAnggota";
 
-// Fungsi sederhana untuk "enkripsi" path (misal base64)
-function encryptPath(path) {
-  return btoa(path);
-}
+import Header from "../../comp/global/header/Header";
+import Sidebar from "../../comp/global/Sidebar";
+import Footer from "../../comp/global/Footer";
+
+import { jwtEncode } from "../../routes/helpers";
+// import UAnggota from "../../utils/UAnggota"; // (Tidak dipakai)
+import UApproval from "../../utils/UApproval";
 
 export default function PendaftaranAnggota() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Optimized: useCallback to prevent unnecessary re-renders
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
   }, []);
 
-  // Fungsi untuk handle navigasi dengan path terenkripsi
-  const handleNavigateEncrypted = async () => {
-    try {
-      const res = await UAnggota.cekPendaftaranAnggota(user);
-      if (res && res.status === 200) {
-        // Jika status 200, arahkan ke stepSummary dengan data dari res.data
-        const token = jwtEncode({
-          page: "formPendaftaranAnggota",
-          step: "stepSummary",
-          data: res.data,
-        });
-        navigate(`/page/${token}`);
-      } else {
-        // Jika tidak, arahkan ke step1
-        const token = jwtEncode({
-          page: "formPendaftaranAnggota",
-          step: "step1",
-        });
-        navigate(`/page/${token}`);
-      }
-    } catch (error) {
-      // Jika error, juga arahkan ke step1
-      const token = jwtEncode({
-        page: "formPendaftaranAnggota",
-        step: "step1",
-      });
-      navigate(`/page/${token}`);
+  const handleNavigateEncrypted = useCallback(async () => {
+    if (!user?.nik) {
+      setError("Silakan login/isi data pengguna terlebih dahulu.");
+      return;
     }
-  };
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await UApproval.getApprovalByNikAndType({
+        nik: user.nik,
+        type: "pendaftaran_anggota",
+      });
+
+      const hasApproval = !!res?.data?.status;
+
+      const token = jwtEncode({
+        page: "detailPendaftaranAnggota",
+        data: res.data,
+      });
+
+      navigate(`/page/${token}`);
+    } catch (err) {
+      // Fallback langsung ke form pendaftaran jika request gagal
+      const token = jwtEncode({ page: "formPendaftaranAnggota", step: 1 });
+      navigate(`/page/${token}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.nik, navigate]);
 
   return (
     <div id="main-wrapper">
@@ -77,39 +74,59 @@ export default function PendaftaranAnggota() {
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
+
           <Row className="mt-4">
-            <Col md={12} lg={12} className="mb-3">
-              <Card className="border shadow mb-3s">
+            <Col md={12} className="mb-3">
+              <Card className="border shadow">
                 <CardHeader className="bg-blue700 text-white">
                   <CardTitle>Informasi Pendaftaran Anggota</CardTitle>
                 </CardHeader>
                 <CardBody>
+                  {error && (
+                    <Alert variant="warning" className="mb-3">
+                      {error}
+                    </Alert>
+                  )}
+
                   <CardText>
                     Pendaftaran menjadi calon anggota dapat dilakukan dengan
                     cara mengunjungi kantor layanan terdekat atau secara daring
-                    (online) melalui aplikasi ini. Jika anda berminat untuk
-                    mendaftar sebagai anggota, silahkan klik tombol Isi Form
-                    Permohonan Menjadi Anggota :
+                    melalui aplikasi ini. Jika Anda berminat untuk mendaftar
+                    sebagai anggota, silakan klik tombol berikut:
                   </CardText>
+
                   <Button
-                    className="bg-blue700 text-white fw-bold w-100 mb-2"
+                    className="bg-blue700 text-white fw-bold w-100 mb-3"
                     onClick={handleNavigateEncrypted}
+                    disabled={loading || !user?.nik}
                   >
-                    Daftar Sekarang
+                    {loading ? (
+                      <>
+                        <Spinner
+                          animation="border"
+                          size="sm"
+                          className="me-2"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        Memproses...
+                      </>
+                    ) : (
+                      "Daftar Sekarang"
+                    )}
                   </Button>
+
                   <CardTitle className="fw-bolder border-top border-bottom p-2">
                     Ketentuan Pendaftaran Anggota
                   </CardTitle>
-                  <CardText>
-                    Mengacu pada Peraturan Menteri Koperasi dan Usaha Kecil dan
-                    Menengah Republik Indonesia Nomor 10/Per/M.KUKM/IX/2015
-                    syarat untuk menjadi anggota koperasi sebagai berikut :{" "}
-                    <br />
-                    1. Warga Negara Indonesia <br />
-                    2. Melengkapi Dokumen Permohonan menjadi Anggota Koperasi
-                    <br />
-                    3. Melunasi kewajiban Anggota yang ditentukan pada Anggaran
-                    Dasar / Anggaran Dasar Rumah Tangga
+                  <CardText as="div">
+                    Mengacu pada Peraturan Menteri Koperasi dan UKM RI Nomor
+                    10/Per/M.KUKM/IX/2015, syarat menjadi anggota koperasi:
+                    <ul className="mb-0">
+                      <li>Warga Negara Indonesia</li>
+                      <li>Melengkapi dokumen permohonan</li>
+                      <li>Melunasi kewajiban sesuai AD/ART</li>
+                    </ul>
                   </CardText>
                 </CardBody>
               </Card>

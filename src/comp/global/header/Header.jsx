@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Container } from "react-bootstrap";
+import { Container, Image } from "react-bootstrap";
 import { toast } from "react-toastify";
 import SidebarToggleButton from "./SidebarToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
@@ -86,6 +86,7 @@ export default function Header({ onSidebarToggle, onUserChange }) {
             <a className="navbar-brand me-3" href="/">
               <b>
                 <h3 className="light-logo text-white m-0">PUS</h3>
+                <Image src="/assets/icons/pus.png" alt="Logo PUS" height={40} />
               </b>
             </a>
           </div>
