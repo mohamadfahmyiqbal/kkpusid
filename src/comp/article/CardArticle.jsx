@@ -112,22 +112,18 @@ const ContentCard = memo(
 
 function CardArticle() {
   return (
-    <Container fluid>
-      <Card className="border shadow mb-3">
-        <Card.Header className="bg-blue700 text-white rounded-top border-bottom">
-          <CardTitle className="mb-0">Article</CardTitle>
-        </Card.Header>
-        <Card.Body
-          style={{ maxHeight: "200px", overflowY: "auto", padding: 0 }}
-        >
-          <Container fluid>
-            {contentList.map((item) => (
-              <ContentCard key={item.id} {...item} />
-            ))}
-          </Container>
-        </Card.Body>
-      </Card>
-    </Container>
+    <Card className="border shadow mb-3">
+      <Card.Header className="bg-topbar text-white rounded-top border-bottom">
+        <CardTitle className="mb-0">Article</CardTitle>
+      </Card.Header>
+      <Card.Body style={{ maxHeight: "200px", overflowY: "auto", padding: 0 }}>
+        <Container fluid>
+          {contentList.map((item) => (
+            <ContentCard key={item.id} {...item} />
+          ))}
+        </Container>
+      </Card.Body>
+    </Card>
   );
 }
 
