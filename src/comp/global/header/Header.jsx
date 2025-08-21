@@ -6,12 +6,14 @@ import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import UAnggota from "../../../utils/UAnggota";
 import KeranjangDropdown from "./KeranjangDropdown";
+import { jwtEncode } from "../../../routes/helpers";
+import { useNavigate } from "react-router-dom";
 
 export default function Header({ onSidebarToggle, onUserChange }) {
   const [sidebarShown, setSidebarShown] = useState(false);
   const [user, setUser] = useState(null);
   const isMounted = useRef(false);
-
+  const navigate = useNavigate();
   // Toggle sidebar, optimasi agar tidak tergantung pada sidebarShown
   const handleSidebarToggle = useCallback(() => {
     setSidebarShown((prev) => {
@@ -78,15 +80,25 @@ export default function Header({ onSidebarToggle, onUserChange }) {
     };
   }, []);
 
+  const handleClick = async () => {
+    const token = jwtEncode({ page: "dashboard" });
+    navigate(`/page/${token}`);
+  };
+
   return (
     <header className="topbar">
       <Container fluid>
         <nav className="navbar top-navbar navbar-expand-md navbar-light">
           <div className="navbar-header">
-            <a className="navbar-brand me-3" href="/">
+            <a className="navbar-brand me-3">
               <b>
-                <h3 className="light-logo text-white m-0">PUS</h3>
-                <Image src="/assets/icons/pus.png" alt="Logo PUS" height={40} />
+                {/* <h3 className="light-logo text-white m-0">PUS</h3> */}
+                <Image
+                  src="/assets/icons/pus.png"
+                  alt="Logo PUS"
+                  height={40}
+                  onClick={handleClick}
+                />
               </b>
             </a>
           </div>

@@ -14,18 +14,23 @@ import {
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import { useCallback, useState, useEffect } from "react";
-import StepCamera from "../../comp/anggota/formPendaftaran/stepCamera";
 import UAnggota from "../../utils/UAnggota";
 import notification from "../../comp/global/Notification";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
 import SelAnggota from "../../comp/anggota/SelAnggota";
+import { FaArrowLeft } from "react-icons/fa";
+import StepKTP from "../../comp/anggota/formPendaftaran/stepKTP";
+import StepCamera from "../../comp/anggota/formPendaftaran/stepCamera";
 
 export default function FormPendaftaranAnggota() {
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState({});
   const [previews, setPreviews] = useState({});
+
+  // total langkah yang sesungguhnya
+  const totalSteps = 6;
 
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
@@ -73,11 +78,18 @@ export default function FormPendaftaranAnggota() {
     // Preview untuk StepCamera dihandle oleh StepCamera
   }, []);
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, 5));
+  const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // handleSubmit sekarang dipanggil MANUAL lewat tombol Submit
+  const handleSubmit = async () => {
+    // safety: jangan submit kalau belum di langkah terakhir
+    if (step !== totalSteps) {
+      // Jika tidak di langkah terakhir, jangan submit — bisa langsung pindah ke langkah terakhir
+      setStep(totalSteps);
+      return;
+    }
+
     try {
       // Pastikan data utama dari user di-sync ke fields sebelum submit
       const submitData = {
@@ -106,8 +118,6 @@ export default function FormPendaftaranAnggota() {
     }
   };
 
-  // console.log(fields);
-
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -118,7 +128,7 @@ export default function FormPendaftaranAnggota() {
               value={fields.jenis_anggota || ""}
               onChange={(val) => handleChange("jenis_anggota", val)}
             />
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>NIK</Form.Label>
               <Form.Control
                 type="text"
@@ -126,15 +136,15 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("nik", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>No HP</Form.Label>
-              <Form.Control type="text" value={user?.no_tlp} readOnly />
+              <Form.Control type="text" value={user?.no_tlp || ""} readOnly />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
               <Form.Control type="email" value={user?.email || ""} readOnly />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Alamat</Form.Label>
               <Form.Control
                 as="textarea"
@@ -142,31 +152,16 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("alamat", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
-              <Form.Label>Upload KTP</Form.Label>
-              <Form.Control
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleChange("ktp", e.target.files[0])}
-              />
-              {previews.ktp && (
-                <div className="mt-2">
-                  <Image
-                    src={previews.ktp}
-                    alt="Preview KTP"
-                    thumbnail
-                    style={{ maxWidth: "250px" }}
-                  />
-                </div>
-              )}
-            </Form.Group>
           </>
         );
       case 2:
+        // StepKTP sudah mengatur preview dan handleChange sesuai kebutuhan
+        return <StepKTP onChange={handleChange} previews={previews} />;
+      case 3:
         return (
           <>
             <h4 className="mb-3">Job Info</h4>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Pekerjaan</Form.Label>
               <Form.Control
                 type="text"
@@ -174,7 +169,7 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("pekerjaan", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Tempat Kerja</Form.Label>
               <Form.Control
                 type="text"
@@ -182,7 +177,7 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("tempat_kerja", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Alamat Kerja</Form.Label>
               <Form.Control
                 type="text"
@@ -192,11 +187,11 @@ export default function FormPendaftaranAnggota() {
             </Form.Group>
           </>
         );
-      case 3:
+      case 4:
         return (
           <>
             <h4 className="mb-3">Bank Info</h4>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Bank</Form.Label>
               <Form.Control
                 type="text"
@@ -204,7 +199,7 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("bank", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>No Rekening</Form.Label>
               <Form.Control
                 type="text"
@@ -212,7 +207,7 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("no_rekening", e.target.value)}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Nama Nasabah</Form.Label>
               <Form.Control
                 type="text"
@@ -222,14 +217,14 @@ export default function FormPendaftaranAnggota() {
             </Form.Group>
           </>
         );
-      case 4:
+      case 5:
         // StepCamera sudah mengatur preview dan handleChange sesuai kebutuhan
         return <StepCamera onChange={handleChange} previews={previews} />;
-      case 5:
+      case 6:
         return (
           <>
             <h4 className="mb-3">Komitmen</h4>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Check
                 type="checkbox"
                 label="Siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba"
@@ -244,6 +239,18 @@ export default function FormPendaftaranAnggota() {
     }
   };
 
+  // cegah Enter (kecuali textarea) agar tidak memicu submit otomatis
+  const handleKeyDownOnForm = (e) => {
+    if (e.key === "Enter") {
+      const tag =
+        e.target && e.target.tagName ? e.target.tagName.toLowerCase() : "";
+      if (tag === "textarea") return;
+      if (tag === "button") return;
+      // cegah default (termasuk submit)
+      e.preventDefault();
+    }
+  };
+
   return (
     <div id="main-wrapper">
       <Header onUserChange={handleUserChange} />
@@ -251,7 +258,15 @@ export default function FormPendaftaranAnggota() {
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
-            <Col>
+            <Col xs={12} className="d-flex align-items-center">
+              <Button
+                variant="link"
+                className="p-0 me-2"
+                onClick={() => navigate(-1)}
+                style={{ textDecoration: "none" }}
+              >
+                <FaArrowLeft size={15} color="black" />
+              </Button>
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
@@ -263,26 +278,39 @@ export default function FormPendaftaranAnggota() {
                 </CardHeader>
                 <CardBody>
                   <ProgressBar
-                    now={(step / 5) * 100}
-                    label={`Langkah ${step} dari 5`}
+                    now={(step / totalSteps) * 100}
+                    label={`Langkah ${step} dari ${totalSteps}`}
                     className="mb-4"
                   />
-                  <Form onSubmit={handleSubmit}>
+                  {/* NOTE: kita tidak memakai onSubmit, submit hanya via handleSubmit() */}
+                  <Form
+                    onKeyDown={handleKeyDownOnForm}
+                    onSubmit={(e) => e.preventDefault()}
+                  >
                     {renderStep()}
                     <div className="d-flex justify-content-between mt-4">
                       <Button
                         variant="secondary"
                         onClick={prevStep}
                         disabled={step === 1}
+                        type="button"
                       >
                         Sebelumnya
                       </Button>
-                      {step < 5 ? (
-                        <Button variant="primary" onClick={nextStep}>
+                      {step < totalSteps ? (
+                        <Button
+                          variant="primary"
+                          onClick={nextStep}
+                          type="button"
+                        >
                           Selanjutnya
                         </Button>
                       ) : (
-                        <Button variant="success" type="submit">
+                        <Button
+                          variant="success"
+                          type="button"
+                          onClick={handleSubmit}
+                        >
                           Submit
                         </Button>
                       )}

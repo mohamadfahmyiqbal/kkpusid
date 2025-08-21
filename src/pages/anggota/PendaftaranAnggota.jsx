@@ -21,6 +21,7 @@ import Footer from "../../comp/global/Footer";
 import { jwtEncode } from "../../routes/helpers";
 // import UAnggota from "../../utils/UAnggota"; // (Tidak dipakai)
 import UApproval from "../../utils/UApproval";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function PendaftaranAnggota() {
   const [user, setUser] = useState(null);
@@ -70,7 +71,15 @@ export default function PendaftaranAnggota() {
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
-            <Col xs={12}>
+            <Col xs={12} className="d-flex align-items-center">
+              <Button
+                variant="link"
+                className="p-0 me-2"
+                onClick={() => navigate(-1)}
+                style={{ textDecoration: "none" }}
+              >
+                <FaArrowLeft size={15} color="black" />
+              </Button>
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>

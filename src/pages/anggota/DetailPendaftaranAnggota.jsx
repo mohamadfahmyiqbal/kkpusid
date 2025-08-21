@@ -18,6 +18,7 @@ import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import UAnggota from "../../utils/UAnggota";
 import { jwtEncode } from "../../routes/helpers";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function DetailPendaftaranAnggota() {
   const [user, setUser] = useState(null);
@@ -98,7 +99,15 @@ export default function DetailPendaftaranAnggota() {
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
-            <Col xs={12}>
+            <Col xs={12} className="d-flex align-items-center">
+              <Button
+                variant="link"
+                className="p-0 me-2"
+                onClick={() => navigate(-1)}
+                style={{ textDecoration: "none" }}
+              >
+                <FaArrowLeft size={15} color="black" />
+              </Button>
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
@@ -156,7 +165,6 @@ export default function DetailPendaftaranAnggota() {
                         <Row>
                           <Col xs={6}>
                             <strong>KTP</strong>
-                            {console.log(dataPendaftaran)}
                             {dataPendaftaran?.detail?.ktp_url ? (
                               <div
                                 style={{ maxWidth: 200, marginLeft: "auto" }}
