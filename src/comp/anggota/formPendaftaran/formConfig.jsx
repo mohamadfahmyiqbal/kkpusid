@@ -39,6 +39,8 @@ export const STEP_CONFIGS = [
         rows: 3,
         required: true,
       },
+      { label: "No Telepon 2", name: "no_tlp2", type: "number" required: true 
+      },
       {
         label: "Foto KTP",
         name: "ktp",
