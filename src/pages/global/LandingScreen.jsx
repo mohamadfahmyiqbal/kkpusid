@@ -40,35 +40,35 @@ export default function LandingScreen() {
 
   const handleLoginClick = () => {
     const token = jwtEncode({ page: "login" });
-    navigate(`/page/${token}`, { replace: true });
+    navigate(`/${token}`, { replace: true });
   };
 
   return (
     <div id="main-wrapper">
       {/* Header */}
-      <header className="topbar bg-primary fixed-top py-3 shadow-sm">
-        <Container>
-          <nav className="navbar navbar-expand-md navbar-dark">
-            {/* Logo */}
-            <a className="navbar-brand me-3" href="/">
-              <h3 className="text-white m-0">PUS</h3>
-            </a>
+      <header className="topbar bg-primary fixed-top py-1 shadow-sm">
+        <nav className="navbar navbar-expand-md navbar-dark">
+          <a className="navbar-brand me-3" href="/">
+            <img
+              src="/assets/icons/pusLogo.png"
+              alt="Logo PUS"
+              style={{ height: 40, width: "auto" }}
+            />
+          </a>
 
-            {/* Navbar Right */}
-            <div className="ms-auto d-flex align-items-center">
-              <Nav>
-                <Nav.Link
-                  onClick={handleLoginClick}
-                  className="text-white d-flex align-items-center"
-                  style={{ cursor: "pointer" }}
-                >
-                  <FaSignInAlt size={20} className="me-1" />
-                  <span>Login</span>
-                </Nav.Link>
-              </Nav>
-            </div>
-          </nav>
-        </Container>
+          <div className="ms-auto d-flex align-items-center">
+            <Nav>
+              <Nav.Link
+                onClick={handleLoginClick}
+                className="text-white d-flex align-items-center"
+                style={{ cursor: "pointer" }}
+              >
+                <FaSignInAlt size={20} className="me-1" />
+                <span>Login</span>
+              </Nav.Link>
+            </Nav>
+          </div>
+        </nav>
       </header>
 
       {/* Page Content */}
@@ -78,14 +78,15 @@ export default function LandingScreen() {
           <Row className="justify-content-center text-center text-white mb-5">
             <Col md={10} lg={8}>
               <h1 className="fw-bold display-4">
-                DISCOVER.
+                Muamalah
                 <br />
-                LEARN.
+                Syar'i
                 <br />
-                ENJOY.
+                Berkah Hakiki
               </h1>
               <h4 className="mt-3">
-                Platform kolaboratif untuk para pelaku usaha kreatif
+                Bertekad untuk melaksanakan muamalah syar’i sesuai Al-Qur’an,
+                Al-Hadits, serta ijma’ para Salafush Shalih.
               </h4>
             </Col>
           </Row>

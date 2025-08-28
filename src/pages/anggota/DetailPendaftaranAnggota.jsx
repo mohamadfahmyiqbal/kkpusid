@@ -115,7 +115,7 @@ export default function DetailPendaftaranAnggota() {
           <Row className="mt-4">
             <Col md={12} className="mb-3">
               <Card className="border shadow">
-                <CardHeader className="bg-blue700 text-white">
+                <CardHeader className="bg-topbar text-white">
                   <CardTitle>Detail Pendaftaran Anggota</CardTitle>
                 </CardHeader>
                 <CardBody>

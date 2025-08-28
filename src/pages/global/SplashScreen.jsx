@@ -1,65 +1,112 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
-import { jwtEncode } from "../../routes/helpers";
 
-export default function SplashScreen() {
+/**
+ * SplashScreen
+ * - Navigasi otomatis ke halaman login
+ * - Props:
+ *    - delay: ms sebelum redirect (default 1200)
+ *    - className: tambahan class CSS optional
+ */
+export default function SplashScreen({ delay = 1200, className = "" }) {
   const navigate = useNavigate();
+  const timeoutRef = useRef();
+
+  const getReducedMotion = useCallback(() => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    return false;
+  }, []);
+
+  const [reducedMotion, setReducedMotion] = useState(getReducedMotion);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const token = jwtEncode({ page: "landing" });
-      console.log(`/page/${token}`);
-      navigate(`/page/${token}`, { replace: true });
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [navigate]);
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = (e) => setReducedMotion(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
-  return (
-    <Container
-      fluid
-      className="d-flex flex-column justify-content-center align-items-center"
-      style={{
+  const styles = useMemo(
+    () => ({
+      page: {
         minHeight: "100vh",
         minWidth: "100vw",
         background: "linear-gradient(180deg, #13547A 0%, #80D0C7 100%)",
         overflow: "hidden",
         padding: 0,
-      }}
+      },
+      logo: {
+        width: "clamp(120px, 30vw, 320px)",
+        height: "auto",
+        display: "block",
+        margin: "0 auto",
+        filter: "drop-shadow(0 4px 4px rgba(0,0,0,.3))",
+      },
+      subtitle: {
+        fontSize: "clamp(18px, 5vw, 48px)",
+        fontFamily:
+          "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+        textShadow: "0 4px 4px rgba(0,0,0,.3)",
+      },
+    }),
+    []
+  );
+
+  useEffect(() => {
+    const wait = Math.max(300, Number(delay) || 0);
+
+    timeoutRef.current = setTimeout(() => {
+      // Redirect langsung ke halaman login
+      navigate("/landing", { replace: true });
+    }, wait);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [delay, navigate]);
+
+  return (
+    <Container
+      fluid
+      className={`d-flex flex-column justify-content-center align-items-center ${className}`}
+      style={styles.page}
     >
       <Row className="w-100 justify-content-center align-items-center">
         <Col xs="auto">
-          <h1
-            className="text-white fw-bold m-0 text-center"
-            style={{
-              fontSize: "clamp(48px, 15vw, 180px)",
-              fontFamily: "Inter, sans-serif",
-              lineHeight: "1.2",
-              textShadow: "0px 4px 4px rgba(0, 0, 0, 0.30)",
-            }}
-          >
-            PUS
-          </h1>
+          <img
+            src="/assets/icons/pusLogo.png"
+            alt="Logo PUS"
+            style={styles.logo}
+            aria-label="Logo PUS"
+          />
         </Col>
       </Row>
+
       <Row className="w-100 justify-content-center align-items-center mt-3">
         <Col xs="auto">
-          <h5
+          <h2
             className="text-white fw-bold m-0 text-center"
-            style={{
-              fontSize: "clamp(18px, 5vw, 48px)",
-              fontFamily: "Inter, sans-serif",
-              textShadow: "0px 4px 4px rgba(0, 0, 0, 0.30)",
-            }}
+            style={styles.subtitle}
           >
             Paguyuban Usaha Sukses
-          </h5>
+          </h2>
         </Col>
       </Row>
+
       <Row className="mt-4">
         <Col xs="auto">
-          <Spinner animation="border" variant="light" role="status">
-            <span className="visually-hidden">Memuat...</span>
+          <Spinner
+            animation={reducedMotion ? undefined : "border"}
+            variant="light"
+            role="status"
+            aria-live="polite"
+            aria-label="Memuat…"
+          >
+            <span className="visually-hidden">Memuat…</span>
           </Spinner>
         </Col>
       </Row>

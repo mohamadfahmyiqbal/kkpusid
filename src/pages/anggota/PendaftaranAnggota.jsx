@@ -54,11 +54,11 @@ export default function PendaftaranAnggota() {
         data: res.data,
       });
 
-      navigate(`/page/${token}`);
+      navigate(`/${token}`);
     } catch (err) {
       // Fallback langsung ke form pendaftaran jika request gagal
       const token = jwtEncode({ page: "formPendaftaranAnggota", step: 1 });
-      navigate(`/page/${token}`);
+      navigate(`/${token}`);
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,7 @@ export default function PendaftaranAnggota() {
           <Row className="mt-4">
             <Col md={12} className="mb-3">
               <Card className="border shadow">
-                <CardHeader className="bg-blue700 text-white">
+                <CardHeader className="bg-topbar text-white">
                   <CardTitle>Informasi Pendaftaran Anggota</CardTitle>
                 </CardHeader>
                 <CardBody>
@@ -105,7 +105,7 @@ export default function PendaftaranAnggota() {
                   </CardText>
 
                   <Button
-                    className="bg-blue700 text-white fw-bold w-100 mb-3"
+                    className="bg-topbar text-white fw-bold w-100 mb-3"
                     onClick={handleNavigateEncrypted}
                     disabled={loading || !user?.nik}
                   >

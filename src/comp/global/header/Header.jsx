@@ -28,19 +28,20 @@ export default function Header({ onSidebarToggle, onUserChange }) {
 
   // Logout handler, optimasi: redirect lebih cepat jika gagal
   const logout = useCallback(async () => {
+    const token = jwtEncode({ page: "login" });
     try {
       await UAnggota.logout();
       toast.success("Terimakasih");
       setTimeout(() => {
-        window.location.href = "/login";
-      }, 800);
+        navigate(`/${token}`);
+      }, 3000);
     } catch (err) {
       toast.error("Gagal logout: " + (err?.message || "Terjadi kesalahan"));
       setTimeout(() => {
-        window.location.href = "/login";
-      }, 1200);
+        navigate(`/${token}`);
+      }, 3000);
     }
-  }, []);
+  }, [navigate]);
 
   // Ambil user login dari token (cukup sekali di awal saja)
   useEffect(() => {
@@ -50,20 +51,16 @@ export default function Header({ onSidebarToggle, onUserChange }) {
       try {
         const res = await UAnggota.findAnggotaByToken();
         if (!ignore && isMounted.current) {
-          setUser(res.data.user);
+          setUser(res.data);
           if (typeof onUserChange === "function") {
-            onUserChange(res.data.user);
+            onUserChange(res.data);
           }
         }
       } catch (err) {
         toast.error(
           "Gagal mengambil data user: " + (err?.message || "Terjadi kesalahan")
         );
-        console.log(err);
-
-        // setTimeout(() => {
-        //   window.location.href = "/login";
-        // }, 1500);
+        logout();
       }
     };
     getAccount();
@@ -82,7 +79,7 @@ export default function Header({ onSidebarToggle, onUserChange }) {
 
   const handleClick = async () => {
     const token = jwtEncode({ page: "dashboard" });
-    navigate(`/page/${token}`);
+    navigate(`/${token}`);
   };
 
   return (
@@ -94,7 +91,7 @@ export default function Header({ onSidebarToggle, onUserChange }) {
               <b>
                 {/* <h3 className="light-logo text-white m-0">PUS</h3> */}
                 <Image
-                  src="/assets/icons/pus.png"
+                  src="/assets/icons/PUSlogo.png"
                   alt="Logo PUS"
                   height={40}
                   onClick={handleClick}

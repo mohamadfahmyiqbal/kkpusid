@@ -107,7 +107,7 @@ export default function FormPendaftaranAnggota() {
           page: "detailPendaftaranAnggota",
           data: submitData,
         });
-        navigate(`/page/${token}`);
+        navigate(`/${token}`);
       }, 3000);
     } catch (error) {
       notification(
@@ -136,6 +136,18 @@ export default function FormPendaftaranAnggota() {
                 onChange={(e) => handleChange("nik", e.target.value)}
               />
             </Form.Group>
+            {/* Tambahan Jenis Kelamin */}
+            <Form.Group className="mb-3">
+              <Form.Label>Jenis Kelamin</Form.Label>
+              <Form.Select
+                value={fields.jenis_kelamin || ""}
+                onChange={(e) => handleChange("jenis_kelamin", e.target.value)}
+              >
+                <option value="">Pilih Jenis Kelamin</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </Form.Select>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>No HP</Form.Label>
               <Form.Control type="text" value={user?.no_tlp || ""} readOnly />
@@ -150,6 +162,26 @@ export default function FormPendaftaranAnggota() {
                 as="textarea"
                 value={fields.alamat || ""}
                 onChange={(e) => handleChange("alamat", e.target.value)}
+              />
+            </Form.Group>
+
+            {/* Tambahan Telp Darurat */}
+            <Form.Group className="mb-3">
+              <Form.Label>Telp Darurat</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.tlp_darurat || ""}
+                onChange={(e) => handleChange("tlp_darurat", e.target.value)}
+              />
+            </Form.Group>
+
+            {/* Tambahan Hubungan */}
+            <Form.Group className="mb-3">
+              <Form.Label>Hubungan</Form.Label>
+              <Form.Control
+                type="text"
+                value={fields.hubungan || ""}
+                onChange={(e) => handleChange("hubungan", e.target.value)}
               />
             </Form.Group>
           </>
