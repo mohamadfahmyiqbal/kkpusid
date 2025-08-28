@@ -14,10 +14,10 @@ const router = createBrowserRouter([
   // Redirect otomatis ke /page/:token berdasarkan nama halaman
   ...Object.keys(PAGE_COMPONENTS).map((key) => ({
     path: `/${key}`,
-    element: <Navigate to={`/page/${jwtEncode({ page: key })}`} replace />,
+    element: <Navigate to={`/${jwtEncode({ page: key })}`} replace />,
   })),
   {
-    path: "/page/:token",
+    path: "/:token",
     element: <EncryptedPage />,
   },
 ]);

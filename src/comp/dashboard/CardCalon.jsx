@@ -12,7 +12,7 @@ export default function CardCalon({ user }) {
   // Optimasi: gunakan useCallback untuk handleNavigate
   const handleNavigate = useCallback(() => {
     const token = jwtEncode({ page: "pendaftaranAnggota" });
-    navigate(`/page/${token}`);
+    navigate(`/${token}`);
   }, [navigate]);
 
   return (

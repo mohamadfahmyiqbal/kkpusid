@@ -2,6 +2,18 @@ import { NavDropdown } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
 
 export default function UserDropdown({ user, logout }) {
+  // Hilangkan console.log jika tidak perlu
+  // console.log(user);
+
+  // Fungsi untuk mendapatkan src gambar base64
+  const getFotoSrc = (foto) => {
+    if (!foto) return "/assets/icons/default-user.png"; // fallback jika tidak ada foto
+    // Jika sudah ada prefix data:image, langsung pakai
+    if (foto.startsWith("data:image")) return foto;
+    // Jika hanya base64 string, tambahkan prefix
+    return `data:image/jpeg;base64,${foto}`;
+  };
+
   return (
     <NavDropdown
       as="li"
@@ -21,7 +33,7 @@ export default function UserDropdown({ user, logout }) {
         <div className="dw-user-box px-3 py-2 ">
           <div className="d-flex align-items-center">
             <img
-              src="/assets/images/users/1.jpg"
+              src={getFotoSrc(user?.foto)}
               alt="user"
               width={40}
               height={40}
