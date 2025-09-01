@@ -78,7 +78,7 @@ export default function SplashScreen({ delay = 1200, className = "" }) {
       <Row className="w-100 justify-content-center align-items-center">
         <Col xs="auto">
           <img
-            src="/assets/icons/pusLogo.png"
+            src="/assets/icons/PUSlogo.png"
             alt="Logo PUS"
             style={styles.logo}
             aria-label="Logo PUS"

@@ -29,7 +29,6 @@ export default function DashboardScreen() {
     if (isRoleOne) return <CardCalon user={user} />;
     return <CardAnggota user={user} />;
   };
-  console.log(user);
 
   return (
     <div id="main-wrapper">

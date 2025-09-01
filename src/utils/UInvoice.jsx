@@ -1,6 +1,6 @@
 import http from "./common";
 
-class UApproval {
+class UInvoice {
   // Helper: kirim request dengan JSON
   postJSON(url, data) {
     return http.post(url, data, {
@@ -21,12 +21,9 @@ class UApproval {
     });
   }
 
-  getApprovalByNikAndType(fields) {
-    return this.postJSON("/getApprovalByNikAndType", fields);
-  }
-  getApprovalDetail(fields) {
-    return this.postJSON("/getApprovalDetail", fields);
+  generateInvoice(fields) {
+    return this.postJSON("/generateInvoice", fields);
   }
 }
 
-export default new UApproval();
+export default new UInvoice();

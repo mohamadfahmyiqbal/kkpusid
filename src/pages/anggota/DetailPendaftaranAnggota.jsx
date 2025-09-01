@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   Card,
   CardBody,
@@ -16,81 +16,143 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import UAnggota from "../../utils/UAnggota";
+import UApproval from "../../utils/UApproval";
 import { jwtEncode } from "../../routes/helpers";
-import { FaArrowLeft } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaCheck,
+  FaCheckDouble,
+  FaHourglassHalf,
+  FaTimes,
+} from "react-icons/fa";
 
+// ================== Helper Components ==================
+const FieldRow = ({ label, value }) => (
+  <Row className="mb-2">
+    <Col xs={4}>
+      <strong>{label}</strong>
+    </Col>
+    <Col xs={8} className="text-end">
+      {value ?? "-"}
+    </Col>
+  </Row>
+);
+
+const ApprovalCard = ({ approval }) => {
+  const status = approval?.status?.toLowerCase();
+  let bgColor = "secondary";
+  let icon;
+  if (status === "approved") {
+    icon = <FaCheck size={30} />;
+  } else if (status === "rejected") {
+    icon = <FaTimes size={30} />;
+  } else {
+    icon = <FaHourglassHalf size={40} />;
+  }
+
+  if (status === "approved") bgColor = "success";
+  if (status === "rejected") bgColor = "danger";
+
+  return (
+    <Col xs={6} md={4} lg={3} className="text-center">
+      <Card
+        bg={bgColor}
+        text="white"
+        className="rounded-circle d-flex align-items-center justify-content-center mx-auto mt-2"
+        style={{ width: "100px", height: "100px" }}
+      >
+        {icon}
+      </Card>
+      <div className="fw-semibold">{approval?.approval?.nama || "-"}</div>
+      <div className="fw-semibold">
+        {approval.approval.approver.nama || "-"}
+      </div>
+      <div className="small fst-italic text-muted">
+        {approval?.status || "-"}
+      </div>
+    </Col>
+  );
+};
+
+// ================== Main Component ==================
 export default function DetailPendaftaranAnggota() {
   const [user, setUser] = useState(null);
   const [dataPendaftaran, setDataPendaftaran] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleUserChange = useCallback((newUser) => {
-    setUser(newUser);
-  }, []);
-
+  const handleUserChange = useCallback((newUser) => setUser(newUser), []);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Jika navigasi membawa data (mis. location.state), gunakan langsung supaya cepat tampil
+  // Prefill data jika dikirim via navigation
   useEffect(() => {
     if (location?.state?.dataPendaftaran) {
       setDataPendaftaran(location.state.dataPendaftaran);
     }
   }, [location?.state]);
 
-  // Ambil data pendaftaran berdasarkan user.nik (ketika tersedia)
+  // Ambil data dari API
   useEffect(() => {
     let mounted = true;
-
     async function fetchData() {
       if (!user?.nik) return;
-
       setLoading(true);
       setError(null);
 
       try {
-        const res = await UAnggota.cekPendaftaranAnggota({ nik: user.nik });
-        if (!mounted) return;
-        setDataPendaftaran(res?.data?.data ?? null);
+        const res = await UApproval.getApprovalDetail({
+          type: "pendaftaran_anggota",
+          nik: user.nik,
+        });
+        // console.log(res.data);
+
+        if (mounted) setDataPendaftaran(res?.data ?? null);
       } catch (err) {
-        if (!mounted) return;
-        setError("Gagal mengambil data pendaftaran. Silakan coba lagi.");
+        if (mounted)
+          setError("Gagal mengambil data pendaftaran. Silakan coba lagi.");
       } finally {
         if (mounted) setLoading(false);
       }
     }
-
     fetchData();
-
     return () => {
       mounted = false;
     };
   }, [user?.nik]);
 
-  // Helper untuk render field dengan fallback
-  const renderField = (label, value) => (
-    <Row className="mb-2">
-      <Col xs={4}>
-        <strong>{label}</strong>
-      </Col>
-      <Col xs={8} className="text-end">
-        {value ?? "-"}
-      </Col>
-    </Row>
-  );
+  const handleInvoiceClick = () => {
+    const token = jwtEncode({ page: "invoice" });
+    const payload = {
+      token: dataPendaftaran.request.token,
+      nik: dataPendaftaran.request.nik,
+      nama: dataPendaftaran.requester.nama,
+      type: "pendaftaran_anggota",
+      category: "anggota",
+      tipe_anggota: dataPendaftaran.request.tipe_anggota,
+      bank: dataPendaftaran.bank,
+    };
 
-  const handleClick = () => {
-    const token = jwtEncode({
-      page: "invoice",
-    });
-    navigate(`/page/${token}`, {
-      state: {
-        title: "Invoice Pendaftaran",
-      },
+    navigate(`/${token}`, {
+      state: { title: "Invoice", payload },
     });
   };
+
+  // Gunakan memo agar tidak re-render approval list setiap kali
+  const approvalList = useMemo(
+    () =>
+      dataPendaftaran?.approval?.map((apr, idx) => (
+        <ApprovalCard key={idx} approval={apr} />
+      )),
+    [dataPendaftaran?.approval]
+  );
+
+  // Cek semua approval sudah approved
+  const allApproved =
+    dataPendaftaran?.approval?.length > 0 &&
+    dataPendaftaran.approval.every(
+      (apr) => apr?.status?.toLowerCase() === "approved"
+    );
 
   return (
     <div id="main-wrapper">
@@ -98,13 +160,13 @@ export default function DetailPendaftaranAnggota() {
       <Sidebar user={user} />
       <div className="page-wrapper">
         <Container fluid>
+          {/* Header Page */}
           <Row className="border-bottom mb-3">
             <Col xs={12} className="d-flex align-items-center">
               <Button
                 variant="link"
-                className="p-0 me-2"
+                className="p-0 me-2 text-decoration-none"
                 onClick={() => navigate(-1)}
-                style={{ textDecoration: "none" }}
               >
                 <FaArrowLeft size={15} color="black" />
               </Button>
@@ -112,6 +174,7 @@ export default function DetailPendaftaranAnggota() {
             </Col>
           </Row>
 
+          {/* Content */}
           <Row className="mt-4">
             <Col md={12} className="mb-3">
               <Card className="border shadow">
@@ -119,24 +182,24 @@ export default function DetailPendaftaranAnggota() {
                   <CardTitle>Detail Pendaftaran Anggota</CardTitle>
                 </CardHeader>
                 <CardBody>
+                  {/* Loading */}
                   {loading && (
                     <div className="text-center my-3">
                       <Spinner animation="border" role="status" />
                     </div>
                   )}
 
-                  {error && (
-                    <Alert variant="danger" className="my-2">
-                      {error}
-                    </Alert>
-                  )}
+                  {/* Error */}
+                  {error && <Alert variant="danger">{error}</Alert>}
 
+                  {/* No Data */}
                   {!loading && !dataPendaftaran && !error && (
                     <div className="text-muted">
                       Tidak ada data pendaftaran untuk ditampilkan.
                     </div>
                   )}
 
+                  {/* Data Available */}
                   {dataPendaftaran && (
                     <>
                       {/* Personal Info */}
@@ -144,15 +207,20 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Personal Info
                         </h5>
-
-                        {renderField("Nama", dataPendaftaran?.anggota?.nama)}
-                        {renderField("NIK", dataPendaftaran?.detail?.nik)}
+                        <FieldRow
+                          label="Nama"
+                          value={dataPendaftaran?.requester?.nama}
+                        />
+                        <FieldRow
+                          label="NIK"
+                          value={dataPendaftaran?.requester?.nikKtp}
+                        />
                         <Row className="mb-2">
                           <Col xs={12}>
                             <strong>Alamat</strong>
                           </Col>
                           <Col xs={12} className="text-start">
-                            {dataPendaftaran?.detail?.alamat ?? "-"}
+                            {dataPendaftaran?.requester?.alamat ?? "-"}
                           </Col>
                         </Row>
                       </section>
@@ -165,34 +233,30 @@ export default function DetailPendaftaranAnggota() {
                         <Row>
                           <Col xs={6}>
                             <strong>KTP</strong>
-                            {dataPendaftaran?.detail?.ktp_url ? (
-                              <div
-                                style={{ maxWidth: 200, marginLeft: "auto" }}
-                              >
-                                <Image
-                                  src={`data:image/jpeg;base64,${dataPendaftaran.detail.ktp_url}`}
-                                  alt="Foto KTP"
-                                  rounded
-                                  fluid
-                                />
-                              </div>
+                            {dataPendaftaran?.requester?.ktp ? (
+                              <Image
+                                src={dataPendaftaran?.requester?.ktp}
+                                alt="Foto KTP"
+                                rounded
+                                fluid
+                                className="d-block mx-auto mt-2"
+                                style={{ maxWidth: 200 }}
+                              />
                             ) : (
                               <div>-</div>
                             )}
                           </Col>
                           <Col xs={6}>
                             <strong>Foto Anggota</strong>
-                            {dataPendaftaran?.detail?.foto_url ? (
-                              <div
-                                style={{ maxWidth: 200, marginLeft: "auto" }}
-                              >
-                                <Image
-                                  src={`data:image/jpeg;base64,${dataPendaftaran.detail.foto_url}`}
-                                  alt="Foto Anggota"
-                                  rounded
-                                  fluid
-                                />
-                              </div>
+                            {dataPendaftaran?.requester?.foto ? (
+                              <Image
+                                src={dataPendaftaran?.requester?.foto}
+                                alt="Foto Anggota"
+                                rounded
+                                fluid
+                                className="d-block mx-auto mt-2"
+                                style={{ maxWidth: 200 }}
+                              />
                             ) : (
                               <div>-</div>
                             )}
@@ -205,13 +269,35 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Account Info
                         </h5>
+                        <FieldRow
+                          label="Tipe Anggota"
+                          value={dataPendaftaran?.akun?.tipe_anggota}
+                        />
+                        <FieldRow
+                          label="No HP"
+                          value={dataPendaftaran?.requester?.no_tlp}
+                        />
+                        <FieldRow
+                          label="Email"
+                          value={dataPendaftaran?.akun?.email}
+                        />
+                      </section>
 
-                        {renderField(
-                          "Tipe Anggota",
-                          dataPendaftaran?.anggota?.status_anggota
-                        )}
-                        {renderField("No HP", dataPendaftaran?.anggota?.no_tlp)}
-                        {renderField("Email", dataPendaftaran?.anggota?.email)}
+                      {/* Job Info */}
+                      <section className="mb-4">
+                        <h5 className="fw-bold border-bottom pb-2">Job Info</h5>
+                        <FieldRow
+                          label="Pekerjaan"
+                          value={dataPendaftaran?.job?.pekerjaan}
+                        />
+                        <FieldRow
+                          label="Tempat Kerja"
+                          value={dataPendaftaran?.job?.tempat_kerja}
+                        />
+                        <FieldRow
+                          label="Alamat"
+                          value={dataPendaftaran?.job?.alamat_kerja}
+                        />
                       </section>
 
                       {/* Bank Info */}
@@ -219,16 +305,18 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Bank Info
                         </h5>
-
-                        {renderField("Bank", dataPendaftaran?.bank?.bank)}
-                        {renderField(
-                          "No Rekening",
-                          dataPendaftaran?.bank?.no_rekening
-                        )}
-                        {renderField(
-                          "Nama Nasabah",
-                          dataPendaftaran?.bank?.nama_nasabah
-                        )}
+                        <FieldRow
+                          label="Bank"
+                          value={dataPendaftaran?.bank?.bank}
+                        />
+                        <FieldRow
+                          label="No Rekening"
+                          value={dataPendaftaran?.bank?.no_rekening}
+                        />
+                        <FieldRow
+                          label="Nama Nasabah"
+                          value={dataPendaftaran?.bank?.nama_nasabah}
+                        />
                       </section>
 
                       {/* Approval Info */}
@@ -238,41 +326,19 @@ export default function DetailPendaftaranAnggota() {
                         </h5>
                         <Container>
                           <Row className="text-center">
-                            {dataPendaftaran?.approvalFlows?.map((apr, idx) =>
-                              apr?.approvals?.map((aprs, ids) => {
-                                const isApproved =
-                                  apr.level === apr.approval_request_flow &&
-                                  apr.status !== "pending";
-                                return (
-                                  <Col key={`${idx}-${ids}`}>
-                                    <div
-                                      className={
-                                        isApproved
-                                          ? "circle-icon_success"
-                                          : "circle-icon"
-                                      }
-                                    >
-                                      <i
-                                        className={
-                                          isApproved
-                                            ? "fas fa-check"
-                                            : "fas fa-hourglass-half"
-                                        }
-                                      ></i>
-                                    </div>
-                                    <p>{aprs?.nama || "-"}</p>
-                                  </Col>
-                                );
-                              })
+                            {approvalList}
+
+                            {/* tombol hanya jika semua approved */}
+                            {allApproved && (
+                              <Col xs={12} className="mt-3">
+                                <Button
+                                  className="bg-blue700 w-100 text-white"
+                                  onClick={handleInvoiceClick}
+                                >
+                                  Selanjutnya
+                                </Button>
+                              </Col>
                             )}
-                            <Col xs={12}>
-                              <Button
-                                className="bg-blue700 w-100 text-white"
-                                onClick={handleClick}
-                              >
-                                Selanjutnya
-                              </Button>
-                            </Col>
                           </Row>
                         </Container>
                       </section>
