@@ -24,6 +24,9 @@ class UApproval {
   getApprovalByNikAndType(fields) {
     return this.postJSON("/getApprovalByNikAndType", fields);
   }
+  getApprovalDetail(fields) {
+    return this.postJSON("/getApprovalDetail", fields);
+  }
 }
 
 export default new UApproval();

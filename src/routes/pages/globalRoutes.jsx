@@ -8,6 +8,7 @@ import OTPScreen from "../../pages/global/OTPScreen";
 import ResetPasswordScreen from "../../pages/global/ResetPasswordScreen";
 import NotifikasiScreen from "../../pages/global/NotifikasiScreen";
 import InvoiceScreen from "../../pages/global/InvoiceScreen";
+import TestDataScreen from "../../pages/global/TestDataScreen";
 
 export default {
   splash: SplashScreen, // ini bisa digunakan langsung di RouterConfig.js untuk root "/"
@@ -20,4 +21,5 @@ export default {
   dashboard: DashboardScreen,
   notifikasi: NotifikasiScreen,
   invoice: InvoiceScreen,
+  testdata: TestDataScreen,
 };
