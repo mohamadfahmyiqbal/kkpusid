@@ -42,19 +42,19 @@ export default function PendaftaranAnggota() {
     setLoading(true);
     setError("");
     try {
-      const res = await UApproval.getApprovalByNikAndType({
+      const res = await UApproval.getApprovalDetail({
         nik: user.nik,
         type: "pendaftaran_anggota",
       });
 
-      const hasApproval = !!res?.data?.status;
-
       const token = jwtEncode({
         page: "detailPendaftaranAnggota",
-        data: res.data,
       });
+      // console.log(res.data);
 
-      navigate(`/${token}`);
+      navigate(`/${token}`, {
+        state: { dataPendaftaran: res.data },
+      });
     } catch (err) {
       // Fallback langsung ke form pendaftaran jika request gagal
       const token = jwtEncode({ page: "formPendaftaranAnggota", step: 1 });

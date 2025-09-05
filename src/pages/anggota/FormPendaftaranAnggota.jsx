@@ -97,6 +97,7 @@ export default function FormPendaftaranAnggota() {
         nia: user?.nik || "",
         nama: user?.nama || fields.nama || "",
       };
+      console.log(submitData);
 
       const res = await UAnggota.daftarAnggota(submitData);
       notification(res, "Pendaftaran anggota berhasil!");

@@ -2,16 +2,13 @@ import { useEffect, useState } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import UAnggota from "../../utils/UAnggota";
 
-export default function SelAnggota({ data }) {
-  const [fields, setFields] = useState({});
+export default function SelAnggota({ value, onChange }) {
   const [options, setOptions] = useState([]);
 
   const getOption = async () => {
     try {
       const res = await UAnggota.getAnggotaCategory();
-      // Pastikan data ada dan array
       if (Array.isArray(res.data)) {
-        // Map ke format { value, label }
         const opts = res.data.map((rw) => ({
           value: rw.id,
           label: rw.nama,
@@ -37,24 +34,15 @@ export default function SelAnggota({ data }) {
       </Form.Label>
       <Col>
         <Form.Select
-          value={fields.jenis_anggota || ""}
-          onChange={(e) =>
-            setFields({
-              ...fields,
-              jenis_anggota: e.target.value,
-            })
-          }
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
         >
           <option value="">-- Pilih Jenis Anggota --</option>
-          {options.length > 0 ? (
-            options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))
-          ) : (
-            <></>
-          )}
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </Form.Select>
       </Col>
     </Form.Group>

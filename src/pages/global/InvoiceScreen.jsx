@@ -48,7 +48,10 @@ export default function InvoiceScreen() {
 
     try {
       setLoading(true);
-      const res = await UInvoice.generateInvoice(payload);
+      const res = await UInvoice.generateInvoice({
+        token: payload.token,
+        type: payload.type,
+      });
       console.log(res);
     } catch (error) {
       console.log(error);
