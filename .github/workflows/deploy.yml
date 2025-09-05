@@ -49,8 +49,6 @@ jobs:
 
       - name: Build React (ignore ESLint warnings)
         run: npm run build
-        env:
-          CI: false   # ✅ penting, biar warning tidak dianggap error
 
       - name: Deploy to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
