@@ -25,4 +25,4 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "build/*"
-          target: "/var/www/react-dashboard/" # <- untuk repo dashboard
+          target: "/var/www/kkpus.id/" # <- untuk repo dashboard
