@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main   # ganti sesuai branch utama project
+      - main # ganti kalau branch utamamu berbeda
 
 jobs:
   build-deploy:
@@ -13,13 +13,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build React (ignore ESLint warnings)
-        run: npm run build
-        env:
-          CI: false   # ✅ penting, biar warning tidak dianggap error
+      - name: Install dependencies & build
+        run: |
+          npm install
+          npm run build
 
       - name: Deploy to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
@@ -28,33 +25,4 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "build/*"
-          target: "/var/www/react-dashboard/" # sesuaikan dengan project ini
-name: Deploy to VPS
-
-on:
-  push:
-    branches:
-      - main   # ganti sesuai branch utama project
-
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build React (ignore ESLint warnings)
-        run: npm run build
-
-      - name: Deploy to VPS via SSH
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "build/*"
-          target: "/var/www/kkpus.id/" # sesuaikan dengan project ini
+          target: "/var/www/kkpus.id/" # <- untuk repo dashboard
