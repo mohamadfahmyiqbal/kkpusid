@@ -15,6 +15,7 @@ jobs:
 
       - name: Install dependencies & build
         run: |
+          npm install
           npm run build
 
       - name: Deploy to VPS via SSH
