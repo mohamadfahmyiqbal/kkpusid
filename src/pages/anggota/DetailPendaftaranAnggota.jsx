@@ -18,13 +18,7 @@ import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import UApproval from "../../utils/UApproval";
 import { jwtEncode } from "../../routes/helpers";
-import {
-  FaArrowLeft,
-  FaCheck,
-  FaCheckDouble,
-  FaHourglassHalf,
-  FaTimes,
-} from "react-icons/fa";
+import { FaArrowLeft, FaCheck, FaHourglassHalf, FaTimes } from "react-icons/fa";
 
 // ================== Helper Components ==================
 const FieldRow = ({ label, value }) => (
@@ -54,21 +48,23 @@ const ApprovalCard = ({ approval }) => {
   if (status === "rejected") bgColor = "danger";
 
   return (
-    <Col xs={6} md={4} lg={3} className="text-center">
-      <Card
-        bg={bgColor}
-        text="white"
-        className="rounded-circle d-flex align-items-center justify-content-center mx-auto mt-2"
-        style={{ width: "100px", height: "100px" }}
-      >
-        {icon}
-      </Card>
-      <div className="fw-semibold">{approval?.approval?.nama || "-"}</div>
-      <div className="fw-semibold">
-        {approval.approval.approver.nama || "-"}
-      </div>
-      <div className="small fst-italic text-muted">
-        {approval?.status || "-"}
+    <Col xs={6} md={6} lg={3}>
+      <div className="d-flex flex-column align-items-center justify-content-center h-100">
+        <Card
+          bg={bgColor}
+          text="white"
+          className="rounded-circle d-flex align-items-center justify-content-center mt-2"
+          style={{ width: "100px", height: "100px" }}
+        >
+          {icon}
+        </Card>
+        <div className="fw-semibold text-center">Flow {approval?.flow}</div>
+        <div className="fw-semibold text-center">
+          {approval?.approverAnggota?.nama || "-"}
+        </div>
+        <div className="small fst-italic text-muted text-center">
+          {approval?.status || "-"}
+        </div>
       </div>
     </Col>
   );
@@ -105,7 +101,6 @@ export default function DetailPendaftaranAnggota() {
           type: "pendaftaran_anggota",
           nik: user.nik,
         });
-        // console.log(res.data);
 
         if (mounted) setDataPendaftaran(res?.data ?? null);
       } catch (err) {
@@ -124,13 +119,13 @@ export default function DetailPendaftaranAnggota() {
   const handleInvoiceClick = () => {
     const token = jwtEncode({ page: "invoice" });
     const payload = {
-      token: dataPendaftaran.request.token,
-      nik: dataPendaftaran.request.nik,
-      nama: dataPendaftaran.requester.nama,
+      token: dataPendaftaran.token,
+      nik: dataPendaftaran.nik,
+      nama: dataPendaftaran.anggota.nama,
       type: "pendaftaran_anggota",
       category: "anggota",
-      tipe_anggota: dataPendaftaran.request.tipe_anggota,
-      bank: dataPendaftaran.bank,
+      tipe_anggota: dataPendaftaran.tipe_anggota,
+      bank: dataPendaftaran.anggota.bank?.[0] ?? null,
     };
 
     navigate(`/${token}`, {
@@ -141,16 +136,16 @@ export default function DetailPendaftaranAnggota() {
   // Gunakan memo agar tidak re-render approval list setiap kali
   const approvalList = useMemo(
     () =>
-      dataPendaftaran?.approval?.map((apr, idx) => (
+      dataPendaftaran?.RequestApproval?.map((apr, idx) => (
         <ApprovalCard key={idx} approval={apr} />
       )),
-    [dataPendaftaran?.approval]
+    [dataPendaftaran?.RequestApproval]
   );
 
   // Cek semua approval sudah approved
   const allApproved =
-    dataPendaftaran?.approval?.length > 0 &&
-    dataPendaftaran.approval.every(
+    dataPendaftaran?.RequestApproval?.length > 0 &&
+    dataPendaftaran.RequestApproval.every(
       (apr) => apr?.status?.toLowerCase() === "approved"
     );
 
@@ -209,18 +204,18 @@ export default function DetailPendaftaranAnggota() {
                         </h5>
                         <FieldRow
                           label="Nama"
-                          value={dataPendaftaran?.requester?.nama}
+                          value={dataPendaftaran?.anggota?.nama}
                         />
                         <FieldRow
                           label="NIK"
-                          value={dataPendaftaran?.requester?.nikKtp}
+                          value={dataPendaftaran?.anggota?.nik}
                         />
                         <Row className="mb-2">
                           <Col xs={12}>
                             <strong>Alamat</strong>
                           </Col>
                           <Col xs={12} className="text-start">
-                            {dataPendaftaran?.requester?.alamat ?? "-"}
+                            {dataPendaftaran?.anggota?.detail?.alamat ?? "-"}
                           </Col>
                         </Row>
                       </section>
@@ -233,9 +228,10 @@ export default function DetailPendaftaranAnggota() {
                         <Row>
                           <Col xs={6}>
                             <strong>KTP</strong>
-                            {dataPendaftaran?.requester?.ktp ? (
+                            {console.log(dataPendaftaran.anggota)}
+                            {dataPendaftaran?.anggota?.ktpImg ? (
                               <Image
-                                src={dataPendaftaran?.requester?.ktp}
+                                src={dataPendaftaran.anggota.ktpImg}
                                 alt="Foto KTP"
                                 rounded
                                 fluid
@@ -248,9 +244,9 @@ export default function DetailPendaftaranAnggota() {
                           </Col>
                           <Col xs={6}>
                             <strong>Foto Anggota</strong>
-                            {dataPendaftaran?.requester?.foto ? (
+                            {dataPendaftaran?.anggota?.fotoImg ? (
                               <Image
-                                src={dataPendaftaran?.requester?.foto}
+                                src={dataPendaftaran.anggota.fotoImg}
                                 alt="Foto Anggota"
                                 rounded
                                 fluid
@@ -271,15 +267,15 @@ export default function DetailPendaftaranAnggota() {
                         </h5>
                         <FieldRow
                           label="Tipe Anggota"
-                          value={dataPendaftaran?.akun?.tipe_anggota}
+                          value={dataPendaftaran?.tipe_anggota}
                         />
                         <FieldRow
                           label="No HP"
-                          value={dataPendaftaran?.requester?.no_tlp}
+                          value={dataPendaftaran?.anggota?.no_tlp}
                         />
                         <FieldRow
                           label="Email"
-                          value={dataPendaftaran?.akun?.email}
+                          value={dataPendaftaran?.anggota?.email}
                         />
                       </section>
 
@@ -288,15 +284,19 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">Job Info</h5>
                         <FieldRow
                           label="Pekerjaan"
-                          value={dataPendaftaran?.job?.pekerjaan}
+                          value={dataPendaftaran?.anggota?.job?.[0]?.pekerjaan}
                         />
                         <FieldRow
                           label="Tempat Kerja"
-                          value={dataPendaftaran?.job?.tempat_kerja}
+                          value={
+                            dataPendaftaran?.anggota?.job?.[0]?.tempat_kerja
+                          }
                         />
                         <FieldRow
                           label="Alamat"
-                          value={dataPendaftaran?.job?.alamat_kerja}
+                          value={
+                            dataPendaftaran?.anggota?.job?.[0]?.alamat_kerja
+                          }
                         />
                       </section>
 
@@ -307,15 +307,19 @@ export default function DetailPendaftaranAnggota() {
                         </h5>
                         <FieldRow
                           label="Bank"
-                          value={dataPendaftaran?.bank?.bank}
+                          value={dataPendaftaran?.anggota?.bank?.[0]?.bank}
                         />
                         <FieldRow
                           label="No Rekening"
-                          value={dataPendaftaran?.bank?.no_rekening}
+                          value={
+                            dataPendaftaran?.anggota?.bank?.[0]?.no_rekening
+                          }
                         />
                         <FieldRow
                           label="Nama Nasabah"
-                          value={dataPendaftaran?.bank?.nama_nasabah}
+                          value={
+                            dataPendaftaran?.anggota?.bank?.[0]?.nama_nasabah
+                          }
                         />
                       </section>
 

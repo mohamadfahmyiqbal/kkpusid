@@ -38,7 +38,7 @@ export default function Header({ onSidebarToggle, onUserChange }) {
     } catch (err) {
       toast.error("Gagal logout: " + (err?.message || "Terjadi kesalahan"));
       setTimeout(() => {
-        navigate(`/${token}`);
+        // navigate(`/${token}`);
       }, 3000);
     }
   }, [navigate]);
