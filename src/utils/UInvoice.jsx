@@ -24,6 +24,12 @@ class UInvoice {
   generateInvoice(fields) {
     return this.postJSON("/generateInvoice", fields);
   }
+  getPaymentFees(fields) {
+    return this.postJSON("/getPaymentFees", fields);
+  }
+  payInvoice(fields) {
+    return this.postJSON("/payInvoice", fields);
+  }
 }
 
 export default new UInvoice();

@@ -68,6 +68,10 @@ class UAnggota {
   daftarAnggota(fields) {
     return this.postFormData("/daftarAnggota", fields);
   }
+
+  AnnggotaDetailByNIK(fields) {
+    return this.postFormData("/AnnggotaDetailByNIK", fields);
+  }
 }
 
 export default new UAnggota();

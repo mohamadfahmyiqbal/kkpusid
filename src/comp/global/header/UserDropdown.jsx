@@ -1,17 +1,22 @@
 import { NavDropdown } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
+import { jwtEncode } from "../../../routes/helpers";
+import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown({ user, logout }) {
-  // Hilangkan console.log jika tidak perlu
-  // console.log(user);
+  const navigate = useNavigate();
 
   // Fungsi untuk mendapatkan src gambar base64
   const getFotoSrc = (foto) => {
     if (!foto) return "/assets/icons/default-user.png"; // fallback jika tidak ada foto
-    // Jika sudah ada prefix data:image, langsung pakai
-    if (foto.startsWith("data:image")) return foto;
-    // Jika hanya base64 string, tambahkan prefix
-    return `data:image/jpeg;base64,${foto}`;
+    return foto.startsWith("data:image")
+      ? foto
+      : `data:image/jpeg;base64,${foto}`;
+  };
+
+  const handleClick = (link) => {
+    const token = jwtEncode({ page: link });
+    navigate(`/${token}`);
   };
 
   return (
@@ -27,10 +32,10 @@ export default function UserDropdown({ user, logout }) {
       }
       id="dropdown-user"
       align="end"
-      className="nav-item "
+      className="nav-item"
     >
       <div className="mailbox" style={{ minWidth: 300 }}>
-        <div className="dw-user-box px-3 py-2 ">
+        <div className="dw-user-box px-3 py-2">
           <div className="d-flex align-items-center">
             <img
               src={getFotoSrc(user?.foto)}
@@ -40,22 +45,25 @@ export default function UserDropdown({ user, logout }) {
               className="rounded-circle me-2"
             />
             <div>
-              <h6 className="mb-0">{user?.nama}</h6>
+              <h6 className="mb-0">{user?.nama || "Guest"}</h6>
               <p className="text-muted mb-1" style={{ fontSize: 12 }}>
-                {user?.email}
+                {user?.email || "No email"}
               </p>
-              <a href="/profile" className="btn btn-rounded btn-danger btn-sm">
+              <button
+                className="btn btn-rounded btn-danger btn-sm"
+                onClick={() => handleClick("profile")}
+              >
                 View Profile
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </div>
       <NavDropdown.Divider />
-      <NavDropdown.Item href="#!">
+      <NavDropdown.Item onClick={() => handleClick("profile")}>
         <i className="ti-user me-2"></i> My Profile
       </NavDropdown.Item>
-      <NavDropdown.Item href="#!">
+      <NavDropdown.Item onClick={() => handleClick("balance")}>
         <i className="ti-wallet me-2"></i> My Balance
       </NavDropdown.Item>
       <NavDropdown.Divider />
