@@ -1,3 +1,4 @@
+// src/pages/invoice/InvoiceScreen.jsx
 import React, { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -11,67 +12,198 @@ import {
   Alert,
   Button,
   Spinner,
+  Table,
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
+import moment from "moment";
 
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import Footer from "../../comp/global/Footer";
 import UInvoice from "../../utils/UInvoice";
+import PaymentMethods from "../../comp/global/payment/PaymentMethods";
 
-// Komponen menerima data pendaftaran dari state router
+// Utility format Rupiah
+const formatRupiah = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value || 0);
+
 export default function InvoiceScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [invoiceData, setInvoiceData] = useState(null);
+  const [paying, setPaying] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Ambil data pendaftaran dari location.state
-  // Ambil data dari location.state dengan struktur {title: 'Invoice', data: {...}}
   const { title, payload } = location.state || {};
-  // const payload = data;
   const cardTitle = title ?? "Invoice";
 
-  // Debug: log data yang diterima
+  const handleUserChange = useCallback((newUser) => setUser(newUser), []);
+
+  // Generate invoice otomatis
   useEffect(() => {
-    console.log("InvoiceScreen - location.state:", location.state);
-    console.log("InvoiceScreen - payload:", payload);
-  }, [location.state, payload]);
-
-  const handleUserChange = useCallback((newUser) => {
-    setUser(newUser);
-  }, []);
-
-  // Fungsi generate invoice (belum diimplementasi)
-  const generateInvoice = async () => {
     if (!payload) return;
 
+    const generateInvoice = async () => {
+      try {
+        setLoading(true);
+        const res = await UInvoice.generateInvoice({
+          token: payload.token,
+          type: payload.type,
+        });
+
+        if (res?.data?.data) {
+          setInvoiceData({
+            ...res.data.data,
+            base_amount: res.data.data.total_amount, // simpan total asli
+            selected_method: null,
+            paymentDetails: res.data.data.paymentDetails || [],
+          });
+        }
+      } catch (error) {
+        console.error("Generate Invoice Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    generateInvoice();
+  }, [payload]);
+
+  // Bayar invoice
+  const handlePayment = async (method) => {
+    if (!invoiceData) return;
+
     try {
-      setLoading(true);
-      const res = await UInvoice.generateInvoice({
-        token: payload.token,
-        type: payload.type,
-      });
-      console.log(res);
+      setPaying(true);
+
+      // Hitung fee
+      let feeAmount = 0;
+      if (method.fee_value) {
+        if (method.fee_type === "percentage") {
+          feeAmount =
+            (invoiceData.base_amount * parseFloat(method.fee_value)) / 100;
+        } else {
+          feeAmount = parseFloat(method.fee_value);
+        }
+      }
+
+      // Update invoiceData untuk preview
+      const updatedInvoice = {
+        ...invoiceData,
+        selected_method: method.payment_method,
+        paymentDetails: [
+          ...(invoiceData.originalDetails || invoiceData.paymentDetails || []),
+          { name: method.description, ammount: feeAmount },
+        ],
+        invoices_detail: { name: method.description, ammount: feeAmount },
+        total_amount: invoiceData.base_amount + feeAmount,
+      };
+
+      // Simpan original details sekali saja
+      if (!invoiceData.originalDetails) {
+        updatedInvoice.originalDetails = invoiceData.paymentDetails || [];
+      }
+
+      setInvoiceData(updatedInvoice);
+
+      // Panggil API backend untuk create transaksi
+      const res = await UInvoice.payInvoice(updatedInvoice);
+
+      if (res?.data?.data?.snap_token) {
+        const snapToken = res.data.data.snap_token;
+
+        // 🔥 Trigger Midtrans Snap
+        window.snap.pay(snapToken, {
+          onSuccess: function (result) {
+            // console.log("✅ Payment Success:", result);
+            setInvoiceData((prev) => ({
+              ...prev,
+              payment_status: "Berhasil",
+            }));
+          },
+          onPending: function (result) {
+            // console.log("⏳ Payment Pending:", result);
+            setInvoiceData((prev) => ({
+              ...prev,
+              payment_status: "Menunggu Pembayaran",
+            }));
+          },
+          onError: function (result) {
+            // console.error("❌ Payment Error:", result);
+            alert("Terjadi kesalahan saat pembayaran.");
+          },
+          onClose: function () {
+            // console.log("❌ Payment popup ditutup tanpa transaksi");
+          },
+        });
+      } else {
+        alert("Gagal mendapatkan Snap Token");
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Payment Error:", error);
+      alert("Gagal melakukan pembayaran. Silakan coba lagi.");
     } finally {
-      setLoading(false);
+      setPaying(false);
     }
   };
 
-  useEffect(() => {
-    if (payload) {
-      generateInvoice();
-    }
-  }, [payload]);
+  const renderInvoiceDetails = () => {
+    if (!invoiceData) return null;
+    const { paymentDetails = [], total_amount } = invoiceData;
+
+    return (
+      <Table bordered hover responsive className="mb-4">
+        <thead className="table-light">
+          <tr>
+            <th>Description</th>
+            <th className="text-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paymentDetails.map((item, idx) => (
+            <tr key={idx}>
+              <td>{item.name}</td>
+              <td className="text-end">{formatRupiah(item.ammount)}</td>
+            </tr>
+          ))}
+          <tr className="table-active fw-bold">
+            <td>Total</td>
+            <td className="text-end">{formatRupiah(total_amount)}</td>
+          </tr>
+        </tbody>
+      </Table>
+    );
+  };
+
+  const renderPaymentStatus = () => {
+    const status = invoiceData?.payment_status ?? "Menunggu Pembayaran";
+    return (
+      <Row className="mt-3">
+        <Col xs={12} className="text-center">
+          <Button
+            variant={status === "Menunggu Pembayaran" ? "success" : "danger"}
+            size="lg"
+            className="px-5"
+          >
+            {status}
+          </Button>
+        </Col>
+      </Row>
+    );
+  };
+
   return (
     <div id="main-wrapper">
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
       <div className="page-wrapper">
         <Container fluid>
-          <Row className="border-bottom mb-3">
+          <Row className="border-bottom mb-3 align-items-center">
             <Col xs={12} className="d-flex align-items-center">
               <Button
                 variant="link"
@@ -85,99 +217,129 @@ export default function InvoiceScreen() {
           </Row>
 
           {!payload && (
-            <Row>
-              <Col>
-                <Alert variant="warning">
-                  Tidak ada data pendaftaran untuk ditampilkan.
-                </Alert>
-              </Col>
-            </Row>
+            <Alert variant="warning">Tidak ada data pendaftaran.</Alert>
           )}
 
           {payload && (
             <Row className="mt-4">
               <Col md={12}>
-                <Card>
-                  <CardHeader className="bg-blue700 text-white">
-                    <CardTitle>{cardTitle}</CardTitle>
+                <Card className="shadow-sm border-0">
+                  <CardHeader className="bg-primary text-white rounded-top">
+                    <CardTitle className="mb-0">{cardTitle}</CardTitle>
                   </CardHeader>
                   <CardBody>
                     {loading ? (
-                      <div className="text-center">
-                        <Spinner animation="border" role="status">
-                          <span className="visually-hidden">Loading...</span>
-                        </Spinner>
+                      <div className="text-center py-5">
+                        <Spinner animation="border" role="status" />
                         <p className="mt-2">Sedang memproses invoice...</p>
                       </div>
-                    ) : (
+                    ) : invoiceData ? (
                       <>
-                        <Alert variant="success" className="mb-3">
-                          <strong>✅ Data Berhasil Diterima!</strong> Data
-                          pendaftaran telah berhasil dikirim dari halaman
-                          sebelumnya.
-                        </Alert>
+                        {/* Payment Methods pakai react-select */}
+                        <PaymentMethods
+                          paymentStatus={invoiceData?.payment_status}
+                          selectedMethod={invoiceData?.selected_method}
+                          onPay={handlePayment}
+                          token={payload?.token}
+                        />
 
-                        <div className="mb-4">
-                          <h6 className="fw-bold text-primary">
-                            Informasi Umum:
-                          </h6>
-                          <Row>
-                            <Col md={6}>
-                              <p>
-                                <strong>Nama:</strong>{" "}
-                                {payload?.requester?.nama || "-"}
-                              </p>
-                              <p>
-                                <strong>NIK:</strong>{" "}
-                                {payload?.requester?.nikKtp || "-"}
-                              </p>
-                            </Col>
-                            <Col md={6}>
-                              <p>
-                                <strong>Email:</strong>{" "}
-                                {payload?.akun?.email || "-"}
-                              </p>
-                              <p>
-                                <strong>Tipe Anggota:</strong>{" "}
-                                {payload?.akun?.tipe_anggota || "-"}
-                              </p>
-                            </Col>
-                          </Row>
-                        </div>
+                        {/* Header Invoice */}
+                        <Row className="mb-4 mt-4">
+                          <Col xs={6}>
+                            <h3 className="fw-bold">INVOICE</h3>
+                          </Col>
+                          <Col xs={6} className="text-end">
+                            <h5 className="fw-bold">
+                              #{invoiceData.invoice_id}
+                            </h5>
+                          </Col>
+                        </Row>
 
-                        <div className="mb-3">
-                          <h6 className="fw-bold text-primary">
-                            Detail Data Lengkap (JSON):
-                          </h6>
-                          <div
-                            className="bg-light p-3 rounded border"
-                            style={{
-                              fontSize: "12px",
-                              maxHeight: "400px",
-                              overflow: "auto",
-                            }}
-                          >
-                            <pre className="mb-0">
-                              {JSON.stringify(payload, null, 2)}
-                            </pre>
-                          </div>
-                        </div>
+                        {/* Info penerima & tanggal */}
+                        <Row className="mb-4">
+                          <Col xs={6}>
+                            <p className="mb-1 fw-bold">To:</p>
+                            <p>{invoiceData.recipient_name}</p>
+                          </Col>
+                          <Col xs={6} className="text-end">
+                            <p className="mb-1 fw-bold">Invoice Date</p>
+                            <p className="mb-0">
+                              Start:{" "}
+                              {moment(invoiceData.invoice_date).format(
+                                "DD-MM-YYYY"
+                              )}
+                            </p>
+                            <p>
+                              End:{" "}
+                              {moment(invoiceData.expired_date).format(
+                                "DD-MM-YYYY"
+                              )}
+                            </p>
+                          </Col>
+                        </Row>
 
-                        <div className="text-center mt-4">
-                          <Button
-                            variant="primary"
-                            size="lg"
-                            onClick={() => {
-                              // Di sini bisa ditambahkan logika untuk generate invoice yang sebenarnya
-                              alert(
-                                "Fitur generate invoice akan diimplementasikan selanjutnya"
-                              );
-                            }}
-                          >
-                            Generate Invoice
-                          </Button>
-                        </div>
+                        {/* Rincian invoice */}
+                        {renderInvoiceDetails()}
+
+                        {/* Tombol Proses Pembayaran */}
+                        {invoiceData?.payment_status ===
+                          "Menunggu Pembayaran" &&
+                          invoiceData?.selected_method && (
+                            <Row className="mt-3">
+                              <Col xs={12} className="text-center">
+                                <Button
+                                  variant="primary"
+                                  size="lg"
+                                  className="px-5"
+                                  onClick={() =>
+                                    handlePayment(
+                                      invoiceData.available_payment_methods.find(
+                                        (m) =>
+                                          m.payment_method ===
+                                          invoiceData.selected_method
+                                      )
+                                    )
+                                  }
+                                  disabled={paying}
+                                >
+                                  {paying ? (
+                                    <>
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                      />{" "}
+                                      Memproses...
+                                    </>
+                                  ) : (
+                                    "Proses Pembayaran"
+                                  )}
+                                </Button>
+                              </Col>
+                            </Row>
+                          )}
+
+                        {/* Info pembayaran */}
+                        <Row className="mt-4">
+                          <Col xs={6}>
+                            <p className="mb-1 fw-bold">Bank Name</p>
+                            <p>{invoiceData.bank_name || "-"}</p>
+                          </Col>
+                          <Col xs={6} className="text-end">
+                            <p className="mb-1 fw-bold">Virtual Account</p>
+                            <p>{invoiceData.virtual_account || "-"}</p>
+                          </Col>
+                        </Row>
+
+                        {/* Status pembayaran */}
+                        {renderPaymentStatus()}
                       </>
+                    ) : (
+                      <Alert variant="danger">
+                        ❌ Gagal membuat invoice. Silakan coba lagi.
+                      </Alert>
                     )}
                   </CardBody>
                 </Card>

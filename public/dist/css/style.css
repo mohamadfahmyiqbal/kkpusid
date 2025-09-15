@@ -602,6 +602,10 @@ Background Colors
       #80D0C7 100%), !important;
 }
 
+.bg-transparent {
+  background-color: transparent !important;
+}
+
 /*******************
 Rounds
 *******************/

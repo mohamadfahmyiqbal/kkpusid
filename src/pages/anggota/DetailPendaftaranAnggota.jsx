@@ -329,10 +329,9 @@ export default function DetailPendaftaranAnggota() {
                           Approval Info
                         </h5>
                         <Container>
-                          <Row className="text-center">
+                          <Row className="text-center justify-content-center">
                             {approvalList}
 
-                            {/* tombol hanya jika semua approved */}
                             {allApproved && (
                               <Col xs={12} className="mt-3">
                                 <Button

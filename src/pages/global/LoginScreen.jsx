@@ -16,7 +16,6 @@ import {
   InputGroup,
   Button,
   Spinner,
-  ProgressBar,
 } from "react-bootstrap";
 import { FaEye, FaEyeSlash, FaSignInAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -30,7 +29,7 @@ import Notification from "../../comp/global/Notification"; // pastikan import No
  * - background gradient pada <main>
  * - sticky footer
  * - notifikasi dari Notification (bukan toast)
- * - simple validation + password strength
+ * - simple validation
  */
 
 /* initial form (memo supaya tidak dibuat ulang) */
@@ -52,18 +51,6 @@ const validate = (values) => {
   if (values.password && values.password.length < 6)
     errors.password = "Password minimal 6 karakter";
   return errors;
-};
-
-/* password strength sederhana */
-const passwordStrength = (pwd = "") => {
-  if (!pwd) return { score: 0, label: "Kosong" };
-  let score = 0;
-  if (pwd.length >= 6) score += 1;
-  if (/[A-Z]/.test(pwd)) score += 1;
-  if (/[0-9]/.test(pwd)) score += 1;
-  if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
-  const map = ["Lemah", "Cukup", "Baik", "Kuat", "Sangat Kuat"];
-  return { score, label: map[score] || "Lemah" };
 };
 
 export default function LoginScreen() {
@@ -151,7 +138,6 @@ export default function LoginScreen() {
     [formData, loading, navigate]
   );
 
-  const pwdStr = passwordStrength(formData.password);
   const isFormValid = useMemo(
     () => Object.keys(validate(formData)).length === 0,
     [formData]
@@ -274,22 +260,11 @@ export default function LoginScreen() {
                         {errors.password}
                       </Form.Control.Feedback>
                       <Form.Text className="text-white-50">
-                        Minimal 6 karakter. Jangan bagikan password Anda.
+                        Jangan bagikan password Anda.
                       </Form.Text>
                     </Form.Group>
 
-                    {/* password strength */}
-                    <div className="mb-3" aria-hidden="false">
-                      <ProgressBar
-                        now={(pwdStr.score / 4) * 100}
-                        animated={pwdStr.score > 0}
-                        style={{ height: 6 }}
-                      />
-                      <small className="d-block mt-1 text-white-50">
-                        Kekuatan:{" "}
-                        <strong className="text-white">{pwdStr.label}</strong>
-                      </small>
-                    </div>
+                    {/* password strength dihilangkan */}
 
                     <Row className="mb-2">
                       <Col xs={12} className="mb-1">
@@ -307,7 +282,7 @@ export default function LoginScreen() {
                         </span>
                         <Link
                           to="/register"
-                          className="text-info text-decoration-none fw-bold"
+                          className="text-white text-decoration-none fw-bold"
                         >
                           Klik disini untuk buat akun
                         </Link>
