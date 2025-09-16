@@ -55,6 +55,7 @@ export default function InvoiceScreen() {
           token: payload.token,
           type: payload.type,
         });
+        console.log(res.data);
 
         if (res?.data?.data) {
           setInvoiceData({
