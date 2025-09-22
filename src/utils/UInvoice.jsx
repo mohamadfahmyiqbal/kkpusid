@@ -30,6 +30,9 @@ class UInvoice {
   payInvoice(fields) {
     return this.postJSON("/payInvoice", fields);
   }
+  cekInvoiceByToken(fields) {
+    return this.postJSON("/cekInvoiceByToken", fields);
+  }
 }
 
 export default new UInvoice();
