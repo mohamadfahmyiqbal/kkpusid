@@ -19,7 +19,10 @@ export default function InvoiceDetail({ data }) {
         </thead>
         <tbody>
           {data.map((row, idx) => (
-            <tr key={idx}>
+            <tr
+              key={idx}
+              className={row.type === "fee" ? "text-muted fst-italic" : ""}
+            >
               <td>{row.name}</td>
               <td className="text-end">{formatRupiah(row.ammount)}</td>
             </tr>

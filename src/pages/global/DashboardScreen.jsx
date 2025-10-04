@@ -10,6 +10,8 @@ import CardArticle from "../../comp/article/CardArticle";
 import CardVisi from "../../comp/global/CardVisi";
 import CardContact from "../../comp/global/CardContact";
 import Footer from "../../comp/global/Footer";
+import CardMenu from "../../comp/dashboard/CardMenu";
+import CardTagihan from "../../comp/dashboard/CardTagihan";
 
 export default function DashboardScreen() {
   const [user, setUser] = useState(null);
@@ -66,11 +68,20 @@ export default function DashboardScreen() {
               <h3 className="text-muted">{user?.nama ?? "Tamu"}</h3>
             </Col>
           </Row>
-
           <Row className="mt-4">
             <Col xs={12} className="mb-3">
               {renderMainCard()}
             </Col>
+            {user?.role !== 1 && (
+              <>
+                <Col xs={12} className="mb-3">
+                  <CardMenu />
+                </Col>
+                <Col xs={12} className="mb-3">
+                  <CardTagihan />
+                </Col>
+              </>
+            )}
 
             {isRoleOne && (
               <Col xs={12} className="mb-3">

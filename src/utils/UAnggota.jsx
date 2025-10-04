@@ -72,6 +72,10 @@ class UAnggota {
   AnnggotaDetailByNIK(fields) {
     return this.postFormData("/AnnggotaDetailByNIK", fields);
   }
+
+  GetAnggotaSaldo(fields) {
+    return this.postFormData("/GetAnggotaSaldo", fields);
+  }
 }
 
 export default new UAnggota();

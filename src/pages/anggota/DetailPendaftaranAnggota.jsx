@@ -72,7 +72,7 @@ export default function DetailPendaftaranAnggota() {
     navigate(`/${token}`, {
       state: {
         title: "Invoice Pendaftaran Anggota",
-        link: "detailPendaftaranAnggota",
+        back: "detailPendaftaranAnggota",
         dataPendaftaran,
       },
     });
@@ -244,7 +244,7 @@ export default function DetailPendaftaranAnggota() {
                         </h5>
                         <Container>
                           <Row className="text-center justify-content-center">
-                            {dataPendaftaran?.RequestApproval.map((app) => {
+                            {dataPendaftaran?.RequestApproval?.map((app) => {
                               const status = app?.status?.toLowerCase();
                               let bgColor = "secondary";
                               let icon;
