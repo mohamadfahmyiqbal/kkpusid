@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -21,19 +21,22 @@ import UInvoice from "../../utils/UInvoice";
 import PaymentMethods from "../../comp/global/payment/PaymentMethods";
 import InvoiceHeader from "./InvoiceHeader";
 import InvoiceDetail from "./InvoiceDetail";
-import PaymentModal from "./InvoiceSnap";
+import {
+  mapMidtransStatusToLabel,
+  getStatusVariant,
+} from "../../utils/UStatus";
 
 export default function InvoiceScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [snapToken, setSnapToken] = useState(null);
 
+  const invoiceRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { title, dataPendaftaran } = location.state || {};
+  const { title, dataPendaftaran, back } = location.state || {};
+  console.log(dataPendaftaran);
 
   const handleUserChange = useCallback((newUser) => setUser(newUser), []);
 
@@ -59,20 +62,17 @@ export default function InvoiceScreen() {
     getInvoice();
   }, [getInvoice]);
 
-  // Terapkan fee dan simpan selectedMethod
+  // Terapkan fee saat metode dipilih
   const applyFee = useCallback(
     (method) => {
       if (!invoiceData) return;
-
       const filteredDetails = (invoiceData.detailsInvoice || []).filter(
         (item) => item.type !== "fee"
       );
-
       const totalAmount = filteredDetails.reduce(
         (sum, item) => sum + (Number(item.ammount) || 0),
         0
       );
-
       const feeAmount =
         method.fee_type === "percentage"
           ? Math.round((totalAmount * method.fee_value) / 100)
@@ -94,11 +94,21 @@ export default function InvoiceScreen() {
     [invoiceData]
   );
 
+  // Update status pembayaran
+  const handleResult = (status, result) => {
+    const mappedStatus = mapMidtransStatusToLabel(status);
+    setInvoiceData((prev) =>
+      prev ? { ...prev, payment_status: mappedStatus } : prev
+    );
+  };
+
   // Proses pembayaran
   const handlePayment = useCallback(async () => {
     if (!invoiceData) return;
     setLoading(true);
     setError(null);
+
+    invoiceRef.current = invoiceData;
 
     try {
       const res = await UInvoice.payInvoice({
@@ -111,31 +121,42 @@ export default function InvoiceScreen() {
       const token = res?.data?.data?.token;
       if (!token) throw new Error("Gagal mendapatkan Snap token");
 
-      setSnapToken(token);
-      setShowModal(true);
+      if (!window.snap) {
+        console.error("Midtrans Snap belum tersedia");
+        setError("Midtrans Snap belum siap, coba refresh halaman");
+        setLoading(false);
+        return;
+      }
+
+      window.snap.pay(token, {
+        onSuccess: (result) => handleResult("settlement", result),
+        onPending: (result) => handleResult("pending", result),
+        onError: (result) => handleResult("deny", result),
+        onClose: () => handleResult("cancel"),
+      });
+
+      setLoading(false);
     } catch (err) {
       setError(err?.message || "Terjadi kesalahan saat memproses pembayaran");
-    } finally {
       setLoading(false);
     }
   }, [invoiceData]);
 
+  // Handler click action
   const handleClick = useCallback(
     (action, payload) => {
       switch (action) {
-        case "back": {
-          const token = jwtEncode({ page: "detailPendaftaranAnggota" });
-          navigate(`/${token}`, { state: { dataPendaftaran } });
+        case "back":
+          navigate(`/${jwtEncode({ page: back })}`, {
+            state: { dataPendaftaran },
+          });
           break;
-        }
-        case "method": {
+        case "method":
           if (payload) applyFee(payload);
           break;
-        }
-        case "pay": {
+        case "pay":
           handlePayment();
           break;
-        }
         default:
           break;
       }
@@ -178,37 +199,32 @@ export default function InvoiceScreen() {
                     <div className="text-center text-danger py-5">{error}</div>
                   ) : invoiceData ? (
                     <>
-                      <PaymentMethods
-                        paymentStatus={invoiceData.payment_status}
-                        selectedMethod={invoiceData.selectedMethod}
-                        onPay={(method) => handleClick("method", method)}
-                        token={invoiceData.invoice_id}
-                      />
+                      {invoiceData.payment_status !== "Pembayaran Berhasil" && (
+                        <PaymentMethods
+                          paymentStatus={invoiceData.payment_status}
+                          selectedMethod={invoiceData.selectedMethod}
+                          onPay={(method) => handleClick("method", method)}
+                          token={invoiceData.invoice_id}
+                        />
+                      )}
                       <div className="border-top border-bottom mt-2">
                         <InvoiceHeader invoiceData={invoiceData} />
                         <InvoiceDetail data={invoiceData.detailsInvoice} />
-                        {console.log(invoiceData)}
-                        {/* Status Pembayaran */}
-                        <div className="mt-3">
-                          <strong>Status Pembayaran: </strong>
-                          {invoiceData.payment_status === "PAID" && (
-                            <span className="text-success">Lunas</span>
-                          )}
-                          {invoiceData.payment_status ===
-                            "Menunggu Pembayaran" && (
-                            <span className="text-warning">
-                              Menunggu Pembayaran
-                            </span>
-                          )}
-                          {invoiceData.payment_status === "FAILED" && (
-                            <span className="text-danger">Gagal</span>
-                          )}
-                          {!invoiceData.payment_status && (
-                            <span className="text-secondary">
-                              Belum dibayar
-                            </span>
-                          )}
-                        </div>
+                        <Row className="fw-bold mt-2 mb-2">
+                          <Col xs={6}>Status Pembayaran</Col>
+                          <Col xs={6} className="text-end">
+                            <Button
+                              variant={getStatusVariant(
+                                invoiceData.payment_status
+                              )}
+                              size="sm"
+                              disabled
+                              className="w-100"
+                            >
+                              {invoiceData.payment_status || "Belum dibayar"}
+                            </Button>
+                          </Col>
+                        </Row>
                       </div>
                     </>
                   ) : (
@@ -216,43 +232,39 @@ export default function InvoiceScreen() {
                   )}
                 </CardBody>
                 <CardFooter>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="px-5 w-100"
-                    onClick={() => handleClick("pay")}
-                    disabled={
-                      loading ||
-                      !invoiceData ||
-                      invoiceData.payment_status === "PAID"
-                    }
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                        />{" "}
-                        Memproses...
-                      </>
-                    ) : (
-                      "Proses Pembayaran"
-                    )}
-                  </Button>
+                  {invoiceData?.payment_status !== "Pembayaran Berhasil" ? (
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="px-5 w-100"
+                      onClick={() => handleClick("pay")}
+                      disabled={
+                        loading ||
+                        !invoiceData ||
+                        invoiceData?.payment_status === "Pembayaran Berhasil"
+                      }
+                    >
+                      {loading ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />{" "}
+                          Memproses...
+                        </>
+                      ) : (
+                        "Proses Pembayaran"
+                      )}
+                    </Button>
+                  ) : null}
                 </CardFooter>
               </Card>
             </Col>
           </Row>
         </Container>
-
-        <PaymentModal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-          token={snapToken} // 🔹 pakai token, bukan redirect_url
-        />
       </div>
     </div>
   );
