@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import UApproval from "../../utils/UApproval";
+import { jwtEncode } from "../../routes/helpers";
+import notification from "../../comp/global/Notification";
+import Header from "../../comp/global/header/Header";
+import Sidebar from "../../comp/global/Sidebar";
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
@@ -8,56 +15,55 @@ import {
   Container,
   Row,
   Spinner,
-  Button,
   Alert,
+  Form,
   Image,
 } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaCheck, FaHourglassHalf, FaTimes } from "react-icons/fa";
-
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
-import notification from "../../comp/global/Notification";
-import { jwtEncode } from "../../routes/helpers";
-
-const FieldRow = ({ label, value, multiline = false }) => (
-  <Row className="mb-2">
-    <Col xs={multiline ? 12 : 4}>
-      <strong>{label}</strong>
-    </Col>
-    <Col
-      xs={multiline ? 12 : 8}
-      className={`${multiline ? "text-start" : "text-end"} text-break`}
-    >
-      {value ?? "-"}
-    </Col>
-  </Row>
-);
 
 export default function DetailPendaftaranAnggota() {
   const [user, setUser] = useState(null);
-  const handleUserChange = useCallback((newUser) => setUser(newUser), []);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-
   const [dataPendaftaran, setDataPendaftaran] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleUserChange = useCallback((newUser) => {
+    setUser(newUser);
+  }, []);
+
+  const getPendaftaran = useCallback(async () => {
+    // Wait until user is fully set
+    if (!user) return;
+
     setLoading(true);
     try {
-      if (location?.state?.dataPendaftaran) {
-        setDataPendaftaran(location.state.dataPendaftaran);
-      } else {
-        notification({ status: 404, msg: "Data pendaftaran tidak ditemukan." });
-      }
-    } catch (error) {
-      notification({ status: 400, msg: error.message });
+      const res = await UApproval.getApprovalDetail({
+        nik: user.nik,
+        type: "pendaftaran_anggota",
+      });
+
+      setDataPendaftaran(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.log(err);
+
+      // Fallback langsung ke form pendaftaran jika request gagal
+      navigate(`/${jwtEncode({ page: "formPendaftaranAnggota" })}`, {
+        state: {
+          back: "pendaftaranAnggota",
+          jenis: "pendaftaranAnggota",
+        },
+      });
     } finally {
-      setTimeout(() => setLoading(false), 600); // kasih efek delay loading biar smooth
+      setLoading(false);
     }
-  }, [location?.state]);
+  }, [user, navigate]);
+
+  useEffect(() => {
+    getPendaftaran();
+  }, [getPendaftaran]);
 
   // Cek semua approval sudah approved
   const allApproved =
@@ -73,42 +79,36 @@ export default function DetailPendaftaranAnggota() {
       state: {
         title: "Invoice Pendaftaran Anggota",
         back: "detailPendaftaranAnggota",
-        dataPendaftaran,
+        data: dataPendaftaran?.token,
       },
     });
   };
 
   return (
     <div id="main-wrapper">
-      {/* Header & Sidebar */}
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
-
-      {/* Page Content */}
       <div className="page-wrapper">
         <Container fluid>
-          {/* Page Header */}
           <Row className="border-bottom mb-3">
             <Col xs={12} className="d-flex align-items-center">
               <Button
-                variant="none"
-                className="p-0 me-2 text-decoration-none d-flex align-items-center"
+                variant="link"
+                className="p-0 me-2"
                 onClick={() => navigate(-1)}
+                style={{ textDecoration: "none" }}
               >
-                <FaArrowLeft size={15} className="me-1" />
+                <FaArrowLeft size={15} color="black" />
               </Button>
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
 
-          {/* Detail Card */}
-          <Row className="mt-4">
+          <Row>
             <Col md={12}>
-              <Card className="border shadow-sm">
+              <Card className="border shadow">
                 <CardHeader className="bg-topbar text-white">
-                  <CardTitle className="mb-0">
-                    Detail Pendaftaran Anggota
-                  </CardTitle>
+                  <CardTitle>Detail Pendaftaran</CardTitle>
                 </CardHeader>
                 <CardBody>
                   {loading ? (
@@ -122,26 +122,59 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Personal Info
                         </h5>
-                        <FieldRow
-                          label="NIK"
-                          value={dataPendaftaran?.anggota?.nik}
-                        />
-                        <FieldRow
-                          label="Nama"
-                          value={dataPendaftaran?.anggota?.nama}
-                        />
-                        <FieldRow
-                          label="Alamat"
-                          value={dataPendaftaran?.anggota?.detail?.alamat}
-                          multiline
-                        />
+                        <Form.Group as={Row} controlId="formPlaintextNIK">
+                          <Form.Label column xs="2">
+                            NIK
+                          </Form.Label>
+                          <Col xs="10" className="d-flex justify-content-end">
+                            <Form.Control
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.detail?.nik || "-"
+                              }
+                              className="text-end"
+                            />
+                          </Col>
+                        </Form.Group>
+
+                        <Form.Group as={Row} controlId="formPlaintextNama">
+                          <Form.Label column xs="2">
+                            Nama
+                          </Form.Label>
+                          <Col xs="10" className="d-flex justify-content-end">
+                            <Form.Control
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.nama || "-"
+                              }
+                              className="text-end"
+                            />
+                          </Col>
+                        </Form.Group>
+
+                        <Form.Group as={Row} controlId="formPlaintextAlamat">
+                          <Form.Label column xs="2">
+                            Alamat
+                          </Form.Label>
+                          <Col xs="10" className="d-flex justify-content-end">
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.detail?.alamat || "-"
+                              }
+                              className="text-end"
+                            />
+                          </Col>
+                        </Form.Group>
                       </section>
 
                       {/* Foto Info */}
                       <section className="border-bottom mb-2">
-                        <h5 className="fw-bold border-bottom pb-2">
-                          Foto Info
-                        </h5>
+                        <h5 className="fw-bold pb-2">Foto Info</h5>
                         <Row>
                           <Col xs={6}>
                             <strong>KTP</strong>
@@ -179,39 +212,134 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Account Info
                         </h5>
-                        <FieldRow
-                          label="Tipe Anggota"
-                          value={dataPendaftaran?.tipe_anggota}
-                        />
-                        <FieldRow
-                          label="No HP"
-                          value={dataPendaftaran?.anggota?.no_tlp}
-                        />
-                        <FieldRow
-                          label="Email"
-                          value={dataPendaftaran?.anggota?.email}
-                        />
+                        <Form.Group as={Row} controlId="formPlaintextAlamat">
+                          <Form.Label column xs="4" className="py-0">
+                            Tipe Anggota
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.categoryAnggota?.nama || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group as={Row} controlId="formPlaintextNoHP">
+                          <Form.Label column xs="4" className="py-0">
+                            No HP
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.no_tlp || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group as={Row} controlId="formPlaintextEmail">
+                          <Form.Label column xs="4" className="py-0">
+                            Email
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.email || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
                       </section>
 
                       {/* Job Info */}
                       <section className="border-bottom mb-2">
                         <h5 className="fw-bold border-bottom pb-2">Job Info</h5>
-                        <FieldRow
-                          label="Pekerjaan"
-                          value={dataPendaftaran?.anggota?.job?.[0]?.pekerjaan}
-                        />
-                        <FieldRow
-                          label="Tempat Kerja"
-                          value={
-                            dataPendaftaran?.anggota?.job?.[0]?.tempat_kerja
-                          }
-                        />
-                        <FieldRow
-                          label="Alamat"
-                          value={
-                            dataPendaftaran?.anggota?.job?.[0]?.alamat_kerja
-                          }
-                        />
+                        <Form.Group as={Row} controlId="formPlaintextPekerjaan">
+                          <Form.Label column xs="4" className="py-0">
+                            Pekerjaan
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.job?.[0]?.pekerjaan ||
+                                "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group
+                          as={Row}
+                          controlId="formPlaintextTempatKerja"
+                        >
+                          <Form.Label column xs="4" className="py-0">
+                            Tempat Kerja
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.job?.[0]
+                                  ?.tempat_kerja || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group
+                          as={Row}
+                          controlId="formPlaintextAlamatKerja"
+                        >
+                          <Form.Label column xs="4" className="py-0">
+                            Alamat
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.job?.[0]
+                                  ?.alamat_kerja || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
                       </section>
 
                       {/* Bank Info */}
@@ -219,22 +347,71 @@ export default function DetailPendaftaranAnggota() {
                         <h5 className="fw-bold border-bottom pb-2">
                           Bank Info
                         </h5>
-                        <FieldRow
-                          label="Bank"
-                          value={dataPendaftaran?.anggota?.bank?.[0]?.bank}
-                        />
-                        <FieldRow
-                          label="No Rekening"
-                          value={
-                            dataPendaftaran?.anggota?.bank?.[0]?.no_rekening
-                          }
-                        />
-                        <FieldRow
-                          label="Nama Nasabah"
-                          value={
-                            dataPendaftaran?.anggota?.bank?.[0]?.nama_nasabah
-                          }
-                        />
+                        <Form.Group as={Row} controlId="formPlaintextBank">
+                          <Form.Label column xs="4" className="py-0">
+                            Bank
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.bank?.[0]?.bank || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group
+                          as={Row}
+                          controlId="formPlaintextNoRekening"
+                        >
+                          <Form.Label column xs="4" className="py-0">
+                            No Rekening
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.bank?.[0]
+                                  ?.no_rekening || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
+                        <Form.Group
+                          as={Row}
+                          controlId="formPlaintextNamaNasabah"
+                        >
+                          <Form.Label column xs="4" className="py-0">
+                            Nama Nasabah
+                          </Form.Label>
+                          <Col
+                            xs="8"
+                            className="d-flex justify-content-end py-0"
+                          >
+                            <Form.Control
+                              as="textarea"
+                              plaintext
+                              readOnly
+                              defaultValue={
+                                dataPendaftaran?.anggota?.bank?.[0]
+                                  ?.nama_nasabah || "-"
+                              }
+                              className="text-end py-0"
+                            />
+                          </Col>
+                        </Form.Group>
                       </section>
 
                       {/* Approval Info */}

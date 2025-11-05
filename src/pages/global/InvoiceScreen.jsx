@@ -35,66 +35,129 @@ export default function InvoiceScreen() {
   const invoiceRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { title, dataPendaftaran, back } = location.state || {};
-  console.log(dataPendaftaran);
+  const {
+    title,
+    data: token,
+    selected,
+    back,
+    jenis,
+    type,
+  } = location.state || {};
 
   const handleUserChange = useCallback((newUser) => setUser(newUser), []);
 
-  // Ambil invoice
+  // Ambil atau buat invoice dari data pendaftaran / selected transaksi
   const getInvoice = useCallback(async () => {
+    if (!user) return;
+
     setLoading(true);
     setError(null);
+
     try {
-      const res = await UInvoice.cekInvoiceByToken({
-        token: dataPendaftaran?.token,
-      });
-      const data = res?.data?.data || null;
-      if (data) data.selectedMethod = data.selectedMethod || null;
-      setInvoiceData(data);
+      let invData = null;
+
+      if (token) {
+        // --- Case: Cek invoice existing berdasarkan token ---
+        const res = await UInvoice.cekInvoiceByToken({ token });
+        invData = res?.data?.data || null;
+
+        if (!invData) {
+          // Buat invoice baru dari token
+          const create = await UInvoice.createInvoiceFromPendaftaran({
+            pendaftaran_id: token?.id,
+            anggota: token?.anggota,
+          });
+          invData = create?.data?.data || null;
+        }
+      } else if (selected?.length > 0) {
+        // --- Case: Generate invoice manual dari selected transaksi ---
+        const generatedId = `REG${Date.now()}`;
+        const detailsInvoice = [];
+        let total_amount = 0;
+
+        selected.forEach((trx) => {
+          const ammount = Number(trx?.jumlah || 0);
+          detailsInvoice.push({
+            invoice_id: trx?.id,
+            name: trx?.name || "Transaksi",
+            ammount: String(ammount),
+            type: "item", // tandai sebagai item, bukan fee
+          });
+          total_amount += ammount;
+        });
+
+        invData = {
+          invoice_id: generatedId,
+          recipient_id: user?.nik,
+          recipient_name: user?.nama,
+          invoice_date: new Date().toISOString(),
+          expiration_date: new Date(
+            new Date().setMonth(new Date().getMonth() + 1)
+          ).toISOString(),
+          method: null,
+          jenis: jenis?.name || "-",
+          type: type,
+          payment_status: "Belum dibayar",
+          total_amount: String(total_amount),
+          order_id: `${generatedId}-BATCH`,
+          payment_desc: `Pembayaran ${jenis?.name || "-"}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          detailsInvoice,
+          selectedMethod: null,
+        };
+      }
+
+      if (invData) {
+        // Pastikan total_amount selalu dihitung dari detailsInvoice
+        const total = (invData.detailsInvoice || []).reduce(
+          (sum, item) => sum + Number(item.ammount || 0),
+          0
+        );
+        invData = {
+          ...invData,
+          total_amount: String(total),
+          selectedMethod: invData.method || invData.selectedMethod || null,
+        };
+      }
+
+      setInvoiceData(invData);
     } catch (err) {
-      setError(err?.msg || "Gagal memuat invoice");
+      setError(err?.message || "Gagal memuat invoice");
     } finally {
       setLoading(false);
     }
-  }, [dataPendaftaran?.token]);
+  }, [token, selected, user, jenis, type]);
 
   useEffect(() => {
-    getInvoice();
-  }, [getInvoice]);
+    if (user) getInvoice();
+  }, [user, getInvoice]);
 
-  // Terapkan fee saat metode dipilih
-  const applyFee = useCallback(
-    (method) => {
-      if (!invoiceData) return;
-      const filteredDetails = (invoiceData.detailsInvoice || []).filter(
-        (item) => item.type !== "fee"
-      );
-      const totalAmount = filteredDetails.reduce(
-        (sum, item) => sum + (Number(item.ammount) || 0),
+  // Terapkan fee tanpa menambahkannya ke detailsInvoice
+  const applyFee = useCallback((method) => {
+    setInvoiceData((prev) => {
+      if (!prev) return null;
+      const total = (prev.detailsInvoice || []).reduce(
+        (sum, item) => sum + Number(item.ammount || 0),
         0
       );
-      const feeAmount =
+
+      const fee =
         method.fee_type === "percentage"
-          ? Math.round((totalAmount * method.fee_value) / 100)
+          ? Math.round((total * method.fee_value) / 100)
           : Number(method.fee_value);
 
-      setInvoiceData((prev) => ({
+      return {
         ...prev,
-        selectedMethod: method.payment_method,
-        detailsInvoice: [
-          ...filteredDetails,
-          {
-            name: `Biaya ${method.payment_method}`,
-            ammount: feeAmount,
-            type: "fee",
-          },
-        ],
-      }));
-    },
-    [invoiceData]
-  );
+        selectedMethod: {
+          name: `${method.payment_method}`,
+          ammount: fee,
+          desc: `Biaya ${method.payment_method}`,
+        },
+      };
+    });
+  }, []);
 
-  // Update status pembayaran
   const handleResult = (status, result) => {
     const mappedStatus = mapMidtransStatusToLabel(status);
     setInvoiceData((prev) =>
@@ -102,31 +165,19 @@ export default function InvoiceScreen() {
     );
   };
 
-  // Proses pembayaran
   const handlePayment = useCallback(async () => {
     if (!invoiceData) return;
+
     setLoading(true);
     setError(null);
-
     invoiceRef.current = invoiceData;
 
     try {
-      const res = await UInvoice.payInvoice({
-        invoice_id: invoiceData.invoice_id,
-        recipient_name: invoiceData.recipient_name,
-        detailsInvoice: invoiceData.detailsInvoice,
-        selected_method: invoiceData.selectedMethod,
-      });
-
+      const res = await UInvoice.payInvoice(invoiceData);
       const token = res?.data?.data?.token;
       if (!token) throw new Error("Gagal mendapatkan Snap token");
 
-      if (!window.snap) {
-        console.error("Midtrans Snap belum tersedia");
-        setError("Midtrans Snap belum siap, coba refresh halaman");
-        setLoading(false);
-        return;
-      }
+      if (!window.snap) throw new Error("Midtrans Snap belum siap");
 
       window.snap.pay(token, {
         onSuccess: (result) => handleResult("settlement", result),
@@ -134,22 +185,23 @@ export default function InvoiceScreen() {
         onError: (result) => handleResult("deny", result),
         onClose: () => handleResult("cancel"),
       });
-
-      setLoading(false);
     } catch (err) {
       setError(err?.message || "Terjadi kesalahan saat memproses pembayaran");
+    } finally {
       setLoading(false);
     }
   }, [invoiceData]);
 
-  // Handler click action
   const handleClick = useCallback(
     (action, payload) => {
       switch (action) {
         case "back":
-          navigate(`/${jwtEncode({ page: back })}`, {
-            state: { dataPendaftaran },
-          });
+          navigate(
+            `/${jwtEncode({ page: back || "detailPendaftaranAnggota" })}`,
+            {
+              state: { token },
+            }
+          );
           break;
         case "method":
           if (payload) applyFee(payload);
@@ -161,8 +213,24 @@ export default function InvoiceScreen() {
           break;
       }
     },
-    [applyFee, handlePayment, navigate, dataPendaftaran]
+    [applyFee, handlePayment, navigate, back, token]
   );
+
+  if (!user) {
+    return (
+      <div id="main-wrapper">
+        <Header onUserChange={handleUserChange} />
+        <Sidebar user={user} />
+        <div
+          className="page-wrapper d-flex justify-content-center align-items-center"
+          style={{ height: "80vh" }}
+        >
+          <Spinner animation="border" />{" "}
+          <span className="ms-2">Menunggu data user...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="main-wrapper">
@@ -179,7 +247,7 @@ export default function InvoiceScreen() {
               >
                 <FaArrowLeft size={15} className="me-1" />
               </Button>
-              <h1 className="fw-bold mb-0">Invoice Screen</h1>
+              <h1 className="fw-bold mb-0">{title || "Invoice"}</h1>
             </Col>
           </Row>
 
@@ -187,7 +255,7 @@ export default function InvoiceScreen() {
             <Col md={12}>
               <Card className="shadow-sm border-0">
                 <CardHeader className="bg-primary text-white rounded-top">
-                  <CardTitle className="mb-0">{title}</CardTitle>
+                  <CardTitle className="mb-0">Detail Invoice</CardTitle>
                 </CardHeader>
                 <CardBody>
                   {loading ? (
@@ -196,7 +264,12 @@ export default function InvoiceScreen() {
                       <p className="mt-2">Sedang memproses invoice...</p>
                     </div>
                   ) : error ? (
-                    <div className="text-center text-danger py-5">{error}</div>
+                    <div className="text-center text-danger py-5">
+                      {error}
+                      <div className="mt-3">
+                        <Button onClick={getInvoice}>Coba Lagi</Button>
+                      </div>
+                    </div>
                   ) : invoiceData ? (
                     <>
                       {invoiceData.payment_status !== "Pembayaran Berhasil" && (
@@ -207,9 +280,10 @@ export default function InvoiceScreen() {
                           token={invoiceData.invoice_id}
                         />
                       )}
+
                       <div className="border-top border-bottom mt-2">
                         <InvoiceHeader invoiceData={invoiceData} />
-                        <InvoiceDetail data={invoiceData.detailsInvoice} />
+                        <InvoiceDetail data={invoiceData} />
                         <Row className="fw-bold mt-2 mb-2">
                           <Col xs={6}>Status Pembayaran</Col>
                           <Col xs={6} className="text-end">
@@ -232,16 +306,14 @@ export default function InvoiceScreen() {
                   )}
                 </CardBody>
                 <CardFooter>
-                  {invoiceData?.payment_status !== "Pembayaran Berhasil" ? (
+                  {invoiceData?.payment_status !== "Pembayaran Berhasil" && (
                     <Button
                       variant="primary"
                       size="lg"
                       className="px-5 w-100"
                       onClick={() => handleClick("pay")}
                       disabled={
-                        loading ||
-                        !invoiceData ||
-                        invoiceData?.payment_status === "Pembayaran Berhasil"
+                        loading || !invoiceData || !invoiceData.selectedMethod
                       }
                     >
                       {loading ? (
@@ -259,7 +331,7 @@ export default function InvoiceScreen() {
                         "Proses Pembayaran"
                       )}
                     </Button>
-                  ) : null}
+                  )}
                 </CardFooter>
               </Card>
             </Col>

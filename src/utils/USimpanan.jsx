@@ -30,6 +30,9 @@ class USimpanan {
   getCardSimpanan(fields) {
     return this.postJSON("/getCardSimpanan", fields);
   }
+  reqPencairanSimpanan(fields) {
+    return this.postJSON("/reqPencairanSimpanan", fields);
+  }
 }
 
 export default new USimpanan();

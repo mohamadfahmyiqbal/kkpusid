@@ -9,11 +9,10 @@ import {
   Form,
   Row,
   ProgressBar,
-  Image,
 } from "react-bootstrap";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import UAnggota from "../../utils/UAnggota";
 import notification from "../../comp/global/Notification";
 import { useNavigate } from "react-router-dom";
@@ -24,270 +23,283 @@ import StepKTP from "../../comp/anggota/formPendaftaran/stepKTP";
 import StepCamera from "../../comp/anggota/formPendaftaran/stepCamera";
 
 export default function FormPendaftaranAnggota() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState({});
   const [previews, setPreviews] = useState({});
-
-  // total langkah yang sesungguhnya
   const totalSteps = 6;
 
-  const handleUserChange = useCallback((newUser) => {
-    setUser(newUser);
-  }, []);
+  /** 🧭 Update user dari Header */
+  const handleUserChange = useCallback(setUser, []);
 
-  const navigate = useNavigate();
-
-  // Sinkronisasi fields dengan user jika user berubah
+  /** 🔄 Sinkronisasi user ke fields */
   useEffect(() => {
-    if (user?.nama) {
+    if (user) {
       setFields((prev) => ({
         ...prev,
-        nama: user.nama || "",
-        no_tlp: user.no_tlp || "",
-        email: user.email || "",
+        nama: user.nama ?? "",
+        no_tlp: user.no_tlp ?? "",
+        email: user.email ?? "",
       }));
     }
   }, [user]);
 
-  // handleChange disesuaikan dengan StepCamera dan upload file
+  /** 📸 Handler input umum + file upload */
   const handleChange = useCallback((name, value, isPreviewOnly = false) => {
+    // Validasi upload KTP
     if (name === "ktp" && value instanceof File) {
-      if (!["image/jpeg", "image/png"].includes(value.type)) {
-        alert("Hanya boleh upload file JPG atau PNG.");
-        return;
-      }
-      if (value.size > 2 * 1024 * 1024) {
-        alert("Ukuran file maksimal 2MB.");
-        return;
-      }
+      const validTypes = ["image/jpeg", "image/png"];
+      if (!validTypes.includes(value.type))
+        return notification(null, "Hanya boleh upload file JPG atau PNG.");
+
+      if (value.size > 2 * 1024 * 1024)
+        return notification(null, "Ukuran file maksimal 2MB.");
+
       const blobUrl = URL.createObjectURL(value);
       setPreviews((prev) => ({ ...prev, ktp: blobUrl }));
       setFields((prev) => ({ ...prev, ktp: value }));
-    } else if (isPreviewOnly) {
-      setPreviews((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    } else {
-      setFields((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-    // Preview untuk StepCamera dihandle oleh StepCamera
-  }, []);
-
-  const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps));
-  const prevStep = () => setStep((s) => Math.max(s - 1, 1));
-
-  // handleSubmit sekarang dipanggil MANUAL lewat tombol Submit
-  const handleSubmit = async () => {
-    // safety: jangan submit kalau belum di langkah terakhir
-    if (step !== totalSteps) {
-      // Jika tidak di langkah terakhir, jangan submit — bisa langsung pindah ke langkah terakhir
-      setStep(totalSteps);
       return;
     }
 
+    // Update preview / data field biasa
+    if (isPreviewOnly) setPreviews((prev) => ({ ...prev, [name]: value }));
+    else setFields((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  /** ⏩ Navigasi antar step */
+  const nextStep = useCallback(
+    () => setStep((s) => Math.min(s + 1, totalSteps)),
+    []
+  );
+  const prevStep = useCallback(() => setStep((s) => Math.max(s - 1, 1)), []);
+
+  /** ✅ Submit form akhir */
+  const handleSubmit = useCallback(async () => {
     try {
-      // Pastikan data utama dari user di-sync ke fields sebelum submit
       const submitData = {
         ...fields,
         nia: user?.nik || "",
         nama: user?.nama || fields.nama || "",
       };
-      console.log(submitData);
 
       const res = await UAnggota.daftarAnggota(submitData);
       notification(res, "Pendaftaran anggota berhasil!");
 
       setTimeout(() => {
-        // Kirimkan fields ke detail pendaftaran anggota sebagai data
         const token = jwtEncode({
           page: "detailPendaftaranAnggota",
           data: submitData,
         });
         navigate(`/${token}`);
-      }, 3000);
+      }, 2000);
     } catch (error) {
+      console.error(error);
       notification(
         error?.response,
-        `Terjadi kesalahan saat mendaftar anggota. ${JSON.stringify(error)}`
+        "Terjadi kesalahan saat mendaftar anggota."
       );
-      // console.error(error);
     }
-  };
+  }, [fields, user, navigate]);
 
-  const renderStep = () => {
+  /** 🚫 Cegah Enter submit otomatis */
+  const handleKeyDownOnForm = useCallback((e) => {
+    const tag = e.target?.tagName?.toLowerCase();
+    if (e.key === "Enter" && tag !== "textarea" && tag !== "button")
+      e.preventDefault();
+  }, []);
+
+  /** 🧱 Step Form dinamis */
+  const renderStep = useMemo(() => {
     switch (step) {
       case 1:
         return (
           <>
             <h4 className="mb-3">Personal Info</h4>
-            <SelAnggota
-              value={fields.jenis_anggota || ""}
-              onChange={(val) => handleChange("jenis_anggota", val)}
-            />
-            <Form.Group className="mb-3">
-              <Form.Label>NIK</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.nik || ""}
-                onChange={(e) => handleChange("nik", e.target.value)}
-              />
-            </Form.Group>
-            {/* Tambahan Jenis Kelamin */}
-            <Form.Group className="mb-3">
-              <Form.Label>Jenis Kelamin</Form.Label>
-              <Form.Select
-                value={fields.jenis_kelamin || ""}
-                onChange={(e) => handleChange("jenis_kelamin", e.target.value)}
-              >
-                <option value="">Pilih Jenis Kelamin</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>No HP</Form.Label>
-              <Form.Control type="text" value={user?.no_tlp || ""} readOnly />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" value={user?.email || ""} readOnly />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Alamat</Form.Label>
-              <Form.Control
-                as="textarea"
-                value={fields.alamat || ""}
-                onChange={(e) => handleChange("alamat", e.target.value)}
-              />
-            </Form.Group>
+            <Row>
+              <Col xs={12} md={6}>
+                <SelAnggota
+                  value={fields.jenis_anggota || ""}
+                  onChange={(val) => handleChange("jenis_anggota", val)}
+                />
+              </Col>
 
-            {/* Tambahan Telp Darurat */}
-            <Form.Group className="mb-3">
-              <Form.Label>Telp Darurat</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.tlp_darurat || ""}
-                onChange={(e) => handleChange("tlp_darurat", e.target.value)}
-              />
-            </Form.Group>
+              {[
+                { label: "NIK", name: "nik", type: "text" },
+                {
+                  label: "Jenis Kelamin",
+                  name: "jenis_kelamin",
+                  type: "select",
+                  options: ["Laki-laki", "Perempuan"],
+                },
+                { label: "Telp Darurat", name: "tlp_darurat", type: "text" },
+                { label: "Hubungan", name: "hubungan", type: "text" },
+                { label: "Alamat", name: "alamat", type: "textarea" },
+              ].map((f) => (
+                <Col xs={12} md={6} key={f.name}>
+                  <Form.Group as={Row} className="mb-2 align-items-center">
+                    <Form.Label column xs={4} md={2}>
+                      {f.label}
+                    </Form.Label>
+                    <Col xs={8} md={10}>
+                      {f.type === "select" ? (
+                        <Form.Select
+                          value={fields[f.name] || ""}
+                          onChange={(e) => handleChange(f.name, e.target.value)}
+                        >
+                          <option value="">Pilih {f.label}</option>
+                          {f.options.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      ) : f.type === "textarea" ? (
+                        <Form.Control
+                          as="textarea"
+                          rows={2}
+                          value={fields[f.name] || ""}
+                          onChange={(e) => handleChange(f.name, e.target.value)}
+                        />
+                      ) : (
+                        <Form.Control
+                          type="text"
+                          value={fields[f.name] || ""}
+                          onChange={(e) => handleChange(f.name, e.target.value)}
+                        />
+                      )}
+                    </Col>
+                  </Form.Group>
+                </Col>
+              ))}
 
-            {/* Tambahan Hubungan */}
-            <Form.Group className="mb-3">
-              <Form.Label>Hubungan</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.hubungan || ""}
-                onChange={(e) => handleChange("hubungan", e.target.value)}
-              />
-            </Form.Group>
+              {/* Info read-only dari user */}
+              {[
+                { label: "No HP", value: user?.no_tlp },
+                { label: "Email", value: user?.email },
+              ].map((f, i) => (
+                <Col xs={12} md={6} key={i}>
+                  <Form.Group as={Row} className="mb-2 align-items-center">
+                    <Form.Label column xs={4} md={2}>
+                      {f.label}
+                    </Form.Label>
+                    <Col xs={8} md={10}>
+                      <Form.Control
+                        type="text"
+                        value={f.value || ""}
+                        readOnly
+                      />
+                    </Col>
+                  </Form.Group>
+                </Col>
+              ))}
+            </Row>
           </>
         );
+
       case 2:
-        // StepKTP sudah mengatur preview dan handleChange sesuai kebutuhan
         return <StepKTP onChange={handleChange} previews={previews} />;
+
       case 3:
         return (
           <>
             <h4 className="mb-3">Job Info</h4>
-            <Form.Group className="mb-3">
-              <Form.Label>Pekerjaan</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.pekerjaan || ""}
-                onChange={(e) => handleChange("pekerjaan", e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tempat Kerja</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.tempat_kerja || ""}
-                onChange={(e) => handleChange("tempat_kerja", e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Alamat Kerja</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.alamat_kerja || ""}
-                onChange={(e) => handleChange("alamat_kerja", e.target.value)}
-              />
-            </Form.Group>
+            <Row>
+              {[
+                { label: "Pekerjaan", name: "pekerjaan" },
+                { label: "Tempat Kerja", name: "tempat_kerja" },
+                {
+                  label: "Alamat Kerja",
+                  name: "alamat_kerja",
+                  type: "textarea",
+                },
+              ].map((f) => (
+                <Col xs={12} md={6}>
+                  <Form.Group
+                    as={Row}
+                    key={f.name}
+                    className="mb-2 align-items-center"
+                  >
+                    <Form.Label column md={2}>
+                      {f.label}
+                    </Form.Label>
+                    <Col md={10}>
+                      <Form.Control
+                        as={f.type === "textarea" ? "textarea" : "input"}
+                        rows={f.type === "textarea" ? 2 : undefined}
+                        value={fields[f.name] || ""}
+                        onChange={(e) => handleChange(f.name, e.target.value)}
+                      />
+                    </Col>
+                  </Form.Group>
+                </Col>
+              ))}
+            </Row>
           </>
         );
+
       case 4:
         return (
           <>
             <h4 className="mb-3">Bank Info</h4>
-            <Form.Group className="mb-3">
-              <Form.Label>Bank</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.bank || ""}
-                onChange={(e) => handleChange("bank", e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>No Rekening</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.no_rekening || ""}
-                onChange={(e) => handleChange("no_rekening", e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Nama Nasabah</Form.Label>
-              <Form.Control
-                type="text"
-                value={fields.nama_nasabah || ""}
-                onChange={(e) => handleChange("nama_nasabah", e.target.value)}
-              />
-            </Form.Group>
+            <Row>
+              {[
+                { label: "Bank", name: "bank" },
+                { label: "No Rekening", name: "no_rekening" },
+                { label: "Nama Nasabah", name: "nama_nasabah" },
+              ].map((f) => (
+                <Col xs={12} md={6}>
+                  <Form.Group
+                    as={Row}
+                    key={f.name}
+                    className="mb-2 align-items-center"
+                  >
+                    <Form.Label column md={2}>
+                      {f.label}
+                    </Form.Label>
+                    <Col md={10}>
+                      <Form.Control
+                        type="text"
+                        value={fields[f.name] || ""}
+                        onChange={(e) => handleChange(f.name, e.target.value)}
+                      />
+                    </Col>
+                  </Form.Group>
+                </Col>
+              ))}
+            </Row>
           </>
         );
+
       case 5:
-        // StepCamera sudah mengatur preview dan handleChange sesuai kebutuhan
         return <StepCamera onChange={handleChange} previews={previews} />;
+
       case 6:
         return (
           <>
             <h4 className="mb-3">Komitmen</h4>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="checkbox"
-                label="Siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba"
-                checked={fields.komitmen || false}
-                onChange={(e) => handleChange("komitmen", e.target.checked)}
-              />
-            </Form.Group>
+            <Form.Check
+              type="checkbox"
+              label="Saya siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba."
+              checked={fields.komitmen || false}
+              onChange={(e) => handleChange("komitmen", e.target.checked)}
+            />
           </>
         );
+
       default:
         return null;
     }
-  };
+  }, [step, fields, previews, handleChange, user]);
 
-  // cegah Enter (kecuali textarea) agar tidak memicu submit otomatis
-  const handleKeyDownOnForm = (e) => {
-    if (e.key === "Enter") {
-      const tag =
-        e.target && e.target.tagName ? e.target.tagName.toLowerCase() : "";
-      if (tag === "textarea") return;
-      if (tag === "button") return;
-      // cegah default (termasuk submit)
-      e.preventDefault();
-    }
-  };
+  const isCommitmentChecked = fields.komitmen === true;
 
+  /** 🧩 Render UI utama */
   return (
     <div id="main-wrapper">
       <Header onUserChange={handleUserChange} />
       <Sidebar user={user} />
+
       <div className="page-wrapper">
         <Container fluid>
           <Row className="border-bottom mb-3">
@@ -303,56 +315,53 @@ export default function FormPendaftaranAnggota() {
               <h1 className="fw-bold mb-0">Pendaftaran Anggota</h1>
             </Col>
           </Row>
-          <Row className="mt-4">
-            <Col>
-              <Card className="border shadow">
-                <CardHeader className="bg-blue700 text-white">
-                  <CardTitle>Form Pendaftaran Anggota</CardTitle>
-                </CardHeader>
-                <CardBody>
-                  <ProgressBar
-                    now={(step / totalSteps) * 100}
-                    label={`Langkah ${step} dari ${totalSteps}`}
-                    className="mb-4"
-                  />
-                  {/* NOTE: kita tidak memakai onSubmit, submit hanya via handleSubmit() */}
-                  <Form
-                    onKeyDown={handleKeyDownOnForm}
-                    onSubmit={(e) => e.preventDefault()}
+
+          <Card className="border shadow-sm">
+            <CardHeader className="bg-blue700 text-white py-2">
+              <CardTitle className="mb-0 fs-5">
+                Form Pendaftaran Anggota
+              </CardTitle>
+            </CardHeader>
+
+            <CardBody>
+              <ProgressBar
+                now={(step / totalSteps) * 100}
+                label={`Langkah ${step} dari ${totalSteps}`}
+                className="mb-4"
+              />
+
+              <Form
+                onKeyDown={handleKeyDownOnForm}
+                onSubmit={(e) => e.preventDefault()}
+              >
+                {renderStep}
+
+                <div className="d-flex justify-content-between mt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={prevStep}
+                    disabled={step === 1}
                   >
-                    {renderStep()}
-                    <div className="d-flex justify-content-between mt-4">
-                      <Button
-                        variant="secondary"
-                        onClick={prevStep}
-                        disabled={step === 1}
-                        type="button"
-                      >
-                        Sebelumnya
-                      </Button>
-                      {step < totalSteps ? (
-                        <Button
-                          variant="primary"
-                          onClick={nextStep}
-                          type="button"
-                        >
-                          Selanjutnya
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="success"
-                          type="button"
-                          onClick={handleSubmit}
-                        >
-                          Submit
-                        </Button>
-                      )}
-                    </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
+                    Sebelumnya
+                  </Button>
+
+                  {step < totalSteps ? (
+                    <Button variant="primary" onClick={nextStep}>
+                      Selanjutnya
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="success"
+                      onClick={handleSubmit}
+                      disabled={!isCommitmentChecked}
+                    >
+                      Submit
+                    </Button>
+                  )}
+                </div>
+              </Form>
+            </CardBody>
+          </Card>
         </Container>
       </div>
     </div>

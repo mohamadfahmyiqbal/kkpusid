@@ -55,8 +55,6 @@ export default function CardTagihan({ user }) {
       </Card>
     );
   }
-  console.log(detail);
-
   return (
     <Card className="border shadow">
       <CardBody>
