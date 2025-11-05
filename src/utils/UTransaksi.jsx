@@ -1,6 +1,6 @@
 import http from "./common";
 
-class USimpanan {
+class UTransaksi {
   // Helper: kirim request dengan JSON
   postJSON(url, data) {
     return http.post(url, data, {
@@ -21,18 +21,9 @@ class USimpanan {
     });
   }
 
-  getSimpananCategory(fields) {
-    return this.postJSON("/getSimpananCategory", fields);
-  }
-  getDataSimpanan(fields) {
-    return this.postJSON("/getDataSimpanan", fields);
-  }
-  getCardSimpanan(fields) {
-    return this.postJSON("/getCardSimpanan", fields);
-  }
-  reqPencairanSimpanan(fields) {
-    return this.postJSON("/reqPencairanSimpanan", fields);
+  findTransByJenis(fields) {
+    return this.postJSON("/findTransByJenis", fields);
   }
 }
 
-export default new USimpanan();
+export default new UTransaksi();

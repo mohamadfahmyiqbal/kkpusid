@@ -6,7 +6,11 @@ export default function InvoiceDetail({ data }) {
     return <p className="text-center my-3">Belum ada item invoice</p>;
   }
 
-  const total = data.reduce((sum, row) => sum + (Number(row.ammount) || 0), 0);
+  const totalInv = data?.detailsInvoice?.reduce(
+    (sum, row) => sum + (Number(row.ammount) || 0),
+    0
+  );
+  const total = totalInv + (Number(data?.selectedMethod?.ammount) || 0);
 
   return (
     <Row>
@@ -18,7 +22,7 @@ export default function InvoiceDetail({ data }) {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, idx) => (
+          {data?.detailsInvoice?.map((row, idx) => (
             <tr
               key={idx}
               className={row.type === "fee" ? "text-muted fst-italic" : ""}
@@ -27,6 +31,10 @@ export default function InvoiceDetail({ data }) {
               <td className="text-end">{formatRupiah(row.ammount)}</td>
             </tr>
           ))}
+          <tr>
+            <td>{data?.selectedMethod?.name}</td>
+            <td className="text-end">{data?.selectedMethod?.ammount}</td>
+          </tr>
         </tbody>
 
         <tfoot>

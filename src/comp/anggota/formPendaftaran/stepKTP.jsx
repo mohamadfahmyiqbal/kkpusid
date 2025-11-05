@@ -1,79 +1,93 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Image, CardTitle } from "react-bootstrap";
+import { Button, Image, CardTitle, Spinner } from "react-bootstrap";
 
-export default function StepKTP({ onChange, previews }) {
+/**
+ * StepKTP (versi dinamis dan optimal)
+ * Bisa digunakan untuk foto KTP, selfie, atau dokumen lain.
+ *
+ * Props:
+ * - label: judul tampilan (misal "Ambil Foto KTP" / "Ambil Selfie")
+ * - name: key untuk field (default: "ktp")
+ * - onChange(name, value, isPreviewOnly?): callback ke parent
+ * - previews: object { [name]: url }
+ * - facingMode: "environment" | "user" (kamera belakang / depan)
+ */
+export default function StepKTP({
+  label = "Ambil Foto KTP",
+  name = "ktp",
+  onChange,
+  previews = {},
+  facingMode = "environment",
+}) {
   const [stream, setStream] = useState(null);
   const [captured, setCaptured] = useState(false);
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef(null);
   const previewUrlRef = useRef(null);
 
   // Konfigurasi kompresi
-  const MAX_DIMENSION = 1280; // maksimal width/height setelah resize
-  const QUALITY = 0.75; // 0..1 JPEG quality
+  const MAX_DIMENSION = 1280; // Maks resolusi hasil foto
+  const QUALITY = 0.75; // 0..1 kualitas JPEG
 
+  /** 🎥 Aktifkan kamera otomatis saat belum capture */
   useEffect(() => {
     if (captured) return;
 
-    let localStream = null;
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
-      .then((s) => {
+    let localStream;
+    const startCamera = async () => {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode },
+        });
         setStream(s);
         localStream = s;
         if (videoRef.current) videoRef.current.srcObject = s;
-      })
-      .catch((err) => alert("Gagal mengakses kamera: " + err.message));
+      } catch (err) {
+        alert("Gagal mengakses kamera: " + err.message);
+      }
+    };
 
+    startCamera();
+
+    // Cleanup kamera & URL preview
     return () => {
       if (localStream) localStream.getTracks().forEach((t) => t.stop());
       if (stream) stream.getTracks().forEach((t) => t.stop());
-      // revoke preview url kalau ada
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
         previewUrlRef.current = null;
       }
     };
-    // eslint-disable-next-line
-  }, [captured]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captured, facingMode]);
 
-  // Helper: resize + compress image from video element
+  /** 🧩 Helper: ambil & kompres gambar */
   const captureAndCompress = (videoEl, maxDim, quality) => {
     return new Promise((resolve, reject) => {
       try {
         const vw = videoEl.videoWidth;
         const vh = videoEl.videoHeight;
-
         if (!vw || !vh) {
-          reject(new Error("Video belum siap (width/height = 0)"));
+          reject(new Error("Video belum siap"));
           return;
         }
 
-        // Hitung skala supaya tidak melebihi maxDim
-        let targetW = vw;
-        let targetH = vh;
-        if (Math.max(vw, vh) > maxDim) {
-          const scale = maxDim / Math.max(vw, vh);
-          targetW = Math.round(vw * scale);
-          targetH = Math.round(vh * scale);
-        }
-
+        const scale = Math.min(1, maxDim / Math.max(vw, vh));
         const canvas = document.createElement("canvas");
-        canvas.width = targetW;
-        canvas.height = targetH;
+        canvas.width = Math.round(vw * scale);
+        canvas.height = Math.round(vh * scale);
+
         const ctx = canvas.getContext("2d");
+        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-        // Jika ingin background putih (mis. untuk PNG->JPG), bisa fillRect putih:
-        // ctx.fillStyle = "#fff";
-        // ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        // draw scaled image
-        ctx.drawImage(videoEl, 0, 0, targetW, targetH);
-
-        // toBlob dengan quality (JPEG)
         canvas.toBlob(
           (blob) => {
-            if (blob) resolve({ blob, width: targetW, height: targetH });
-            else reject(new Error("Gagal membuat Blob dari canvas"));
+            if (!blob) return reject(new Error("Gagal membuat Blob"));
+            resolve({
+              blob,
+              width: canvas.width,
+              height: canvas.height,
+            });
           },
           "image/jpeg",
           quality
@@ -84,22 +98,23 @@ export default function StepKTP({ onChange, previews }) {
     });
   };
 
+  /** 📸 Ambil foto dari kamera */
   const capturePhoto = async () => {
     if (!videoRef.current) return;
+    setLoading(true);
+
     try {
-      const { blob, width, height } = await captureAndCompress(
+      const { blob } = await captureAndCompress(
         videoRef.current,
         MAX_DIMENSION,
         QUALITY
       );
 
-      // Buat File dari blob
-      const file = new File([blob], "foto_ktp.jpg", {
+      const file = new File([blob], `${name}.jpg`, {
         type: "image/jpeg",
         lastModified: Date.now(),
       });
 
-      // Jika ada preview url sebelumnya, revoke agar tidak bocor memori
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
         previewUrlRef.current = null;
@@ -108,12 +123,8 @@ export default function StepKTP({ onChange, previews }) {
       const url = URL.createObjectURL(file);
       previewUrlRef.current = url;
 
-      // Kirim file dan preview ke parent.
-      // onChange("ktp", file) => file untuk upload
-      // onChange("ktp", url, true) => preview
-      onChange("ktp", file);
-      onChange("ktp", url, true);
-
+      onChange(name, file);
+      onChange(name, url, true);
       setCaptured(true);
 
       // Matikan kamera setelah capture
@@ -121,58 +132,75 @@ export default function StepKTP({ onChange, previews }) {
         stream.getTracks().forEach((track) => track.stop());
         setStream(null);
       }
-
-      // (opsional) log ukuran asli & kompres
-      // console.log("Hasil compress:", file.size, "bytes", width, "x", height);
     } catch (err) {
       alert("Gagal menangkap foto: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  /** 🔁 Ambil ulang foto */
   const retakePhoto = () => {
-    // Hapus preview dan file KTP di parent
-    onChange("ktp", null);
-    onChange("ktp", null, true);
-
-    // revoke preview local
+    onChange(name, null);
+    onChange(name, null, true);
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = null;
     }
-
-    // Nyalakan kembali kamera (set captured false -> effect akan mengaktifkan kamera)
     setCaptured(false);
   };
 
+  /** 🎨 UI */
   return (
     <>
-      <CardTitle className="fw-bold mb-3">Ambil Foto KTP</CardTitle>
-      {!previews.ktp ? (
+      <CardTitle className="fw-bold mb-3">{label}</CardTitle>
+
+      {!previews[name] ? (
         <>
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            style={{ width: "100%", maxWidth: "100%" }}
+            style={{
+              width: "100%",
+              borderRadius: "10px",
+              background: "#000",
+            }}
           />
-          <div className="mt-3">
+          <div className="mt-3 d-grid">
             <Button
-              className="bg-blue700 text-white w-100"
+              className="bg-blue700 text-white"
               onClick={capturePhoto}
               type="button"
+              disabled={loading}
             >
-              Ambil Foto
+              {loading ? (
+                <>
+                  <Spinner size="sm" animation="border" className="me-2" />
+                  Mengambil Foto...
+                </>
+              ) : (
+                "Ambil Foto"
+              )}
             </Button>
           </div>
         </>
       ) : (
-        <div>
-          <Image src={previews.ktp} thumbnail style={{ maxWidth: "100%" }} />
-          <div className="mt-3">
+        <div className="text-center">
+          <Image
+            src={previews[name]}
+            thumbnail
+            style={{
+              maxWidth: "100%",
+              borderRadius: "10px",
+            }}
+          />
+          <div className="mt-3 d-grid">
             <Button
-              className="bg-blue700 text-white w-100"
+              className="bg-blue700 text-white"
               onClick={retakePhoto}
+              type="button"
             >
               Foto Ulang
             </Button>

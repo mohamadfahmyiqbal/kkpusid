@@ -10,6 +10,7 @@ import InvoiceScreen from "../../pages/global/InvoiceScreen";
 import TagihanScreen from "../../pages/global/TagihanScreen";
 import TestDataScreen from "../../pages/global/TestDataScreen";
 import NotificationScreen from "../../pages/global/NotificationScreen";
+import ResiScreen from "../../pages/global/ResiScreen";
 
 export default {
   splash: SplashScreen, // ini bisa digunakan langsung di RouterConfig.js untuk root "/"
@@ -24,4 +25,5 @@ export default {
   invoice: InvoiceScreen,
   tagihan: TagihanScreen,
   testdata: TestDataScreen,
+  resi: ResiScreen,
 };

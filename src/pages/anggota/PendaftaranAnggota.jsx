@@ -39,29 +39,12 @@ export default function PendaftaranAnggota() {
       return;
     }
 
-    setLoading(true);
-    setError("");
-    try {
-      const res = await UApproval.getApprovalDetail({
-        nik: user.nik,
-        type: "pendaftaran_anggota",
-      });
-
-      const token = jwtEncode({
-        page: "detailPendaftaranAnggota",
-      });
-      // console.log(res.data);
-
-      navigate(`/${token}`, {
-        state: { dataPendaftaran: res.data },
-      });
-    } catch (err) {
-      // Fallback langsung ke form pendaftaran jika request gagal
-      const token = jwtEncode({ page: "formPendaftaranAnggota", step: 1 });
-      navigate(`/${token}`);
-    } finally {
-      setLoading(false);
-    }
+    navigate(`/${jwtEncode({ page: "detailPendaftaranAnggota" })}`, {
+      state: {
+        back: "pendaftaranAnggota",
+        jenis: "pendaftaranAnggota",
+      },
+    });
   }, [user?.nik, navigate]);
 
   return (

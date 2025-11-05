@@ -1,36 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  CardText,
-  Col,
-  Container,
-  Row,
-  Spinner,
-  Table,
-} from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 import { jwtEncode } from "../../routes/helpers";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import USimpanan from "../../utils/USimpanan";
-import Loading from "../../comp/global/Loading";
-import InvoiceHeader from "../global/InvoiceHeader";
-import InvoiceDetail from "../global/InvoiceDetail";
-import CardPokok from "../../comp/simpanan/CardPokok";
-import CardWajib from "../../comp/simpanan/CardWajib";
+import CardSimpanan from "../../comp/simpanan/CardSimpanan";
 
 export default function SimpananScreen() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [data, setData] = useState([]);
-  const [invoiceData, setInvoiceData] = useState(null);
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [category, setCategory] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
@@ -40,7 +23,7 @@ export default function SimpananScreen() {
     (action, payload) => {
       switch (action) {
         case "back":
-          navigate(`/${jwtEncode({ page: "detailPendaftaranAnggota" })}`);
+          navigate(`/${jwtEncode({ page: "dashboard" })}`);
           break;
         case "category":
           setSelectedCategory(payload);
@@ -57,8 +40,6 @@ export default function SimpananScreen() {
       setLoading(true);
       const res = await USimpanan.getSimpananCategory();
       setCategory(res.data);
-      setData(null);
-      setInvoiceData(null);
     } catch (error) {
       console.error("Gagal mengambil kategori simpanan:", error);
     } finally {
@@ -88,7 +69,6 @@ export default function SimpananScreen() {
               <h1 className="fw-bold mb-0">Simpanan</h1>
             </Col>
           </Row>
-
           <Row className="mt-4">
             {category.map((cat, idx) => (
               <Col xs={12} key={idx} className="mb-2">
@@ -102,14 +82,9 @@ export default function SimpananScreen() {
               </Col>
             ))}
           </Row>
-
-          <Row className="mt-4">
-            {selectedCategory ? (
-              <Container>
-                <CardPokok selectedCategory={selectedCategory} user={user} />
-              </Container>
-            ) : (
-              "null"
+          <Row>
+            {selectedCategory && (
+              <CardSimpanan selectedCategory={selectedCategory} user={user} />
             )}
           </Row>
         </Container>
