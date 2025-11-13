@@ -33,6 +33,8 @@ export default function CardMenu({ user }) {
   }, []);
 
   const handleClick = (name) => {
+    console.log(name);
+
     navigate(`/${jwtEncode({ page: name })}`);
     // switch (name) {
     //   case "Simpanan":

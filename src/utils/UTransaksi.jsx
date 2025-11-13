@@ -24,6 +24,9 @@ class UTransaksi {
   findTransByJenis(fields) {
     return this.postJSON("/findTransByJenis", fields);
   }
+  getTransaksiCategory(fields) {
+    return this.postJSON("/getTransaksiCategory", fields);
+  }
 }
 
 export default new UTransaksi();
