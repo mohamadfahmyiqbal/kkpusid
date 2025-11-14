@@ -35,6 +35,9 @@ export default function JBScreen() {
   const handleClick = useCallback(
     (action, payload) => {
       switch (action) {
+          case "formJB":
+              navigate(`/${jwtEncode({page: "formJB"})}`);
+              break;
         case "back":
           navigate(`/${jwtEncode({ page: "dashboard" })}`);
           break;
@@ -112,7 +115,7 @@ export default function JBScreen() {
                         size="sm"
                         variant="light"
                         className="rounded fw-bold d-flex flex-column align-items-center justify-content-center px-3 py-2 shadow-sm hover-scale text-center"
-                        onClick={() => handleClick("FormJB")}
+                        onClick={() => handleClick("formJB",null)}
                       >
                         <Image
                           src="/assets/icons/handshake.png"
