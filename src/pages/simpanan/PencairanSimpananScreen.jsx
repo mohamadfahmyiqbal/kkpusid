@@ -85,7 +85,7 @@ export default function PencairanSimpananScreen() {
             title: "Resi Pencairan Sukarela",
             selected: [
               {
-                id: `PENARIKAN${Date.now()}`,
+                id: `Pencairan${Date.now()}`,
                 name: "Pencairan Simpanan Sukarela",
                 jumlah: nominal,
               },
@@ -94,23 +94,22 @@ export default function PencairanSimpananScreen() {
             jenis: { name: "Simpanan Sukarela" },
             type: "Tarik",
           });
-          console.log(res);
 
-          // navigate(`/${jwtEncode({ page: "resi" })}`, {
-          //   state: {
-          //     title: "Resi Pencairan Sukarela",
-          //     selected: [
-          //       {
-          //         id: `PENARIKAN${Date.now()}`,
-          //         name: "Pencairan Simpanan Sukarela",
-          //         jumlah: nominal,
-          //       },
-          //     ],
-          //     back: "Pencairan",
-          //     jenis: { name: "Simpanan Sukarela" },
-          //     type: "Tarik",
-          //   },
-          // });
+          navigate(`/${jwtEncode({ page: "resi" })}`, {
+            state: {
+              title: "Resi Pencairan Sukarela",
+              selected: [
+                {
+                  id: `PENARIKAN${Date.now()}`,
+                  name: "Pencairan Simpanan Sukarela",
+                  jumlah: nominal,
+                },
+              ],
+              back: "Pencairan",
+              jenis: { name: "Simpanan Sukarela" },
+              type: "Tarik",
+            },
+          });
           break;
 
         /** 📄 Lihat detail invoice */

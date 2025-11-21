@@ -1,6 +1,6 @@
 import http from "./common";
 
-class UTransaksi {
+class URequest {
   // Helper: kirim request dengan JSON
   postJSON(url, data) {
     return http.post(url, data, {
@@ -21,12 +21,9 @@ class UTransaksi {
     });
   }
 
-  findTransByJenis(fields) {
-    return this.postJSON("/findTransByJenis", fields);
-  }
-  getTransaksiCategory(fields) {
-    return this.postJSON("/getTransaksiCategory", fields);
+  getRequestByNik(fields) {
+    return this.postJSON("/getRequestByNik", fields);
   }
 }
 
-export default new UTransaksi();
+export default new URequest();

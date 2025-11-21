@@ -1,6 +1,6 @@
 import http from "./common";
 
-class UTransaksi {
+class UJB {
   // Helper: kirim request dengan JSON
   postJSON(url, data) {
     return http.post(url, data, {
@@ -21,12 +21,12 @@ class UTransaksi {
     });
   }
 
-  findTransByJenis(fields) {
-    return this.postJSON("/findTransByJenis", fields);
+  findJBCategory(fields) {
+    return this.postJSON("/findJBCategory", fields);
   }
-  getTransaksiCategory(fields) {
-    return this.postJSON("/getTransaksiCategory", fields);
+  reqJB(fields) {
+    return this.postJSON("/reqJB", fields);
   }
 }
 
-export default new UTransaksi();
+export default new UJB();
