@@ -19,6 +19,7 @@ import CardSimpanan from "../../comp/simpanan/CardSimpanan";
 
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
+import URequest from "../../utils/URequest";
 
 export default function JBScreen() {
   const navigate = useNavigate();
@@ -35,9 +36,9 @@ export default function JBScreen() {
   const handleClick = useCallback(
     (action, payload) => {
       switch (action) {
-          case "formJB":
-              navigate(`/${jwtEncode({page: "formJB"})}`);
-              break;
+        case "formJB":
+          navigate(`/${jwtEncode({ page: "formJB" })}`);
+          break;
         case "back":
           navigate(`/${jwtEncode({ page: "dashboard" })}`);
           break;
@@ -71,6 +72,22 @@ export default function JBScreen() {
   useEffect(() => {
     getTransaksi();
   }, [getTransaksi]);
+
+  const getRequest = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await URequest.getRequestByNik({ type: "JB" });
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+
+      console.log(error);
+    }
+  });
+
+  useEffect(() => {
+    getRequest();
+  }, [getRequest]);
 
   return (
     <div id="main-wrapper">
@@ -115,7 +132,7 @@ export default function JBScreen() {
                         size="sm"
                         variant="light"
                         className="rounded fw-bold d-flex flex-column align-items-center justify-content-center px-3 py-2 shadow-sm hover-scale text-center"
-                        onClick={() => handleClick("formJB",null)}
+                        onClick={() => handleClick("formJB", null)}
                       >
                         <Image
                           src="/assets/icons/handshake.png"
