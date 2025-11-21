@@ -93,13 +93,12 @@ export default function FPengajuanJB() {
 
   /** HANDLE SUBMIT */
   const handleSubmit = async (e) => {
-      alert("rews")
     e.preventDefault();
     setLoading(true);
 
     try {
       const res = await URequest.reqJB(fields);
-      alert("Pengajuan berhasil dikirim!");
+      console.log(res);
       getRequest();
     } catch (e) {
       console.log(e);
@@ -279,9 +278,7 @@ export default function FPengajuanJB() {
                     disabled={isReadonly}
                     placeholder="1.000.000"
                     value={
-                      fields.dp
-                        ? formatRupiah(fields.dp).replace("Rp", "")
-                        : ""
+                      fields.dp ? formatRupiah(fields.dp).replace("Rp", "") : ""
                     }
                     onChange={(e) =>
                       setFields((prev) => ({
