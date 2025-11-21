@@ -10,6 +10,7 @@ import {
   Container,
   Row,
   Image,
+ Form
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
@@ -19,6 +20,7 @@ import CardSimpanan from "../../comp/simpanan/CardSimpanan";
 
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
+import URequest from "../../utils/URequest";
 
 export default function JBScreen() {
   const navigate = useNavigate();
@@ -35,9 +37,9 @@ export default function JBScreen() {
   const handleClick = useCallback(
     (action, payload) => {
       switch (action) {
-          case "formJB":
-              navigate(`/${jwtEncode({page: "formJB"})}`);
-              break;
+        case "formJB":
+          navigate(`/${jwtEncode({ page: "formJB" })}`);
+          break;
         case "back":
           navigate(`/${jwtEncode({ page: "dashboard" })}`);
           break;
@@ -59,6 +61,7 @@ export default function JBScreen() {
     setLoading(true);
     try {
       const res = await UTransaksi.findTransByJenis({ jenis: "Jual Beli" });
+     
       setJBData(res?.data?.data || []);
     } catch (error) {
       console.error("Gagal mengambil transaksi:", error);
@@ -70,7 +73,7 @@ export default function JBScreen() {
 
   useEffect(() => {
     getTransaksi();
-  }, [getTransaksi]);
+ }, [getTransaksi]);
 
   return (
     <div id="main-wrapper">
@@ -102,7 +105,7 @@ export default function JBScreen() {
                 }`}
               >
                 <CardBody>
-                  <CardTitle>Informasi Tagihan</CardTitle>
+                  <CardTitle>Informasi Transaksi</CardTitle>
 
                   {loading ? (
                     <CardText>Memuat data...</CardText>
@@ -115,7 +118,7 @@ export default function JBScreen() {
                         size="sm"
                         variant="light"
                         className="rounded fw-bold d-flex flex-column align-items-center justify-content-center px-3 py-2 shadow-sm hover-scale text-center"
-                        onClick={() => handleClick("formJB",null)}
+                        onClick={() => handleClick("formJB", null)}
                       >
                         <Image
                           src="/assets/icons/handshake.png"
@@ -125,12 +128,103 @@ export default function JBScreen() {
                         <span>Pengajuan</span>
                       </Button>
                     </div>
-                  ) : (
-                    <CardText>
-                      Anda memiliki {JBData.length} transaksi.
-                    </CardText>
-                  )}
-                </CardBody>
+                  ) : (<>
+                   
+                    <Row>
+                   <Col xs="4">
+                   <CardText className="text-start">
+                      Nama
+                      </CardText>
+                   </Col>
+                  <Col xs="8">
+                   <CardText className="text-end">
+                      {JBData?.anggota?.nama}
+                      </CardText>
+                   </Col>
+                    </Row>
+                   <Row>
+                   <Col xs="6">
+                   <CardText className="text-start">
+                      Produk
+                      </CardText>
+                   </Col>
+                  <Col xs="6">
+                   <CardText className="text-end">
+                      Transaksi
+                      </CardText>
+                   </Col>
+                    </Row>
+                   <Row>
+                   <Col xs="6">
+                   <CardText className="text-start">
+                      Akad
+                      </CardText>
+                   </Col>
+                  <Col xs="6">
+                   <CardText className="text-end">
+                      Nama
+                      </CardText>
+                   </Col>
+                    </Row>
+                   <Row>
+                   <Col xs="6">
+                   <CardText className="text-start">
+                      Saldo Akhir
+                      </CardText>
+                   </Col>
+                  <Col xs="6">
+                   <CardText className="text-end">
+                      Nama
+                      </CardText>
+                   </Col>
+                    </Row>
+                   <Row>
+                   <Col xs="6">
+                   <CardText className="text-start">
+                      Tanggal Buka
+                      </CardText>
+                   </Col>
+                  <Col xs="6">
+                   <CardText className="text-end">
+                       {JBData?.createdAt}
+                      </CardText>
+                   </Col>
+                    </Row>
+                   <Row className="text-center justify-content-center">
+                  <Col xs="auto">
+                    <Button
+                      size="sm"
+                      variant="outline-light"
+                      className="rounded fw-bold d-flex flex-column align-items-center justify-content-center px-3 py-2 shadow-sm hover-scale text-center"
+                      onClick={() => handleClick("Sukarela")}
+                    >
+                      <Image
+                        src="/assets/icons/depositbox.png"
+                        height={28}
+                        className="mb-1"
+                      />
+                      <span>Setoran</span>
+                    </Button>
+                  </Col>
+                  <Col xs="auto">
+                    <Button
+                      size="sm"
+                      variant="outline-light"
+                      className="rounded fw-bold d-flex flex-column align-items-center justify-content-center px-3 py-2 shadow-sm hover-scale text-center"
+                      onClick={() => handleClick("formJB")}
+                    >
+                      <Image
+                        src="/assets/icons/handshake.png"
+                        height={28}
+                        className="mb-1"
+                      />
+                      <span>Pengajuan</span>
+                    </Button>
+                  </Col>
+                </Row>
+                    </>
+                    
+                  )}                </CardBody>
               </Card>
             </Col>
           </Row>
