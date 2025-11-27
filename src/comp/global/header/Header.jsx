@@ -68,7 +68,7 @@ export default function Header({ onSidebarToggle, onUserChange }) {
       isMounted.current = false;
       ignore = true;
     };
-  }, [onUserChange]);
+  }, []);
 
   // Bersihkan class show-sidebar jika unmount
   useEffect(() => {

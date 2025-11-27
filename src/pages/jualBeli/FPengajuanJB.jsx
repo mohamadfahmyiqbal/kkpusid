@@ -1,7 +1,7 @@
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
-import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -10,154 +10,134 @@ import {
   Container,
   Form,
   Row,
+  Table,
   Spinner,
-  CardText,
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 import { formatRupiah } from "../../utils/formatRupiah";
 import URequest from "../../utils/URequest";
 import ApprovalStepper from "../../comp/approval/ApprovalStepper";
+import UJB from "../../utils/UJB";
 
 export default function FPengajuanJB() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
+  const [approvalData, setApprovalData] = useState([]);
+  const [pengajuanExists, setPengajuanExists] = useState(false);
+
   const [fields, setFields] = useState({
     tipe: "",
-    nama_barang: "",
-    harga: "",
-    dp: "",
-    jumlah_term: "",
+    nama_barang: "", // FIX
+    harga: 0,
+    dp: 0,
+    jumlah_term: 3, // FIX
   });
 
-  const [loading, setLoading] = useState(false);
-  const [tipeList, setTipeList] = useState([]);
-  const [requestData, setRequestData] = useState(null);
+  const updateFields = (key, value) => {
+    if (!isLocked) setFields((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const handleUserChange = useCallback((u) => {
-    setUser(u);
-  }, []);
+  const nominal = useMemo(
+    () => Math.max((fields.harga || 0) - (fields.dp || 0), 0),
+    [fields.harga, fields.dp]
+  );
 
-  /** GET REQUEST */
-  const getRequest = useCallback(async () => {
-    setLoading(true);
+  const estimasiAngsuran = useMemo(
+    () => (fields.jumlah_term > 0 ? nominal / fields.jumlah_term : 0),
+    [fields.jumlah_term, nominal]
+  );
+
+  // ================================
+  // LOAD JIKA SUDAH ADA PENGAJUAN
+  // ================================
+  const loadPengajuan = useCallback(async () => {
     try {
       const res = await URequest.getRequestByNik({ type: "JB" });
-      const jb = res?.data?.data?.jbDetail;
-      const request = res?.data?.data;
+      const data = res?.data?.data;
 
-      setRequestData(request || null);
+      if (data) {
+        setPengajuanExists(true);
+        setIsLocked(true);
+        setUser(data.anggota || null);
+        setApprovalData(data.RequestApproval || []);
 
-      if (jb) {
+        const jb = data.jbDetail || {};
+
         setFields({
           tipe: jb.tipe || "",
           nama_barang: jb.nama_barang || "",
-          harga: jb.harga || "",
-          dp: jb.dp || "",
-          jumlah_term: jb.jumlah_term || "",
+          harga: Number(jb.harga) || 0,
+          dp: Number(jb.dp) || 0,
+          jumlah_term: Number(jb.jumlah_term) || 3,
         });
+      } else {
+        setPengajuanExists(false);
+        setIsLocked(false);
       }
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error("ERR_LOAD:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  /** INIT */
   useEffect(() => {
-    getRequest();
+    loadPengajuan();
+  }, [loadPengajuan]);
 
-    setTipeList([
-      { id: 1, name: "Elektronik" },
-      { id: 2, name: "Kendaraan" },
-      { id: 3, name: "Perabot" },
-    ]);
-  }, [getRequest]);
-
-  /** === CALC === */
-  const nominal = Number(fields.harga) || 0;
-  const dpNominal = Number(fields.dp) || 0;
-  const sisaPembayaran = Math.max(nominal - dpNominal, 0);
-  const termValue = Number(fields.jumlah_term) || 0;
-  const estimasi = termValue > 0 ? Math.floor(sisaPembayaran / termValue) : 0;
-
-  const akadText = "Some akad text here";
-
-  const isFormValid =
-    fields.tipe &&
-    fields.nama_barang &&
-    nominal > 0 &&
-    dpNominal >= 0 &&
-    termValue > 0;
-
-  /** HANDLE SUBMIT */
+  // ================================
+  // SUBMIT
+  // ================================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (isLocked) return;
+
+    if (fields.dp > fields.harga) {
+      alert("DP tidak boleh lebih besar dari harga barang!");
+      return;
+    }
+
+    const payload = {
+      tipe: fields.tipe,
+      nama_barang: fields.nama_barang,
+      harga: Number(fields.harga),
+      dp: Number(fields.dp),
+      jumlah_term: Number(fields.jumlah_term),
+
+      // WAJIB SESUAI BACKEND
+      sisa_pembayaran: nominal, // FIX
+      angsuran_per_term: estimasiAngsuran, // FIX
+    };
 
     try {
-      const res = await URequest.reqJB(fields);
-      console.log(res);
-      getRequest();
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
+      await UJB.reqJB(payload);
+      alert("Pengajuan berhasil disimpan!");
+      loadPengajuan();
+    } catch (err) {
+      console.error("Error submit:", err);
+      alert("Terjadi kesalahan saat mengirim data.");
     }
   };
 
-  /** APPROVAL HANDLERS */
-  const handleApprove = async () => {
-    try {
-      await URequest.approvalAction({
-        token: requestData.token,
-        type: "JB",
-        action: "approve",
-      });
-
-      alert("Berhasil Approve!");
-      getRequest();
-    } catch (e) {
-      console.log(e);
-      alert("Gagal Approve");
-    }
+  const handleRupiahInput = (key, e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    updateFields(key, Number(value));
   };
 
-  const handleReject = async () => {
-    try {
-      await URequest.approvalAction({
-        token: requestData.token,
-        type: "JB",
-        action: "reject",
-      });
-
-      alert("Request ditolak.");
-      getRequest();
-    } catch (e) {
-      console.log(e);
-      alert("Gagal Reject");
-    }
-  };
-
-  /** HITUNG STEP UNTUK STEPPER */
-  const stepLabels = ["Pengawas", "Ketua"];
-  let currentStep = 0;
-
-  if (requestData?.RequestApproval?.status === "rejected") {
-    currentStep = "rejected";
-  } else if (requestData?.RequestApproval?.flow) {
-    currentStep = requestData.RequestApproval.flow - 1;
+  if (loading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" />
+      </div>
+    );
   }
-
-  const approverId = requestData?.RequestApproval?.approver ?? 0;
-  const isUserApprover = user?.nik === approverId;
-
-  const isReadonly = requestData !== null; // FORM TETAP TAMPIL, TAPI READONLY
 
   return (
     <div id="main-wrapper">
-      <Header onUserChange={handleUserChange} />
+      <Header onUserChange={setUser} />
       <Sidebar user={user} />
 
       <div className="page-wrapper">
@@ -168,204 +148,122 @@ export default function FPengajuanJB() {
                 variant="link"
                 className="p-0 me-2"
                 onClick={() => navigate(-1)}
-                style={{ textDecoration: "none" }}
               >
                 <FaArrowLeft size={16} color="black" />
               </Button>
-              <h1 className="fw-bold mb-0">Form Pengajuan Jual Beli</h1>
+              <h1 className="fw-bold mb-0">
+                {pengajuanExists
+                  ? "Pengajuan Jual Beli Tersedia"
+                  : "Form Pengajuan Jual Beli"}
+              </h1>
             </Col>
           </Row>
 
-          {/* === Jika ADA REQUEST → tampilkan STEPPER === */}
-          {requestData && (
-            <>
-              <ApprovalStepper
-                currentStep={currentStep}
-                steps={stepLabels}
-                user={user}
-              />
-
-              {isUserApprover && currentStep !== "rejected" && (
-                <Row className="my-3">
-                  <Col>
-                    <Button
-                      variant="success"
-                      className="w-100 mb-2"
-                      onClick={handleApprove}
+          <Row>
+            <Card>
+              <CardBody>
+                <Form onSubmit={handleSubmit}>
+                  {/* Tipe */}
+                  <Form.Group className="mb-2">
+                    <Form.Label className="fw-semibold">Tipe</Form.Label>
+                    <Form.Select
+                      value={fields.tipe}
+                      disabled={isLocked}
+                      onChange={(e) => updateFields("tipe", e.target.value)}
                     >
-                      Approve
+                      <option value="">-- Pilih Tipe --</option>
+                      <option value="Elektronik">Elektronik</option>
+                      <option value="Kendaraan">Kendaraan</option>
+                      <option value="Properti">Properti</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  {/* Nama Barang */}
+                  <Form.Group className="mb-2">
+                    <Form.Label className="fw-semibold">Nama Barang</Form.Label>
+                    <Form.Control
+                      value={fields.nama_barang}
+                      disabled={isLocked}
+                      onChange={(e) =>
+                        updateFields("nama_barang", e.target.value)
+                      }
+                      placeholder="Masukkan nama barang"
+                    />
+                  </Form.Group>
+
+                  {/* Harga */}
+                  <Form.Group className="mb-2">
+                    <Form.Label className="fw-semibold">Harga</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formatRupiah(fields.harga, false)}
+                      disabled={isLocked}
+                      onChange={(e) => handleRupiahInput("harga", e)}
+                    />
+                  </Form.Group>
+
+                  {/* DP */}
+                  <Form.Group className="mb-2">
+                    <Form.Label className="fw-semibold">DP</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formatRupiah(fields.dp, false)}
+                      disabled={isLocked}
+                      onChange={(e) => handleRupiahInput("dp", e)}
+                    />
+                  </Form.Group>
+
+                  {/* Jumlah Term */}
+                  <Form.Group className="mb-2">
+                    <Form.Label className="fw-semibold">Jumlah Term</Form.Label>
+                    <Form.Select
+                      value={fields.jumlah_term}
+                      disabled={isLocked}
+                      onChange={(e) =>
+                        updateFields("jumlah_term", Number(e.target.value))
+                      }
+                    >
+                      <option value={3}>3x Pembayaran</option>
+                      <option value={6}>6x Pembayaran</option>
+                      <option value={12}>12x Pembayaran</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  {/* Summary */}
+                  <div className="border rounded mb-3">
+                    <div className="bg-light px-3 py-2 fw-bold">
+                      Summary Detail Kredit
+                    </div>
+                    <Table responsive borderless className="mb-0">
+                      <tbody>
+                        <tr>
+                          <td className="fw-semibold">Nominal (Harga - DP)</td>
+                          <td className="text-end">{formatRupiah(nominal)}</td>
+                        </tr>
+                        <tr>
+                          <td className="fw-semibold">
+                            Estimasi Angsuran / Termin
+                          </td>
+                          <td className="text-end">
+                            {formatRupiah(estimasiAngsuran)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </div>
+
+                  {/* Submit / Stepper */}
+                  {!isLocked ? (
+                    <Button type="submit" className="w-100" variant="info">
+                      <strong>Proses</strong>
                     </Button>
-                    <Button
-                      variant="danger"
-                      className="w-100"
-                      onClick={handleReject}
-                    >
-                      Reject
-                    </Button>
-                  </Col>
-                </Row>
-              )}
-            </>
-          )}
-
-          {/* === FORM TETAP TAMPIL === */}
-          <Card>
-            <CardBody>
-              <Form onSubmit={handleSubmit}>
-                {/* TIPE */}
-                <Form.Group className="mb-2">
-                  <Form.Label>Tipe</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={fields.tipe}
-                    disabled={isReadonly}
-                    onChange={(e) =>
-                      setFields((prev) => ({ ...prev, tipe: e.target.value }))
-                    }
-                  >
-                    <option value="">-- Pilih Tipe --</option>
-                    {tipeList.map((t) => (
-                      <option key={t.id} value={t.name}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-
-                {/* Nama Barang */}
-                <Form.Group className="mb-2">
-                  <Form.Label>Nama Barang</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={fields.nama_barang}
-                    disabled={isReadonly}
-                    placeholder="Misal: Laptop Lenovo XYZ"
-                    onChange={(e) =>
-                      setFields((prev) => ({
-                        ...prev,
-                        nama_barang: e.target.value,
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                {/* Harga */}
-                <Form.Group className="mb-2">
-                  <Form.Label>Harga</Form.Label>
-                  <Form.Control
-                    type="text"
-                    disabled={isReadonly}
-                    placeholder="5.000.000"
-                    value={
-                      fields.harga
-                        ? formatRupiah(fields.harga).replace("Rp", "")
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setFields((prev) => ({
-                        ...prev,
-                        harga: e.target.value.replace(/\D/g, ""),
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                {/* DP */}
-                <Form.Group className="mb-2">
-                  <Form.Label>DP</Form.Label>
-                  <Form.Control
-                    type="text"
-                    disabled={isReadonly}
-                    placeholder="1.000.000"
-                    value={
-                      fields.dp ? formatRupiah(fields.dp).replace("Rp", "") : ""
-                    }
-                    onChange={(e) =>
-                      setFields((prev) => ({
-                        ...prev,
-                        dp: e.target.value.replace(/\D/g, ""),
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                {/* Term */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Jumlah Term</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="3"
-                    value={fields.jumlah_term}
-                    disabled={isReadonly}
-                    onChange={(e) =>
-                      setFields((prev) => ({
-                        ...prev,
-                        jumlah_term: e.target.value.replace(/\D/g, ""),
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                {/* SUMMARY */}
-                <Row className="mt-4">
-                  <Col xs={12}>
-                    <CardText className="fw-bold border-top border-bottom py-1">
-                      Summary Detail
-                    </CardText>
-                  </Col>
-
-                  <Col xs={6}>
-                    <CardText>Harga Barang: {formatRupiah(nominal)}</CardText>
-                    <CardText>DP: {formatRupiah(dpNominal)}</CardText>
-                    <CardText>
-                      Sisa Pembayaran: {formatRupiah(sisaPembayaran)}
-                    </CardText>
-                  </Col>
-
-                  <Col xs={6} className="text-end">
-                    <CardText>Estimasi Angsuran / Term</CardText>
-                    <CardText>
-                      {estimasi > 0 ? formatRupiah(estimasi) : "-"}
-                    </CardText>
-                  </Col>
-                </Row>
-
-                {/* AKAD */}
-                <Row className="mt-4">
-                  <Col>
-                    <CardText className="fw-bold border-top border-bottom py-1">
-                      Akad
-                    </CardText>
-                    <CardText
-                      style={{ whiteSpace: "pre-wrap", textAlign: "justify" }}
-                    >
-                      {akadText}
-                    </CardText>
-                  </Col>
-                </Row>
-
-                {/* BUTTON KIRIM (disembunyikan jika sudah ada request) */}
-                {!isReadonly && (
-                  <Row className="mt-3">
-                    <Button
-                      type="submit"
-                      className="w-100"
-                      variant="primary"
-                      disabled={!isFormValid || loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Spinner animation="border" size="sm" /> Mengirim...
-                        </>
-                      ) : (
-                        "Kirim Pengajuan"
-                      )}
-                    </Button>
-                  </Row>
-                )}
-              </Form>
-            </CardBody>
-          </Card>
+                  ) : approvalData?.length > 0 ? (
+                    <ApprovalStepper approvalData={approvalData} />
+                  ) : null}
+                </Form>
+              </CardBody>
+            </Card>
+          </Row>
         </Container>
       </div>
     </div>
