@@ -2,135 +2,155 @@ import { Container, Row, Col } from "react-bootstrap";
 import { FaHourglassHalf, FaCheck, FaTimes, FaQuestion } from "react-icons/fa";
 import { useMemo } from "react";
 
-export default function ApprovalStepper({
-  currentStep = 0,
-  steps = [],
-  user = {},
-}) {
+export default function ApprovalStepper({ approvalData = [] }) {
+  /** =====================================================
+   *  AUTO FLOW: Pengawas → Ketua
+   ====================================================== */
+  const steps =
+    approvalData.length === 1 ? ["Pengawas"] : ["Pengawas", "Ketua"];
+
+  /** =====================================================
+   *  HITUNG CURRENT STEP
+   ====================================================== */
+  const currentStep = useMemo(() => {
+    if (!Array.isArray(approvalData)) return 0;
+
+    // Jika ada yang rejected
+    const isRejected = approvalData.some(
+      (a) => a?.status?.toLowerCase() === "rejected"
+    );
+    if (isRejected) return "rejected";
+
+    // Temukan step aktif berdasarkan approved
+    let approvedCount = 0;
+    approvalData.forEach((a) => {
+      if (a?.status?.toLowerCase() === "approved") {
+        approvedCount++;
+      }
+    });
+
+    return approvedCount; // 0 = pengawas aktif, 1 = ketua aktif
+  }, [approvalData]);
+
+  /** =====================================================
+   *  STYLE CONFIG
+   ====================================================== */
   const STEP_STATUS_STYLE = {
     completed: {
-      circleBg: "#0d6efd",
-      circleColor: "#fff",
-      labelColor: "#0d6efd",
+      bg: "#0d6efd",
+      color: "#fff",
+      label: "#0d6efd",
+      icon: <FaCheck />,
     },
     active: {
-      circleBg: "#ffc107",
-      circleColor: "#212529",
-      labelColor: "#ffc107",
-    },
-    waiting: {
-      circleBg: "#dee2e6",
-      circleColor: "#6c757d",
-      labelColor: "#6c757d",
+      bg: "#ffc107",
+      color: "#212529",
+      label: "#ffc107",
+      icon: <FaHourglassHalf />,
     },
     pending: {
-      circleBg: "#dee2e6",
-      circleColor: "#6c757d",
-      labelColor: "#6c757d",
+      bg: "#dee2e6",
+      color: "#6c757d",
+      label: "#6c757d",
+      icon: <FaQuestion />,
     },
     rejected: {
-      circleBg: "#dc3545",
-      circleColor: "#fff",
-      labelColor: "#dc3545",
+      bg: "#dc3545",
+      color: "#fff",
+      label: "#dc3545",
+      icon: <FaTimes />,
     },
   };
 
+  /** =====================================================
+   *  STEP STATUS LOGIC
+   ====================================================== */
   const getStatus = (index) => {
     if (currentStep === "rejected") return "rejected";
-    if (currentStep === 0 && index === 0) return "waiting";
     if (index < currentStep) return "completed";
     if (index === currentStep) return "active";
     return "pending";
   };
 
-  const baseCircleStyle = {
-    width: 40,
-    height: 40,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-    fontSize: 18,
-    zIndex: 2,
-  };
-
-  const baseLabelStyle = {
-    marginTop: 8,
-    fontSize: 12,
-    maxWidth: 80,
-    wordWrap: "break-word",
-    textAlign: "center",
-  };
-
-  const getCircleStyle = (status) => ({
-    ...baseCircleStyle,
-    backgroundColor: STEP_STATUS_STYLE[status]?.circleBg || "#dee2e6",
-    color: STEP_STATUS_STYLE[status]?.circleColor || "#000",
-  });
-
-  const getLabelStyle = (status) => ({
-    ...baseLabelStyle,
-    color: STEP_STATUS_STYLE[status]?.labelColor || "#000",
-  });
-
-  const renderStepContent = (status, index) => {
-    if (status === "completed") return <FaCheck />;
-    if (status === "waiting" || status === "pending") return <FaQuestion />;
-    if (status === "active") return <FaHourglassHalf />;
-    if (status === "rejected") return <FaTimes />;
-    return index + 1;
-  };
-
+  /** =====================================================
+   *  MEMOIZED STEP ITEMS
+   ====================================================== */
   const stepItems = useMemo(() => {
-    if (!Array.isArray(steps) || steps.length === 0) return [];
     return steps.map((label, index) => {
       const status = getStatus(index);
+      const style = STEP_STATUS_STYLE[status];
+
       return (
         <div
           key={index}
           style={{
+            flex: 1,
+            textAlign: "center",
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            flex: 1,
-            position: "relative",
           }}
         >
-          <div style={getCircleStyle(status)}>
-            {renderStepContent(status, index)}
+          {/* Circle */}
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              backgroundColor: style.bg,
+              color: style.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              fontSize: 18,
+              zIndex: 2,
+            }}
+          >
+            {style.icon}
           </div>
-          <div style={getLabelStyle(status)}>{label}</div>
+
+          {/* Label */}
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              maxWidth: 90,
+              color: style.label,
+            }}
+          >
+            {label}
+          </div>
         </div>
       );
     });
   }, [steps, currentStep]);
 
-  if (!Array.isArray(steps) || steps.length === 0) {
-    return (
-      <div className="mt-4 text-center text-muted">
-        <h6 className="border-bottom fw-bold mb-3">Progress Approval</h6>
-        <p>Belum ada data tahapan approval.</p>
-      </div>
-    );
-  }
+  /** =====================================================
+   *  PROGRESS WIDTH
+   ====================================================== */
+  const progressWidth =
+    currentStep !== "rejected"
+      ? `${(currentStep / (steps.length - 1)) * 100}%`
+      : "0%";
 
   return (
     <div className="mt-4">
       <h6 className="border-bottom fw-bold mb-3">Progress Approval</h6>
+
       <Container className="d-flex justify-content-center mt-4">
         <Row className="w-100">
           <Col xs={12} md={10} lg={8} className="mx-auto">
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
                 position: "relative",
                 padding: "20px 0",
+                display: "flex",
+                justifyContent: "space-between",
               }}
             >
-              {/* Garis abu-abu latar */}
+              {/* Background Line */}
               <div
                 style={{
                   position: "absolute",
@@ -143,14 +163,14 @@ export default function ApprovalStepper({
                 }}
               />
 
-              {/* Garis biru progress dinamis */}
+              {/* Progress Line */}
               {currentStep !== "rejected" && (
                 <div
                   style={{
                     position: "absolute",
                     top: 20,
                     left: 0,
-                    width: `${(currentStep / (steps.length - 1)) * 100}%`,
+                    width: progressWidth,
                     height: 4,
                     backgroundColor: "#0d6efd",
                     zIndex: 1,
@@ -159,7 +179,7 @@ export default function ApprovalStepper({
                 />
               )}
 
-              {/* Step Items */}
+              {/* Steps */}
               {stepItems}
             </div>
           </Col>
