@@ -3,12 +3,30 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import router from "./routes/RouterConfig";
+// Menggunakan import sesuai dengan struktur folder Anda yang sudah ada: routes/RouterConfig.jsx
+import routerConfig from "./routes/RouterConfig";
 
 const App = () => (
   <>
-    <ToastContainer position="top-right" autoClose={3000} />
-    <RouterProvider router={router} future={{ v7_startTransition: true }} />
+    {/* Konfigurasi untuk notifikasi Toast */}
+    <ToastContainer
+      position="top-right"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+    />
+
+    {/* Menyediakan konfigurasi router ke seluruh aplikasi */}
+    <RouterProvider
+      router={routerConfig}
+      future={{ v7_startTransition: true }}
+    />
   </>
 );
 
