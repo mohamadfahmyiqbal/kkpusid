@@ -597,9 +597,9 @@ Background Colors
 }
 
 .bg-blueGrad {
-  background: linear-gradient(180deg,
-      #13547A 0%,
-      #80D0C7 100%), !important;
+  /* Hapus koma (,) setelah 100% */
+  /* Hapus 'background: ' di baris kedua */
+  background: linear-gradient(180deg, #13547A 0%, #80D0C7 100%) !important;
 }
 
 .bg-transparent {

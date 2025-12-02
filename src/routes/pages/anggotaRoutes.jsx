@@ -1,11 +1,10 @@
-import DetailPendaftaranAnggota from "../../pages/anggota/DetailPendaftaranAnggota";
-import FormPendaftaranAnggota from "../../pages/anggota/FormPendaftaranAnggota";
-import PendaftaranAnggota from "../../pages/anggota/PendaftaranAnggota";
-import ProfileScreen from "../../pages/anggota/ProfileScreen";
+import RegistrationFormDetail from "../../pages/anggota/RegistrationFormDetail";
+import RegistrationPage from "../../pages/anggota/RegistrationPage";
 
-export default {
-  pendaftaranAnggota: PendaftaranAnggota,
-  formPendaftaranAnggota: FormPendaftaranAnggota,
-  detailPendaftaranAnggota: DetailPendaftaranAnggota,
-  profile: ProfileScreen,
+const anggotaRoutes = {
+  registrationPage: RegistrationPage,
+  registrationFormDetail: RegistrationFormDetail,
+  // Tambahkan halaman lain dari folder anggota di sini
 };
+
+export default anggotaRoutes; // <--- Variabel diekspor

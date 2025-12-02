@@ -1,9 +1,14 @@
-import PencairanSimpananScreen from "../../pages/simpanan/PencairanSimpananScreen";
-import SimpananScreen from "../../pages/simpanan/SimpananScreen";
-import SukarelaScreen from "../../pages/simpanan/SukarelaScreen";
+// simpananRoutes.jsx (Diperbaiki)
+import DetailSaldoPage from "../../pages/simpanan/DetailSaldoPage";
+import PenarikanSimpananPage from "../../pages/simpanan/PenarikanSimpananPage";
+import SimpananPage from "../../pages/simpanan/SimpananPage";
 
-export default {
-  Simpanan: SimpananScreen,
-  Sukarela: SukarelaScreen,
-  Pencairan: PencairanSimpananScreen,
+const simpananRoutes = {
+  // ✅ Tetapkan ke variabel bernama
+  simpananDetailSaldo: DetailSaldoPage,
+  simpananPage: SimpananPage,
+  penarikanSimpananPage: PenarikanSimpananPage,
+  // ...
 };
+
+export default simpananRoutes; // ✅ Ekspor variabel bernama

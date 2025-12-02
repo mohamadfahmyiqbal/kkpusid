@@ -1,85 +1,62 @@
-.App {
-  text-align: center;
+/* src/App.css (Menggunakan Class Baru 'l-') */
+
+/* -------------------------------------------------------
+   PERBAIKAN KRITIS UNTUK KETINGGIAN
+   ------------------------------------------------------- */
+html,
+body {
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* -------------------------------------------------------
+   1. Wrapper Utama (Pengganti #main-wrapper)
+   ------------------------------------------------------- */
+#l-main-wrapper {
+  /* Gradient: Biru tua ke Hijau/Teal */
+  background: linear-gradient(to bottom, #0d47a1 0%, #00838f 60%, #00bfa5 100%) !important;
+  min-height: 100vh !important;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* 2. Header Topbar Kustom (Perubahan di sini) */
+.l-header {
+  /* Menggunakan warna solid yang sama dengan puncak gradient (#0d47a1) */
+  background-color: #0d47a1 !important;
+
+  /* Hapus 'position: fixed;' jika Anda tidak ingin header menempel */
+  /* Jika Anda ingin header tetap menempel (fixed), biarkan ini: */
+  position: fixed;
+  width: 100%;
+  z-index: 1030;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+.l-header .navbar-brand,
+.l-header .nav-link {
+  color: white !important;
 }
 
-.btn-circle {
-  width: 40px;
+/* 3. Area Konten (l-content) */
+.l-content {
+  background-color: transparent !important;
+  padding-top: 60px;
+  /* Jarak dari fixed header */
+  flex-grow: 1;
+}
+
+/* Styling untuk Dot Indicator di Card (Bisa tetap sama jika tidak ada konflik) */
+.dot {
+  height: 8px;
+  width: 8px;
+  background-color: var(--bs-secondary);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Tambahkan class kustom untuk ukuran logo */
+.l-logo-size {
   height: 40px;
-  border-radius: 50% !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  padding: 0;
-}
-
-.bg-topbar {
-  background: linear-gradient(to right, #0178bc 0%, #00bdda 100%);
-}
-
-.bg-yellow-grad {
-  background: linear-gradient(180deg, #F46B45 0%, #EEA849 100%)
-}
-
-/* ApprovalIcons.css */
-.circle-icon {
-  width: 60px;
-  height: 60px;
-  background-color: #6c757d;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 28px;
-  margin: 0 auto 10px;
-}
-
-.circle-icon_success {
-  width: 60px;
-  height: 60px;
-  background-color: green;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 28px;
-  margin: 0 auto 10px;
+  width: auto;
 }
