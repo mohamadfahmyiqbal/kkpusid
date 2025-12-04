@@ -1,279 +1,270 @@
-// pages/transaksi/FormPengajuanTransaksi.jsx (Final Optimized)
+// pages/transaksi/FormPengajuanPembelian.jsx (Disesuaikan dari FormPengajuanTransaksi.jsx)
 
 import React, { useState, useCallback, useMemo, memo } from "react";
-import { Card, Button, Form, Row, Col, Alert } from "react-bootstrap";
+import { Card, Button, Form, Row, Col } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  FaArrowLeft,
-  FaDownload,
-  FaCheckCircle,
-  FaFileInvoice,
-  FaMoneyCheckAlt,
-} from "react-icons/fa";
-
+import { FaArrowLeft, FaShoppingCart } from "react-icons/fa";
 import { jwtEncode } from "../../routes/helpers";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 
-// --- FUNGSI HELPER UNTUK MENDAPATKAN KUNCI KEMBALI DINAMIS ---
+// --- FUNGSI HELPER (TETAP) ---
 const getReturnPageKey = (token) => {
-  if (!token) return "transaksiDashboard";
-  try {
-    const [, payload] = token.split(".");
-    const json = decodeURIComponent(
-      escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
-    );
-    return JSON.parse(json)?.return ?? "transaksiDashboard";
-  } catch (err) {
-    return "transaksiDashboard";
-  }
+ if (!token) return "transaksiDashboard";
+ try {
+  const [, payload] = token.split(".");
+  const json = decodeURIComponent(
+   escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
+  );
+  return JSON.parse(json)?.return ?? "transaksiDashboard";
+ } catch (err) {
+  return "transaksiDashboard";
+ }
 };
 
-// --- DATA MOCKUP ---
-const MOCK_BALANCE = 5000000;
-const MOCK_ACCOUNT_NUMBER = "1234567890";
-const MOCK_ACCOUNT_BANK = "Bank Syariah";
-const MOCK_ACCOUNT_NAME = "Avhan Hadi";
+const formatCurrency = (amount) => {
+ return amount.toLocaleString("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  minimumFractionDigits: 0,
+ });
+};
 
-const mockHistory = [
-  {
-    id: 1,
-    date: "23-03-2025 10:00",
-    title: "Pencairan Dana Pendidikan",
-    amount: "Rp 500.000",
-    status: "Disetujui",
-    statusVariant: "success",
-  },
-  {
-    id: 2,
-    date: "10-04-2025 15:30",
-    title: "Pencairan Dana Pensiun",
-    amount: "Rp 1.000.000",
-    status: "Menunggu Approval",
-    statusVariant: "warning text-dark",
-  },
+const formatInputDisplay = (amount) => {
+ const num = parseInt(amount || 0);
+ return num.toLocaleString("id-ID").replace(/,00$/, "");
+};
+
+const TERMS_OPTIONS = [
+ "1x Pembayaran",
+ "3x Pembayaran",
+ "6x Pembayaran",
+ "12x Pembayaran",
 ];
 
-const formatBalance = (amount) => {
-  return amount.toLocaleString("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  });
-};
+function FormPengajuanPembelian() {
+ const navigate = useNavigate();
+ const { token } = useParams();
+ const returnPageKey = getReturnPageKey(token);
 
-function FormPengajuanTransaksi() {
-  const navigate = useNavigate();
-  const { token } = useParams();
-  const returnPageKey = getReturnPageKey(token);
+ const [form, setForm] = useState({
+  tipe: "Elektronik",
+  nama: "Lenovo Ideapad 330",
+  harga: "5000000",
+  dp: "1000000",
+  jumlahTerm: "3x Pembayaran",
+ });
 
-  const [form, setForm] = useState({
-    jumlah: "",
-    kebutuhan: "",
-  });
+ // --- LOGIKA PERHITUNGAN KREDIT ---
+ const { nominalKredit, estimasiAngsuran } = useMemo(() => {
+  const totalHarga = parseInt(form.harga.replace(/\D/g, "") || 0);
+  const totalDP = parseInt(form.dp.replace(/\D/g, "") || 0);
+  const nominalKredit = totalHarga - totalDP;
 
-  const handleGoBack = useCallback(() => {
-    const returnToken = jwtEncode({ page: returnPageKey });
-    navigate(`/${returnToken}`);
-  }, [navigate, returnPageKey]);
+  const termMatch = form.jumlahTerm.match(/^(\d+)x/);
+  const totalTerm = termMatch ? parseInt(termMatch[1]) : 1;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "jumlah" ? value.replace(/\D/g, "") : value,
-    }));
+  const estimasiAngsuran = totalTerm > 0 ? nominalKredit / totalTerm : 0;
+
+  return {
+   nominalKredit,
+   estimasiAngsuran: Math.round(estimasiAngsuran),
+  };
+ }, [form.harga, form.dp, form.jumlahTerm]);
+
+ const handleGoBack = useCallback(() => {
+  const returnToken = jwtEncode({ page: returnPageKey });
+  navigate(`/${returnToken}`);
+ }, [navigate, returnPageKey]);
+
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  setForm((prev) => ({
+   ...prev,
+   [name]: ["harga", "dp"].includes(name) ? value.replace(/\D/g, "") : value,
+  }));
+ };
+
+ const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (nominalKredit <= 0) {
+   alert("Nominal Kredit tidak valid. Harga harus lebih besar dari DP.");
+   return;
+  }
+
+  // --- LOGIKA NAVIGASI KE DETAIL TRANSAKSI ---
+  const payload = {
+   page: "transactionDetailPage",
+   return: returnPageKey,
+   data: {
+    invoiceNumber: `PNR-${Date.now()}`,
+    status: "Menunggu Persetujuan",
+    total: nominalKredit,
+    tanggalPengajuan: new Date().toLocaleDateString("id-ID"),
+    catatan: `Pengajuan Pembelian Barang: ${form.nama} (${form.tipe}) dengan tenor ${form.jumlahTerm}.`,
+    details: [
+     { description: `Harga Barang (${form.nama})`, amount: parseInt(form.harga.replace(/\D/g, "") || 0) },
+     { description: `Uang Muka (DP)`, amount: -parseInt(form.dp.replace(/\D/g, "") || 0) },
+     { description: `Nominal Kredit (untuk ${form.jumlahTerm})`, amount: nominalKredit },
+    ],
+    action: "purchaseDetail",
+   },
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const amount = parseInt(form.jumlah);
+  const transactionToken = jwtEncode(payload);
+  navigate(`/${transactionToken}`, {
+   state: {
+    transactionData: payload,
+    returnPage: returnPageKey
+   }
+  });
+ };
 
-    if (!amount || amount <= 0) {
-      alert("Jumlah pencairan harus diisi.");
-      return;
-    }
-    if (amount > MOCK_BALANCE) {
-      alert("Jumlah pencairan melebihi saldo yang tersedia!");
-      return;
-    }
+ return (
+  <DashboardLayout>
+   <div className="row page-titles pt-3">
+    <div className="col-12 align-self-center">
+     <h3 className="text-themecolor mb-0 mt-0">
+      <Button
+       variant="link"
+       onClick={handleGoBack}
+       className="p-0 me-2 text-dark"
+      >
+       <FaArrowLeft />
+      </Button>{" "}
+      Pengajuan Pembelian
+     </h3>
+    </div>
+   </div>
 
-    alert(
-      `Pengajuan pencairan sebesar ${formatBalance(
-        amount
-      )} telah dikirim untuk diverifikasi.`
-    );
+   <Row className="mt-4 justify-content-center">
+    <Col lg={10} md={12}>
+     <Card className="shadow-sm mb-4">
+      <Card.Header className="bg-primary text-white">
+       <FaShoppingCart className="me-2" /> Formulir Pengajuan
+      </Card.Header>
+      <Card.Body>
+       <Form onSubmit={handleSubmit}>
+        {/* Tipe */}
+        <Form.Group className="mb-3">
+         <Form.Label>Tipe</Form.Label>
+         <Form.Control
+          type="text"
+          name="tipe"
+          value={form.tipe}
+          onChange={handleChange}
+          placeholder="Contoh: Elektronik, Kendaraan"
+          required
+         />
+        </Form.Group>
 
-    const payload = {
-      page: "transactionDetailPage",
-      return: returnPageKey,
-      data: {
-        invoiceNumber: `PNR-${Date.now()}`,
-        status: "Menunggu Persetujuan",
-        total: amount,
-        tanggalPengajuan: new Date().toLocaleDateString("id-ID"),
-        catatan: `Pengajuan dana untuk ${form.kebutuhan}`,
-        details: [
-          { description: `Penarikan Simpanan Sukarela`, amount: amount },
-        ],
-        action: "withdrawalDetail",
-      },
-    };
-    const transactionToken = jwtEncode(payload);
-    navigate(`/${transactionToken}`);
-  };
+        {/* Nama */}
+        <Form.Group className="mb-3">
+         <Form.Label>Nama</Form.Label>
+         <Form.Control
+          type="text"
+          name="nama"
+          value={form.nama}
+          onChange={handleChange}
+          placeholder="Contoh: Lenovo Ideapad 330"
+          required
+         />
+        </Form.Group>
 
-  const handleViewHistoryDetail = useCallback(
-    (transaksi) => {
-      const payload = {
-        page: "transactionDetailPage",
-        return: returnPageKey,
-        data: {
-          status: transaksi.status,
-          type: "Pencairan",
-          invoiceId: transaksi.id,
-        },
-      };
-      navigate(`/transactionDetailPage/${jwtEncode(payload)}`);
-    },
-    [navigate, returnPageKey]
-  );
+        {/* Harga */}
+        <Form.Group className="mb-3">
+         <Form.Label>Harga</Form.Label>
+         <div className="input-group">
+          <span className="input-group-text">Rp.</span>
+          <Form.Control
+           type="text"
+           name="harga"
+           value={formatInputDisplay(form.harga)}
+           onChange={handleChange}
+           placeholder="Contoh: 5.000.000"
+           required
+          />
+         </div>
+        </Form.Group>
 
-  const formattedBalance = useMemo(() => formatBalance(MOCK_BALANCE), []);
-  const formattedJumlah = useMemo(
-    () => formatBalance(parseInt(form.jumlah) || 0),
-    [form.jumlah]
-  );
+        {/* DP */}
+        <Form.Group className="mb-3">
+         <Form.Label>DP</Form.Label>
+         <div className="input-group">
+          <span className="input-group-text">Rp.</span>
+          <Form.Control
+           type="text"
+           name="dp"
+           value={formatInputDisplay(form.dp)}
+           onChange={handleChange}
+           placeholder="Contoh: 1.000.000"
+           required
+          />
+         </div>
+        </Form.Group>
 
-  return (
-    <DashboardLayout>
-      <div className="row page-titles pt-3">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0">
-            <Button
-              variant="link"
-              onClick={handleGoBack}
-              className="p-0 me-2 text-dark"
-            >
-              <FaArrowLeft />
-            </Button>{" "}
-            Pengajuan Pencairan Dana
-          </h3>
+        {/* Jumlah term yang diambil */}
+        <Form.Group className="mb-4">
+         <Form.Label>Jumlah term yang diambil</Form.Label>
+         <Form.Select
+          name="jumlahTerm"
+          value={form.jumlahTerm}
+          onChange={handleChange}
+          required
+         >
+          {TERMS_OPTIONS.map((term) => (
+           <option key={term} value={term}>
+            {term}
+           </option>
+          ))}
+         </Form.Select>
+        </Form.Group>
+
+        {/* Summary Detail Credit */}
+        <h5 className="mt-4">Summary Detail Credit</h5>
+        <Row className="mb-3">
+         <Col>
+          <small className="text-muted d-block">Nominal</small>
+          <p className="mb-0 fw-bold">
+           {formatCurrency(nominalKredit)}
+          </p>
+         </Col>
+         <Col className="text-end">
+          <small className="text-muted d-block">
+           Estimasi Angsuran
+          </small>
+          <p className="mb-0 fw-bold">
+           {formatCurrency(estimasiAngsuran)}
+          </p>
+         </Col>
+        </Row>
+
+        {/* Akad (Contoh Text) */}
+        <h5 className="mt-4">Akad</h5>
+        <p className="text-secondary small">
+         Lorem Ipsum adalah contoh teks atau dummy dalam industri percetakan
+         dan penataan huruf atau typesetting. Lorem Ipsum telah menjadi
+         standar contoh teks sejak tahun 1500an, saat seorang tukang cetak
+         yang tidak dikenal mengambil sebuah kumpulan teks dan
+         mengacaknya...
+        </p>
+
+        <div className="text-center mt-4">
+         <Button
+          variant="primary"
+          type="submit"
+          className="fw-bold px-5"
+         >
+          Proses
+         </Button>
         </div>
-      </div>
-
-      <Row className="mt-4 justify-content-center">
-        <Col lg={10} md={12}>
-          {/* Bagian 1: Informasi Saldo dan Rekening Tujuan */}
-          <Card className="shadow-sm mb-4">
-            <Card.Header className="bg-primary text-white">
-              <FaMoneyCheckAlt className="me-2" /> Informasi Saldo & Tujuan
-            </Card.Header>
-            <Card.Body>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <small className="text-muted d-block">
-                    Saldo Simpanan Sukarela
-                  </small>
-                  <h4 className="text-success fw-bold">{formattedBalance}</h4>
-                </Col>
-                <Col md={6}>
-                  <small className="text-muted d-block">Rekening Tujuan</small>
-                  <p className="mb-0 fw-bold">{MOCK_ACCOUNT_NUMBER}</p>
-                  <small className="text-secondary">
-                    {MOCK_ACCOUNT_BANK} a.n. {MOCK_ACCOUNT_NAME}
-                  </small>
-                </Col>
-              </Row>
-              <Alert variant="info" className="p-2 text-center">
-                Batas minimum penarikan adalah **Rp 100.000**.
-              </Alert>
-            </Card.Body>
-          </Card>
-
-          {/* Bagian 2: Form Pengajuan */}
-          <Card className="shadow-sm mb-4">
-            <Card.Header className="bg-success text-white">
-              <FaDownload className="me-2" /> Formulir Pengajuan
-            </Card.Header>
-            <Card.Body>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Jumlah Pencairan (Rp)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="jumlah"
-                    value={form.jumlah.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-                    onChange={handleChange}
-                    placeholder="Masukkan jumlah pencairan"
-                    required
-                  />
-                  <small className="text-muted">
-                    Nominal yang diajukan: **{formattedJumlah}**
-                  </small>
-                </Form.Group>
-
-                <Form.Group className="mb-4">
-                  <Form.Label>Kebutuhan (Tujuan Pencairan)</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    name="kebutuhan"
-                    value={form.kebutuhan}
-                    onChange={handleChange}
-                    placeholder="Contoh: Biaya pendidikan anak atau modal usaha"
-                    required
-                  />
-                </Form.Group>
-
-                <div className="text-center">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    className="fw-bold px-5"
-                  >
-                    Proses Pengajuan <FaDownload className="ms-1" />
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
-
-          {/* Bagian 3: Histori Transaksi Pencairan */}
-          <Card className="shadow-sm">
-            <Card.Header className="bg-secondary text-white">
-              <FaCheckCircle className="me-2" /> Riwayat Pencairan Dana
-            </Card.Header>
-            <Card.Body>
-              {mockHistory.map((transaksi) => (
-                <Row
-                  key={transaksi.id}
-                  className="d-flex align-items-center border-bottom py-3"
-                  role="button"
-                  onClick={() => handleViewHistoryDetail(transaksi)}
-                >
-                  <Col xs={2} className="text-center">
-                    <FaFileInvoice size={30} className="text-muted" />
-                  </Col>
-                  <Col xs={10}>
-                    <h6 className="mb-0 fw-bold">{transaksi.title}</h6>
-                    <small className="text-muted d-block">
-                      {transaksi.date}
-                    </small>
-                    <span className="fw-bold me-2 d-block text-danger">
-                      {transaksi.amount}
-                    </span>
-                    <span className={`badge bg-${transaksi.statusVariant}`}>
-                      {transaksi.status}
-                    </span>
-                  </Col>
-                </Row>
-              ))}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </DashboardLayout>
-  );
+       </Form>
+      </Card.Body>
+     </Card>
+    </Col>
+   </Row>
+  </DashboardLayout>
+ );
 }
 
-export default memo(FormPengajuanTransaksi);
+export default memo(FormPengajuanPembelian);

@@ -3,7 +3,6 @@
 import React, { useMemo, useCallback, useState } from "react";
 import { Card, Button, Row, Col } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-// 💡 Tambahkan FaMoneyBillWave untuk tombol redirect
 import {
   FaArrowLeft,
   FaPrint,
@@ -72,7 +71,7 @@ export default function TransactionDetailPage() {
   const handleCancel = useCallback(() => {
     if (
       window.confirm(
-        "Apakah Anda yakin ingin membatalkan pengajuan pencairan ini?"
+        "Apakah Anda yakin ingin membatalkan pengajuan transaksi ini?"
       )
     ) {
       console.log(`Membatalkan transaksi ${pageData.invoiceNumber}`);
@@ -96,12 +95,9 @@ export default function TransactionDetailPage() {
     }
   }, [pageData]);
 
-  // 💡 Handler untuk Redirect ke Halaman Pembayaran/Setoran
   const handleRedirectToPayment = useCallback(() => {
     const payload = {
-      // Redirect ke halaman billing/setoran
       page: "invoicePage",
-      // Kunci kembali ke halaman detail transaksi ini
       return: returnKey,
     };
     const nextToken = jwtEncode(payload);
@@ -122,10 +118,14 @@ export default function TransactionDetailPage() {
   const { invoiceNumber, status, details, total, catatan, tanggalPengajuan } =
     pageData;
 
+  // Menentukan judul berdasarkan actionType
   const title =
     actionType === "withdrawalDetail"
       ? "Detail Pencairan Simpanan"
+      : actionType === "purchaseDetail"
+      ? "Detail Pengajuan Pembelian" // Judul untuk kasus pembelian
       : "Detail Transaksi";
+      
   const isPending = status === "Menunggu Persetujuan";
 
   // Menentukan badge color
@@ -240,7 +240,7 @@ export default function TransactionDetailPage() {
               {/* AKHIR BAGIAN APPROVAL CHAIN */}
             </Card.Body>
             <Card.Footer className="text-center">
-              {/* 💡 TOMBOL REDIRECT KE PEMBAYARAN/SETORAN */}
+              {/* TOMBOL REDIRECT KE PEMBAYARAN/SETORAN */}
               <Button
                 variant="warning"
                 className="me-3 text-dark fw-bold"

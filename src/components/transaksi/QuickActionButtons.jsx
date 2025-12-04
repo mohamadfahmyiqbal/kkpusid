@@ -7,7 +7,7 @@ import { FaMoneyBillWave, FaPlusCircle } from "react-icons/fa";
 /**
  * Komponen untuk menampilkan tombol aksi Setoran dan Pencairan.
  */
-export default function QuickActionButtons({ handleSetoran, handlePencairan }) {
+export default function QuickActionButtons({ handleSetoran, handlePengajuan }) {
   return (
     <Row className="mb-4 g-3">
       <Col md={6}>
@@ -23,9 +23,9 @@ export default function QuickActionButtons({ handleSetoran, handlePencairan }) {
         <Button
           variant="primary"
           className="w-100 fw-bold py-3"
-          onClick={handlePencairan}
+          onClick={handlePengajuan}
         >
-          <FaPlusCircle className="me-2" /> Ajukan Pencairan
+          <FaPlusCircle className="me-2" /> Pengajuan
         </Button>
       </Col>
     </Row>

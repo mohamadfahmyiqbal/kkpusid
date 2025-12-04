@@ -6,8 +6,8 @@ import { FaPlusCircle, FaFileInvoiceDollar } from "react-icons/fa";
 
 /**
  * Komponen yang ditampilkan ketika pengguna belum memiliki riwayat transaksi.
- * Hanya menampilkan tombol Ajukan Pengajuan (Pencairan).
- * * @param {function} onAjukanPencairan - Fungsi yang akan dipanggil saat tombol diklik (berisi logika navigasi).
+ * Hanya menampilkan tombol Pengajuan.
+ * @param {function} onAjukanPencairan - Fungsi yang akan dipanggil saat tombol diklik (nama prop tetap sama untuk kompatibilitas).
  */
 function NoTransactionState({ onAjukanPencairan }) {
   return (
@@ -15,7 +15,7 @@ function NoTransactionState({ onAjukanPencairan }) {
       <FaFileInvoiceDollar size={50} className="text-primary mb-3 mx-auto" />
       <h4 className="text-dark">Anda Belum Memiliki Riwayat Transaksi</h4>
       <p className="text-muted">
-        Mulai transaksi pertama Anda dengan mengajukan pencairan dana.
+        Mulai transaksi pertama Anda dengan membuat pengajuan baru.
       </p>
       <div className="d-flex justify-content-center mt-4">
         <Button
@@ -23,7 +23,7 @@ function NoTransactionState({ onAjukanPencairan }) {
           className="fw-bold"
           onClick={onAjukanPencairan}
         >
-          <FaPlusCircle className="me-2" /> Ajukan Pengajuan (Pencairan)
+          <FaPlusCircle className="me-2" /> Pengajuan
         </Button>
       </div>
     </Card>
