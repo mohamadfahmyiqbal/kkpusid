@@ -26,7 +26,7 @@ class UGlobal {
    * Endpoint: /public/articles
    */
   getLandingArticles(fields) {
-    return http.get("/public/articles", fields);
+    return http.get("/articles", fields);
   }
 
   /**
@@ -34,7 +34,7 @@ class UGlobal {
    * Endpoint: /public/text (Asumsi endpoint)
    */
   getLandingText() {
-    return http.get("/public/text");
+    return http.get("/landingtext");
   }
 }
 

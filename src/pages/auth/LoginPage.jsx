@@ -1,204 +1,211 @@
 // pages/auth/LoginPage.jsx
 import React, { useState } from "react";
-// ... (imports lainnya)
 import {
-  Container,
-  Card,
-  Form,
-  Button,
-  Row,
-  Col,
-  Alert,
-  Spinner,
+ Container,
+ Card,
+ Form,
+ Button,
+ Row,
+ Col,
+ Alert,
+ Spinner,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import UAuth from "../../utils/api/UAuth"; // Import modul API UAuth
 
 // PATH FIXES:
 import { jwtEncode } from "../../routes/helpers";
 import LandingHeader from "../global/landing/component/LandingHeader";
 import LandingFooter from "../global/landing/component/LandingFooter";
 
+// --- DATA MOCKUP YANG SAMA DENGAN REGISTER ---
+const MOCKUP_EMAIL_HP = "mohamadfahmyiqbal@gmail.com";
+const MOCKUP_PASSWORD = "qwerty123!!";
+// ----------------------------------------------
+
+// PATHS
 const DASHBOARD_PATH = `/${jwtEncode({ page: "dashboard" })}`;
-const REGISTER_PATH = `/${jwtEncode({ page: "authRegister" })}`;
+const REGISTER_PATH = `/${jwtEncode({ page: "accountRegisterPage" })}`;
 const FORGOT_PASSWORD_PATH = `/${jwtEncode({ page: "authForgotPassword" })}`;
 
 const LoginPage = () => {
-  // ... (state dan handleLogin function tetap sama) ...
-  const [emailHp, setEmailHp] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [emailHpInvalid, setEmailHpInvalid] = useState(false);
-  const [passwordInvalid, setPasswordInvalid] = useState(false);
-  const navigate = useNavigate();
+ // --- STATE DENGAN MOCKUP DATA ---
+ const [emailHp, setEmailHp] = useState(MOCKUP_EMAIL_HP);
+ const [password, setPassword] = useState(MOCKUP_PASSWORD);
+ // --------------------------------
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    setEmailHpInvalid(false);
-    setPasswordInvalid(false);
+ const [error, setError] = useState(null);
+ const [loading, setLoading] = useState(false);
+ const [emailHpInvalid, setEmailHpInvalid] = useState(false);
+ const [passwordInvalid, setPasswordInvalid] = useState(false);
+ const navigate = useNavigate();
 
-    let isValid = true;
-    if (!emailHp || !password) {
-      if (!emailHp) setEmailHpInvalid(true);
-      if (!password) setPasswordInvalid(true);
-      isValid = false;
-    }
+ // --- FUNGSI LOGIN DENGAN API CALL ---
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setEmailHpInvalid(false);
+  setPasswordInvalid(false);
 
-    if (!isValid) {
-      setLoading(false);
-      setError("Silakan lengkapi semua bidang yang diperlukan.");
-      return;
-    }
+  // 1. Validasi Sisi Klien
+  if (!emailHp || !password) {
+   if (!emailHp) setEmailHpInvalid(true);
+   if (!password) setPasswordInvalid(true);
+   setError("Email/Nomor Handphone dan Password wajib diisi.");
+   return;
+  }
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+  setLoading(true);
 
-      if (emailHp === "123456" && password === "123456") {
-        localStorage.setItem("token", "mock-auth-token-123");
-        navigate(DASHBOARD_PATH, { replace: true });
-      } else {
-        setError("Email/Nomor HP atau Password salah.");
-        setEmailHpInvalid(true);
-        setPasswordInvalid(true);
-      }
-    } catch (err) {
-      console.error("Login gagal:", err);
-      setError("Terjadi kesalahan saat menghubungi server.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+   // 2. Panggil API Login
+   const response = await UAuth.accountLogin({
+    emailHp: emailHp,
+    password: password,
+   });
+   console.log(response);
+   
 
-  return (
-    <div id="l-main-wrapper" className="d-flex flex-column min-vh-100">
-      {/* MENGIRIM PROPS UNTUK HEADER DINAMIS */}
-      <LandingHeader targetPageName="landingPage" linkText="" iconType="back" />
+   // 3. Penanganan Sukses (Status 200)
+   if (response.status === 200 && response.data.success) {
 
-      {/* Konten Login di tengah layar */}
-      <div className="l-content flex-grow-1 d-flex align-items-center justify-content-center">
-        <Container>
-          <Row className="justify-content-center">
-            <Col md={8} lg={5}>
-              <Card className="shadow-lg rounded-4 p-4">
-                <Card.Body>
-                  <div className="text-center mb-4">
-                    <img
-                      src="/assets/icons/pusLogo.png"
-                      alt="Logo PUS"
-                      className="mb-2"
-                      style={{ height: "40px" }}
-                    />
-                    <h3 className="fw-bold mb-0">Masuk Ke Akun PUS</h3>
-                  </div>
+    // Simpan JWT Token dan Data Pengguna ke Local Storage
+    const { token, user } = response.data.data;
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userData', JSON.stringify(user));
 
-                  {error && <Alert variant="danger">{error}</Alert>}
+    // Redirect ke halaman Dashboard
+    navigate(DASHBOARD_PATH);
+   } else {
+    // Ini menangani kasus jika API merespon 200 tapi success: false
+    setError(response.data.message || 'Login gagal. Silakan coba lagi.');
+   }
+  } catch (apiError) {
+   console.log(apiError);
+   
+   // 4. Penanganan Kesalahan API
+   const errorMessage = apiError.response?.data?.message || 'Terjadi kesalahan saat menghubungi server.';
+   setError(errorMessage);
+  } finally {
+   // 5. Akhiri Loading
+   setLoading(false);
+  }
+ };
+ // ------------------------------------
 
-                  <Form onSubmit={handleLogin} noValidate>
-                    <Form.Group className="mb-3" controlId="formBasicEmailHp">
-                      <Form.Label className="fw-normal">
-                        Email atau Nomor HP
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Masukkan Email/Nomor HP"
-                        value={emailHp}
-                        onChange={(e) => {
-                          setEmailHp(e.target.value);
-                          setEmailHpInvalid(false);
-                        }}
-                        required
-                        isInvalid={emailHpInvalid}
-                        isValid={!emailHpInvalid && emailHp.length > 0}
-                        className={
-                          !emailHpInvalid && emailHp.length > 0
-                            ? "is-valid-custom"
-                            : emailHpInvalid
-                            ? "is-invalid-custom"
-                            : ""
-                        }
-                        disabled={loading}
-                      />
-                    </Form.Group>
+ return (
+  <div className="d-flex flex-column min-vh-100">
+   <LandingHeader />
 
-                    <Form.Group className="mb-2" controlId="formBasicPassword">
-                      <Form.Label className="fw-normal">Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        placeholder="Masukkan Password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          setPasswordInvalid(false);
-                        }}
-                        required
-                        isInvalid={passwordInvalid}
-                        isValid={!passwordInvalid && password.length > 0}
-                        className={
-                          !passwordInvalid && password.length > 0
-                            ? "is-valid-custom"
-                            : passwordInvalid
-                            ? "is-invalid-custom"
-                            : ""
-                        }
-                        disabled={loading}
-                      />
-                    </Form.Group>
+   <div className="flex-grow-1 d-flex align-items-center py-5">
+    <Container>
+     <Row className="justify-content-center">
+      <Col md={8} lg={6} xl={5}>
+       <Card className="shadow-sm">
+        <Card.Body className="p-4 p-md-5">
+         <div className="text-center mb-4">
+          <img
+           src="/assets/icons/pusLogo.png"
+           alt="PUS Logo"
+           className="mb-3"
+           style={{ height: "60px" }}
+          />
+          <h2 className="fw-bold mb-0">Login Anggota</h2>
+          <p className="text-muted">Akses ke Dashboard Koperasi</p>
+         </div>
 
-                    {/* Link Lupa Sandi? */}
-                    <div className="text-end mb-4">
-                      <a
-                        href={FORGOT_PASSWORD_PATH}
-                        className="text-decoration-none"
-                      >
-                        Lupa Sandi? <span className="fw-bold">Klik disini</span>
-                      </a>
-                    </div>
+         {/* Tampilkan Error Alert */}
+         {error && <Alert variant="danger">{error}</Alert>}
 
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      className="w-100 fw-bold"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            className="me-2"
-                          />
-                          Login
-                        </>
-                      ) : (
-                        "Login"
-                      )}
-                    </Button>
+         <Form onSubmit={handleLogin}>
+          {/* Input Email / Nomor Handphone */}
+          <Form.Group className="mb-3">
+           <Form.Label className="fw-bold">
+            Email / Nomor Handphone
+           </Form.Label>
+           <Form.Control
+            type="text"
+            placeholder="Masukkan Email atau Nomor HP"
+            value={emailHp}
+            onChange={(e) => setEmailHp(e.target.value)}
+            isInvalid={emailHpInvalid}
+            autoComplete="username"
+           />
+           <Form.Control.Feedback type="invalid">
+            Wajib diisi.
+           </Form.Control.Feedback>
+          </Form.Group>
 
-                    {/* Link Belum memiliki akun? */}
-                    <div className="text-center mt-3">
-                      <p className="mb-0">
-                        Belum memiliki akun?{" "}
-                        <a
-                          href={REGISTER_PATH}
-                          className="text-decoration-none fw-bold"
-                        >
-                          Klik disini
-                        </a>
-                      </p>
-                    </div>
-                  </Form>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </div>
+          {/* Input Password */}
+          <Form.Group className="mb-4">
+           <Form.Label className="fw-bold">Password</Form.Label>
+           <Form.Control
+            type="password"
+            placeholder="Masukkan Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            isInvalid={passwordInvalid}
+            autoComplete="current-password"
+           />
+           <Form.Control.Feedback type="invalid">
+            Wajib diisi.
+           </Form.Control.Feedback>
+          </Form.Group>
 
-      <LandingFooter />
-    </div>
-  );
+          {/* Link Lupa Password */}
+          <div className="text-end mb-4">
+           <a
+            href={FORGOT_PASSWORD_PATH}
+            className="text-decoration-none"
+           >
+            Lupa Password? <span className="fw-bold">Klik disini</span>
+           </a>
+          </div>
+
+          {/* Tombol Login */}
+          <Button
+           variant="primary"
+           type="submit"
+           className="w-100 fw-bold"
+           disabled={loading}
+          >
+           {loading ? (
+            <>
+             <Spinner
+              animation="border"
+              size="sm"
+              className="me-2"
+             />
+             Login
+            </>
+           ) : (
+            "Login"
+           )}
+          </Button>
+
+          {/* Link Belum memiliki akun? */}
+          <div className="text-center mt-3">
+           <p className="mb-0">
+            Belum memiliki akun?{" "}
+            <a
+             href={REGISTER_PATH}
+             className="text-decoration-none fw-bold"
+            >
+             Klik disini
+            </a>
+           </p>
+          </div>
+         </Form>
+        </Card.Body>
+       </Card>
+      </Col>
+     </Row>
+    </Container>
+   </div>
+
+   <LandingFooter />
+  </div>
+ );
 };
 
 export default LoginPage;
