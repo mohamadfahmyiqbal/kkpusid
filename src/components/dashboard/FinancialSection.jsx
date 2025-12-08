@@ -1,65 +1,121 @@
-// components/dashboard/FinancialSection.jsx (UPDATED)
+// src/components/dashboard/FinancialSection.jsx
 
-import React, { useState } from "react";
-// Catatan: menuItems dan Menu Utama telah dihapus dari file ini.
+import React, { useState, useEffect } from "react";
+// Import http (instance Axios terkonfigurasi dengan token) dari common.jsx
+import http from "../../utils/api/common";
 
-const FinancialSection = ({ user }) => {
-  const [showBalance, setShowBalance] = useState(false);
+const FinancialSection = () => {
+  // 1. State untuk Data, Loading, dan Error
+  const [financialSummary, setFinancialSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const toggleBalance = () => {
-    setShowBalance((prev) => !prev);
+  /**
+   * Fungsi untuk mengambil ringkasan data keuangan anggota.
+   */
+  const fetchFinancialData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Menggunakan http.get untuk mengambil data keuangan anggota
+      // Asumsi Endpoint: /api/keuangan/summary
+      const res = await http.get("/api/keuangan/summary");
+      setFinancialSummary(res.data.data);
+    } catch (err) {
+      console.error("Gagal memuat ringkasan keuangan:", err);
+      // Tangani error, bisa jadi 401 (token expired)
+      const errorMessage =
+        err.response?.data?.message || "Gagal memuat data ringkasan keuangan.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const balanceAmount = user.total_saldo || 0;
+  // 2. Lifecycle: Panggil fungsi fetch saat komponen dimuat
+  useEffect(() => {
+    fetchFinancialData();
+  }, []);
+
+  // 3. Conditional Rendering: Loading
+  if (loading) {
+    return (
+      <section className="financial-summary-section my-4">
+        <div className="card p-3 text-center">
+          <div
+            className="spinner-border spinner-border-sm text-primary"
+            role="status"
+          ></div>
+          <small className="ms-2">Memuat Ringkasan Keuangan...</small>
+        </div>
+      </section>
+    );
+  }
+
+  // 4. Conditional Rendering: Error
+  if (error) {
+    return (
+      <section className="financial-summary-section my-4">
+        <div className="alert alert-danger">
+          <strong>Kesalahan:</strong> {error}
+          <button className="btn btn-sm btn-link" onClick={fetchFinancialData}>
+            Coba lagi
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // 5. Render Data
+  // Pastikan data yang ditampilkan sudah di-format (misalnya Rupiah)
+  const formatRupiah = (amount) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
+  };
 
   return (
-    <div className="mb-4">
-      {/* CARD: Total Saldo - Menggunakan bg-blueGrad */}
-      <div
-        className="card bg-blueGrad text-white mb-4 shadow-sm"
-        style={{ borderRadius: "10px" }}
-      >
-        <div className="card-body p-3">
-          <div className="d-flex justify-content-between align-items-start">
-            <div>
-              <p className="mb-1 fw-bold" style={{ fontSize: "1.2rem" }}>
-                Total Saldo
-              </p>
+    <section className="financial-summary-section my-4">
+      <div className="row">
+        {/* Kartu Summary Simpanan */}
+        <div className="col-lg-4 col-md-6 mb-3">
+          <div className="card shadow-sm p-3 border-left-success">
+            <h5 className="card-title text-success small text-uppercase mb-0">
+              Total Simpanan
+            </h5>
+            <p className="h3 mb-0 font-weight-bold">
+              {formatRupiah(financialSummary?.totalSavings)}
+            </p>
+          </div>
+        </div>
 
-              {/* CONDITIONAL DISPLAY: Tampilkan saldo atau bintang */}
-              <h2 className="mb-2 fw-bold">
-                Rp.{" "}
-                {showBalance
-                  ? balanceAmount.toLocaleString("id-ID", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })
-                  : "**********"}
-              </h2>
+        {/* Kartu Summary Pinjaman */}
+        <div className="col-lg-4 col-md-6 mb-3">
+          <div className="card shadow-sm p-3 border-left-warning">
+            <h5 className="card-title text-warning small text-uppercase mb-0">
+              Sisa Pinjaman
+            </h5>
+            <p className="h3 mb-0 font-weight-bold">
+              {formatRupiah(financialSummary?.totalLoanDebt)}
+            </p>
+          </div>
+        </div>
 
-              {/* Detail Anggota */}
-              <p className="mb-0" style={{ fontSize: "0.9rem" }}>
-                No Anggota : {user.no_anggota}
-              </p>
-              <p className="mb-0" style={{ fontSize: "0.9rem" }}>
-                No Rekening Simpanan
-              </p>
-              <p className="mb-0 fw-bold" style={{ fontSize: "1.1rem" }}>
-                #{user.no_rekening}
-              </p>
-            </div>
-
-            {/* ICON MATA (dengan onClick handler) */}
-            <i
-              className={`fa ${showBalance ? "fa-eye-slash" : "fa-eye"}`}
-              style={{ fontSize: "1.5rem", opacity: 0.8, cursor: "pointer" }}
-              onClick={toggleBalance}
-            ></i>
+        {/* Kartu Summary SHU */}
+        <div className="col-lg-4 col-md-6 mb-3">
+          <div className="card shadow-sm p-3 border-left-info">
+            <h5 className="card-title text-info small text-uppercase mb-0">
+              SHU Terkumpul
+            </h5>
+            <p className="h3 mb-0 font-weight-bold">
+              {formatRupiah(financialSummary?.annualSHU)}
+            </p>
           </div>
         </div>
       </div>
-      {/* Catatan: Menu Utama dihapus dari sini */}
-    </div>
+    </section>
   );
 };
 

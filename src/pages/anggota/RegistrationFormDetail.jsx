@@ -1,234 +1,357 @@
-// src/pages/anggota/RegistrationFormDetail.jsx
+// src/pages/anggota/RegistrationFormDetail.jsx (FINAL VERSION)
 
-import React, { useState, useCallback } from "react";
-import { Card, Button, Form, ProgressBar } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  Col,
+  Container,
+  Form,
+  Row,
+  ProgressBar,
+  Alert,
+} from "react-bootstrap";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// Asumsi jwtEncode ada di routes/helpers.jsx
+import UAnggota from "../../utils/api/UAnggota"; // Utility API untuk Anggota
 import { jwtEncode } from "../../routes/helpers";
-import { FaArrowLeft, FaSave } from "react-icons/fa";
-// Import dari components/layout
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import { useProfile } from "../../contexts/ProfileContext"; // Import Profile Context
 
-// Import komponen langkah-langkah
+// Import Step Components (Asumsi path ini benar)
 import Step1PersonalData from "../../components/anggota/regsitrationForm/steps/Step1PersonalData";
-import Step2Address from "../../components/anggota/regsitrationForm/steps/Step2Address";
+import Step2Account from "../../components/anggota/regsitrationForm/steps/Step2Account";
 import Step3CaptureKTP from "../../components/anggota/regsitrationForm/steps/Step3CaptureKTP";
 import Step4Swafoto from "../../components/anggota/regsitrationForm/steps/Step4Swafoto";
 import Step5BankData from "../../components/anggota/regsitrationForm/steps/Step5BankData";
 import Step6Summary from "../../components/anggota/regsitrationForm/steps/Step6Summary";
+import { FaArrowLeft } from "react-icons/fa";
 
-// --- DATA MOCKUP (DUMMY DATA) ---
-const MOCK_DATA = {
-  nama: "Budi Santoso",
-  ktp: "3201010010010001",
-  pekerjaan: "Wiraswasta",
-  tglLahir: "1990-01-01",
-  alamat: "Jl. Contoh No. 123",
-  kota: "Bekasi",
-  provinsi: "Jawa Barat",
-  kodePos: "17510",
-  bankName: "Mandiri",
-  accountNumber: "1234567890",
-  ktpPhoto: null,
-  selfiePhoto: null,
-  // 💡 Digunakan untuk simulasi navigasi ke InvoicePage
-  isApproved: true,
+// Inisialisasi state awal form data
+const initialFormData = {
+  // Step 1: Personal Data
+  nik_ktp: "",
+  full_name: "",
+  alamat_ktp: "",
+  // Step 2: Account Info
+  tipeAnggota: "", // Akan dikirim sebagai tipe_anggota
+  phone_number: "", // Akan dikirim sebagai no_tlp
+  email: "",
+  // Step 3: KTP
+  foto_ktp: "", // Base64
+  // Step 4: Swafoto
+  selfie_photo_path: "", // Base64, akan dikirim sebagai foto_swafoto
+  // Step 5: Bank Data
+  bank_name: "", // Akan dikirim sebagai nama_bank
+  account_number: "", // Akan dikirim sebagai no_rekening
+  account_holder_name: "", // Akan dikirim sebagai nama_pemilik_rek
+  // Step 6: Commitment (Cekbox)
+  komitmen: false,
 };
-
-const STEPS = [
-  "Data Pribadi",
-  "Alamat",
-  "Foto KTP",
-  "Swafoto",
-  "Data Bank",
-  "Ringkasan",
-];
 
 export default function RegistrationFormDetail() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState(MOCK_DATA);
+  // 💡 Menggunakan ProfileContext
+  const { userData, loading } = useProfile();
 
-  // --- HANDLER DASAR ---
+  const [step, setStep] = useState(1);
+  const [fields, setFields] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false); // Status pengiriman ke API
+
+  const totalSteps = 6;
+  const isLastStep = step === totalSteps;
+  const isCommitmentChecked = fields.komitmen;
+
+  // 1. EFFECT UNTUK PRE-FILL DATA DARI PROFILE CONTEXT
+  useEffect(() => {
+    if (!loading && userData) {
+      setFields((prevFields) => ({
+        ...prevFields,
+        // Mapping fields dari userData (backend) ke fields form (frontend)
+        nik_ktp: userData.nik_ktp || userData.nik || prevFields.nik_ktp,
+        full_name: userData.full_name || userData.nama || prevFields.full_name,
+        phone_number:
+          userData.phone_number || userData.no_tlp || prevFields.phone_number,
+        email: userData.email || prevFields.email,
+        alamat_ktp:
+          userData.alamat_ktp || userData.alamat || prevFields.alamat_ktp,
+      }));
+    }
+  }, [userData, loading]);
+
+  // 2. HANDLER PERUBAHAN FORM
   const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const target = e.target;
+    const { name, value, checked, type } = target;
+    const finalValue = type === "checkbox" ? checked : value;
+
+    setFields((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
   }, []);
 
-  const handleSetCapturedImage = useCallback((name, image) => {
-    setFormData((prev) => ({ ...prev, [name]: image }));
-  }, []);
-
-  const handleBackToRegistrationPage = useCallback(() => {
-    const token = jwtEncode({ page: "registrationPage" });
-    navigate(`/${token}`);
-  }, [navigate]);
-
-  // --- HANDLER NAVIGASI STEP ---
-  const handleNext = useCallback(() => {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    }
-  }, [currentStep]);
-
-  const handlePrev = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  }, [currentStep]);
-
-  const handleEditStep = useCallback((stepIndex) => {
-    setCurrentStep(stepIndex);
-  }, []);
-
-  // --- FUNGSI SUBMIT (AKSI FINAL) ---
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
-
-      if (currentStep === STEPS.length - 1) {
-        console.log("Data Pendaftaran Akhir Dikirim:", formData);
-
-        // --- LOGIKA PENGECEKAN APPROVAL ---
-
-        if (formData.isApproved) {
-          alert("Pendaftaran disetujui! Lanjut ke Halaman Invoice.");
-          console.log("Navigasi ke Halaman Invoice.");
-
-          // Navigasi ke halaman Invoice (pages/global/invoice/InvoicePage.jsx)
-          const token = jwtEncode({
-            page: "invoicePage",
-            // 💡 Menambahkan return key agar tombol kembali di InvoicePage mengarah ke sini
-            return: "registrationFormDetail",
-          });
-          navigate(`/${token}`);
-        } else {
-          alert(
-            "Formulir pendaftaran berhasil dikirim! Silakan tunggu verifikasi dan approval."
-          );
-          console.log("Navigasi ke Halaman Dashboard/Status.");
-
-          // Navigasi ke Halaman Dashboard
-          const token = jwtEncode({ page: "dashboardPage" });
-          navigate(`/${token}`);
-        }
-      } else {
-        console.warn("Mencoba submit sebelum langkah terakhir.");
+  const setFormData = useCallback((callbackOrObject) => {
+    setFields((prev) => {
+      if (typeof callbackOrObject === "function") {
+        return callbackOrObject(prev);
       }
-    },
-    [currentStep, formData, navigate]
-  );
+      return { ...prev, ...callbackOrObject };
+    });
+  }, []);
 
-  // --- RENDERING KONTEN BERDASARKAN STEP ---
-  const renderStepContent = useCallback(() => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <Step1PersonalData formData={formData} handleChange={handleChange} />
-        );
+  // 3. LOGIKA VALIDASI
+  const validateStep = useCallback(() => {
+    let newErrors = {};
+    let isValid = true;
+
+    if (step === 1) {
+      if (!fields.nik_ktp || fields.nik_ktp.length !== 16) {
+        newErrors.nik_ktp = "NIK harus 16 digit";
+        isValid = false;
+      }
+      if (!fields.full_name) {
+        newErrors.full_name = "Nama Lengkap wajib diisi";
+        isValid = false;
+      }
+      if (!fields.alamat_ktp) {
+        newErrors.alamat_ktp = "Alamat wajib diisi";
+        isValid = false;
+      }
+    } else if (step === 2) {
+      if (!fields.tipeAnggota) {
+        newErrors.tipeAnggota = "Tipe Anggota wajib dipilih";
+        isValid = false;
+      }
+      if (!fields.phone_number) {
+        newErrors.phone_number = "Nomor HP wajib diisi";
+        isValid = false;
+      }
+      if (!fields.email || !fields.email.includes("@")) {
+        newErrors.email = "Email tidak valid";
+        isValid = false;
+      }
+    } else if (step === 3) {
+      if (!fields.foto_ktp) {
+        newErrors.foto_ktp = "Foto KTP wajib diambil";
+        isValid = false;
+      }
+    } else if (step === 4) {
+      if (!fields.selfie_photo_path) {
+        newErrors.selfie_photo_path = "Swafoto wajib diambil";
+        isValid = false;
+      }
+    } else if (step === 5) {
+      if (!fields.bank_name) {
+        newErrors.bank_name = "Nama Bank wajib diisi";
+        isValid = false;
+      }
+      if (!fields.account_number) {
+        newErrors.account_number = "Nomor Rekening wajib diisi";
+        isValid = false;
+      }
+      if (!fields.account_holder_name) {
+        newErrors.account_holder_name = "Nama Pemilik Rekening wajib diisi";
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  }, [step, fields]);
+
+  // 4. LOGIKA NAVIGASI
+  const nextStep = useCallback(() => {
+    if (validateStep()) {
+      setStep((prev) => Math.min(prev + 1, totalSteps));
+    }
+  }, [validateStep]);
+
+  const prevStep = useCallback(() => {
+    setStep((prev) => Math.max(prev - 1, 1));
+  }, []);
+
+  const handleEditStep = useCallback((targetStep) => {
+    setStep(targetStep);
+  }, []);
+
+  // 5. RENDER LANGKAH FORM
+  const renderStep = useMemo(() => {
+    const stepProps = {
+      formData: fields,
+      handleChange: handleChange,
+      setFormData: setFormData,
+      errors: errors,
+    };
+
+    switch (step) {
       case 1:
-        return <Step2Address formData={formData} handleChange={handleChange} />;
+        return <Step1PersonalData {...stepProps} />;
       case 2:
-        return (
-          <Step3CaptureKTP
-            formData={formData}
-            handleSetCapturedImage={handleSetCapturedImage}
-          />
-        );
+        return <Step2Account {...stepProps} />;
       case 3:
-        return (
-          <Step4Swafoto
-            formData={formData}
-            handleSetCapturedImage={handleSetCapturedImage}
-          />
-        );
+        return <Step3CaptureKTP {...stepProps} />;
       case 4:
-        return (
-          <Step5BankData formData={formData} handleChange={handleChange} />
-        );
+        return <Step4Swafoto {...stepProps} />;
       case 5:
+        return <Step5BankData {...stepProps} />;
+      case 6:
         return (
-          <Step6Summary formData={formData} handleEditStep={handleEditStep} />
+          <>
+            <Step6Summary formData={fields} handleEditStep={handleEditStep} />
+            <h4 className="mb-3 mt-4 text-primary">Komitmen Anggota</h4>
+            <Alert variant="danger">
+              Mohon baca dan pahami komitmen di bawah sebelum melanjutkan.
+            </Alert>
+            <Form.Check
+              type="checkbox"
+              label="Saya siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba."
+              checked={fields.komitmen || false}
+              onChange={handleChange}
+              name="komitmen"
+              id="komitmen-check"
+              isInvalid={isLastStep && !fields.komitmen}
+            />
+            {isLastStep && !fields.komitmen && (
+              <div className="invalid-feedback d-block">
+                Anda harus menyetujui komitmen.
+              </div>
+            )}
+          </>
         );
       default:
-        return <div>Langkah tidak ditemukan.</div>;
+        return null;
     }
   }, [
-    currentStep,
-    formData,
+    step,
+    fields,
+    errors,
     handleChange,
-    handleSetCapturedImage,
+    setFormData,
     handleEditStep,
+    isLastStep,
   ]);
 
-  const progressPercent = ((currentStep + 1) / STEPS.length) * 100;
+  // 6. HANDLER SUBMIT FINAL KE BACKEND
+  const handleSubmit = useCallback(async () => {
+    if (!isCommitmentChecked) {
+      setErrors({ komitmen: true });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 💡 MAPPING DATA SESUAI SKEMA BACKEND (Snake_Case)
+      const dataToSubmit = {
+        nik_ktp: fields.nik_ktp,
+        nama: fields.full_name, // full_name -> nama
+        alamat: fields.alamat_ktp, // alamat_ktp -> alamat
+        tipe_anggota: fields.tipeAnggota, // tipeAnggota -> tipe_anggota
+        no_tlp: fields.phone_number, // phone_number -> no_tlp
+        email: fields.email,
+        // Data gambar (diasumsikan Base64)
+        foto_ktp: fields.foto_ktp,
+        foto_swafoto: fields.selfie_photo_path, // selfie_photo_path -> foto_swafoto
+        // Data Bank
+        nama_bank: fields.bank_name, // bank_name -> nama_bank
+        no_rekening: fields.account_number, // account_number -> no_rekening
+        nama_pemilik_rek: fields.account_holder_name, // account_holder_name -> nama_pemilik_rek
+      };
+
+      // ✅ PANGGIL API UAnggota
+      const response = await UAnggota.submitPendaftaran(dataToSubmit);
+
+      console.log("Respon Pendaftaran Sukses:", response.data);
+
+      // alert(
+      //   "Pendaftaran Berhasil dikirim! Status pendaftaran akan segera diperiksa."
+      // );
+
+      // // Redirect ke halaman status pendaftaran
+      // navigate(`/${jwtEncode({ page: "registrationPage" })}`, {
+      //   replace: true,
+      // });
+    } catch (error) {
+      console.error("Gagal melakukan pendaftaran:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Terjadi kesalahan saat mengirim data. Pastikan semua data lengkap dan valid.";
+      alert(`Gagal Mendaftar: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false); // Akhiri proses submit
+    }
+  }, [fields, isCommitmentChecked, navigate]);
 
   return (
-    <DashboardLayout>
-      {/* JUDUL HALAMAN DENGAN TOMBOL BACK */}
-      <div className="row page-titles pt-3">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0">
-            <span
-              role="button"
-              onClick={handleBackToRegistrationPage}
-              className="me-3 text-primary"
-              style={{ cursor: "pointer" }}
-            >
-              <FaArrowLeft className="me-2" />
-            </span>
-            Form Pendaftaran Anggota
-          </h3>
-        </div>
-      </div>
+    <div className="d-flex flex-column align-items-center w-100 py-4">
+      <Button
+        variant="light"
+        className="mb-3 d-flex align-items-center"
+        onClick={() => navigate(`/${jwtEncode({ page: "registrationPage" })}`)}
+        disabled={isSubmitting}
+      >
+        <FaArrowLeft className="me-2" /> Kembali ke Status Pendaftaran
+      </Button>
+      <Container style={{ maxWidth: "800px" }}>
+        <Card className="border shadow-sm">
+          <CardHeader className="bg-primary text-white py-2">
+            <CardTitle className="mb-0 fs-5">
+              Form Pendaftaran Anggota
+            </CardTitle>
+          </CardHeader>
 
-      {/* --- KONTEN STEPPER --- */}
-      <div className="row">
-        <div className="col-lg-10 col-xl-8 mx-auto">
-          <Card className="shadow-lg">
-            <Card.Body>
-              {/* Progress Bar (Stepper Visual) */}
-              <ProgressBar
-                now={progressPercent}
-                label={`Langkah ${currentStep + 1} dari ${STEPS.length}`}
-                className="mb-4"
-                variant="primary"
-              />
+          <CardBody>
+            {/* Tampilkan Loading state jika sedang memuat profil */}
+            {loading && (
+              <Alert variant="warning" className="text-center">
+                Memuat data profil...
+              </Alert>
+            )}
 
-              <Form onSubmit={handleSubmit}>
-                {renderStepContent()}
+            <ProgressBar
+              now={(step / totalSteps) * 100}
+              label={`Langkah ${step} dari ${totalSteps}`}
+              className="mb-4"
+              variant="success"
+            />
 
-                {/* Tombol Navigasi Form */}
-                <div className="d-flex justify-content-between mt-5">
+            <Form onSubmit={(e) => e.preventDefault()}>
+              {renderStep}
+
+              <div className="d-flex justify-content-between mt-4 border-top pt-3">
+                <Button
+                  variant="secondary"
+                  onClick={prevStep}
+                  disabled={step === 1 || isSubmitting}
+                >
+                  Sebelumnya
+                </Button>
+
+                {isLastStep ? (
                   <Button
-                    variant="secondary"
-                    onClick={handlePrev}
-                    disabled={currentStep === 0}
+                    variant="success"
+                    onClick={handleSubmit}
+                    disabled={!isCommitmentChecked || isSubmitting}
                   >
-                    <FaArrowLeft className="me-2" /> Kembali
+                    {isSubmitting ? "Mengirim..." : "Kirim Permohonan"}
                   </Button>
-
-                  {/* Logika Tombol Akhir */}
-                  {currentStep < STEPS.length - 1 ? (
-                    <Button
-                      variant="primary"
-                      onClick={handleNext}
-                      type="button" // Mencegah tombol Lanjut memicu form submit
-                    >
-                      Lanjut ({STEPS[currentStep + 1]}){" "}
-                      <i className="fa fa-arrow-right ms-2"></i>
-                    </Button>
-                  ) : (
-                    <Button variant="success" type="submit">
-                      <FaSave className="me-2" /> Kirim Permohonan
-                    </Button>
-                  )}
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </div>
-      </div>
-    </DashboardLayout>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={nextStep}
+                    disabled={isSubmitting}
+                  >
+                    Selanjutnya
+                  </Button>
+                )}
+              </div>
+            </Form>
+          </CardBody>
+        </Card>
+      </Container>
+    </div>
   );
 }

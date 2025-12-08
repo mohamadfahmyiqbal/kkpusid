@@ -1,63 +1,65 @@
-// pages/anggota/DashboardPage.jsx
+// src/pages/global/dashboard/DashboardPage.jsx
 
 import React from "react";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
-import WelcomeGreeting from "../../../components/dashboard/WelcomeGreeting.jsx";
+// ✅ Ambil Custom Hook useProfile dari Context
+import { useProfile } from "../../../contexts/ProfileContext";
+
+// --- Import Komponen Dashboard ---
 import RegistrationCard from "../../../components/dashboard/RegistrationCard";
 import EvaluasiSection from "../../../components/dashboard/EvaluasiSection";
-import ArtikelSection from "../../../components/dashboard/ArtikelSection";
-
-// --- Komponen BARU untuk Role 3 (Sesuai Reguler.jpg) ---
 import FinancialSection from "../../../components/dashboard/FinancialSection";
 import TagihanSection from "../../../components/dashboard/TagihanSection";
 import PortofolioSection from "../../../components/dashboard/PortofolioSection";
-import MainMenuSection from "../../../components/dashboard/MainMenuSection.jsx";
-
-// --- Data Mockup Pengguna (ROLE 3: Anggota Reguler/Penuh) ---
-const mockUser = {
-  nama: "Avhan Hadi Bijaksana", // Sesuai gambar Reguler.jpg
-  email: "avhan.hadi@pus.com",
-  foto: "../assets/images/users/1.jpg",
-  role: 3, // 💡 SET 3 (Anggota Reguler/Penuh)
-  no_anggota: "7100710000002103", // Sesuai gambar Reguler.jpg
-  no_rekening: "010260000002103", // Sesuai gambar Reguler.jpg
-  total_saldo: 800000.0, // Data mockup untuk Saldo
-};
+import MainMenuSection from "../../../components/dashboard/MainMenuSection";
+import ArtikelSection from "../../../components/dashboard/ArtikelSection";
+import WelcomeGreeting from "../../../components/dashboard/WelcomeGreeting.jsx";
 
 const DashboardPage = () => {
-  // Logika: Tampilkan Kartu Pendaftaran HANYA JIKA role <= 1.
-  const isCandidate = mockUser.role <= 1;
+  // 1. Ambil userData dari Context.
+  const { userData } = useProfile();
 
-  // Logika: Tampilkan Fitur Penuh HANYA JIKA role >= 3.
-  // Asumsi: role 2 adalah transisi/verifikasi. role 3 adalah aktif penuh.
-  const isFullMember = mockUser.role >= 3;
+  // Guard Clause: DashboardLayout sudah menangani loading/error.
+  // Ini hanya untuk memastikan data ada sebelum rendering konten dashboard.
+  if (!userData) {
+    return null;
+  }
 
+  // 2. Logika Penentuan Role
+  // Asumsi: role 3 ke atas = Anggota Penuh, 1 ke bawah = Calon Anggota/Tidak Aktif
+  const isFullMember = userData.role >= 3;
+  const isCandidate = userData.role <= 1;
+
+  // 3. Render Konten Dashboard
   return (
-    <DashboardLayout>
-      <div className="container-fluid">
-        <WelcomeGreeting user={mockUser} />
+    <div className="container-fluid">
+      {/* Wajib: Sambutan Personal (kini ambil data sendiri dari Context) */}
+      <WelcomeGreeting />
 
-        {/* 1. KARTU PENDAFTARAN (Hanya untuk Calon Anggota) */}
-        {isCandidate && <RegistrationCard user={mockUser} />}
+      {/* Kondisional: Kartu Pendaftaran untuk Calon Anggota */}
+      {isCandidate && <RegistrationCard user={userData} />}
 
-        {/* 2. FITUR ANGGOTA PENUH (Hanya untuk Anggota Reguler/Penuh) */}
-        {isFullMember && (
-          <>
-            <FinancialSection user={mockUser} />
-            <MainMenuSection user={mockUser} />
-            <TagihanSection user={mockUser} />
-          </>
-        )}
+      {/* Kondisional: Fitur Keuangan Inti (Hanya Anggota Penuh) */}
+      {/* Catatan: FinancialSection, TagihanSection, dan PortofolioSection
+           sebaiknya juga mengambil data mereka sendiri (self-fetching)
+           dan tidak menerima userData sebagai props, kecuali MainMenuSection. */}
+      {isFullMember && (
+        <>
+          <FinancialSection />
+          {/* MainMenuSection masih bisa menerima user jika ada logika akses menu */}
+          <MainMenuSection user={userData} />
+          <TagihanSection />
+        </>
+      )}
 
-        {/* Evaluasi muncul untuk semua role, tetapi kontennya bisa berbeda */}
-        <EvaluasiSection />
+      {/* Evaluasi Section (Asumsi Wajib) */}
+      <EvaluasiSection />
 
-        {/* Portofolio dan Artikel ditampilkan di bawah Evaluasi */}
-        {isFullMember && <PortofolioSection />}
+      {/* Kondisional: Portofolio (Hanya Anggota Penuh) */}
+      {isFullMember && <PortofolioSection />}
 
-        <ArtikelSection />
-      </div>
-    </DashboardLayout>
+      {/* Wajib: Artikel Publik */}
+      <ArtikelSection />
+    </div>
   );
 };
 

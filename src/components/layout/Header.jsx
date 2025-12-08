@@ -12,39 +12,27 @@ import { jwtEncode } from "../../routes/helpers";
 import { useNavigate } from "react-router-dom";
 
 // Catatan: DASHBOARD_PATH didefinisikan secara konstan di luar komponen.
-// Ini menghasilkan string token: /eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJwYWdlIjoiZGFzaGJvYXJkIn0.
 const DASHBOARD_PATH = `/${jwtEncode({ page: "dashboard" })}`;
 
 // Komponen Header menerima props (user, logout, handleToggleSidebar, isSidebarShown) dari DashboardLayout.jsx
 const Header = ({ user, logout, handleToggleSidebar, isSidebarShown }) => {
   const navigate = useNavigate();
 
-  // ❌ Hapus baris-baris ini karena navigasi tidak boleh terjadi di body komponen saat render:
-  // const dashboardToken = jwtEncode({ page: "dashboard" });
-  // navigate(DASHBOARD_PATH, { replace: true });
-
-  // ✅ FUNGSI BARU: Fungsi untuk menangani klik logo
+  // FUNGSI UNTUK MENANGANI KLIK LOGO
   const handleLogoClick = () => {
     // Arahkan ke URL dashboard yang sudah didefinisikan (menggunakan token)
     navigate(DASHBOARD_PATH);
   };
 
-  // Catatan: Variabel dashboardUrl dan logika lama (href) tidak lagi diperlukan.
-  // Anda dapat menghapusnya jika tidak digunakan di tempat lain.
-  // const dashboardUrl = `/?token=${dashboardToken}`;
-
   return (
-    // Latar Belakang Biru Gradien (menggunakan class 'bg-info')
-    <header className="topbar bg-info">
-      {/* Navbar: d-flex justify-content-between untuk memisahkan Logo dan Aksi */}
-      <nav className="navbar top-navbar navbar-expand-md navbar-dark d-flex justify-content-between">
-        {/* 1. Logo PUS (START) */}
-        <div className="navbar-header px-3">
-          {/* ✅ PERUBAHAN: Ganti <a> menjadi <div> (atau elemen lain) dan tambahkan onClick */}
+    <header className="topbar">
+      <nav className="navbar top-navbar navbar-expand-md navbar-light">
+        {/* 1. Logo (START) */}
+        <div className="navbar-header">
           <div
-            className="navbar-brand cursor-pointer" // Tambahkan kelas kustom jika perlu, dan atur kursor
+            className="navbar-brand d-flex align-items-center"
             onClick={handleLogoClick}
-            style={{ cursor: "pointer" }} // Opsional: Berikan visual klik
+            style={{ cursor: "pointer" }}
           >
             <img
               src="/assets/icons/PUSlogo.png"
@@ -60,19 +48,19 @@ const Header = ({ user, logout, handleToggleSidebar, isSidebarShown }) => {
           <ul className="navbar-nav mr-auto mt-md-0 ">
             <li className="nav-item d-md-none">
               <SidebarToggleButton
-                // ✅ PERBAIKAN: Menggunakan prop 'isSidebarShown'
                 sidebarShown={isSidebarShown}
                 onClick={handleToggleSidebar}
               />
             </li>
           </ul>
 
-          {/* Ikon Aksi Kanan Atas (ml-auto memastikan ikon di ujung kanan) */}
+          {/* Ikon Aksi Kanan Atas */}
           <ul className="navbar-nav my-lg-0 ml-auto">
             {/* Notifikasi (Komponen Modular) */}
             <NotificationDropdown user={user} />
 
             {/* Utilities/Aksi Tambahan (KeranjangDropdown) */}
+            {/* Asumsi KeranjangDropdown juga menerima user prop */}
             <KeranjangDropdown user={user} />
 
             {/* Dropdown Profil Pengguna (Komponen Modular) */}

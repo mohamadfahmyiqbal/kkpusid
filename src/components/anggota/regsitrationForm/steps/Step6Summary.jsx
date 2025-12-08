@@ -1,13 +1,11 @@
-// src/components/anggota/regsitrationForm/steps/Step6Summary.jsx
+// src/components/anggota/regsitrationForm/steps/Step6Summary.jsx (FINAL)
 
 import React from "react";
-import { Card, ListGroup, Row, Col } from "react-bootstrap";
-// Import komponen global
+import { Card, ListGroup, Row, Col, Alert, Button } from "react-bootstrap";
 import ApprovalPlaceholder from "../../../ui/ApprovalPlaceholder";
-// Import komponen lokal
 import PhotoDisplay from "./PhotoDisplay";
 
-// Helper Lokal (pertahankan)
+// Helper Lokal (format tanggal)
 const formatDate = (dateString) => {
   if (!dateString) return "-";
   try {
@@ -35,92 +33,107 @@ const DetailItem = ({ label, value }) => (
 );
 
 export default function Step6Summary({ formData, handleEditStep }) {
-  // --- MOCKUP DATA TAMBAHAN (Asumsi data ini didapatkan dari state/API) ---
-  const MOCK_ACCOUNT_INFO = {
-    tipeAnggota: "Reguler",
-    noTelepon: "081294262252",
-    email: "AvhanHb@gmail.com",
-    jenisKelamin: "Laki-Laki",
+  const tipeAnggotaMap = {
+    umum: "Anggota Umum",
+    pengurus: "Pengurus (Staf Koperasi)",
+    "": "-",
   };
 
-  const NIK = formData.ktp;
-
   return (
-    <div className="p-1">
-      <h5 className="mb-3 text-secondary">Detail Pendaftaran Anggota</h5>
+    <div className="p-3">
+      <h5 className="mb-4 text-primary">Ringkasan Data Pendaftaran</h5>
 
-      {/* Bagian 1: Personal Info */}
+      {/* Bagian 1: Data Diri & Akun */}
       <Card className="mb-4">
-        <Card.Header className="fw-bold bg-light">Personal Info</Card.Header>
+        <Card.Header className="d-flex justify-content-between align-items-center fw-bold bg-light">
+          Informasi Dasar
+          <Button variant="link" size="sm" onClick={() => handleEditStep(1)}>
+            Edit Data Diri & Akun
+          </Button>
+        </Card.Header>
         <ListGroup variant="flush">
-          <DetailItem label="Nama" value={formData.nama} />
+          {/* Data Diri - Menggunakan nik_ktp */}
+          <DetailItem label="NIK" value={formData.nik_ktp} />{" "}
+          {/* ✅ Diubah dari nik */}
+          <DetailItem label="Nama Lengkap" value={formData.full_name} />
+          <DetailItem label="Alamat KTP" value={formData.alamat_ktp} />
+          <hr className="my-1" />
+          {/* Data Akun - Menggunakan Skema Data Step 2 */}
           <DetailItem
-            label="Jenis Kelamin"
-            value={MOCK_ACCOUNT_INFO.jenisKelamin}
+            label="Tipe Anggota"
+            value={tipeAnggotaMap[formData.tipeAnggota]}
           />
-          <DetailItem label="NIK" value={NIK} />
-          <DetailItem label="Alamat" value={formData.alamatKtp} />
+          <DetailItem label="No Telepon" value={formData.phone_number} />
+          <DetailItem label="Email" value={formData.email} />
         </ListGroup>
       </Card>
 
-      {/* Bagian 2: Foto Info */}
+      {/* Bagian 2: Dokumen */}
       <Card className="mb-4">
-        <Card.Header className="fw-bold bg-light">Foto Info</Card.Header>
-        <Card.Body>
-          <Row>
-            <Col xs={6}>
-              <PhotoDisplay
-                label="Foto KTP"
-                imageData={formData.fotoKtp}
-                type="KTP"
-              />
-            </Col>
-            <Col xs={6}>
-              <PhotoDisplay
-                label="Swafoto"
-                imageData={formData.swafoto}
-                type="Swafoto"
-              />
-            </Col>
-          </Row>
-        </Card.Body>
+        <Card.Header className="d-flex justify-content-between align-items-center fw-bold bg-light">
+          Dokumentasi KTP & Swafoto
+          <Button variant="link" size="sm" onClick={() => handleEditStep(3)}>
+            Edit Dokumen
+          </Button>
+        </Card.Header>
+        <Row className="p-3">
+          <Col md={6}>
+            <PhotoDisplay
+              label="Foto Kartu Tanda Penduduk (KTP)"
+              imageData={formData.foto_ktp}
+              type="KTP"
+            />
+          </Col>
+          <Col md={6}>
+            <PhotoDisplay
+              label="Swafoto dengan KTP"
+              imageData={formData.selfie_photo_path}
+              type="Swafoto"
+            />
+          </Col>
+        </Row>
       </Card>
 
-      {/* Bagian 3: Account Info */}
+      {/* Bagian 3: Data Bank */}
       <Card className="mb-4">
-        <Card.Header className="fw-bold bg-light">Account Info</Card.Header>
+        <Card.Header className="d-flex justify-content-between align-items-center fw-bold bg-light">
+          Informasi Rekening Bank
+          <Button variant="link" size="sm" onClick={() => handleEditStep(5)}>
+            Edit Data Bank
+          </Button>
+        </Card.Header>
         <ListGroup variant="flush">
+          <DetailItem label="Nama Bank" value={formData.bank_name} />
+          <DetailItem label="No. Rekening" value={formData.account_number} />
           <DetailItem
-            label="Tipe Anggota"
-            value={MOCK_ACCOUNT_INFO.tipeAnggota}
+            label="Nama Pemilik Rek."
+            value={formData.account_holder_name}
           />
-          <DetailItem label="No Telepon" value={MOCK_ACCOUNT_INFO.noTelepon} />
-          <DetailItem label="Email" value={MOCK_ACCOUNT_INFO.email} />
-          {/* Menggabungkan Data Bank ke Account Info */}
-          <DetailItem label="Nama Bank" value={formData.namaBank} />
-          <DetailItem label="No Rekening" value={formData.noRek} />
         </ListGroup>
       </Card>
 
       {/* Bagian 4: Approval */}
       <Card className="mb-4">
-        <Card.Header className="fw-bold bg-light">Approval</Card.Header>
+        <Card.Header className="fw-bold bg-light">
+          Tanda Tangan Elektronik
+        </Card.Header>
         <Row className="p-3">
           <Col className="text-center">
-            <ApprovalPlaceholder role="Pengawas" />
+            <ApprovalPlaceholder
+              role="Pemohon"
+              isSigned={!!formData.full_name}
+              signName={formData.full_name}
+            />
           </Col>
           <Col className="text-center">
-            <ApprovalPlaceholder role="Ketua" />
+            <ApprovalPlaceholder role="Koperasi" />
           </Col>
         </Row>
       </Card>
 
-      {/* Catatan untuk submit */}
-      <div className="alert alert-info text-center mt-4">
-        <p className="mb-0 fw-bold">
-          Pastikan semua data sudah benar. Klik Kirim Permohonan di bawah untuk
-          menyelesaikan proses pendaftaran.
-        </p>
+      <div className="alert alert-danger text-center">
+        Dengan menyetujui komitmen, Anda menyetujui semua data di atas adalah
+        benar.
       </div>
     </div>
   );

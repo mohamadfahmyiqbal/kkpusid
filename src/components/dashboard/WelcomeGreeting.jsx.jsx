@@ -1,11 +1,27 @@
-// components/dashboard/WelcomeGreeting.jsx
+// src/components/dashboard/WelcomeGreeting.jsx
 
 import React from "react";
+// ✅ Import hook useProfile
+import { useProfile } from "../../contexts/ProfileContext";
 
-// Komponen hanya menerima objek 'user'
-const WelcomeGreeting = ({ user }) => {
-  // Ambil nama pengguna secara dinamis, fallback jika data tidak ada
-  const userName = user?.nama || "Anggota Koperasi";
+// ❌ Hapus prop 'user'
+const WelcomeGreeting = () => {
+  // 1. ✅ Ambil data dari Context
+  const { userData, loading } = useProfile();
+
+  // Tampilkan loading state jika data masih dimuat
+  if (loading) {
+    return (
+      <div className="mb-3">
+        <h2 className="text-dark mb-0 mt-3">Assalamualaikum</h2>
+        <h3 className="text-themecolor font-weight-bold mb-3">Memuat...</h3>
+      </div>
+    );
+  }
+
+  // 2. ✅ Gunakan userData dari context
+  // Asumsi properti nama adalah 'nama' atau 'full_name'
+  const userName = userData?.nama || userData?.full_name || "Anggota Koperasi";
 
   return (
     <>

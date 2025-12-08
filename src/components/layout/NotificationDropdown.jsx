@@ -1,174 +1,188 @@
-import React, { useState, useCallback } from "react";
+// src/components/layout/NotificationDropdown.jsx
+
+import React, { useState, useEffect, useCallback } from "react";
 import { NavDropdown } from "react-bootstrap";
-import { FaBell, FaInfo } from "react-icons/fa";
+import { FaBell, FaInfo, FaCheckCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
 import NotificationModal from "./NotificationModal";
-// =========================================================
-// MOCKUP DATA NOTIFIKASI
-// (Kode Mockup Tetap Sama)
-// =========================================================
-const mockNotifications = [
-  {
-    id: 101,
-    title: "Persetujuan Pinjaman",
-    body: "Pinjaman Anda untuk program A telah disetujui. Detail lengkap pinjaman dan jadwal pembayaran tersedia di modal ini.",
-    status: 1,
-    created_at: "2025-11-30T08:00:00Z",
-  },
-  {
-    id: 102,
-    title: "Setoran Sukses",
-    body: "Anda telah berhasil melakukan setoran Simpanan Wajib sebesar Rp 100.000.",
-    status: 1,
-    created_at: "2025-11-30T07:30:00Z",
-  },
-  {
-    id: 103,
-    title: "Perubahan Status Anggota",
-    body: "Verifikasi dokumen selesai. Status keanggotaan Anda kini Aktif dan dapat mengajukan program.",
-    status: 1,
-    created_at: "2025-11-29T14:45:00Z",
-  },
-];
-const filteredNotifikasi = mockNotifications.filter((n) => n.status === 1);
-// =========================================================
+// ✅ Import hook useProfile
+import { useProfile } from "../../contexts/ProfileContext";
+// Import Utility API untuk Notifikasi
+import UNotification from "../../utils/api/UNotification";
 
-export default function NotificationDropdown({ user }) {
+// ❌ Hapus prop 'user' di sini
+const NotificationDropdown = () => {
   const navigate = useNavigate();
-  const [notifikasi] = useState(filteredNotifikasi);
-  const [selectedNotifikasi, setSelectedNotifikasi] = useState(null);
+  // ✅ Ambil userData dari Context
+  const { userData } = useProfile();
+
+  // --- STATE ---\r\n
+  const [notifikasi, setNotifikasi] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // --- STATE MODAL ---\r\n
   const [showModal, setShowModal] = useState(false);
+  const [selectedNotifikasi, setSelectedNotifikasi] = useState(null);
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedNotifikasi(null);
-  };
+  /**
+   * 1. Fungsi Fetching Data Notifikasi
+   */
+  const fetchNotifications = useCallback(async () => {
+    // ✅ GUARD CLAUSE: Menggunakan userData yang diambil dari Context.
+    // Asumsi: API notifikasi menggunakan `nik` atau `id` user untuk filtering.
+    // Ganti `nik` jika Anda menggunakan properti lain (misal: `id` atau `no_anggota`).
+    if (!userData || !userData.id) {
+      setNotifikasi([]);
+      setUnreadCount(0);
+      setLoading(false);
+      return;
+    }
 
+    setLoading(true);
+    setError(null);
+
+    try {
+      // ✅ Gunakan userData.nik sebagai filter
+      const response = await UNotification.getNotificationById({
+        id: userData.id,
+        status: 1, // Asumsi: status 1 = belum dibaca
+        limit: 5, // Batasi untuk dropdown
+      });
+
+      // Asumsi: response.data.list berisi array notifikasi
+      const list = response.data?.list || [];
+      const unreadTotal = response.data?.unread_count || list.length;
+
+      setNotifikasi(list);
+      setUnreadCount(unreadTotal);
+    } catch (err) {
+      console.error("Gagal memuat notifikasi:", err);
+      setError("Gagal memuat notifikasi.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userData]); // ✅ RE-RUN saat userData berubah
+
+  useEffect(() => {
+    // Hanya fetch jika userData sudah ada
+    if (userData) {
+      fetchNotifications();
+    }
+  }, [userData, fetchNotifications]);
+
+  // --- HANDLER (Dipertahankan) ---\r\n
   const handleClick = useCallback(
-    (type, data = null) => {
-      if (type === "modal") {
-        // Tipe Modal: Tampilkan detail notifikasi dalam Modal
-        setSelectedNotifikasi(data);
+    (type, notif = null) => {
+      if (type === "page") {
+        const NOTIFICATION_PAGE_PATH = `/${jwtEncode({
+          page: "notificationPage",
+        })}`;
+        navigate(NOTIFICATION_PAGE_PATH);
+      } else if (type === "detail" && notif) {
+        setSelectedNotifikasi(notif);
         setShowModal(true);
-      } else if (type === "page") {
-        // Tipe Page: Navigasi ke halaman daftar notifikasi
-        const token = jwtEncode({ page: "notificationPage" });
-        navigate(`/${token}`);
       }
     },
     [navigate]
   );
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedNotifikasi(null);
+    // 💡 Opsional: Refetch notifikasi setelah modal ditutup jika ada perubahan status baca
+    // fetchNotifications();
+  };
+
+  // --- Render (Dipertahankan) ---\r\n
   return (
     <NavDropdown
-      as="li"
       title={
-        <span
-          className="nav-link text-white waves-effect waves-dark p-0"
-          role="button"
-        >
+        <>
           <FaBell />
-          {notifikasi.length > 0 && (
-            <div className="notify">
-              <span className="heartbit"></span>
-              <span className="point"></span>
-            </div>
+          {unreadCount > 0 && (
+            <span className="badge bg-danger badge-xs text-white p-1">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
           )}
-        </span>
+        </>
       }
-      id="dropdown-notification"
-      align="end"
-      className="nav-item"
+      id="notification-dropdown"
+      align="end" // Align ke kanan
+      className="nav-item dropdown show"
     >
-      <div className="mailbox animated bounceInDown" style={{ minWidth: 300 }}>
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          <li>
-            <div className="drop-title">
-              Anda punya **{notifikasi.length}** Notifikasi Baru
-            </div>
+      <div className="dropdown-menu-right" style={{ minWidth: "300px" }}>
+        <ul className="list-style-none">
+          <li className="d-flex align-items-center justify-content-between p-3 border-bottom">
+            <h5 className="font-weight-medium mb-0">Notifikasi Baru</h5>
+            <span className="badge bg-info text-white">{unreadCount} Baru</span>
           </li>
 
-          {/* List Notifikasi (Body) - Tidak ada perubahan di bagian ini */}
-          <li>
-            <div>
-              <div
-                className="message-center"
-                style={{ overflowY: "auto", maxHeight: "250px" }}
-              >
-                {notifikasi.slice(0, 5).map((notif, index) => (
-                  <React.Fragment key={index}>
-                    {/* Item Notifikasi */}
-                    <div
-                      style={{
-                        display: "flex",
-                        padding: 10,
-                        borderBottom: "1px solid #f0f0f0",
-                      }}
-                    >
-                      <div className="btn btn-info btn-circle me-2">
-                        <FaInfo />
-                      </div>
-                      <div className="mail-contnet">
-                        <h6>{notif.title || "Notifikasi"}</h6>
-                        <span className="mail-desc" style={{ fontSize: 13 }}>
-                          {notif.body.substring(0, 50) + "..." || "-"}
-                        </span>
-                        <span
-                          className="time"
-                          style={{ fontSize: 11, color: "#888" }}
-                        >
-                          {notif.created_at
-                            ? new Date(notif.created_at).toLocaleTimeString(
-                                "id-ID",
-                                { hour: "2-digit", minute: "2-digit" }
-                              )
-                            : ""}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Tautan 'Lihat Detail' -> MEMBUKA MODAL */}
-                    <div
-                      className="p-1 px-3 d-flex justify-content-end"
-                      style={{
-                        borderBottom:
-                          index < notifikasi.slice(0, 5).length - 1
-                            ? "1px solid #e9ecef"
-                            : "none",
-                      }}
-                    >
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleClick("modal", notif);
-                        }}
-                        className="text-info"
-                        style={{ fontSize: 12, textDecoration: "none" }}
-                        role="button"
-                      >
-                        Lihat Detail (Modal) &nbsp;
-                        <i className="fa fa-angle-right"></i>
-                      </a>
-                    </div>
-                  </React.Fragment>
-                ))}
-
-                {notifikasi.length === 0 && (
-                  <div className="p-3 text-center text-muted">
-                    Tidak ada notifikasi baru.
-                  </div>
-                )}
+          <div
+            className="message-center"
+            style={{ maxHeight: "300px", overflowY: "auto" }}
+          >
+            {/* Tampilan Loading */}
+            {loading && (
+              <div className="p-3 text-center">
+                <div
+                  className="spinner-border spinner-border-sm text-primary"
+                  role="status"
+                ></div>
               </div>
-            </div>
-          </li>
+            )}
 
-          {/* Bagian "Lihat Semua" -> NAVIGASI HALAMAN (PERBAIKAN VISIBILITAS) */}
-          <li>
+            {/* Tampilan Notifikasi */}
+            {!loading &&
+              notifikasi.map((notif) => (
+                <React.Fragment key={notif.id}>
+                  <li
+                    className="p-3 border-bottom d-flex align-items-center"
+                    onClick={() => handleClick("detail", notif)}
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: notif.status === 1 ? "#f5f5f5" : "white",
+                    }}
+                    tabIndex={0}
+                  >
+                    <i
+                      className={`me-3 ${
+                        notif.status === 1 ? "text-info" : "text-success"
+                      }`}
+                    >
+                      {notif.status === 1 ? (
+                        <FaInfo size={18} />
+                      ) : (
+                        <FaCheckCircle size={18} />
+                      )}
+                    </i>
+                    <div>
+                      <h6 className="mb-0">{notif.title}</h6>
+                      <span className="text-muted small">
+                        {notif.body?.substring(0, 50)}...
+                      </span>
+                    </div>
+                  </li>
+                </React.Fragment>
+              ))}
+
+            {/* Tampilan Kosong / Error */}
+            {!loading && notifikasi.length === 0 && !error && (
+              <div className="p-3 text-center text-muted">
+                Tidak ada notifikasi baru.
+              </div>
+            )}
+
+            {!loading && error && (
+              <div className="p-3 text-center text-danger">{error}</div>
+            )}
+          </div>
+
+          {/* Bagian "Lihat Semua" */}
+          <li className="border-top">
             <a
-              // ✅ TAMBAHKAN CLASS 'text-primary' dan padding 'p-2'
               className="nav-link text-center text-primary p-2"
               onClick={(e) => {
                 e.stopPropagation();
@@ -178,16 +192,10 @@ export default function NotificationDropdown({ user }) {
               href="#"
               role="button"
               tabIndex={0}
-              // Pertahankan borderTop
-              style={{
-                cursor: "pointer",
-                borderTop: "1px solid #e9ecef",
-                display: "block",
-              }}
+              style={{ cursor: "pointer", display: "block" }}
             >
               <strong>Lihat semua notifikasi</strong>
               <i className="fa fa-angle-right ms-1"></i>{" "}
-              {/* Gunakan ms-1 untuk sedikit jarak */}
             </a>
           </li>
         </ul>
@@ -201,4 +209,7 @@ export default function NotificationDropdown({ user }) {
       />
     </NavDropdown>
   );
-}
+};
+
+// ✅ Pastikan tidak ada prop 'user' yang diterima
+export default NotificationDropdown;
