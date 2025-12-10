@@ -20,6 +20,8 @@ const DEFAULT_EMAIL = "mohamadfahmyiqbal@gmail.com";
 const DEFAULT_NAMA = "Fahmy";
 const DEFAULT_TELP = "081234567890";
 const DEFAULT_PASSWORD = "qwerty123!!";
+// --- Tambahkan NIK KTP ---
+const DEFAULT_NIK = ""; 
 
 // PATHS
 const LOGIN_PATH = `/${jwtEncode({ page: "authLogin" })}`;
@@ -27,12 +29,14 @@ const LOGIN_PATH = `/${jwtEncode({ page: "authLogin" })}`;
 const AccountRegisterPage = () => {
   // --- STATE DENGAN NILAI DEFAULT DUMMY ---
   const [email, setEmail] = useState(DEFAULT_EMAIL);
-  const [nama, setNama] = useState(DEFAULT_NAMA);
+  const [nama, setNama] = useState(DEFAULT_NAMA); // Akan dikirim sebagai full_name
   const [nomorTelepon, setNomorTelepon] = useState(DEFAULT_TELP);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [nikKtp, setNikKtp] = useState(DEFAULT_NIK); // <-- State baru
   
   // --- STATE UNTUK UI/LOADING & ERROR ---
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null); // <-- State sukses baru
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -40,6 +44,7 @@ const AccountRegisterPage = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null); // Reset pesan sukses
     setLoading(true);
 
     // --- VALIDASI CLIENT-SIDE DASAR ---
@@ -59,18 +64,40 @@ const AccountRegisterPage = () => {
         return;
     }
 
+    // NIK KTP: Jika diisi, validasi harus numerik (opsional: panjang 16)
+    if (nikKtp && !/^\d+$/.test(nikKtp)) {
+        setError("NIK KTP harus berupa angka.");
+        setLoading(false);
+        return;
+    }
+    if (nikKtp && nikKtp.length !== 16) {
+        // Ini tergantung kebijakan, tapi baik ditambahkan
+        setError("NIK KTP harus terdiri dari 16 digit angka.");
+        setLoading(false);
+        return;
+    }
+
     try {
-        // PANGGILAN API MENGGUNAKAN UAuth.accountRegister
+        // PANGGILAN API DENGAN PERUBAHAN NAMA FIELD
         const response = await UAuth.accountRegister({ 
             email,
-            name: nama,
+            // Perubahan: name: nama -> full_name: nama
+            full_name: nama, 
             phone_number: nomorTelepon,
-            password
+            password,
+            nik_ktp: nikKtp // <-- Field baru
         });
         
-        if (response.status === 201 || response.data.success) {
-            alert("Pendaftaran berhasil! Silakan login untuk melanjutkan.");
-            navigate(LOGIN_PATH);
+        // Perubahan: Respon 201 berarti pendaftaran masuk ke antrean verifikasi
+        if (response.status === 201 && response.data.success) {
+            // Ubah feedback untuk mencerminkan alur verifikasi
+            setSuccess("Pendaftaran berhasil! Akun Anda telah diterima dan sedang menunggu verifikasi/persetujuan oleh Admin. Kami akan memberitahu Anda melalui email.");
+            
+            // Opsional: Tetap arahkan ke login setelah delay, atau biarkan di halaman ini
+            // setTimeout(() => {
+            //     navigate(LOGIN_PATH);
+            // }, 5000); 
+
         } else {
             setError(response.data.message || "Pendaftaran gagal dengan status tidak terduga.");
         }
@@ -115,6 +142,7 @@ const AccountRegisterPage = () => {
                   </p>
                   
                   {error && <Alert variant="danger">{error}</Alert>}
+                  {success && <Alert variant="success">{success}</Alert>} {/* Tampilkan pesan sukses */}
 
                   <Form onSubmit={handleRegister}>
                     
@@ -124,7 +152,7 @@ const AccountRegisterPage = () => {
                       <Form.Control
                         type="email"
                         placeholder="Masukkan Email"
-                        value={email} // <-- Menggunakan state email (default: dummy)
+                        value={email} 
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         className="p-3" 
@@ -134,11 +162,11 @@ const AccountRegisterPage = () => {
 
                     {/* Input Nama */}
                     <Form.Group className="mb-3" controlId="formNama">
-                      <Form.Label className="fw-bold">Nama</Form.Label>
+                      <Form.Label className="fw-bold">Nama Lengkap</Form.Label> {/* Ubah label */}
                       <Form.Control
                         type="text"
                         placeholder="Masukkan Nama Lengkap"
-                        value={nama} // <-- Menggunakan state nama (default: dummy)
+                        value={nama} 
                         onChange={(e) => setNama(e.target.value)}
                         required
                         className="p-3"
@@ -151,22 +179,36 @@ const AccountRegisterPage = () => {
                       <Form.Label className="fw-bold">Nomor Telepon</Form.Label>
                       <Form.Control
                         type="tel"
-                        placeholder="Masukkan Nomor Telepon"
-                        value={nomorTelepon} // <-- Menggunakan state nomorTelepon (default: dummy)
+                        placeholder="Masukkan Nomor Telepon (Wajib)"
+                        value={nomorTelepon} 
                         onChange={(e) => setNomorTelepon(e.target.value)}
                         required
                         className="p-3"
                         autoComplete="tel"
                       />
                     </Form.Group>
+                    
+                    {/* Input NIK KTP (Baru) */}
+                    <Form.Group className="mb-3" controlId="formNikKtp">
+                      <Form.Label className="fw-bold">NIK KTP (Opsional)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Masukkan NIK KTP Anda (16 digit)"
+                        value={nikKtp} 
+                        onChange={(e) => setNikKtp(e.target.value)}
+                        className="p-3"
+                        maxLength={16}
+                      />
+                    </Form.Group>
+
 
                     {/* Input Password */}
                     <Form.Group className="mb-4" controlId="formPassword">
                       <Form.Label className="fw-bold">Password</Form.Label>
                       <Form.Control
                         type="password"
-                        placeholder="Masukkan Password"
-                        value={password} // <-- Menggunakan state password (default: dummy)
+                        placeholder="Masukkan Password (Minimal 8 karakter)"
+                        value={password} 
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         className="p-3"
@@ -188,7 +230,7 @@ const AccountRegisterPage = () => {
                             size="sm"
                             className="me-2"
                           />
-                          Memproses...
+                          Memproses Pendaftaran...
                         </>
                       ) : (
                         "Create Account"
