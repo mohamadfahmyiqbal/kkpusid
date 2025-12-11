@@ -14,7 +14,7 @@ class UAnggota {
    * @param {Object} formData - Semua data form pendaftaran (tanpa field 'komitmen').
    * @returns {Promise<Object>} Respon dari API.
    */
-  submitPendaftaran(formData) {
+  submitRegistration(formData) {
     // Diasumsikan endpoint pendaftaran adalah '/anggota/pendaftaran'
     return http.post("/anggota/pendaftaran", formData);
   }

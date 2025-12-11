@@ -34,14 +34,16 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
         <Col md={12}>
           {/* Component yang menangani webcam dan tombol Ambil Ulang Foto */}
           <WebcamCaptureField
-            fieldName="foto_ktp" // Field Name yang akan disimpan di formData
+            fieldName="foto_ktp" // Field Name yang akan disimpan di formData (Sudah Benar)
             label="Foto Kartu Tanda Penduduk (KTP)"
             capturedImage={formData.foto_ktp}
             setCapturedImage={handleSetCapturedImage}
             isInvalid={!!errors.foto_ktp}
           />
           {!!errors.foto_ktp && (
-            <div className="text-danger mt-2">{errors.foto_ktp}</div>
+            <Form.Control.Feedback type="invalid" style={{ display: "block" }}>
+              {errors.foto_ktp}
+            </Form.Control.Feedback>
           )}
         </Col>
       </Row>

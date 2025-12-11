@@ -1,357 +1,334 @@
-// src/pages/anggota/RegistrationFormDetail.jsx (FINAL VERSION)
+// src/pages/anggota/RegistrationFormDetail.jsx (FINAL DENGAN USER DATA & MOCKUP)
 
 import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  CardTitle,
-  Col,
-  Container,
-  Form,
-  Row,
-  ProgressBar,
-  Alert,
+ Button,
+ Card,
+ CardBody,
+ CardHeader,
+ CardTitle,
+ Col,
+ Container,
+ Form,
+ Row,
+ ProgressBar,
+ Alert,
 } from "react-bootstrap";
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import UAnggota from "../../utils/api/UAnggota"; // Utility API untuk Anggota
-import { jwtEncode } from "../../routes/helpers";
-import { useProfile } from "../../contexts/ProfileContext"; // Import Profile Context
+import UAnggota from "../../utils/api/UAnggota";
+import { useProfile } from "../../contexts/ProfileContext";
 
-// Import Step Components (Asumsi path ini benar)
+// Import Step Components
 import Step1PersonalData from "../../components/anggota/regsitrationForm/steps/Step1PersonalData";
 import Step2Account from "../../components/anggota/regsitrationForm/steps/Step2Account";
-import Step3CaptureKTP from "../../components/anggota/regsitrationForm/steps/Step3CaptureKTP";
+import Step3CaptureKTP from "../../components/anggota/regsitrationForm/steps/Step3CaptureKTP.jsx";
 import Step4Swafoto from "../../components/anggota/regsitrationForm/steps/Step4Swafoto";
-import Step5BankData from "../../components/anggota/regsitrationForm/steps/Step5BankData";
-import Step6Summary from "../../components/anggota/regsitrationForm/steps/Step6Summary";
-import { FaArrowLeft } from "react-icons/fa";
+import Step5Employment from "../../components/anggota/regsitrationForm/steps/Step5Employment";
+import Step6EmergencyContact from "../../components/anggota/regsitrationForm/steps/Step6EmergencyContact";
+import Step7BankData from "../../components/anggota/regsitrationForm/steps/Step7BankData";
+import Step8Summary from "../../components/anggota/regsitrationForm/steps/Step8Summary";
+import { FaCheckSquare } from "react-icons/fa"; // Pastikan ikon diimpor (jika digunakan)
 
-// Inisialisasi state awal form data
+// Base64 Placeholder untuk gambar (1x1 transparent PNG)
+const IMAGE_MOCKUP_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0I... (Placeholder)";
+
+// --- INITAL STATE DENGAN MOCKUP DATA ---
 const initialFormData = {
-  // Step 1: Personal Data
-  nik_ktp: "",
-  full_name: "",
-  alamat_ktp: "",
-  // Step 2: Account Info
-  tipeAnggota: "", // Akan dikirim sebagai tipe_anggota
-  phone_number: "", // Akan dikirim sebagai no_tlp
-  email: "",
-  // Step 3: KTP
-  foto_ktp: "", // Base64
-  // Step 4: Swafoto
-  selfie_photo_path: "", // Base64, akan dikirim sebagai foto_swafoto
-  // Step 5: Bank Data
-  bank_name: "", // Akan dikirim sebagai nama_bank
-  account_number: "", // Akan dikirim sebagai no_rekening
-  account_holder_name: "", // Akan dikirim sebagai nama_pemilik_rek
-  // Step 6: Commitment (Cekbox)
-  komitmen: false,
+ // Langkah 1: Data Diri Dasar (NIK dan Nama akan di-override oleh userData)
+ nik_ktp: "1111111111111111", // MOCKUP: Akan di-override oleh userData.nik
+ full_name: "Fahmy", // MOCKUP: Akan di-override oleh userData.full_name
+ alamat_ktp: "Jl. Mockup No. 10, RT 01/RW 02, Jakarta Selatan", // MOCKUP
+
+ // Langkah 2: Account Info (Email dan HP akan di-override oleh userData)
+ tipeAnggota: "reguler", // MOCKUP: Nilai default
+ phone_number: "081234567890", // MOCKUP: Akan di-override oleh userData.phone_number
+ email: "mohamadfahmyiqbal@gmail.com", // MOCKUP: Akan di-override oleh userData.email
+
+ // Langkah 3 & 4: Dokumentasi (Menggunakan placeholder Base64)
+ foto_ktp: IMAGE_MOCKUP_BASE64, // MOCKUP
+ foto_swafoto: IMAGE_MOCKUP_BASE64, // MOCKUP
+
+ // Langkah 5: Employment
+ occupation: "Software Engineer", // MOCKUP
+ employer_name: "PT Mockup Cipta Solusi", // MOCKUP
+ employer_address: "Komp. Ruko Dummy Blok B, Jakarta Barat", // MOCKUP
+
+ // Langkah 6: Emergency Contact
+ contact_name: "Ani Setiabudi", // MOCKUP
+ phone_number_emergency: "089876543210", // MOCKUP
+ relation: "Istri", // MOCKUP
+
+ // Langkah 7: Bank Data
+ bank_name: "Bank BNI", // MOCKUP
+ bank_account_no: "1234567890", // MOCKUP
+ account_holder: "Fahmy", // MOCKUP: Sesuaikan dengan nama pengguna
 };
 
+const totalSteps = 8;
+
 export default function RegistrationFormDetail() {
-  const navigate = useNavigate();
-  // 💡 Menggunakan ProfileContext
-  const { userData, loading } = useProfile();
+ const navigate = useNavigate();
+ const { userData, loading: profileLoading } = useProfile();
 
-  const [step, setStep] = useState(1);
-  const [fields, setFields] = useState(initialFormData);
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false); // Status pengiriman ke API
+ const [step, setStep] = useState(1);
+ const [formData, setFormData] = useState(initialFormData);
+ const [errors, setErrors] = useState({});
+ const [isSubmitting, setIsSubmitting] = useState(false);
+ const [isCommitmentChecked, setIsCommitmentChecked] = useState(true); // MOCKUP: Set true agar mudah submit
+ const [submitError, setSubmitError] = useState(null);
 
-  const totalSteps = 6;
-  const isLastStep = step === totalSteps;
-  const isCommitmentChecked = fields.komitmen;
+ const isLastStep = step === totalSteps;
 
-  // 1. EFFECT UNTUK PRE-FILL DATA DARI PROFILE CONTEXT
-  useEffect(() => {
-    if (!loading && userData) {
-      setFields((prevFields) => ({
-        ...prevFields,
-        // Mapping fields dari userData (backend) ke fields form (frontend)
-        nik_ktp: userData.nik_ktp || userData.nik || prevFields.nik_ktp,
-        full_name: userData.full_name || userData.nama || prevFields.full_name,
-        phone_number:
-          userData.phone_number || userData.no_tlp || prevFields.phone_number,
-        email: userData.email || prevFields.email,
-        alamat_ktp:
-          userData.alamat_ktp || userData.alamat || prevFields.alamat_ktp,
-      }));
-    }
-  }, [userData, loading]);
+ // --- INTEGRASI USER DATA DARI PROFILE CONTEXT ---
+ useEffect(() => {
+  if (userData) {
+   setFormData((prevData) => ({
+    ...prevData,
+    // Override data mockup dengan data asli dari profil jika tersedia
+    full_name: userData.full_name || prevData.full_name,
+    nik_ktp: userData.nik || prevData.nik_ktp, // userData menggunakan 'nik'
+    email: userData.email || prevData.email,
+    phone_number: userData.phone_number || prevData.phone_number,
 
-  // 2. HANDLER PERUBAHAN FORM
-  const handleChange = useCallback((e) => {
-    const target = e.target;
-    const { name, value, checked, type } = target;
-    const finalValue = type === "checkbox" ? checked : value;
+    // Optional: Jika Anda ingin nama pemilik rekening mengikuti nama profil
+    account_holder: userData.full_name || prevData.account_holder,
+   }));
+  }
+ }, [userData]);
+ // --------------------------------------------------
 
-    setFields((prev) => ({
-      ...prev,
-      [name]: finalValue,
-    }));
-  }, []);
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prevData) => ({
+   ...prevData,
+   [name]: value,
+  }));
+  setErrors((prevErrors) => ({
+   ...prevErrors,
+   [name]: undefined,
+  }));
+ };
 
-  const setFormData = useCallback((callbackOrObject) => {
-    setFields((prev) => {
-      if (typeof callbackOrObject === "function") {
-        return callbackOrObject(prev);
-      }
-      return { ...prev, ...callbackOrObject };
-    });
-  }, []);
+ const handleSetCapturedImage = useCallback(
+  (fieldName, base64Image) => {
+   setFormData((prevData) => ({
+    ...prevData,
+    [fieldName]: base64Image,
+   }));
+   setErrors((prevErrors) => ({
+    ...prevErrors,
+    [fieldName]: undefined,
+   }));
+  },
+  [setFormData]
+ );
 
-  // 3. LOGIKA VALIDASI
-  const validateStep = useCallback(() => {
-    let newErrors = {};
-    let isValid = true;
+ const stepProps = {
+  formData,
+  handleChange,
+  errors,
+  setFormData,
+  handleSetCapturedImage
+ };
 
-    if (step === 1) {
-      if (!fields.nik_ktp || fields.nik_ktp.length !== 16) {
-        newErrors.nik_ktp = "NIK harus 16 digit";
-        isValid = false;
-      }
-      if (!fields.full_name) {
-        newErrors.full_name = "Nama Lengkap wajib diisi";
-        isValid = false;
-      }
-      if (!fields.alamat_ktp) {
-        newErrors.alamat_ktp = "Alamat wajib diisi";
-        isValid = false;
-      }
-    } else if (step === 2) {
-      if (!fields.tipeAnggota) {
-        newErrors.tipeAnggota = "Tipe Anggota wajib dipilih";
-        isValid = false;
-      }
-      if (!fields.phone_number) {
-        newErrors.phone_number = "Nomor HP wajib diisi";
-        isValid = false;
-      }
-      if (!fields.email || !fields.email.includes("@")) {
-        newErrors.email = "Email tidak valid";
-        isValid = false;
-      }
-    } else if (step === 3) {
-      if (!fields.foto_ktp) {
-        newErrors.foto_ktp = "Foto KTP wajib diambil";
-        isValid = false;
-      }
-    } else if (step === 4) {
-      if (!fields.selfie_photo_path) {
-        newErrors.selfie_photo_path = "Swafoto wajib diambil";
-        isValid = false;
-      }
-    } else if (step === 5) {
-      if (!fields.bank_name) {
-        newErrors.bank_name = "Nama Bank wajib diisi";
-        isValid = false;
-      }
-      if (!fields.account_number) {
-        newErrors.account_number = "Nomor Rekening wajib diisi";
-        isValid = false;
-      }
-      if (!fields.account_holder_name) {
-        newErrors.account_holder_name = "Nama Pemilik Rekening wajib diisi";
-        isValid = false;
-      }
-    }
+ const handleEditStep = (targetStep) => {
+  setStep(targetStep);
+ };
 
-    setErrors(newErrors);
-    return isValid;
-  }, [step, fields]);
+ // --- VALIDASI PER LANGKAH (Sama seperti sebelumnya) ---
+ const validateStep = (currentStep, data) => {
+  let stepErrors = {};
+  // ... (Logika validasi per langkah, tidak berubah)
+  if (currentStep === 1) {
+   if (!data.nik_ktp || data.nik_ktp.length !== 16) {
+    stepErrors.nik_ktp = "NIK harus 16 digit.";
+   }
+   if (!data.full_name) {
+    stepErrors.full_name = "Nama lengkap wajib diisi.";
+   }
+   if (!data.alamat_ktp) {
+    stepErrors.alamat_ktp = "Alamat wajib diisi.";
+   }
+  } else if (currentStep === 2) {
+   if (!data.tipeAnggota) {
+    stepErrors.tipeAnggota = "Tipe anggota wajib dipilih.";
+   }
+   if (!data.phone_number || data.phone_number.length < 10) {
+    stepErrors.phone_number = "Nomor HP tidak valid.";
+   }
+   if (!data.email || !/^\S+@\S+\.\S+$/.test(data.email)) {
+    stepErrors.email = "Format email tidak valid.";
+   }
+  } else if (currentStep === 3 && !data.foto_ktp) {
+   stepErrors.foto_ktp = "Foto KTP wajib diambil.";
+  } else if (currentStep === 4 && !data.foto_swafoto) {
+   stepErrors.foto_swafoto = "Swafoto wajib diambil.";
+  } else if (currentStep === 7) {
+   if (!data.bank_name) {
+    stepErrors.bank_name = "Nama bank wajib diisi.";
+   }
+   if (!data.bank_account_no) {
+    stepErrors.bank_account_no = "Nomor rekening wajib diisi.";
+   }
+   if (!data.account_holder) {
+    stepErrors.account_holder = "Nama pemilik rekening wajib diisi.";
+   }
+  }
+  return stepErrors;
+ };
+ // --- END VALIDASI ---
 
-  // 4. LOGIKA NAVIGASI
-  const nextStep = useCallback(() => {
-    if (validateStep()) {
-      setStep((prev) => Math.min(prev + 1, totalSteps));
-    }
-  }, [validateStep]);
 
-  const prevStep = useCallback(() => {
-    setStep((prev) => Math.max(prev - 1, 1));
-  }, []);
+ const nextStep = () => {
+  const currentErrors = validateStep(step, formData);
 
-  const handleEditStep = useCallback((targetStep) => {
-    setStep(targetStep);
-  }, []);
+  if (Object.keys(currentErrors).length > 0) {
+   setErrors(currentErrors);
+   return;
+  }
 
-  // 5. RENDER LANGKAH FORM
-  const renderStep = useMemo(() => {
-    const stepProps = {
-      formData: fields,
-      handleChange: handleChange,
-      setFormData: setFormData,
-      errors: errors,
-    };
+  setErrors({});
+  if (step < totalSteps) {
+   setStep((prevStep) => prevStep + 1);
+  }
+ };
 
-    switch (step) {
-      case 1:
-        return <Step1PersonalData {...stepProps} />;
-      case 2:
-        return <Step2Account {...stepProps} />;
-      case 3:
-        return <Step3CaptureKTP {...stepProps} />;
-      case 4:
-        return <Step4Swafoto {...stepProps} />;
-      case 5:
-        return <Step5BankData {...stepProps} />;
-      case 6:
-        return (
-          <>
-            <Step6Summary formData={fields} handleEditStep={handleEditStep} />
-            <h4 className="mb-3 mt-4 text-primary">Komitmen Anggota</h4>
-            <Alert variant="danger">
-              Mohon baca dan pahami komitmen di bawah sebelum melanjutkan.
-            </Alert>
-            <Form.Check
-              type="checkbox"
-              label="Saya siap berkomitmen belajar muamalah syariah dan meninggalkan transaksi riba."
-              checked={fields.komitmen || false}
-              onChange={handleChange}
-              name="komitmen"
-              id="komitmen-check"
-              isInvalid={isLastStep && !fields.komitmen}
-            />
-            {isLastStep && !fields.komitmen && (
-              <div className="invalid-feedback d-block">
-                Anda harus menyetujui komitmen.
-              </div>
-            )}
-          </>
-        );
-      default:
-        return null;
-    }
-  }, [
-    step,
-    fields,
-    errors,
-    handleChange,
-    setFormData,
-    handleEditStep,
-    isLastStep,
-  ]);
+ const prevStep = () => {
+  if (step > 1) {
+   setStep((prevStep) => prevStep - 1);
+  }
+ };
 
-  // 6. HANDLER SUBMIT FINAL KE BACKEND
-  const handleSubmit = useCallback(async () => {
-    if (!isCommitmentChecked) {
-      setErrors({ komitmen: true });
-      return;
-    }
+ const handleSubmit = async () => {
+  if (!isCommitmentChecked) {
+   setErrors({ commitment: "Anda harus menyetujui pernyataan dan komitmen." });
+   return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
+  setSubmitError(null);
 
-    try {
-      // 💡 MAPPING DATA SESUAI SKEMA BACKEND (Snake_Case)
-      const dataToSubmit = {
-        nik_ktp: fields.nik_ktp,
-        nama: fields.full_name, // full_name -> nama
-        alamat: fields.alamat_ktp, // alamat_ktp -> alamat
-        tipe_anggota: fields.tipeAnggota, // tipeAnggota -> tipe_anggota
-        no_tlp: fields.phone_number, // phone_number -> no_tlp
-        email: fields.email,
-        // Data gambar (diasumsikan Base64)
-        foto_ktp: fields.foto_ktp,
-        foto_swafoto: fields.selfie_photo_path, // selfie_photo_path -> foto_swafoto
-        // Data Bank
-        nama_bank: fields.bank_name, // bank_name -> nama_bank
-        no_rekening: fields.account_number, // account_number -> no_rekening
-        nama_pemilik_rek: fields.account_holder_name, // account_holder_name -> nama_pemilik_rek
-      };
+  try {
+   const payload = { ...formData };
+   const response = await UAnggota.submitRegistration(payload); // Ganti dengan fungsi API Anda
 
-      // ✅ PANGGIL API UAnggota
-      const response = await UAnggota.submitPendaftaran(dataToSubmit);
+   if (response.status) {
+    alert(
+     "Pendaftaran Berhasil! Aplikasi Anda sedang dalam proses verifikasi."
+    );
+    // navigate("/registration/success");
+   } else {
+    setSubmitError(
+     response.message || "Gagal mengirim pendaftaran. Silakan coba lagi."
+    );
+   }
+  } catch (error) {
+   console.error("Error saat submit:", error);
+   setSubmitError(
+    `Terjadi kesalahan sistem: ${error.message || "Gagal terhubung ke server."}`
+   );
+  } finally {
+   setIsSubmitting(false);
+  }
+ };
 
-      console.log("Respon Pendaftaran Sukses:", response.data);
+ const renderStep = useMemo(() => {
+  switch (step) {
+   case 1:
+    return <Step1PersonalData {...stepProps} />;
+   case 2:
+    return <Step2Account {...stepProps} isDataLoaded={!!userData} />;
+   case 3:
+    return <Step3CaptureKTP {...stepProps} setFormData={setFormData} />;
+   case 4:
+    return <Step4Swafoto {...stepProps} setFormData={setFormData} />;
+   case 5:
+    return <Step5Employment {...stepProps} />;
+   case 6:
+    return <Step6EmergencyContact {...stepProps} />;
+   case 7:
+    return <Step7BankData {...stepProps} />;
+   case 8:
+    return (
+     <Step8Summary
+      formData={formData}
+      handleEditStep={handleEditStep}
+      isCommitmentChecked={isCommitmentChecked}
+      setIsCommitmentChecked={setIsCommitmentChecked}
+     />
+    );
+   default:
+    return <div>Langkah tidak ditemukan.</div>;
+  }
+ }, [step, stepProps, formData, isCommitmentChecked, userData]);
 
-      // alert(
-      //   "Pendaftaran Berhasil dikirim! Status pendaftaran akan segera diperiksa."
-      // );
 
-      // // Redirect ke halaman status pendaftaran
-      // navigate(`/${jwtEncode({ page: "registrationPage" })}`, {
-      //   replace: true,
-      // });
-    } catch (error) {
-      console.error("Gagal melakukan pendaftaran:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Terjadi kesalahan saat mengirim data. Pastikan semua data lengkap dan valid.";
-      alert(`Gagal Mendaftar: ${errorMessage}`);
-    } finally {
-      setIsSubmitting(false); // Akhiri proses submit
-    }
-  }, [fields, isCommitmentChecked, navigate]);
-
+ if (profileLoading) {
   return (
-    <div className="d-flex flex-column align-items-center w-100 py-4">
-      <Button
-        variant="light"
-        className="mb-3 d-flex align-items-center"
-        onClick={() => navigate(`/${jwtEncode({ page: "registrationPage" })}`)}
-        disabled={isSubmitting}
-      >
-        <FaArrowLeft className="me-2" /> Kembali ke Status Pendaftaran
-      </Button>
-      <Container style={{ maxWidth: "800px" }}>
-        <Card className="border shadow-sm">
-          <CardHeader className="bg-primary text-white py-2">
-            <CardTitle className="mb-0 fs-5">
-              Form Pendaftaran Anggota
-            </CardTitle>
-          </CardHeader>
-
-          <CardBody>
-            {/* Tampilkan Loading state jika sedang memuat profil */}
-            {loading && (
-              <Alert variant="warning" className="text-center">
-                Memuat data profil...
-              </Alert>
-            )}
-
-            <ProgressBar
-              now={(step / totalSteps) * 100}
-              label={`Langkah ${step} dari ${totalSteps}`}
-              className="mb-4"
-              variant="success"
-            />
-
-            <Form onSubmit={(e) => e.preventDefault()}>
-              {renderStep}
-
-              <div className="d-flex justify-content-between mt-4 border-top pt-3">
-                <Button
-                  variant="secondary"
-                  onClick={prevStep}
-                  disabled={step === 1 || isSubmitting}
-                >
-                  Sebelumnya
-                </Button>
-
-                {isLastStep ? (
-                  <Button
-                    variant="success"
-                    onClick={handleSubmit}
-                    disabled={!isCommitmentChecked || isSubmitting}
-                  >
-                    {isSubmitting ? "Mengirim..." : "Kirim Permohonan"}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={nextStep}
-                    disabled={isSubmitting}
-                  >
-                    Selanjutnya
-                  </Button>
-                )}
-              </div>
-            </Form>
-          </CardBody>
-        </Card>
-      </Container>
-    </div>
+   <Container className="py-5 text-center">
+    <Alert variant="info" className="shadow-lg">
+     Memuat data profil pengguna. Mohon tunggu sebentar...
+    </Alert>
+   </Container>
   );
+ }
+
+
+ return (
+  <div className="registration-form-page py-5">
+   <Container>
+    <Card className="shadow-lg">
+     <CardHeader className="bg-primary text-white">
+      <CardTitle as="h3" className="mb-0">
+       Formulir Pendaftaran Anggota
+      </CardTitle>
+     </CardHeader>
+     <CardBody>
+
+      <ProgressBar
+       now={(step / totalSteps) * 100}
+       label={`Langkah ${step} dari ${totalSteps}`}
+       className="mb-4"
+       variant="success"
+      />
+
+      {submitError && <Alert variant="danger">{submitError}</Alert>}
+      {errors.commitment && <Alert variant="danger">{errors.commitment}</Alert>}
+
+      <Form onSubmit={(e) => e.preventDefault()}>
+       {renderStep}
+
+       <div className="d-flex justify-content-between mt-4 border-top pt-3">
+        <Button
+         variant="secondary"
+         onClick={prevStep}
+         disabled={step === 1 || isSubmitting}
+        >
+         Sebelumnya
+        </Button>
+
+        {isLastStep ? (
+         <Button
+          variant="success"
+          onClick={handleSubmit}
+          disabled={!isCommitmentChecked || isSubmitting}
+         >
+          {isSubmitting ? "Mengirim..." : "Kirim Permohonan"}
+         </Button>
+        ) : (
+         <Button
+          variant="primary"
+          onClick={nextStep}
+          disabled={isSubmitting}
+         >
+          Selanjutnya
+         </Button>
+        )}
+       </div>
+      </Form>
+     </CardBody>
+    </Card>
+   </Container>
+  </div>
+ );
 }

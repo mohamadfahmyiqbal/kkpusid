@@ -1,4 +1,4 @@
-// src/components/anggota/regsitrationForm/steps/Step4Swafoto.jsx
+// src/components/anggota/regsitrationForm/steps/Step4Swafoto.jsx (KOREKSI FIELD NAME)
 
 import React, { useCallback } from "react";
 import { Form, Row, Col, Alert } from "react-bootstrap";
@@ -30,14 +30,16 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
       <Row>
         <Col md={12}>
           <WebcamCaptureField
-            fieldName="selfie_photo_path" // Field Name yang akan disimpan di formData
+            fieldName="foto_swafoto" // 🚨 KOREKSI: Menggunakan 'foto_swafoto'
             label="Foto Swafoto dengan KTP"
-            capturedImage={formData.selfie_photo_path}
+            capturedImage={formData.foto_swafoto} // 🚨 KOREKSI: Menggunakan 'foto_swafoto'
             setCapturedImage={handleSetCapturedImage}
-            isInvalid={!!errors.selfie_photo_path}
+            isInvalid={!!errors.foto_swafoto} // 🚨 KOREKSI: Menggunakan 'foto_swafoto'
           />
-          {!!errors.selfie_photo_path && (
-            <div className="text-danger mt-2">{errors.selfie_photo_path}</div>
+          {!!errors.foto_swafoto && (
+            <Form.Control.Feedback type="invalid" style={{ display: "block" }}>
+              {errors.foto_swafoto}
+            </Form.Control.Feedback>
           )}
         </Col>
       </Row>
