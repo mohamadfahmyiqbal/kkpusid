@@ -26,6 +26,10 @@ class UAnggota {
     // Endpoint asumsi: /anggota/list
     return http.get("/anggota/list", { params: filter });
   }
+  getRegistrationStatus() {
+    // Endpoint yang dipanggil oleh RegistrationPage.jsx
+    return http.get("/anggota/getRegistrationStatus");
+  }
 }
 
 export default new UAnggota();

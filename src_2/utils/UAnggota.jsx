@@ -76,6 +76,10 @@ class UAnggota {
   GetAnggotaSaldo(fields) {
     return this.postFormData("/GetAnggotaSaldo", fields);
   }
+  getRegistrationStatus() {
+    // Endpoint yang dipanggil oleh RegistrationPage.jsx
+    return http.get("/anggota/registration/status");
+  }
 }
 
 export default new UAnggota();
