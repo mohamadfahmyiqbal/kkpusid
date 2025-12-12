@@ -14,6 +14,7 @@ const globalRoutes = {
   invoicePage: InvoicePage,
   accountPage: AccountPage,
   transactionDetailPage: TransactionDetailPage,
+  
   // Tambahkan halaman lain dari folder global di sini
 };
 

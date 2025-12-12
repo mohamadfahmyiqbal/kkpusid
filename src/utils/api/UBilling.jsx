@@ -1,25 +1,22 @@
 // src/utils/api/UBilling.jsx
 
-import http from "./common"; // Wajib: Import instance Axios terkonfigurasi (dengan token)
+import http from "./common";
 
-/**
- * Utility Class untuk mengelola API Tagihan (Billing).
- */
 class UBilling {
-  /**
-   * Mengambil daftar tagihan yang tertunda (pending) atau belum dibayar.
-   * Method: GET
-   * Endpoint asumsi: /api/tagihan/list/pending
-   *
-   * @param {Object} filter - Kriteria filter, e.g., { no_anggota: 'PUS-007', limit: 3 }
-   * @returns {Promise<Object>} Respon dari API (misalnya: { data: { total_count: 5, list: [...] } })
-   */
   getPendingBills(filter = {}) {
-    // Diasumsikan backend menggunakan query string untuk filter
-    return http.get("/tagihan/list/pending", { params: filter });
+    // Jalur SINKRON: /list/pending (Prefix /api/tagihan ditangani oleh instance http/main server)
+    return http.get("/list/pending", { params: filter }); 
   }
 
-  // Tambahkan fungsi lain (misalnya: markAsPaid, getDetailBill, dll) di sini.
+  getInvoiceDetail(billId) {
+    // Jalur SINKRON: /:billId
+    return http.get(`/${billId}`); // Hapus '/tagihan'
+  }
+
+  createMidtransTransaction(billId) {
+    // Jalur SINKRON: /midtrans/create-transaction
+    return http.post("/midtrans/create-transaction", { bill_id: billId }); // Hapus '/tagihan'
+  }
 }
 
 export default new UBilling();
