@@ -5,7 +5,7 @@ import http from "./common";
 class UBilling {
   getPendingBills(filter = {}) {
     // Jalur SINKRON: /list/pending (Prefix /api/tagihan ditangani oleh instance http/main server)
-    return http.get("/list/pending", { params: filter }); 
+    return http.get("/list/pending", { params: filter });
   }
 
   getInvoiceDetail(billId) {
@@ -13,9 +13,9 @@ class UBilling {
     return http.get(`/${billId}`); // Hapus '/tagihan'
   }
 
-  createMidtransTransaction(billId) {
+  createMidtransTransaction(data) {
     // Jalur SINKRON: /midtrans/create-transaction
-    return http.post("/midtrans/create-transaction", { bill_id: billId }); // Hapus '/tagihan'
+    return http.post("/midtrans/create-transaction", data); // Hapus '/tagihan'
   }
 }
 
