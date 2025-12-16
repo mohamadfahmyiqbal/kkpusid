@@ -21,6 +21,10 @@ class UGlobal {
     });
   }
 
+  getFinancialSummary() {
+    return http.get("/financial/summary");
+  }
+
   /**
    * Mengambil daftar artikel publik untuk Landing Page.
    * Endpoint: /public/articles

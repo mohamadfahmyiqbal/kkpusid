@@ -1,11 +1,17 @@
-// 📁 pages/global/InvoicePage.jsx (FINAL KOREKSI UNTUK SNAP CALLBACK)
+// 📁 pages/global/InvoicePage.jsx (KODE FINAL DAN LENGKAP - Tombol Kembali Menggunakan JWT)
 
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { Card, Button, Spinner, Alert, Row, Col, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaMoneyBillWave, FaCheckCircle } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaMoneyBillWave,
+  FaCheckCircle,
+  FaPrint,
+  FaQuestionCircle,
+} from "react-icons/fa";
 import { jwtEncode } from "../../../routes/helpers";
-import UBilling from "../../../utils/api/UBilling"; // Pastikan path ini benar
+import UBilling from "../../../utils/api/UBilling";
 
 // --- HELPER FUNCTIONS ---
 const getValueFromToken = (token, key) => {
@@ -50,9 +56,11 @@ export default function InvoicePage() {
   const navigate = useNavigate();
   const { token } = useParams();
 
+  // 1. DECODING TOKEN (billId, returnPage)
   const { billId, returnPage } = useMemo(() => {
     const id = getValueFromToken(token, "billId");
-    const page = getValueFromToken(token, "return") || "registrationPage";
+    // Mengambil nilai 'return' dari token, default ke 'dashboard' jika tidak ada
+    const page = getValueFromToken(token, "return") || "dashboard";
     return { billId: id, returnPage: page };
   }, [token]);
 
@@ -94,36 +102,35 @@ export default function InvoicePage() {
   // 3. LOGIKA PERHITUNGAN DAN STATUS
   const totalAmount = useMemo(() => {
     if (!billData || !billData.details) return 0;
-    // Menghitung Base Amount dari item detail
     return billData.details.reduce(
       (sum, item) => sum + (parseFloat(item.amount) || 0),
       0
     );
   }, [billData]);
 
-  // ... (Logika status mapping) ...
   const billStatus = billData?.bill_status || "UNPAID";
   const isUnpaid = billStatus === "UNPAID";
   const isPending = billStatus === "PENDING";
   const isPaid = billStatus === "PAID" || billStatus === "SETTLED";
 
-  let statusVariant = "secondary";
   let statusText = "Tidak Diketahui";
-
   if (isUnpaid) {
-    statusVariant = "danger";
     statusText = "Belum Dibayar (UNPAID)";
   } else if (isPending) {
-    statusVariant = "warning";
     statusText = "Menunggu Konfirmasi Pembayaran (PENDING)";
   } else if (isPaid) {
-    statusVariant = "success";
     statusText = "Sudah Dibayar (PAID/SETTLED)";
   }
 
+  // ✅ 4. HANDLER TOMBOL KEMBALI DINAMIS (MENGGUNAKAN JWT ENCODE)
   const handleBack = useCallback(() => {
-    const encodedToken = jwtEncode({ page: returnPage });
-    navigate(`/${encodedToken}`);
+    // 🚨 Gunakan jwtEncode dengan payload hanya berisi halaman tujuan (`returnPage`)
+    const backToken = jwtEncode({
+      page: returnPage, // 'registrationPage' atau 'billingPage'
+    });
+
+    // Navigasi menggunakan format token: /token
+    navigate(`/${backToken}`);
   }, [navigate, returnPage]);
 
   // 5. HANDLER PEMBAYARAN (INTEGRASI MIDTRANS)
@@ -132,92 +139,130 @@ export default function InvoicePage() {
 
     setLoading(true);
     setError(null);
-    const TRANSACTION_CATEGORY = "MEMBER_REGISTRATION";
     try {
-      // 1. Panggil Endpoint Backend untuk mendapatkan Snap Token
-      // 🛑 KOREKSI: Pastikan payload yang dikirim ke backend benar (misal: {bill_id: '123'})
       const response = await UBilling.createMidtransTransaction({
         bill_id: billId,
-        tx_category: TRANSACTION_CATEGORY, // 🛑 KIRIM JENIS TRANSAKSI
+        tx_category: "MEMBER_REGISTRATION",
       });
       const snapToken = response.data?.snapToken;
 
-      // 2. Buka Pop-up Midtrans Snap
       if (snapToken && window.snap) {
         window.snap.pay(snapToken, {
           onSuccess: function (result) {
-            /* Pembayaran Sukses (SETTLEMENT) */
-            console.log("Payment success:", result);
-            // 🛑 KOREKSI: Gunakan navigate untuk UX yang lebih baik
-            navigate("/payment-status/success", {
-              state: { transactionResult: result },
+            // ✅ MEMBERIKAN JEDA 3 DETIK SEBELUM REFRESH DATA
+            // Agar backend memiliki waktu untuk memproses notifikasi Midtrans
+            const successToken = jwtEncode({
+              page: "invoicePage",
+              billId: billId,
+              return: returnPage,
+              status: "success",
             });
-            // TIDAK perlu fetchBillDetail, karena webhook akan mengurus status PAID.
+
+            setTimeout(() => {
+              navigate(`/${successToken}`);
+              fetchBillDetail();
+            }, 3000);
           },
           onPending: function (result) {
-            /* Pembayaran Pending (VA, QRIS) */
-            console.log("Payment pending:", result);
-            navigate("/payment-status/pending", {
-              state: { transactionResult: result },
+            const pendingToken = jwtEncode({
+              page: "invoicePage",
+              billId: billId,
+              return: returnPage,
+              status: "pending",
             });
-            // 🛑 PENTING: Refresh untuk mengambil status PENDING yang sudah dicatat backend
-            fetchBillDetail();
+            setTimeout(() => {
+              navigate(`/${pendingToken}`);
+              fetchBillDetail();
+            }, 2000);
           },
           onError: function (result) {
-            /* Gagal di Midtrans */
-            console.log("Payment error:", result);
-            navigate("/payment-status/error", {
-              state: { transactionResult: result },
-            });
-            // 🛑 PENTING: Refresh untuk mengambil status UNPAID/apapun
             fetchBillDetail();
           },
           onClose: function () {
-            /* User menutup pop-up */
-            console.log("User closed the popup.");
-            // 🛑 PENTING: Refresh untuk mengambil status PENDING (jika sudah buat VA/QRIS)
             fetchBillDetail();
           },
         });
-      } else if (!snapToken) {
-        setError(
-          response.message || "Gagal mendapatkan Snap Token dari server."
-        );
       } else {
-        setError(
-          "Midtrans Snap script belum dimuat. Pastikan Anda sudah mengimpornya di index.html."
-        );
+        setError("Gagal mendapatkan Snap Token.");
       }
     } catch (err) {
-      console.error("Error creating Midtrans transaction:", err);
-      const errMsg = err.response?.data?.message || "Gagal memproses Midtrans.";
-      setError(errMsg);
+      console.error("Error Midtrans:", err);
+      setError("Gagal memproses pembayaran.");
     } finally {
-      // Hentikan loading di frontend. Snap Pop-up akan mengambil alih.
       setLoading(false);
     }
-  }, [billId, fetchBillDetail, navigate]);
+  }, [billId, fetchBillDetail, navigate, returnPage]);
 
   // 6. RENDER KONDISIONAL
-  // ... (Logika Loading, Error, Not Found) ...
+  if (loading && !billData) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" /> <p>Memuat data tagihan...</p>
+      </div>
+    );
+  }
+  if (error || !billData) {
+    return (
+      <div className="container mt-5 text-center">
+        <Alert variant="danger">
+          {error || "Data tagihan tidak ditemukan."}
+        </Alert>
+        <Button onClick={() => navigate("/dashboard")}>
+          Kembali ke Dashboard
+        </Button>
+      </div>
+    );
+  }
 
-  // DESTRUCTURING DATA INVOICE
-  const { member_no, full_name, due_date, details } = billData || {};
+  const { member_no, full_name, due_date, details } = billData;
+
+  const RenderStatusDisplay = () => {
+    if (isPaid)
+      return (
+        <Alert variant="success" className="mb-3 text-center">
+          <FaCheckCircle className="me-2" /> Tagihan Sudah Lunas
+        </Alert>
+      );
+    if (isPending)
+      return (
+        <Alert variant="warning" className="mb-3 text-center">
+          <Spinner animation="border" size="sm" className="me-2" /> Menunggu
+          Pembayaran
+        </Alert>
+      );
+    if (isUnpaid)
+      return (
+        <Alert variant="danger" className="mb-3 text-center">
+          Pembayaran Belum Berhasil
+        </Alert>
+      );
+    return null;
+  };
 
   return (
     <div className="container-fluid">
-      {/* JUDUL HALAMAN DENGAN TOMBOL BACK */}
-      {/* ... (Header dan Breadcrumb) ... */}
+      <Row className="justify-content-center">
+        <Col lg={12} xl={12}>
+          {/* ✅ TOMBOL KEMBALI DINAMIS (MENGGUNAKAN LOGIKA returnPage) */}
+          <Button
+            onClick={handleBack}
+            variant="outline-secondary"
+            className="mb-3"
+          >
+            <FaArrowLeft className="me-2" /> Kembali
+            {returnPage === "registrationPage"
+              ? " ke Ringkasan Pendaftaran"
+              : " ke Halaman Utama"}
+          </Button>
 
-      <Row>
-        <Col lg={12}>
           <Card className="shadow-lg mb-4">
-            {/* ... (Card Header dan Detail Anggota) ... */}
             <Card.Header className="bg-primary text-white">
               <h5 className="mb-0">Tagihan Anggota (Kewajiban Awal)</h5>
             </Card.Header>
             <Card.Body>
-              {/* ... (Detail Anggota) ... */}
+              <RenderStatusDisplay />
+
+              {/* Detail Anggota dan Tagihan */}
               <div className="p-3 border-bottom">
                 <Row className="mb-3">
                   <Col md={6}>
@@ -249,7 +294,6 @@ export default function InvoicePage() {
               <div className="p-3">
                 <h6 className="mt-0 mb-3 fw-bold">Rincian Tagihan</h6>
                 <Table responsive striped bordered size="sm">
-                  {/* ... (Table Head dan Body) ... */}
                   <thead>
                     <tr>
                       <th style={{ width: "5%" }}>#</th>
@@ -284,16 +328,12 @@ export default function InvoicePage() {
                         Total Pembayaran
                       </th>
                       <th className="text-end text-danger fs-5">
-                        {/* 🛑 Tampilkan BASE AMOUNT (Rp700.000) */}
                         {formatCurrency(totalAmount)}
                       </th>
                     </tr>
                   </tfoot>
                 </Table>
               </div>
-
-              {/* Status dan Metode Pembayaran */}
-              {/* ... (Status Display) ... */}
             </Card.Body>
             <Card.Footer className="text-center">
               {/* Tombol Bayar Midtrans */}
@@ -306,7 +346,7 @@ export default function InvoicePage() {
                 >
                   {loading ? (
                     <>
-                      <Spinner animation="border" size="sm" className="me-2" />{" "}
+                      <Spinner animation="border" size="sm" className="me-2" />
                       Mempersiapkan Pembayaran
                     </>
                   ) : (
@@ -327,10 +367,10 @@ export default function InvoicePage() {
 
               {/* Tombol Cetak/Bantuan */}
               <Button variant="info" className="ms-2">
-                Cetak Invoice
+                <FaPrint className="me-2" /> Cetak Invoice
               </Button>
               <Button variant="secondary" className="ms-2">
-                Bantuan
+                <FaQuestionCircle className="me-2" /> Bantuan
               </Button>
             </Card.Footer>
           </Card>

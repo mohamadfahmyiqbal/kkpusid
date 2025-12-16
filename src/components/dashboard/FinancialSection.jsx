@@ -1,121 +1,104 @@
 // src/components/dashboard/FinancialSection.jsx
 
-import React, { useState, useEffect } from "react";
-// Import http (instance Axios terkonfigurasi dengan token) dari common.jsx
-import http from "../../utils/api/common";
+import React, { useState, useEffect, useCallback } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useProfile } from "../../contexts/ProfileContext";
+import UGlobal from "../../utils/api/UGlobal";
 
 const FinancialSection = () => {
-  // 1. State untuk Data, Loading, dan Error
-  const [financialSummary, setFinancialSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { userData } = useProfile();
+  const [balance, setBalance] = useState(0);
 
-  /**
-   * Fungsi untuk mengambil ringkasan data keuangan anggota.
-   */
-  const fetchFinancialData = async () => {
+  // 1. State untuk kontrol visibilitas saldo (default: tersembunyi)
+  const [showBalance, setShowBalance] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBalance = useCallback(async () => {
+    if (!userData?.member_id) return;
     setLoading(true);
-    setError(null);
     try {
-      // Menggunakan http.get untuk mengambil data keuangan anggota
-      // Asumsi Endpoint: /api/keuangan/summary
-      const res = await http.get("/api/keuangan/summary");
-      setFinancialSummary(res.data.data);
+      // Mengambil data dari endpoint /api/keuangan/summary melalui UGlobal
+      const res = await UGlobal.getFinancialSummary();
+      if (res.data?.success) {
+        setBalance(res.data.data.totalSavings || 0);
+      }
     } catch (err) {
-      console.error("Gagal memuat ringkasan keuangan:", err);
-      // Tangani error, bisa jadi 401 (token expired)
-      const errorMessage =
-        err.response?.data?.message || "Gagal memuat data ringkasan keuangan.";
-      setError(errorMessage);
+      console.error("Gagal memuat saldo:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData]);
 
-  // 2. Lifecycle: Panggil fungsi fetch saat komponen dimuat
   useEffect(() => {
-    fetchFinancialData();
-  }, []);
+    fetchBalance();
+  }, [fetchBalance]);
 
-  // 3. Conditional Rendering: Loading
-  if (loading) {
-    return (
-      <section className="financial-summary-section my-4">
-        <div className="card p-3 text-center">
-          <div
-            className="spinner-border spinner-border-sm text-primary"
-            role="status"
-          ></div>
-          <small className="ms-2">Memuat Ringkasan Keuangan...</small>
-        </div>
-      </section>
-    );
-  }
-
-  // 4. Conditional Rendering: Error
-  if (error) {
-    return (
-      <section className="financial-summary-section my-4">
-        <div className="alert alert-danger">
-          <strong>Kesalahan:</strong> {error}
-          <button className="btn btn-sm btn-link" onClick={fetchFinancialData}>
-            Coba lagi
-          </button>
-        </div>
-      </section>
-    );
-  }
-
-  // 5. Render Data
-  // Pastikan data yang ditampilkan sudah di-format (misalnya Rupiah)
-  const formatRupiah = (amount) => {
+  const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
-    }).format(amount || 0);
+    }).format(number || 0);
   };
 
+  if (loading)
+    return <div className="p-3 text-white-50 small">Memuat data dompet...</div>;
+
   return (
-    <section className="financial-summary-section my-4">
-      <div className="row">
-        {/* Kartu Summary Simpanan */}
-        <div className="col-lg-4 col-md-6 mb-3">
-          <div className="card shadow-sm p-3 border-left-success">
-            <h5 className="card-title text-success small text-uppercase mb-0">
-              Total Simpanan
+    <div className="financial-section mb-4">
+      <div
+        className="card border-0 shadow-lg"
+        style={{
+          background: "linear-gradient(90deg, #075985 0%, #38bdf8 100%)",
+          borderRadius: "16px",
+          color: "white",
+        }}
+      >
+        <div className="card-body p-4">
+          {/* Header Saldo & Ikon Mata */}
+          <div className="d-flex justify-content-between align-items-center mb-1">
+            <h5 className="fw-bold mb-0" style={{ fontSize: "1.1rem" }}>
+              Total Saldo
             </h5>
-            <p className="h3 mb-0 font-weight-bold">
-              {formatRupiah(financialSummary?.totalSavings)}
-            </p>
+            {/* 2. Tombol Toggle Mata */}
+            <span
+              role="button"
+              onClick={() => setShowBalance(!showBalance)}
+              style={{ cursor: "pointer" }}
+              className="opacity-75"
+            >
+              {showBalance ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </span>
           </div>
-        </div>
 
-        {/* Kartu Summary Pinjaman */}
-        <div className="col-lg-4 col-md-6 mb-3">
-          <div className="card shadow-sm p-3 border-left-warning">
-            <h5 className="card-title text-warning small text-uppercase mb-0">
-              Sisa Pinjaman
-            </h5>
-            <p className="h3 mb-0 font-weight-bold">
-              {formatRupiah(financialSummary?.totalLoanDebt)}
-            </p>
+          {/* 3. Logika Tampilan Saldo */}
+          <div className="mb-4">
+            <h2 className="fw-bold mb-0" style={{ minHeight: "40px" }}>
+              {showBalance ? formatRupiah(balance) : "Rp. ********"}
+            </h2>
           </div>
-        </div>
 
-        {/* Kartu Summary SHU */}
-        <div className="col-lg-4 col-md-6 mb-3">
-          <div className="card shadow-sm p-3 border-left-info">
-            <h5 className="card-title text-info small text-uppercase mb-0">
-              SHU Terkumpul
-            </h5>
-            <p className="h3 mb-0 font-weight-bold">
-              {formatRupiah(financialSummary?.annualSHU)}
-            </p>
+          {/* Detail Informasi Anggota */}
+          <div className="mt-auto">
+            <div className="mb-2">
+              <div className="small opacity-75 fw-semibold">No Anggota :</div>
+              <div className="fw-bold h5 mb-0" style={{ letterSpacing: "1px" }}>
+                {userData?.member_no || "-"}
+              </div>
+            </div>
+
+            <div>
+              <div className="small opacity-75 fw-semibold">
+                No Rekening Simpanan
+              </div>
+              <div className="fw-bold h5 mb-0" style={{ letterSpacing: "1px" }}>
+                #{userData?.bank_account_no || "0000000000000"}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

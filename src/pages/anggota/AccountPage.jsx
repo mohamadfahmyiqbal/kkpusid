@@ -15,7 +15,8 @@ const initialUser = {
   jabatan: "Anggota Aktif",
   alamat: "Jl. Jend. Sudirman No. 12, Jakarta",
   foto: "",
-  status: "Aktif", // Tambahkan status untuk badge
+  status_id: 1, // Tambahkan status untuk badge
+  member_type: "Calon Anggota", // Tambahkan status untuk badge
 };
 
 export default function AccountPage() {

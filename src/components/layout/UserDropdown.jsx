@@ -40,29 +40,26 @@ export default function UserDropdown({ user, logout }) {
       className="nav-item"
     >
       <div className="dropdown-menu-right mailbox animated bounceInDown">
-        {/* Konten User Box */}
-        <div className="dw-user-box px-3 py-2">
-          <div className="d-flex align-items-center">
-            <img
-              src={getFotoSrc(user?.foto)}
-              alt="user"
-              width={40}
-              height={40}
-              className="rounded-circle me-2"
-            />
-            <div>
-              <h6 className="mb-0">{user?.nama || "Guest"}</h6>
-              <p className="text-muted mb-1" style={{ fontSize: 12 }}>
-                {user?.email || "No email"}
-              </p>
-              <button
-                className="btn btn-rounded btn-danger btn-sm"
-                // ✅ UBAH DARI "profile" ke "accountPage"
-                onClick={() => handleClick("accountPage")}
-              >
-                View Profile
-              </button>
-            </div>
+        <div className="p-3 mb-2 d-flex no-block align-items-center border-bottom">
+          <img
+            src={getFotoSrc(user?.foto)}
+            alt="user"
+            width={40}
+            height={40}
+            className="rounded-circle me-2"
+          />
+          <div>
+            {/* ✅ PENYESUAIAN: Menggunakan full_name */}
+            <h6 className="mb-0">{user?.full_name || "Guest"}</h6>
+            <p className="text-muted mb-1" style={{ fontSize: 12 }}>
+              {user?.email || "No email"}
+            </p>
+            <button
+              className="btn btn-rounded btn-danger btn-sm"
+              onClick={() => handleClick("accountPage")}
+            >
+              View Profile
+            </button>
           </div>
         </div>
       </div>

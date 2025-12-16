@@ -25,9 +25,9 @@ export default function Step2Account({ formData, handleChange, errors }) {
             onChange={handleChange}
             isInvalid={!!errors.tipeAnggota}
           >
-            <option value="">Pilih Tipe Anggota</option>
-            <option value="reguler">Anggota Reguler</option>
-            <option value="alb">Anggota Luar Biasa</option>
+            <option value="1">Pilih Tipe Anggota</option>
+            <option value="5">Anggota Reguler</option>
+            <option value="6">Anggota Luar Biasa</option>
           </Form.Select>
           <Form.Control.Feedback type="invalid">
             {errors.tipeAnggota}
