@@ -144,8 +144,8 @@ export default function InvoicePage() {
         bill_id: billId,
         tx_category: "MEMBER_REGISTRATION",
       });
-      const snapToken = response.data?.snapToken;
-
+      const snapToken =
+        response.data?.data?.snapToken || response.data?.snapToken;
       if (snapToken && window.snap) {
         window.snap.pay(snapToken, {
           onSuccess: function (result) {

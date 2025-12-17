@@ -1,85 +1,46 @@
-// src/components/dashboard/TagihanSection.jsx
-
-import React, { useCallback } from "react";
-import { Card, Col } from "react-bootstrap";
+import React, { useCallback, useEffect, useState } from "react";
+import { Card, Col, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
+import UBilling from "../../utils/api/UBilling";
 
-// --- Data Mockup Tagihan ---
-const mockBillingItems = [
-  // Kunci navigasi diset ke 'InvoicePage' agar sesuai dengan nama file Anda
-  {
-    id: 1,
-    label: "Simpanan Pokok",
-    type: "Setoran",
-    amount: 500000,
-    pageKey: "InvoicePage",
-  },
-  {
-    id: 2,
-    label: "Simpanan Wajib",
-    type: "Setoran",
-    amount: 200000,
-    pageKey: "InvoicePage",
-  },
-  {
-    id: 3,
-    label: "Hibah Koperasi",
-    type: "Setoran",
-    amount: 50000,
-    pageKey: "InvoicePage",
-  },
-  {
-    id: 4,
-    label: "Angsuran Pinjaman",
-    type: "Tagihan",
-    amount: 1500000,
-    pageKey: "InvoicePage",
-  },
-];
-
-// Helper to format currency
+// Helper untuk format mata uang
 const formatCurrency = (amount) => {
-  return amount.toLocaleString("id-ID", {
+  return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  });
+  }).format(amount);
 };
 
-// Sub-component for a single billing card
+// Sub-komponen untuk kartu tagihan satuan
 const BillingCard = ({ item, handleNavigation }) => {
   return (
-    <Col
-      key={item.id}
-      xs={6}
-      className="flex-shrink-0 me-3"
-      style={{ width: "45%" }}
-    >
+    <Col xs={6} className="flex-shrink-0 me-3" style={{ width: "45%" }}>
       <Card
         className="shadow-sm overflow-hidden"
-        onClick={() => handleNavigation(item.pageKey)}
+        onClick={() => handleNavigation(item.bill_id)}
         style={{ cursor: "pointer" }}
       >
-        {/* Header: Setoran + Simpanan Pokok (Dark Blue) */}
         <div className="p-2 text-white" style={{ backgroundColor: "#005a8d" }}>
           <small
             className="d-block mb-0 fw-light"
-            style={{ fontSize: "0.8rem" }}
+            style={{ fontSize: "0.75rem" }}
           >
-            {item.type}
+            {item.billType?.tx_type || "TAGIHAN"}
           </small>
-          <strong className="d-block" style={{ fontSize: "1rem" }}>
-            {item.label}
+          <strong
+            className="d-block text-truncate"
+            style={{ fontSize: "0.85rem" }}
+          >
+            {item.billType?.type_name || "Pembayaran"}
           </strong>
         </div>
-
-        {/* Footer: Amount (Red) */}
         <div
           className="text-white p-2 text-center fw-bold"
-          style={{ backgroundColor: "#dc3545", fontSize: "1.1rem" }}
+          style={{ backgroundColor: "#dc3545", fontSize: "1rem" }}
         >
-          {formatCurrency(item.amount)}.-
+          {formatCurrency(item.amount)}
         </div>
       </Card>
     </Col>
@@ -88,47 +49,90 @@ const BillingCard = ({ item, handleNavigation }) => {
 
 const TagihanSection = () => {
   const navigate = useNavigate();
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // PERBAIKAN: handleNavigation sekarang sudah mencakup returnKey secara internal
-  const handleNavigation = useCallback(
-    (pageKey) => {
-      // Halaman kembali untuk Tagihan di Dashboard selalu 'dashboardPage'
-      const RETURN_PAGE_KEY = "billingPage";
+  const fetchBills = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await UBilling.getPendingBills();
 
-      if (pageKey) {
-        const payload = {
-          page: pageKey,
-          return: RETURN_PAGE_KEY, // Menambahkan key kembali ke payload
-        };
-        const token = jwtEncode(payload);
-        navigate(`/${token}`);
-      } else {
-        console.warn(`Page key untuk tagihan tidak ditemukan.`);
+      if (response.data && response.data.status) {
+        setBills(response.data.data);
       }
+    } catch (err) {
+      console.error("Fetch Bills Error:", err);
+      setError("Gagal memuat daftar tagihan.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBills();
+  }, [fetchBills]);
+
+  const handleNavigation = useCallback(
+    (billId) => {
+      const payload = {
+        page: "invoicePage",
+        billId: billId,
+        return: "dashboard",
+      };
+      const token = jwtEncode(payload);
+      navigate(`/${token}`);
     },
     [navigate]
   );
 
+  if (loading)
+    return (
+      <div className="p-3 text-center">
+        <Spinner size="sm" />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="mx-3">
+        <Alert variant="danger" className="py-2 small">
+          {error}
+        </Alert>
+      </div>
+    );
+
   return (
     <div className="mb-4">
-      <h5 className="mb-3 mx-3">Tagihan</h5>
+      <h5 className="mb-3 mx-3">Tagihan Perlu Dibayar</h5>
 
-      {/* Wrapper Flex: Horizontal scroll container */}
-      <div
-        className="d-flex flex-nowrap overflow-x-auto text-center pb-2 ps-3"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {mockBillingItems.map((item) => (
-          <BillingCard
-            key={item.id}
-            item={item}
-            handleNavigation={handleNavigation}
-          />
-        ))}
-
-        {/* Padding div at the end */}
-        <div className="flex-shrink-0 pe-3" style={{ width: "0" }}></div>
-      </div>
+      {/* MODIFIKASI DISINI: Cek jika ada tagihan atau tidak */}
+      {bills.length > 0 ? (
+        <div
+          className="d-flex flex-nowrap overflow-x-auto text-center pb-2 ps-3"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {bills.map((item) => (
+            <BillingCard
+              key={item.bill_id}
+              item={item}
+              handleNavigation={handleNavigation}
+            />
+          ))}
+          <div className="flex-shrink-0 pe-3" style={{ width: "0" }}></div>
+        </div>
+      ) : (
+        /* Tampilan saat tagihan kosong */
+        <div className="mx-3">
+          <Card className="border-0 shadow-sm bg-light">
+            <Card.Body className="text-center py-4">
+              <p className="text-muted mb-0 small">
+                Anda belum memiliki tagihan saat ini.
+              </p>
+            </Card.Body>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

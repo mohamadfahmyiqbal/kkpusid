@@ -9,7 +9,7 @@ class USimpanan {
    * Endpoint asumsi: /simpanan/rekening/info
    */
   getSavingsAccountInfo() {
-    return http.get("/api/simpanan/rekening/info");
+    return http.get("simpanan/rekening/info");
   }
 
   /**
@@ -19,7 +19,7 @@ class USimpanan {
    * @param {Object} params - Filter untuk riwayat transaksi
    */
   getSavingsHistory(params) {
-    return http.get("/api/simpanan/riwayat", { params });
+    return http.get("simpanan/riwayat", { params });
   }
 
   /**
@@ -29,7 +29,7 @@ class USimpanan {
    * @param {Object} data - Detail penarikan (e.g., jumlah, rekening tujuan)
    */
   requestWithdrawal(data) {
-    return http.post("/api/simpanan/penarikan/request", data);
+    return http.post("simpanan/penarikan/request", data);
   }
 }
 

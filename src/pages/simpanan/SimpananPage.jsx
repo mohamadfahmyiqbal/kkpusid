@@ -1,53 +1,71 @@
-// src/pages/anggota/SimpananPage.jsx
-
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { Button } from "react-bootstrap";
+import { Button, Spinner, Alert, Card } from "react-bootstrap";
 import InformasiRekeningCard from "../../components/simpanan/InformasiRekeningCard";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
-
-// --- DATA MOCKUP SIMPANAN DETAILED ---
-const mockSavingsData = {
-  "Simpanan Pokok": {
-    product: "Simpanan Pokok",
-    akad: "Mudorobah",
-    tanggalBuka: "01 Februari 2023",
-    nominal: 500000,
-    saldoAkhir: 500000,
-    nama: "Budi Santoso",
-  },
-  "Simpanan Wajib": {
-    product: "Simpanan Wajib",
-    akad: "Wadi’ah",
-    tanggalBuka: "15 Maret 2023",
-    nominal: 200000,
-    saldoAkhir: 2500000,
-    nama: "Budi Santoso",
-  },
-  "Simpanan Sukarela": {
-    product: "Simpanan Sukarela",
-    akad: "Wadi’ah",
-    tanggalBuka: "10 Mei 2023",
-    nominal: 100000,
-    saldoAkhir: 1250000,
-    nama: "Budi Santoso",
-  },
-};
+import USimpanan from "../../utils/api/USimpanan";
 
 const SimpananPage = () => {
-  const [activeSavingsType, setActiveSavingsType] = useState("Simpanan Pokok");
-  const activeData = mockSavingsData[activeSavingsType];
+  const [savingsData, setSavingsData] = useState({});
+  const [activeSavingsType, setActiveSavingsType] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // PERBAIKAN: handleActionNavigation sekarang menerima returnPageKey
+  const fetchSavingsData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Mengambil data dari USimpanan API
+      const response = await USimpanan.getSavingsHistory();
+
+      if (response.data && response.data.status) {
+        const transactions = response.data.data;
+
+        const grouped = transactions.reduce((acc, tx) => {
+          const category = tx.tx_category || "LAINNYA";
+
+          if (!acc[category]) {
+            acc[category] = {
+              product: category.replace(/_/g, " "),
+              akad: tx.billType?.category_map || "Wadi'ah",
+              nominal: 0,
+              saldoAkhir: 0,
+              tanggalBuka: tx.created_at,
+              nama: "Anggota",
+            };
+          }
+          acc[category].saldoAkhir += parseFloat(tx.amount || 0);
+          acc[category].nominal = parseFloat(tx.amount || 0);
+          return acc;
+        }, {});
+
+        setSavingsData(grouped);
+        const keys = Object.keys(grouped);
+        if (keys.length > 0) setActiveSavingsType(keys[0]);
+      } else {
+        setError(response.data?.message || "Gagal memuat data simpanan.");
+      }
+    } catch (err) {
+      console.error("Error fetching savings:", err);
+      setError("Terjadi kesalahan saat menghubungi server.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSavingsData();
+  }, [fetchSavingsData]);
+
+  const activeData = savingsData[activeSavingsType];
+
   const handleActionNavigation = useCallback(
     (pageKey, returnPageKey) => {
-      // Bangun payload
       const payload = { page: pageKey };
-      if (returnPageKey) {
-        payload.return = returnPageKey;
-      }
+      if (returnPageKey) payload.return = returnPageKey;
 
       const token = jwtEncode(payload);
       navigate(`/${token}`);
@@ -57,41 +75,13 @@ const SimpananPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="container-fluid py-4">
-        <h2 className="mb-3 mx-3">Simpanan</h2>
-
-        {/* 1. BUTTONS/TABS UNTUK MEMILIH JENIS SIMPANAN */}
-        <div className="d-flex flex-column gap-2 mx-3 mb-4">
-          {Object.keys(mockSavingsData).map((type) => (
-            <Button
-              key={type}
-              variant={activeSavingsType === type ? "" : "outline-secondary"}
-              onClick={() => setActiveSavingsType(type)}
-              className={
-                activeSavingsType === type ? "border-2" : "border-secondary"
-              }
-              style={{
-                fontWeight: activeSavingsType === type ? "bold" : "normal",
-                backgroundColor:
-                  activeSavingsType === type ? "#005a8d" : "white",
-                borderColor: activeSavingsType === type ? "#005a8d" : "#ced4da",
-                color: activeSavingsType === type ? "white" : "black",
-              }}
-            >
-              {type}
-            </Button>
-          ))}
-        </div>
-
-        {/* 2. INFORMASI REKENING (Meneruskan fungsi navigasi yang sudah diperbarui) */}
-        <div className="mx-3">
-          {activeData && (
-            <InformasiRekeningCard
-              data={activeData}
-              handleActionNavigation={handleActionNavigation}
-            />
-          )}
-        </div>
+      <div
+        className="container-fluid py-4"
+        style={{ maxWidth: "500px", margin: "0 auto" }}
+      >
+        <h4 className="mb-4 mx-3 fw-bold" style={{ color: "#005a8d" }}>
+          Simpanan
+        </h4>
       </div>
     </DashboardLayout>
   );
