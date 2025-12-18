@@ -1,154 +1,129 @@
 // src/components/simpanan/InformasiRekeningCard.jsx
+import React, { useEffect, useState } from "react";
+import { Card, Spinner, Alert } from "react-bootstrap";
+import USimpanan from "../../utils/api/USimpanan";
 
-import React from "react";
-import { Card, Row, Col, Container, Button } from "react-bootstrap";
-import { FaEye, FaUpload, FaDownload } from "react-icons/fa";
+const InformasiRekeningCard = ({ activeType }) => {
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// Fungsi pembantu untuk memformat saldo ke IDR
-const formatBalance = (amount) => {
-  return amount.toLocaleString("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  });
-};
+  useEffect(() => {
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-const InformasiRekeningCard = ({ data, handleActionNavigation }) => {
-  // Kunci halaman saat ini, digunakan sebagai kunci kembali
-  const CURRENT_PAGE_KEY = "simpananPage";
+        // Panggil API dengan filter kategori (e.g., "Simpanan Pokok")
+        const response = await USimpanan.getSavingsHistory({
+          category: activeType,
+        });
 
-  // --- FUNGSI RENDERING TOMBOL AKSI DINAMIS ---
-  const renderActionButtons = () => {
-    const type = data.product;
-    let buttons = [];
+        if (response.data && response.data.status) {
+          const txs = response.data.data;
 
-    // Aturan Navigasi:
-    if (type === "Simpanan Pokok") {
-      // Simpanan Pokok: Tombol Detail (Invoice).
-      buttons.push({
-        label: "Detail",
-        icon: FaEye,
-        key: "invoicePage",
-        returnKey: CURRENT_PAGE_KEY, // Kunci untuk kembali ke SimpananPage
-        variant: "info",
-      });
-    } else if (type === "Simpanan Wajib") {
-      // Simpanan Wajib: Navigasi ke BillingPage, sertakan returnKey dan setoranType
-      buttons.push({
-        label: "Setoran",
-        icon: FaUpload,
-        key: "billingPage", // 💡 DIPERBARUI: Arahkan ke BillingPage
-        returnKey: CURRENT_PAGE_KEY, // 💡 Kunci untuk kembali ke SimpananPage
-        setoranType: type, // 💡 Tipe setoran untuk pre-selection
-        variant: "success",
-      });
-    } else if (type === "Simpanan Sukarela") {
-      // Simpanan Sukarela: Setoran & Pencairan
-      buttons.push(
-        {
-          label: "Setoran",
-          icon: FaUpload,
-          key: "billingPage", // 💡 DIPERBARUI: Arahkan ke BillingPage
-          returnKey: CURRENT_PAGE_KEY, // 💡 Kunci untuk kembali ke SimpananPage
-          setoranType: type, // 💡 Tipe setoran untuk pre-selection
-          variant: "success",
-        },
-        {
-          label: "Pencairan",
-          icon: FaDownload,
-          key: "penarikanSimpananPage", // <--- Mengarahkan ke page baru
-          returnKey: CURRENT_PAGE_KEY, // <--- Penting: Tambahkan ini untuk navigasi kembali
-          variant: "danger",
-        }
-      );
-    }
+          if (txs.length > 0) {
+            const totalSaldo = txs.reduce((acc, curr) => {
+              const itemAmount = parseFloat(curr.bill?.items?.[0]?.amount || 0);
+              return acc + itemAmount;
+            }, 0);
 
-    // --- Layout untuk 1 Tombol ---
-    if (buttons.length === 1) {
-      const btn = buttons[0];
-      const Icon = btn.icon;
-
-      return (
-        <div
-          className="text-center mt-4"
-          // 💡 DIPERBARUI: Panggil dengan 3 argumen (pageKey, returnKey, setoranType)
-          onClick={() =>
-            handleActionNavigation(btn.key, btn.returnKey, btn.setoranType)
+            setDetails({
+              // REVISI: Ambil nama dari backend (curr.member.full_name)
+              nama: txs[0]?.member?.full_name || "Anggota",
+              produk: activeType,
+              akad: txs[0]?.bill?.billType?.category_map || "Wadi'ah",
+              tanggal: txs[0]?.created_at,
+              saldo: totalSaldo,
+            });
+          } else {
+            // Jika tidak ada transaksi untuk kategori ini
+            setDetails({
+              nama: "Budi Santoso",
+              produk: activeType,
+              akad: "-",
+              tanggal: "-",
+              saldo: 0,
+            });
           }
-          role="button"
-          style={{ cursor: "pointer" }}
-        >
-          <Icon size={24} className="text-white mb-1" />
-          <p className="mb-0" style={{ fontSize: "0.7rem" }}>
-            {btn.label}
-          </p>
-        </div>
-      );
+        } else {
+          setError("Gagal memproses data simpanan");
+        }
+      } catch (err) {
+        console.error("Error Fetching Detail:", err);
+        setError("Koneksi ke server terputus");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeType) {
+      fetchDetail();
     }
+  }, [activeType]);
 
-    // --- Layout untuk 2 Tombol ---
-    else if (buttons.length > 1) {
-      return (
-        <Row className="mt-4 gx-2">
-          {buttons.map((btn, index) => {
-            const Icon = btn.icon;
-            return (
-              <Col key={index}>
-                <Button
-                  size="sm"
-                  variant={btn.variant}
-                  // 💡 DIPERBARUI: Panggil dengan 3 argumen (pageKey, returnKey, setoranType)
-                  onClick={() =>
-                    handleActionNavigation(
-                      btn.key,
-                      btn.returnKey,
-                      btn.setoranType
-                    )
-                  }
-                  className="w-100 fw-bold"
-                >
-                  <Icon className="me-1" /> {btn.label}
-                </Button>
-              </Col>
-            );
-          })}
-        </Row>
-      );
-    }
+  if (loading) {
+    return (
+      <Card
+        className="border-0 shadow-sm text-center py-5 text-white"
+        style={{ backgroundColor: "#005a8d" }}
+      >
+        <Spinner
+          animation="border"
+          variant="light"
+          size="sm"
+          className="mb-2"
+        />
+        <p className="mb-0 small">Memuat data {activeType}...</p>
+      </Card>
+    );
+  }
 
-    return null;
-  };
-  // --- AKHIR FUNGSI RENDERING TOMBOL AKSI DINAMIS ---
-
-  // Detail Items (KONTEN DIJAGA SAMA)
-  const detailItems = [
-    { label: "Nama", value: data.nama },
-    { label: "Produk", value: data.product },
-    { label: "Akad", value: data.akad },
-    { label: "Tanggal Buka", value: data.tanggalBuka },
-    { label: "Nominal", value: formatBalance(data.nominal) },
-    { label: "Saldo Akhir", value: formatBalance(data.saldoAkhir) },
-  ];
+  if (error) {
+    return (
+      <Alert variant="danger" className="py-2 small">
+        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+        {error}
+      </Alert>
+    );
+  }
 
   return (
     <Card
-      className="text-white shadow-sm"
-      style={{ backgroundColor: "#005a8d", borderRadius: "5px" }}
+      className="border-0 shadow-sm text-white"
+      style={{
+        backgroundColor: "#005a8d",
+        backgroundImage: "linear-gradient(135deg, #005a8d 0%, #007bbd 100%)",
+      }}
     >
-      <Card.Body className="p-3">
-        <h5 className="text-center mb-4 fw-bold">Informasi Rekening</h5>
-        <Container className="p-0">
-          {detailItems.map((item, index) => (
-            <Row key={index} className="mb-2">
-              <Col xs={5}>{item.label}</Col>
-              <Col xs={7} className="text-end fw-bold">
-                {item.value}
-              </Col>
-            </Row>
-          ))}
-        </Container>
-
-        {renderActionButtons()}
+      <Card.Body>
+        <h6
+          className="text-center mb-3 border-bottom pb-2 fw-bold"
+          style={{ borderColor: "rgba(255,255,255,0.2) !important" }}
+        >
+          INFORMASI REKENING
+        </h6>
+        <div className="small">
+          <div className="d-flex justify-content-between mb-2">
+            <span className="opacity-75">Nama:</span>
+            <span className="fw-semibold">{details?.nama}</span>
+          </div>
+          <div className="d-flex justify-content-between mb-2">
+            <span className="opacity-75">Produk:</span>
+            <span className="fw-semibold">{details?.produk}</span>
+          </div>
+          <div className="d-flex justify-content-between mb-2">
+            <span className="opacity-75">Akad:</span>
+            <span className="fw-semibold">{details?.akad}</span>
+          </div>
+          <hr style={{ borderColor: "rgba(255,255,255,0.2)" }} />
+          <div className="d-flex justify-content-between align-items-center">
+            <span className="opacity-75">Total Saldo:</span>
+            <h5 className="mb-0 fw-bold">
+              Rp {details?.saldo.toLocaleString("id-ID")}
+            </h5>
+          </div>
+        </div>
       </Card.Body>
     </Card>
   );

@@ -17,6 +17,7 @@ const PROTECTED_ROUTES = [
   "transactionDetailPage",
   "registrationPage",
   "registrationFormDetail",
+  "simpananPage",
   // ... Tambahkan semua route yang menggunakan DashboardLayout
 ];
 
