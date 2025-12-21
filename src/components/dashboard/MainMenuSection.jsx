@@ -70,8 +70,6 @@ const MainMenuSection = () => {
 
   const handleNavigation = useCallback(
     (pageKey) => {
-      console.log(pageKey);
-
       if (pageKey) {
         const token = jwtEncode({ page: pageKey });
         navigate(`/${token}`);

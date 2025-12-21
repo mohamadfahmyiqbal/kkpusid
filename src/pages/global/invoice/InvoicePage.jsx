@@ -207,9 +207,7 @@ export default function InvoicePage() {
         <Alert variant="danger">
           {error || "Data tagihan tidak ditemukan."}
         </Alert>
-        <Button onClick={() => navigate("/dashboard")}>
-          Kembali ke Dashboard
-        </Button>
+        <Button onClick={() => navigate("/dashboard")}>Kembali</Button>
       </div>
     );
   }
