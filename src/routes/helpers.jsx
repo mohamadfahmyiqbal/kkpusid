@@ -17,7 +17,8 @@ export const jwtDecodePage = (token) => {
     const json = decodeURIComponent(
       escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
     );
-    return JSON.parse(json)?.page ?? null;
+    // Kembalikan seluruh object payload agar data seperti setoranType bisa terbaca
+    return JSON.parse(json) ?? null; 
   } catch (err) {
     console.warn("Token tidak valid:", token, err);
     return null;

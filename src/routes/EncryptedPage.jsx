@@ -23,7 +23,11 @@ const PROTECTED_ROUTES = [
 
 export const EncryptedPage = React.memo(() => {
   const { token } = useParams();
-  const pageName = jwtDecodePage(token);
+  
+  // 1. Ambil payload lengkap (objek), bukan cuma string nama page
+  const decodedData = jwtDecodePage(token); 
+  const pageName = decodedData?.page; 
+  
   const PageComponent = PAGE_COMPONENTS[pageName];
 
   if (!PageComponent) {
@@ -32,17 +36,14 @@ export const EncryptedPage = React.memo(() => {
 
   const needsDashboardLayout = PROTECTED_ROUTES.includes(pageName);
 
-  // Conditional Rendering
   if (needsDashboardLayout) {
-    // ✅ Rute Terlindungi: Diberi Provider dan Layout
-    // PageComponent akan menjadi CHILDREN dari DashboardLayoutProvider
     return (
       <DashboardLayoutProvider>
-        <PageComponent />
+        {/* 2. Kirim decodedData sebagai props decodedToken */}
+        <PageComponent decodedToken={decodedData} />
       </DashboardLayoutProvider>
     );
   } else {
-    // ✅ Rute Publik (Login, Splash, Register): Render langsung, tanpa Context
-    return <PageComponent />;
+    return <PageComponent decodedToken={decodedData} />;
   }
 });

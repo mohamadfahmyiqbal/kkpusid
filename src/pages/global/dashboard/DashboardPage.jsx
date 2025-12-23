@@ -30,6 +30,7 @@ const DashboardPage = () => {
   // Asumsi: status_id 1 adalah 'Calon/Pending', status_id 2 ke atas adalah 'Aktif/Verified'
   const isCandidate = statusId <= 1;
   const isFullMember = statusId >= 2;
+console.log(userData);
 
   // ============================================================
   // 2. LOGIKA ROLE (Berdasarkan role_id untuk hak akses menu)

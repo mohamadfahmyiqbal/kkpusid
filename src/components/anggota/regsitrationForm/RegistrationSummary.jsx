@@ -14,8 +14,6 @@ export default function RegistrationSummary({
   baseUrl,
 }) {
   const navigate = useNavigate();
-  console.log(data);
-
   // Data utama dari tabel member_registrations
   const {
     full_name,

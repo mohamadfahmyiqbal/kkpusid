@@ -1,3 +1,4 @@
+// 📁 src/utils/api/USimpanan.jsx
 import http from "./common";
 
 class USimpanan {
@@ -16,7 +17,6 @@ class USimpanan {
     });
 
     return http.post(url, formData, {
-      // Biarkan axios set boundary untuk multipart
       headers: { "Content-Type": "multipart/form-data" },
     });
   }
@@ -24,12 +24,19 @@ class USimpanan {
   getSimpananCategory(fields) {
     return this.postJSON("/getSimpananCategory", fields);
   }
+
   getDataSimpanan(fields) {
     return this.postJSON("/getDataSimpanan", fields);
   }
+
   getCardSimpanan(fields) {
     return this.postJSON("/getCardSimpanan", fields);
   }
+
+  /**
+   * Mengajukan Permintaan Pencairan Dana
+   * Dipanggil dari BillingPage saat mode isWithdraw aktif
+   */
   reqPencairanSimpanan(fields) {
     return this.postJSON("/reqPencairanSimpanan", fields);
   }

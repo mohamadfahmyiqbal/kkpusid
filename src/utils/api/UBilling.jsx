@@ -1,63 +1,52 @@
-// src/utils/api/UBilling.jsx
-
+// 📁 src/utils/api/UBilling.jsx
 import http from "./common";
 
-/**
- * Service class untuk menangani semua API terkait Billing/Tagihan
- */
 class UBilling {
   /**
-   * Mengambil daftar tagihan yang belum dibayar (Pending)
-   * @param {Object} filter - Objek filter, contoh: { category: "Simpanan Wajib" }
+   * Mengambil daftar tagihan yang belum dibayar
    */
   getPendingBills(filter = {}) {
-    // Menghasilkan request: GET /list/pending?category=Simpanan+Wajib
-    // Prefix /api/tagihan (atau sesuai config) sudah diatur di instance http
     return http.get("/list/pending", { params: filter });
   }
 
   /**
-   * Mengambil riwayat transaksi yang sudah dibayar (Settled/Paid)
-   * @param {Object} filter - Objek filter untuk riwayat
+   * Mengambil riwayat transaksi yang sudah lunas
    */
   getBillingHistory(filter = {}) {
-    // Menghasilkan request: GET /list/history
     return http.get("/list/history", { params: filter });
   }
 
   /**
-   * Mengambil detail lengkap satu invoice berdasarkan ID
-   * @param {string|number} billId - ID unik tagihan
+   * Mengambil detail lengkap satu invoice berdasarkan bill_id
    */
   getInvoiceDetail(billId) {
-    // Menghasilkan request: GET /101
     return http.get(`/${billId}`);
   }
 
   /**
-   * Membuat transaksi baru dan mendapatkan Snap Token dari Midtrans
-   * @param {Object} data - Payload yang berisi bill_id atau array ids dan metode pembayaran
+   * [BARU] Membuat Tagihan Simpanan Sekaligus Mendapatkan Snap Token
+   * Digunakan oleh BillingPage untuk alur "Satu Kali Klik"
+   * Payload: { amount: 500000, category: "Simpanan Sukarela" }
+   */
+  processSavingsPayment(payload) {
+    // Endpoint ini akan memanggil fungsi yang kita satukan dengan createInitialBills di backend
+    return http.post("/midtrans/process-savings", payload);
+  }
+
+  /**
+   * Inisialisasi transaksi Midtrans untuk Bill ID yang SUDAH ADA di database
+   * (Misal untuk membayar tagihan yang tertunda dari menu riwayat)
    */
   createMidtransTransaction(data) {
-    // Menghasilkan request: POST /midtrans/create-transaction
-    // Data biasanya berisi { bill_ids: [101, 102], payment_type: "midtrans" }
     return http.post("/midtrans/create-transaction", data);
   }
 
   /**
    * Mengecek status pembayaran terbaru ke backend
-   * @param {string} orderId - Order ID dari Midtrans/Sistem
    */
   checkPaymentStatus(orderId) {
     return http.get(`/status/${orderId}`);
   }
-
-  createDepositSukarela(payload) {
-    // Menghasilkan request: POST /create-deposit
-    // Backend akan membuat record bill baru dan mengembalikan bill_id
-    return http.post("/create-deposit", payload);
-  }
 }
 
-// Export sebagai instance agar bisa langsung digunakan: UBilling.getPendingBills()
 export default new UBilling();
