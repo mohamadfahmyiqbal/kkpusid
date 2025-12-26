@@ -1,20 +1,20 @@
-// src/components/anggota/regsitrationForm/RegistrationSummary.jsx
+// 📁 src/components/anggota/regsitrationForm/RegistrationSummary.jsx
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card, Button, Table, Row, Col, Alert } from "react-bootstrap";
-import { FaArrowLeft, FaMoneyBillWave } from "react-icons/fa";
+import { FaArrowLeft, FaMoneyBillWave, FaCheckCircle, FaClock } from "react-icons/fa";
 import ApprovalPlaceholder from "../../ui/ApprovalPlaceholder";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../routes/helpers";
 
-// Komponen Utama
 export default function RegistrationSummary({
   data,
   onBackToDashboard,
   baseUrl,
 }) {
   const navigate = useNavigate();
-  // Data utama dari tabel member_registrations
+
+  // Extract data dengan aman
   const {
     full_name,
     email,
@@ -24,264 +24,152 @@ export default function RegistrationSummary({
     member_type,
     ktp_photo_path,
     selfie_photo_path,
-    currentStep,
+    registration_status,
     final_status,
-    registration_status, // <-- Nilai terbaru: "menunggu_pembayaran"
-    initial_bill_id, // <-- Nilai yang harus dikirim: 123 (contoh)
+    initial_bill_id,
+    allSteps = []
   } = data;
-  console.log(data);
 
-  // 🚨 HANDLER NAVIGASI KE INVOICE PAGE
+  // 1. Logika untuk menentukan status approval tiap peran secara akurat
+  const approvalStatus = useMemo(() => {
+    const pengawas = allSteps.find(s => s.step_name.toLowerCase().includes("pengawas"));
+    const ketua = allSteps.find(s => s.step_name.toLowerCase().includes("ketua"));
+
+    return {
+      isPengawasApproved: pengawas?.decision === "APPROVE",
+      isKetuaApproved: ketua?.decision === "APPROVE",
+      currentStepName: allSteps.find(s => s.is_current)?.step_name || "Proses Verifikasi"
+    };
+  }, [allSteps]);
+
+  // 2. Handler Navigasi ke Invoice
   const handleNavigateToInvoice = useCallback(() => {
     if (!initial_bill_id) {
-      alert(
-        "Maaf, ID Tagihan Awal belum tersedia. Silakan hubungi administrator."
-      );
+      alert("ID Tagihan belum tersedia. Mohon tunggu persetujuan akhir dari Ketua.");
       return;
     }
 
-    // Mengirim billId melalui token JWT
     const token = jwtEncode({
-      page: "invoicePage", // Rute tujuan: InvoicePage
+      page: "invoicePage",
       billId: initial_bill_id,
-      return: "registrationPage", // Untuk navigasi kembali dari InvoicePage
+      return: "registrationPage",
     });
 
     navigate(`/${token}`);
-    console.log(`Navigasi ke halaman Invoice Bill ID: ${initial_bill_id}`);
   }, [navigate, initial_bill_id]);
 
-  // FIX: FUNGSI getFullImagePath DENGAN SAFEGURAD UNTUK MENCEGAH TypeError
+  // 3. Helper Image Path
   const getFullImagePath = (relativePath) => {
     if (!relativePath || typeof relativePath !== "string") {
-      return "assets/images/no-image.png";
+      return "/assets/images/no-image.png";
     }
     const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const cleanPath = relativePath.startsWith("/")
-      ? relativePath.slice(1)
-      : relativePath;
+    const cleanPath = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
     return `${cleanBase}/${cleanPath}`;
   };
 
-  // Logika Status Display
-  let statusVariant;
-  let statusText;
-  switch (final_status) {
-    case "APPROVED":
-      // 🛑 KOREKSI LOGIKA STATUS (Berlaku untuk APPROVED)
-      if (registration_status === "menunggu_pembayaran") {
-        statusVariant = "warning";
-        statusText =
-          "Selamat! Pendaftaran Anda **telah disetujui penuh**. Silakan lanjutkan ke **Pembayaran Tagihan Awal** untuk mengaktifkan akun.";
-      } else if (registration_status === "selesai") {
-        // Asumsi "selesai" berarti sudah bayar/aktif
-        statusVariant = "success";
-        statusText =
-          "Selamat! Pendaftaran Anda **telah disetujui penuh** dan akun Anda **telah aktif**.";
-      }
-      break;
-    case "REJECTED":
-      statusVariant = "danger";
-      statusText = "Maaf, pendaftaran Anda **telah ditolak**. Proses selesai.";
-      break;
-    case "IN_PROGRESS":
-    default:
-      statusVariant = "warning";
-      statusText = `Pendaftaran sedang dalam proses persetujuan. Menunggu verifikasi di tahap: <b>${
-        currentStep?.step_name || "Tidak Diketahui"
-      }</b>.`;
-      break;
+  // 4. Penentuan UI Status (Variant & Text)
+  let statusVariant = "info";
+  let statusText = "";
+
+  if (final_status === "REJECTED") {
+    statusVariant = "danger";
+    statusText = "Maaf, pendaftaran Anda <b>ditolak</b>.";
+  } else if (registration_status === "menunggu_pembayaran" && initial_bill_id) {
+    statusVariant = "success";
+    statusText = "<b>Selamat!</b> Pendaftaran disetujui penuh. Silakan lakukan pembayaran tagihan awal.";
+  } else if (approvalStatus.isPengawasApproved && !approvalStatus.isKetuaApproved) {
+    statusVariant = "warning";
+    statusText = `Disetujui oleh <b>Pengawas</b>. Menunggu verifikasi akhir oleh <b>Ketua</b>.`;
+  } else {
+    statusVariant = "primary";
+    statusText = `Pendaftaran dalam proses: <b>${approvalStatus.currentStepName}</b>.`;
   }
 
-  // Logika Approval Placeholder
-  const currentStepId = currentStep ? currentStep.approval_step_id : 0;
-  // Kita bisa menggunakan final_status APPROVED untuk menandai semua step telah dilalui
-  const isPengawasApproved = final_status === "APPROVED" || currentStepId > 1;
-  const isKetuaApproved = final_status === "APPROVED";
-
-  // 🛑 KOREKSI LOGIKA UNTUK TOMBOL BAYAR SEKARANG
-  // Tombol Bayar muncul jika APPROVED penuh DAN status berikutnya adalah 'menunggu_pembayaran'
-  const showPayNowButton =
-    final_status === "APPROVED" &&
-    registration_status === "menunggu_pembayaran" &&
-    initial_bill_id;
+  const showPayNowButton = !!(initial_bill_id && registration_status === "menunggu_pembayaran");
 
   return (
     <div className="container-fluid">
-      {/* JUDUL HALAMAN DENGAN TOMBOL BACK */}
       <div className="row page-titles pt-3">
-        <div className="col-12 align-self-center">
+        <div className="col-12">
           <h3 className="text-themecolor mb-0 mt-0">
-            <span
-              role="button"
-              onClick={onBackToDashboard}
-              style={{ cursor: "pointer" }}
-              className="me-3"
-            >
-              <FaArrowLeft className="me-2" />
+            <span role="button" onClick={onBackToDashboard} className="me-3">
+              <FaArrowLeft />
             </span>
-            Pendaftaran Anggota
+            Detail Pendaftaran
           </h3>
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">Dashboard</li>
-            <li className="breadcrumb-item active">Detail Pendaftaran</li>
-          </ol>
         </div>
       </div>
 
       <Row>
         <Col lg={12}>
-          <Card className="shadow-lg mb-4">
+          <Card className="shadow-sm mb-4">
             <Card.Header className="bg-info text-white">
-              <h5 className="mb-0">Detail Pendaftaran Anggota</h5>
+              <h5 className="mb-0">Informasi Pendaftaran</h5>
             </Card.Header>
             <Card.Body className="p-0">
-              {/* === 1. Personal Info === */}
-              {/* ... (Konten Personal Info tidak berubah) */}
+              
+              {/* Personal Info */}
               <div className="p-3 border-bottom">
-                <h6 className="mt-0 mb-3 fw-bold">Personal Info</h6>
-                <Table borderless size="sm" className="mb-0 registration-table">
+                <h6 className="fw-bold text-uppercase small text-muted mb-3">Data Pribadi</h6>
+                <Table borderless size="sm" className="mb-0">
                   <tbody>
-                    <tr>
-                      <th style={{ width: "30%" }}>Nama</th>
-                      <td style={{ width: "70%" }} className="text-end">
-                        {full_name}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Jenis Kelamin</th>
-                      <td className="text-end">Laki-Laki (Placeholder)</td>
-                    </tr>
-                    <tr>
-                      <th>NIK</th>
-                      <td className="text-end">{nik_ktp}</td>
-                    </tr>
-                    <tr>
-                      <th>Alamat</th>
-                      <td colSpan="2">{address_ktp}</td>
-                    </tr>
+                    <tr><th width="30%">Nama</th><td className="text-end">{full_name}</td></tr>
+                    <tr><th>NIK</th><td className="text-end">{nik_ktp}</td></tr>
+                    <tr><th>Tipe</th><td className="text-end text-capitalize">{member_type}</td></tr>
                   </tbody>
                 </Table>
               </div>
 
-              {/* === 2. Foto Info === */}
-              {/* ... (Konten Foto Info tidak berubah) */}
-              <div className="p-3 border-bottom">
-                <h6 className="mt-0 mb-3 fw-bold">Foto Info</h6>
+              {/* Foto Info */}
+              <div className="p-3 border-bottom bg-light">
                 <Row>
-                  <Col xs={6} className="text-center">
-                    <Card className="border">
-                      <Card.Body className="p-2">
-                        <p className="mb-1 fw-bold">Foto KTP</p>
-                        <img
-                          src={getFullImagePath(ktp_photo_path)}
-                          alt="Foto KTP"
-                          className="img-fluid rounded"
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "150px",
-                            objectFit: "contain",
-                          }}
-                        />
-                      </Card.Body>
-                    </Card>
+                  <Col xs={6}>
+                    <p className="small fw-bold mb-1 text-center">KTP</p>
+                    <img src={getFullImagePath(ktp_photo_path)} className="img-thumbnail" alt="KTP" />
                   </Col>
-                  <Col xs={6} className="text-center">
-                    <Card className="border">
-                      <Card.Body className="p-2">
-                        <p className="mb-1 fw-bold">Swafoto</p>
-                        <img
-                          src={getFullImagePath(selfie_photo_path)}
-                          alt="Foto Swafoto"
-                          className="img-fluid rounded"
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "150px",
-                            objectFit: "contain",
-                          }}
-                        />
-                      </Card.Body>
-                    </Card>
+                  <Col xs={6}>
+                    <p className="small fw-bold mb-1 text-center">Swafoto</p>
+                    <img src={getFullImagePath(selfie_photo_path)} className="img-thumbnail" alt="Selfie" />
                   </Col>
                 </Row>
               </div>
 
-              {/* === 3. Account Info === */}
-              {/* ... (Konten Account Info tidak berubah) */}
-              <div className="p-3 border-bottom">
-                <h6 className="mt-0 mb-3 fw-bold">Account Info</h6>
-                <Table borderless size="sm" className="mb-0 registration-table">
-                  <tbody>
-                    <tr>
-                      <th style={{ width: "30%" }}>Tipe Anggota</th>
-                      <td style={{ width: "70%" }} className="text-end">
-                        {member_type}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>No Telepon</th>
-                      <td className="text-end">{phone_number}</td>
-                    </tr>
-                    <tr>
-                      <th>Email</th>
-                      <td className="text-end">{email}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* === 4. Approval Status & Placeholder === */}
+              {/* Approval Section */}
               <div className="p-3">
-                <h6 className="mt-0 mb-3 fw-bold">Approval</h6>
-
-                {/* Alert Status */}
-                <Alert variant={statusVariant} className="text-center p-2">
-                  <small dangerouslySetInnerHTML={{ __html: statusText }} />
+                <h6 className="fw-bold text-uppercase small text-muted mb-3">Status Persetujuan</h6>
+                <Alert variant={statusVariant} className="text-center py-2 mb-4">
+                  <span dangerouslySetInnerHTML={{ __html: statusText }} />
                 </Alert>
 
-                <Row className="text-center">
+                <Row>
                   <Col xs={6}>
-                    <ApprovalPlaceholder
-                      role="Pengawas"
-                      isApproved={isPengawasApproved}
+                    <ApprovalPlaceholder 
+                      role="Pengawas" 
+                      isApproved={approvalStatus.isPengawasApproved} 
                     />
                   </Col>
                   <Col xs={6}>
-                    <ApprovalPlaceholder
-                      role="Ketua"
-                      isApproved={isKetuaApproved}
+                    <ApprovalPlaceholder 
+                      role="Ketua" 
+                      isApproved={approvalStatus.isKetuaApproved} 
                     />
                   </Col>
                 </Row>
               </div>
 
-              <div className="p-3 border-top">
-                <Alert variant="secondary" className="mb-0">
-                  <small>
-                    Catatan: Detail data pekerjaan, bank, dan kontak darurat
-                    tersimpan, tetapi tidak ditampilkan di ringkasan ini.
-                  </small>
-                </Alert>
-              </div>
             </Card.Body>
           </Card>
 
-          {/* === 5. Tombol Aksi === */}
+          {/* Action Buttons */}
           <div className="d-grid gap-2 mb-5">
-            {/* Tampilkan Tombol Bayar Sekarang jika APPROVED penuh DAN status 'menunggu_pembayaran' */}
             {showPayNowButton && (
-              <Button
-                onClick={handleNavigateToInvoice}
-                variant="success"
-                size="lg"
-              >
-                <FaMoneyBillWave className="me-2" /> Bayar Sekarang (Tagihan
-                Awal)
+              <Button onClick={handleNavigateToInvoice} variant="success" size="lg" className="py-3 shadow">
+                <FaMoneyBillWave className="me-2" /> Bayar Tagihan Awal Sekarang
               </Button>
             )}
-
-            {/* Tombol Kembali */}
-            <Button onClick={onBackToDashboard} variant="primary">
+            
+            <Button onClick={onBackToDashboard} variant="outline-primary">
               Kembali ke Dashboard
             </Button>
           </div>

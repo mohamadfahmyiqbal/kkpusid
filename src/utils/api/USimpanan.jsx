@@ -1,35 +1,16 @@
-// src/utils/api/USimpanan.jsx
-
 import http from "./common";
 
 class USimpanan {
-  /**
-   * Mengambil informasi rekening simpanan anggota.
-   * Method: GET
-   * Endpoint asumsi: /simpanan/rekening/info
-   */
-  getSavingsAccountInfo() {
-    return http.get("simpanan/rekening/info");
-  }
-
-  /**
-   * Mengambil riwayat transaksi simpanan.
-   * Method: GET
-   * Endpoint asumsi: /simpanan/riwayat
-   * @param {Object} params - Filter untuk riwayat transaksi
-   */
   getSavingsHistory(params) {
-    return http.get("simpanan/riwayat", { params });
+    return http.get("/simpanan/riwayat", { params });
   }
 
-  /**
-   * Mengajukan penarikan dana simpanan.
-   * Method: POST
-   * Endpoint asumsi: /simpanan/penarikan/request
-   * @param {Object} data - Detail penarikan (e.g., jumlah, rekening tujuan)
-   */
   requestWithdrawal(data) {
-    return http.post("simpanan/penarikan/request", data);
+    return http.post("/simpanan/penarikan/request", data);
+  }
+
+  getSavingsAccountInfo() {
+    return http.get("/simpanan/rekening/info");
   }
 }
 

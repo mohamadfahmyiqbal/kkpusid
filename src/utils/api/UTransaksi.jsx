@@ -1,36 +1,42 @@
-// src/utils/api/UTransaksi.jsx
-
 import http from "./common";
 
 class UTransaksi {
   /**
    * Mengambil riwayat transaksi umum (semua jenis).
-   * Method: GET
-   * Endpoint asumsi: /transaksi/riwayat
-   * @param {Object} params - Filter untuk riwayat transaksi (tanggal, jenis)
+   * Endpoint Backend: GET /api/transaksi/riwayat
+   * @param {Object} params - Filter (misal: { type: 'debit', status: 'settlement' })
    */
   getGeneralTransactionHistory(params) {
-    return http.get("/api/transaksi/riwayat", { params });
+    // Karena baseURL sudah /api, kita sesuaikan path-nya
+    return http.get("/transaksi/riwayat", { params });
   }
 
   /**
    * Mengambil detail transaksi berdasarkan ID.
-   * Method: GET
-   * Endpoint asumsi: /transaksi/detail/:id
-   * @param {number} id - ID transaksi
+   * Endpoint Backend: GET /api/transaksi/detail/:id
+   * @param {number|string} id - ID unik transaksi
    */
   getTransactionDetail(id) {
-    return http.get(`/api/transaksi/detail/${id}`);
+    return http.get(`/transaksi/detail/${id}`);
   }
 
   /**
-   * Memproses pembayaran tagihan atau transaksi lainnya.
-   * Method: POST
-   * Endpoint asumsi: /transaksi/pembayaran/proses
-   * @param {Object} data - Detail pembayaran (e.g., invoiceId, virtualAccountId)
+   * Memproses pembayaran tagihan atau transaksi lainnya secara umum.
+   * Endpoint Backend: POST /api/transaksi/pembayaran/proses
+   * @param {Object} data - Payload (misal: { invoiceId, paymentMethod })
    */
   processPayment(data) {
-    return http.post("/api/transaksi/pembayaran/proses", data);
+    return http.post("/transaksi/pembayaran/proses", data);
+  }
+
+  /**
+   * Mengunduh struk atau bukti transaksi dalam format PDF (jika tersedia).
+   * Endpoint Backend: GET /api/transaksi/receipt/:id
+   */
+  downloadReceipt(id) {
+    return http.get(`/transaksi/receipt/${id}`, {
+      responseType: 'blob' // Penting untuk menangani file download
+    });
   }
 }
 

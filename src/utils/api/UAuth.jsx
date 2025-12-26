@@ -1,18 +1,24 @@
 // src/utils/api/UAuth.jsx
-
-import http from "./common";
+import http from "./common"; 
 
 class UAuth {
   accountRegister(data) {
-    return http.post("/register", data);
+    return http.post("/auth/register", data);
   }
 
   accountLogin(data) {
-    return http.post("/accountLogin", data);
+    // Memanggil https://api.kkpus.id/api/auth/accountLogin
+    return http.post("/auth/accountLogin", data);
   }
 
   getProfile() {
     return http.get("/anggota/profil");
+  }
+
+  logout() {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    window.location.href = "/";
   }
 }
 

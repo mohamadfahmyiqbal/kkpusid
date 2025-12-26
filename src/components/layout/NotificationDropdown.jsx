@@ -1,33 +1,31 @@
-// src/components/layout/NotificationDropdown.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { NavDropdown } from "react-bootstrap";
+import { NavDropdown, Badge } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../routes/helpers";
+import { io } from "socket.io-client";
 import { useProfile } from "../../contexts/ProfileContext";
 import UNotification from "../../utils/api/UNotification";
 import NotificationModal from "./NotificationModal";
 
 const NotificationDropdown = () => {
-  const navigate = useNavigate();
   const { userData } = useProfile();
+
   const [notifikasi, setNotifikasi] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedNotifikasi, setSelectedNotifikasi] = useState(null);
 
   const fetchNotifications = useCallback(async () => {
-    if (!userData?.member_id) return;
+    if (!userData?.nik) return;
+
     try {
-      const res = await UNotification.getNotificationById({
-        member_id: userData.member_id,
-        status: 1, // Akan dikirim sebagai ?member_id=11&status=1
+      const res = await UNotification.getNotifications({
+        nik: userData.nik,
+        status: 1,
       });
 
-      // SESUAIKAN DI SINI: Controller Anda mengirim objek { list: [...] }
-      // Axios menyimpan body response di properti .data
-      if (res.data && res.data.list) {
+      if (res?.data?.list) {
         setNotifikasi(res.data.list);
-        // Anda juga bisa mengambil unread_count dari res.data.unread_count jika perlu
+        setUnreadCount(res.data.unread_count || 0);
       }
     } catch (err) {
       console.error("Gagal mengambil notifikasi", err);
@@ -35,16 +33,37 @@ const NotificationDropdown = () => {
   }, [userData]);
 
   useEffect(() => {
+    if (!userData?.nik) return;
+
     fetchNotifications();
-  }, [fetchNotifications]);
+
+    const socket = io("https://api.kkpus.id", {
+      withCredentials: true,
+    });
+
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected");
+      socket.emit("register", userData.nik); // ✅ SESUAI BACKEND
+    });
+
+    socket.on("new_notification", (data) => {
+      setNotifikasi((prev) => [data, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => {
+      socket.off("new_notification");
+      socket.disconnect();
+    };
+  }, [userData, fetchNotifications]);
 
   const handleOpenDetail = async (item) => {
     setSelectedNotifikasi(item);
     setShowModal(true);
-    // Otomatis tandai dibaca saat dibuka
+
     try {
       await UNotification.markAsRead(item.id);
-      fetchNotifications(); // Refresh list
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
     } catch (err) {
       console.error("Gagal update status baca", err);
     }
@@ -52,62 +71,52 @@ const NotificationDropdown = () => {
 
   return (
     <NavDropdown
-      title={
-        <span className="nav-link text-white position-relative p-0">
-          <FaBell size={20} />
-          {notifikasi.length > 0 && (
-            <span
-              className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-              style={{ fontSize: "10px" }}
-            >
-              {notifikasi.length}
-            </span>
-          )}
-        </span>
-      }
-      id="notification-dropdown"
       align="end"
+      title={
+        <div className="position-relative">
+          <FaBell size={20} className="text-dark" />
+          {unreadCount > 0 && (
+            <Badge
+              bg="danger"
+              pill
+              className="position-absolute top-0 start-100 translate-middle"
+              style={{ fontSize: "0.6rem" }}
+            >
+              {unreadCount}
+            </Badge>
+          )}
+        </div>
+      }
     >
-      <div className="mailbox" style={{ minWidth: "300px" }}>
-        <div className="p-2 border-bottom fw-bold">Notifikasi Terbaru</div>
-        <div
-          className="message-center"
-          style={{ maxHeight: "300px", overflowY: "auto" }}
-        >
+      <div style={{ width: "300px" }}>
+        <div className="p-3 border-bottom fw-bold">
+          Notifikasi Terbaru
+        </div>
+
+        <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           {notifikasi.length === 0 ? (
-            <div className="p-3 text-center text-muted">
-              Tidak ada notifikasi baru
+            <div className="p-3 text-center text-muted small">
+              Tidak ada notifikasi
             </div>
           ) : (
             notifikasi.map((item) => (
-              <a
+              <NavDropdown.Item
                 key={item.id}
-                className="dropdown-item p-2 border-bottom"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleOpenDetail(item);
-                }}
+                className="p-3 border-bottom"
+                onClick={() => handleOpenDetail(item)}
               >
-                <div className="mail-contnet">
-                  <h6 className="mb-0 text-dark">{item.title}</h6>
-                  <small className="text-muted text-truncate d-block">
-                    {item.body}
-                  </small>
-                </div>
-              </a>
+                <h6 className="mb-1 text-dark" style={{ fontSize: "0.9rem" }}>
+                  {item.title}
+                </h6>
+                <p className="mb-0 text-muted small text-truncate">
+                  {item.body}
+                </p>
+              </NavDropdown.Item>
             ))
           )}
         </div>
-        <a
-          className="dropdown-item text-center small text-primary fw-bold py-2"
-          onClick={() =>
-            navigate(`/${jwtEncode({ page: "notificationPage" })}`)
-          }
-        >
-          Lihat Semua Notifikasi
-        </a>
       </div>
+
       <NotificationModal
         show={showModal}
         onHide={() => setShowModal(false)}

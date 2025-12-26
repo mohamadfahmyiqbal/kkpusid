@@ -1,19 +1,21 @@
 import axios from "axios";
 
-// Buat instance axios
 const api = axios.create({
-  baseURL: "https://api.kkpus.id",
-  // baseURL: "https://pik1com074.local.ikoito.co.id:3001",
-  // baseURL: "https://localhost:3001",
+  // URL dasar yang mencakup prefix /api dari backend
+  baseURL: "https://api.kkpus.id/api",
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  }
 });
 
-// Tambahkan interceptor untuk menyisipkan token
+// Interceptor untuk menyisipkan Token JWT di setiap request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      config.headers.Authorization = `${token}`;
+      // Format standar Bearer Token
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
