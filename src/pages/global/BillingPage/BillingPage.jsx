@@ -1,293 +1,379 @@
-// 📁 src/pages/anggota/BillingPage.jsx
-import React, { useState, useEffect } from "react";
-import { Container, Card, Form, Button, Spinner, Row, Col, ListGroup, Badge } from "react-bootstrap";
-import { FaArrowLeft, FaHistory, FaCheckCircle, FaClock, FaExclamationTriangle } from "react-icons/fa";
+// 📁 src/pages/billing/BillingPage.jsx
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  Card,
+  Button,
+  ListGroup,
+  Form,
+  Spinner,
+  InputGroup,
+  Badge,
+} from "react-bootstrap";
+import {
+  FaArrowLeft,
+  FaExclamationTriangle,
+  FaFileInvoiceDollar,
+  FaCheckCircle,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import UBilling from "../../../utils/api/UBilling";
-import USimpanan from "../../../utils/api/USimpanan";
-import UAuth from "../../../utils/api/UAuth"; // ✅ Mengambil data rekening dari profil
 import { jwtEncode } from "../../../routes/helpers";
+import useSocketListener from "../../../utils/helper/SocketListener";
+
+/**
+ * HELPER: Mengubah angka menjadi format ribuan (10.000)
+ */
+const formatRupiah = (value) => {
+  if (!value) return "";
+  const numberString = value.toString().replace(/[^,\d]/g, "");
+  const split = numberString.split(",");
+  const sisa = split[0].length % 3;
+  let rupiah = split[0].substr(0, sisa);
+  const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+  if (ribuan) {
+    const separator = sisa ? "." : "";
+    rupiah += separator + ribuan.join(".");
+  }
+
+  return split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+};
 
 const BillingPage = ({ decodedToken }) => {
- const navigate = useNavigate();
+  const navigate = useNavigate();
 
- // Data dari token (dikirim saat klik card simpanan)
- const {
-  setoranType = "Simpanan",
-  isWithdraw = false,
-  maxAmount = 0
- } = decodedToken || {};
+  // --- STATE MANAGEMENT ---
+  const [bills, setBills] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [selectedBills, setSelectedBills] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customAmount, setCustomAmount] = useState("");
 
- const [displayAmount, setDisplayAmount] = useState("");
- const [rawAmount, setRawAmount] = useState(0);
- const [loading, setLoading] = useState(false);
- const [history, setHistory] = useState([]);
- const [loadingData, setLoadingData] = useState(false);
+  // --- EKSTRAKSI DATA DARI TOKEN ---
+  const {
+    returnPage,
+    registrationId,
+    filterParams,
+    categoryName,
+    isSukarela,
+    displayName,
+  } = useMemo(() => {
+    const category =
+      decodedToken?.category || decodedToken?.setoranType || null;
+    return {
+      returnPage: decodedToken?.return || "dashboard",
+      registrationId: decodedToken?.registrationId || null,
+      categoryName: category,
+      displayName: decodedToken?.displayName || "Simpanan",
+      isSukarela: category?.toUpperCase().includes("SUKARELA"),
+      filterParams: {
+        ...(decodedToken?.filter || {}),
+        category: category,
+      },
+    };
+  }, [decodedToken]);
 
- // State Form sesuai Mockup Gambar
- const [formData, setFormData] = useState({
-  metode: "Transfer Bank",
-  noRekening: "",
-  bank: "",
-  namaNasabah: ""
- });
+  // --- OPTIMASI: HITUNG TOTAL TERPILIH ---
+  const totalAmount = useMemo(() => {
+    return bills
+      .filter((bill) => selectedBills.includes(bill.bill_item_id))
+      .reduce((sum, bill) => sum + parseFloat(bill.amount || 0), 0);
+  }, [selectedBills, bills]);
 
- useEffect(() => {
-  const fetchData = async () => {
-   setLoadingData(true);
-   try {
-    // 1. Ambil Histori Transaksi Simpanan
-    const resHistory = await USimpanan.getSavingsHistory({ category: setoranType });
-    if (resHistory.data?.status) setHistory(resHistory.data.data || []);
+  // --- FETCH DATA DENGAN SORTING ---
+  const loadInitialData = useCallback(async () => {
+    setLoadingData(true);
+    try {
+      const [resPending, resHistory] = await Promise.all([
+        !isSukarela
+          ? UBilling.getPendingBills(filterParams)
+          : Promise.resolve({ data: { status: true, data: [] } }),
+        UBilling.getBillingHistory(filterParams),
+      ]);
 
-    // 2. Ambil Profil Anggota (Auto-fill data Bank)
-    if (isWithdraw) {
-     const resProfile = await UAuth.getProfile();
-     
-     if (resProfile?.status) {
-      const profile = resProfile.data.data;
-      console.log(profile);
-      setFormData(prev => ({
-       ...prev,
-       noRekening: profile?.bank_info?.bank_account_no || "",
-       bank: profile?.bank_info?.bank_name || "",
-       namaNasabah: profile.full_name || ""
-      }));
-     }
+      if (resPending.data?.status) {
+        // Optimasi: Urutkan berdasarkan due_date (kronologis)
+        const sorted = (resPending.data.data || []).sort(
+          (a, b) =>
+            new Date(a.due_date || a.createdAt) -
+            new Date(b.due_date || b.createdAt)
+        );
+        setBills(sorted);
+      }
+
+      if (resHistory.data?.status) setHistory(resHistory.data.data || []);
+    } catch (err) {
+      console.error("Gagal memuat data billing:", err);
+    } finally {
+      setLoadingData(false);
     }
-   } catch (err) {
-    console.error("Gagal memuat data:", err);
-   } finally {
-    setLoadingData(false);
-   }
+  }, [filterParams, isSukarela]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  // SOCKET LISTENER
+  useSocketListener((payload) => {
+    if (
+      payload.entityRef === "member_registration" ||
+      payload.entityRef === "billing"
+    ) {
+      loadInitialData();
+    }
+  });
+
+  // --- HANDLERS ---
+  const handleSelectAll = () => {
+    if (selectedBills.length === bills.length) {
+      setSelectedBills([]);
+    } else {
+      setSelectedBills(bills.map((b) => b.bill_item_id));
+    }
   };
 
-  fetchData();
- }, [setoranType, isWithdraw]);
+  const handleNavigateToInvoice = async () => {
+    setIsSubmitting(true);
+    try {
+      if (isSukarela) {
+        const cleanAmount = parseFloat(customAmount.replace(/\./g, ""));
+        if (!cleanAmount || cleanAmount < 1000) {
+          alert("Nominal setoran minimal Rp 1.000");
+          setIsSubmitting(false);
+          return;
+        }
 
- const handleAmountChange = (e) => {
-  const value = e.target.value.replace(/\D/g, "");
-  const numberValue = value ? parseInt(value, 10) : 0;
+        const response = await UBilling.createVoluntaryBill({
+          category: categoryName,
+          amount: cleanAmount,
+        });
 
-  if (isWithdraw && numberValue > maxAmount) {
-   alert(`Saldo tidak mencukupi. Maksimal penarikan: Rp ${maxAmount.toLocaleString("id-ID")}`);
-   return;
-  }
-
-  setRawAmount(numberValue);
-  setDisplayAmount(value ? numberValue.toLocaleString("id-ID") : "");
- };
-
- const handleProses = async () => {
-  if (rawAmount <= 0) return alert("Masukkan nominal yang valid");
-
-  setLoading(true);
-  try {
-   let res;
-   if (isWithdraw) {
-    // Alur Request Pencairan
-    res = await USimpanan.requestWithdrawal({
-     amount: rawAmount,
-     category: setoranType,
-     withdrawal_method: formData.metode,
-     account_number: formData.noRekening,
-     bank_name: formData.bank,
-     account_holder: formData.namaNasabah
-    });
-   } else {
-    // Alur Setoran Simpanan
-    res = await UBilling.processSavingsPayment({
-     amount: rawAmount,
-     category: setoranType,
-    });
-   }
-
-   if (res.data?.status) {
-    if (isWithdraw) {
-     alert("Permintaan pencairan berhasil dikirim. Menunggu persetujuan admin.");
-     navigate(-1);
-    } else {
-     // Arahkan ke halaman Invoice Midtrans
-     const token = jwtEncode({
-      page: "invoicePage",
-      billId: res.data.billId,
-      return: "simpananPage"
-     });
-     navigate(`/${token}`);
+        if (response.data?.status) {
+          const token = jwtEncode({
+            page: "invoicePage",
+            billItemIds: [response.data.data.bill_item_ids],
+            return: "billingPage",
+          });
+          navigate(`/${token}`);
+        }
+      } else {
+        if (selectedBills.length === 0) return;
+        const token = jwtEncode({
+          page: "invoicePage",
+          billItemIds: selectedBills,
+          registrationId: registrationId,
+          return: "billingPage",
+        });
+        navigate(`/${token}`);
+      }
+    } catch (err) {
+      alert("Gagal memproses transaksi.");
+      setIsSubmitting(false);
     }
-   } else {
-    alert(res.data.message || "Gagal memproses permintaan");
-   }
-  } catch (err) {
-   alert("Terjadi kesalahan sistem");
-  } finally {
-   setLoading(false);
-  }
- };
+  };
 
- return (
-  <div className="bg-light min-vh-100 pb-5">
-   {/* HEADER NAVBAR */}
-   <div className="bg-white p-3 shadow-sm d-flex align-items-center mb-3 sticky-top">
-    <Button variant="link" className="text-dark p-0 me-3 shadow-none" onClick={() => navigate(-1)}>
-     <FaArrowLeft size={18} />
-    </Button>
-    <h6 className="mb-0 fw-bold">{isWithdraw ? "Pencairan" : `Setoran ${setoranType}`}</h6>
-   </div>
+  return (
+    <div className="container-fluid py-3 bg-light min-vh-100">
+      <div className="d-flex align-items-center mb-3 px-2">
+        <FaArrowLeft
+          onClick={() => navigate(-1)}
+          className="me-3 text-secondary"
+          style={{ cursor: "pointer" }}
+        />
+        <h5 className="mb-0 fw-bold">
+          {isSukarela ? `Setoran ${displayName}` : `Tagihan ${displayName}`}
+        </h5>
+      </div>
 
-   <Container>
-    <Row className="justify-content-center">
-     <Col md={8} lg={6}>
-
-      {/* CARD FORM UTAMA */}
-      <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: "12px" }}>
-       <Card.Header className="bg-primary text-white py-2 border-0">
-        <small className="fw-bold">
-         {isWithdraw ? "SILAHKAN MASUKAN NOMINAL PENCAIRAN" : "SILAHKAN MASUKAN NOMINAL SIMPANAN"}
-        </small>
-       </Card.Header>
-       <Card.Body className="p-4">
-        <Form>
-         {/* INPUT NOMINAL */}
-         <Form.Group className="mb-4 text-center">
-          <Form.Label className="fw-bold small text-muted">Nominal</Form.Label>
-          <Form.Control
-           type="text"
-           placeholder="Rp.0"
-           value={displayAmount ? `Rp.${displayAmount}` : ""}
-           onChange={handleAmountChange}
-           className="text-center fw-bold fs-3 border-0 border-bottom rounded-0 shadow-none px-0"
-           style={{ borderBottom: "2px solid #005a8d !important" }}
-          />
-          {isWithdraw && (
-           <div className="small text-muted mt-2">
-            Tersedia: <span className="text-primary fw-bold">Rp {maxAmount.toLocaleString("id-ID")}</span>
-           </div>
-          )}
-         </Form.Group>
-
-         {/* FORM PENCAIRAN (Hanya muncul jika mode withdraw) */}
-         {isWithdraw && (
-          <div className="p-3 bg-light rounded-3 mb-3 border">
-           <Form.Group className="mb-3">
-            <Form.Label className="fw-bold small mb-1">Metode Pencairan</Form.Label>
-            <Form.Select
-             size="sm"
-             value={formData.metode}
-             onChange={(e) => setFormData({ ...formData, metode: e.target.value })}
-             className="shadow-none border-secondary"
-            >
-             <option value="Transfer Bank">Transfer Bank (Non-Tunai)</option>
-             <option value="Tunai">Tunai (Ambil di Kantor)</option>
-            </Form.Select>
-           </Form.Group>
-
-           {formData.metode === "Transfer Bank" && (
-            <Row>
-             <Col xs={12} className="mb-2">
-              <Form.Label className="fw-bold small mb-1">No Rekening</Form.Label>
-              <Form.Control
-               size="sm"
-               type="text"
-               value={formData.noRekening}
-               onChange={(e) => setFormData({ ...formData, noRekening: e.target.value })}
-               placeholder="Input No Rekening"
-              />
-             </Col>
-             <Col xs={12} className="mb-2">
-              <Form.Label className="fw-bold small mb-1">Bank</Form.Label>
-              <Form.Control
-               size="sm"
-               type="text"
-               value={formData.bank}
-               onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
-               placeholder="Input Nama Bank"
-              />
-             </Col>
-            </Row>
-           )}
-
-           <Form.Group className="mb-0">
-            <Form.Label className="fw-bold small mb-1">Nama Nasabah</Form.Label>
-            <Form.Control
-             size="sm"
-             type="text"
-             value={formData.namaNasabah}
-             readOnly
-             className="bg-white border-secondary"
+      <Card className="border-0 shadow-sm rounded-3 mb-4 overflow-hidden">
+        <Card.Header className="bg-primary text-white py-2 d-flex justify-content-between align-items-center">
+          <span className="fw-bold" style={{ fontSize: "14px" }}>
+            {isSukarela ? "Input Nominal" : "Daftar Tagihan"}
+          </span>
+          {!isSukarela && bills.length > 0 && (
+            <Form.Check
+              type="checkbox"
+              label={<small className="fw-bold">Pilih Semua</small>}
+              checked={selectedBills.length === bills.length}
+              onChange={handleSelectAll}
             />
-           </Form.Group>
-          </div>
-         )}
-
-         <Button
-          variant="primary"
-          className="w-100 fw-bold py-2 mt-2 shadow-sm border-0"
-          style={{ borderRadius: "25px", backgroundColor: "#005a8d" }}
-          onClick={handleProses}
-          disabled={loading || !rawAmount}
-         >
-          {loading ? <Spinner size="sm" className="me-2" /> : null}
-          {isWithdraw ? "AJUKAN PENCAIRAN" : "PROSES PEMBAYARAN"}
-         </Button>
-        </Form>
-       </Card.Body>
-      </Card>
-
-      {/* CARD HISTORY */}
-      <Card className="border-0 shadow-sm" style={{ borderRadius: "12px" }}>
-       <Card.Header className="bg-white py-3 border-bottom d-flex align-items-center">
-        <FaHistory className="text-primary me-2" />
-        <h6 className="mb-0 fw-bold small">Riwayat Transaksi Terakhir</h6>
-       </Card.Header>
-       <Card.Body className="p-0">
-        {loadingData ? (
-         <div className="text-center p-4"><Spinner size="sm" variant="primary" /></div>
-        ) : history.length > 0 ? (
-         <ListGroup variant="flush">
-          {history.slice(0, 5).map((item, idx) => (
-           <ListGroup.Item key={idx} className="px-4 py-3 border-light">
-            <div className="d-flex justify-content-between align-items-center">
-             <div>
-              <div className="fw-bold small text-dark mb-1">
-               {item.category || item.bill?.billType?.type_name || "Simpanan"}
-              </div>
-              <small className="text-muted d-block" style={{ fontSize: '10px' }}>
-               {new Date(item.created_at).toLocaleString("id-ID")}
-              </small>
-             </div>
-             <div className="text-end">
-              <div className="fw-bold text-primary small mb-1">
-               Rp {parseFloat(item.amount).toLocaleString("id-ID")}
-              </div>
-              <Badge bg={item.status === "PAID" || item.status === "COMPLETED" ? "success" : "warning"} className="small px-2 py-1" style={{ fontSize: '9px' }}>
-               {item.status === "PAID" || item.status === "COMPLETED" ? "BERHASIL" : "PENDING"}
-              </Badge>
-             </div>
+          )}
+        </Card.Header>
+        <Card.Body className={isSukarela ? "p-4" : "p-0"}>
+          {loadingData ? (
+            <div className="p-5 text-center">
+              <Spinner animation="border" variant="primary" />
             </div>
-           </ListGroup.Item>
-          ))}
-         </ListGroup>
-        ) : (
-         <div className="text-center p-5 text-muted small">
-          <FaExclamationTriangle className="mb-2 d-block mx-auto" size={20} />
-          Belum ada riwayat transaksi.
-         </div>
-        )}
-       </Card.Body>
-       {history.length > 0 && (
-        <div className="text-center py-2 border-top">
-         <Button variant="link" className="text-decoration-none small p-0 fw-bold" onClick={() => navigate("/riwayat")}>
-          Lihat Semua
-         </Button>
-        </div>
-       )}
+          ) : isSukarela ? (
+            <div>
+              <Form.Group className="mb-3">
+                <Form.Label className="small fw-bold text-secondary text-uppercase">
+                  Jumlah Setoran
+                </Form.Label>
+                <InputGroup size="lg">
+                  <InputGroup.Text className="bg-white border-end-0 fw-bold text-primary">
+                    Rp
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    className="border-start-0 fw-bold"
+                    value={customAmount}
+                    onChange={(e) =>
+                      setCustomAmount(
+                        formatRupiah(e.target.value.replace(/\./g, ""))
+                      )
+                    }
+                  />
+                </InputGroup>
+              </Form.Group>
+              <Button
+                variant="primary"
+                className="w-100 fw-bold py-3 rounded-3 shadow-sm"
+                onClick={handleNavigateToInvoice}
+                disabled={!customAmount || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  "Lanjutkan Ke Pembayaran"
+                )}
+              </Button>
+            </div>
+          ) : bills.length > 0 ? (
+            <>
+              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                <ListGroup variant="flush">
+                  {bills.map((bill) => (
+                    <ListGroup.Item
+                      key={bill.bill_item_id}
+                      className="py-3 px-3 border-bottom border-light"
+                    >
+                      <div className="d-flex align-items-start">
+                        <Form.Check
+                          className="me-3 mt-1"
+                          checked={selectedBills.includes(bill.bill_item_id)}
+                          onChange={() => {
+                            setSelectedBills((prev) =>
+                              prev.includes(bill.bill_item_id)
+                                ? prev.filter((id) => id !== bill.bill_item_id)
+                                : [...prev, bill.bill_item_id]
+                            );
+                          }}
+                        />
+                        <div className="w-100">
+                          <div className="fw-bold text-dark small">
+                            {bill.description || bill.type?.type_name}
+                          </div>
+                          <div className="text-primary fw-bold">
+                            Rp {parseFloat(bill.amount).toLocaleString("id-ID")}
+                          </div>
+                          {bill.due_date && (
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "11px" }}
+                            >
+                              Jatuh tempo:{" "}
+                              {new Date(bill.due_date).toLocaleDateString(
+                                "id-ID",
+                                { month: "short", year: "numeric" }
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              </div>
+              <div className="p-3 bg-white border-top shadow-sm">
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="small text-muted">
+                    Total Terpilih ({selectedBills.length}):
+                  </span>
+                  <span className="fw-bold text-primary">
+                    Rp {totalAmount.toLocaleString("id-ID")}
+                  </span>
+                </div>
+                <Button
+                  variant="primary"
+                  className="w-100 fw-bold py-2 rounded-pill"
+                  onClick={handleNavigateToInvoice}
+                  disabled={selectedBills.length === 0 || isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Spinner animation="border" size="sm" />
+                  ) : (
+                    "Bayar Sekarang"
+                  )}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="p-5 text-center text-muted small">
+              <FaExclamationTriangle className="mb-2 opacity-50" size={24} />
+              <p className="mb-0">Tidak ada tagihan tertunda.</p>
+            </div>
+          )}
+        </Card.Body>
       </Card>
-     </Col>
-    </Row>
-   </Container>
-  </div>
- );
+
+      <Card className="border-0 shadow-sm rounded-3 overflow-hidden">
+        <Card.Header
+          className="bg-dark text-white py-2 fw-bold"
+          style={{ fontSize: "14px" }}
+        >
+          Histori Transaksi
+        </Card.Header>
+        <Card.Body className="p-0">
+          {history.length > 0 ? (
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              <ListGroup variant="flush">
+                {history.map((item, idx) => (
+                  <ListGroup.Item
+                    key={idx}
+                    className="p-3 border-bottom border-light"
+                  >
+                    <div className="d-flex align-items-center">
+                      <div className="bg-light p-2 rounded me-3">
+                        <FaCheckCircle className="text-success" size={18} />
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="fw-bold text-dark small">
+                          {item.description}
+                        </div>
+                        <div className="text-success fw-bold small">
+                          Rp {parseFloat(item.amount).toLocaleString("id-ID")}
+                        </div>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "10px" }}
+                        >
+                          {new Date(item.createdAt).toLocaleDateString(
+                            "id-ID",
+                            { day: "2-digit", month: "short", year: "numeric" }
+                          )}
+                        </div>
+                      </div>
+                      <Badge bg="success" className="fw-normal">
+                        Lunas
+                      </Badge>
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </div>
+          ) : (
+            <div className="p-4 text-center text-muted small">
+              Belum ada transaksi.
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+    </div>
+  );
 };
 
 export default BillingPage;

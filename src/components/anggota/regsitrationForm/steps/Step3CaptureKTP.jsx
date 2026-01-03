@@ -1,19 +1,19 @@
 import React, { useCallback } from "react";
 import { Form, Row, Col, Alert } from "react-bootstrap";
 import {
-  FaUserShield,
   FaCamera,
-  FaCheckCircle,
-  FaExclamationTriangle,
+  FaIdCard,
   FaLightbulb,
+  FaCheckCircle,
+  FaInfoCircle,
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../ui/WebcamCaptureField";
 
 /**
- * Komponen untuk mengambil Swafoto dengan KTP (Langkah 4).
- * Dioptimasi dengan panduan visual agar verifikasi wajah lebih akurat.
+ * Komponen untuk mengambil foto KTP (Langkah 3).
+ * Dioptimasi dengan panduan visual dan UI modern.
  */
-export default function Step4Swafoto({ formData, setFormData, errors }) {
+export default function Step3CaptureKTP({ formData, setFormData, errors }) {
   const handleSetCapturedImage = useCallback(
     (fieldName, base64Image) => {
       setFormData((prevData) => ({
@@ -29,12 +29,12 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
       {/* HEADER SEKSI */}
       <div className="d-flex align-items-center mb-4">
         <div className="icon-box bg-soft-primary text-primary me-3">
-          <FaUserShield />
+          <FaCamera />
         </div>
         <div>
-          <h5 className="fw-bold mb-0 text-dark">Verifikasi Wajah (Swafoto)</h5>
+          <h5 className="fw-bold mb-0 text-dark">Dokumentasi KTP</h5>
           <small className="text-muted">
-            Pastikan identitas Anda valid dengan swafoto memegang KTP
+            Ambil foto KTP asli untuk verifikasi identitas
           </small>
         </div>
       </div>
@@ -44,74 +44,68 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
           {/* AREA WEBCAM */}
           <div className="p-3 rounded-20 bg-light border-0 shadow-sm mb-4">
             <WebcamCaptureField
-              fieldName="foto_swafoto"
-              label="Ambil Swafoto"
-              capturedImage={formData.foto_swafoto}
+              fieldName="foto_ktp"
+              label="Foto Kartu Tanda Penduduk (KTP)"
+              capturedImage={formData.foto_ktp}
               setCapturedImage={handleSetCapturedImage}
-              isInvalid={!!errors.foto_swafoto}
+              isInvalid={!!errors.foto_ktp}
               // --- TAMBAHKAN PROPS OPTIMASI BERIKUT ---
-              mirrored={true} // UX: Memberikan pengalaman seperti cermin bagi pengguna
+              mirrored={false} // UX: Agar teks KTP tidak terbalik saat disimpan
               videoConstraints={{
                 width: 1280,
                 height: 720,
-                facingMode: "user", // UX: Menggunakan kamera depan
+                facingMode: "environment", // UX: Utamakan kamera belakang untuk fokus lebih baik
               }}
             />
-            {!!errors.foto_swafoto && (
+            {!!errors.foto_ktp && (
               <Form.Control.Feedback
                 type="invalid"
                 style={{ display: "block" }}
                 className="mt-2"
               >
-                <FaExclamationTriangle className="me-1" /> {errors.foto_swafoto}
+                <FaInfoCircle className="me-1" /> {errors.foto_ktp}
               </Form.Control.Feedback>
             )}
           </div>
         </Col>
 
         <Col lg={5}>
-          {/* PANDUAN SWAFOTO */}
+          {/* PANDUAN PENGAMBILAN GAMBAR */}
           <div className="requirement-items bg-white p-4 rounded-20 border-dashed h-100">
-            <h6 className="fw-bold text-dark mb-3">Instruksi Swafoto:</h6>
+            <h6 className="fw-bold text-dark mb-3">Panduan Foto KTP:</h6>
 
             <ul className="list-unstyled mb-4">
               <li className="d-flex align-items-start mb-3">
                 <FaCheckCircle className="text-success mt-1 me-2" />
                 <span className="small">
-                  Pegang KTP di bawah dagu/depan dada.
-                </span>
-              </li>
-              <li className="d-flex align-items-start mb-3">
-                <FaCheckCircle className="text-success mt-1 me-2" />
-                <span className="small">
-                  Wajah dan data KTP harus terlihat jelas secara bersamaan.
+                  KTP berada di dalam bingkai kamera.
                 </span>
               </li>
               <li className="d-flex align-items-start mb-3">
                 <FaLightbulb className="text-warning mt-1 me-2" />
                 <span className="small">
-                  Hindari penggunaan kacamata hitam, masker, atau topi.
+                  Pastikan cahaya terang dan tidak ada pantulan lampu.
+                </span>
+              </li>
+              <li className="d-flex align-items-start mb-3">
+                <FaCheckCircle className="text-success mt-1 me-2" />
+                <span className="small">
+                  Teks dan foto pada KTP terbaca dengan jelas (tidak buram).
                 </span>
               </li>
             </ul>
 
             <Alert
-              variant="info"
-              className="rounded-12 border-0 shadow-sm small py-3"
+              variant="warning"
+              className="rounded-12 border-0 shadow-sm small"
             >
-              <div className="d-flex">
-                <FaCamera className="me-2 mt-1" />
-                <span>
-                  Pastikan kamera sejajar dengan mata dan pencahayaan dari depan
-                  cukup terang.
-                </span>
-              </div>
+              <strong>Penting:</strong> Gunakan KTP asli, bukan fotokopi atau
+              hasil scan layar komputer.
             </Alert>
 
-            {/* Visual Placeholder Swafoto */}
-
-            <div className="mt-4 text-center text-muted opacity-50">
-              <small>Contoh Swafoto yang Benar</small>
+            {/* Visual Placeholder KTP */}
+            <div className="mt-4 text-center opacity-25">
+              <FaIdCard size={80} />
             </div>
           </div>
         </Col>

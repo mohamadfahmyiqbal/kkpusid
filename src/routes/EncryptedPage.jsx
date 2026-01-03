@@ -18,16 +18,19 @@ const PROTECTED_ROUTES = [
   "registrationPage",
   "registrationFormDetail",
   "simpananPage",
+  "penarikanSimpananPage",
+  "transaksiPage",
+  "formPengajuanTransaksi",
   // ... Tambahkan semua route yang menggunakan DashboardLayout
 ];
 
 export const EncryptedPage = React.memo(() => {
   const { token } = useParams();
-  
+
   // 1. Ambil payload lengkap (objek), bukan cuma string nama page
-  const decodedData = jwtDecodePage(token); 
-  const pageName = decodedData?.page; 
-  
+  const decodedData = jwtDecodePage(token);
+  const pageName = decodedData?.page;
+
   const PageComponent = PAGE_COMPONENTS[pageName];
 
   if (!PageComponent) {

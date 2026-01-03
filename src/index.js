@@ -5,14 +5,25 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// --- PENDAFTARAN SERVICE WORKER ---
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    // Pastikan file sw.js ada di folder public/
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => {
+        console.log("✅ Service Worker terdaftar dengan scope:", reg.scope);
+      })
+      .catch((err) => {
+        console.error("❌ Registrasi Service Worker gagal:", err);
+      });
+  });
+}
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  // <React.StrictMode>
+  // <React.StrictMode> dihapus agar socket/sw tidak trigger dua kali saat dev
   <App />
-  // </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

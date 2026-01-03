@@ -9,15 +9,15 @@ import { FaCamera, FaIdCard } from "react-icons/fa";
  * @param {string} imageData - Data foto Base64.
  * @param {string} type - Tipe foto ("KTP" atau "Swafoto").
  */
-export default function PhotoDisplay({ label, imageData, type }) {
+export default function PhotoDisplay({ label, base64Image, type }) {
   const PlaceholderIcon = type === "KTP" ? FaIdCard : FaCamera;
 
   return (
     <div className="text-center">
       <h6 className="mb-2">{label}</h6>
-      {imageData ? (
+      {base64Image ? (
         <img
-          src={imageData}
+          src={base64Image}
           alt={label}
           className="img-fluid border rounded"
           style={{ maxHeight: "120px", objectFit: "cover", width: "100%" }}
@@ -35,7 +35,7 @@ export default function PhotoDisplay({ label, imageData, type }) {
         </div>
       )}
       <small className="d-block mt-1 text-danger">
-        {imageData ? "Foto telah diambil" : "Belum Diambil"}
+        {base64Image ? "Foto telah diambil" : "Belum Diambil"}
       </small>
     </div>
   );

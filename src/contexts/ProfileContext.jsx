@@ -1,83 +1,122 @@
+// src/contexts/ProfileContext.jsx
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
-import UAuth from "../utils/api/UAuth"; // Import utility API
+import { io } from "socket.io-client";
+import { toast } from "react-toastify";
+import UAuth from "../utils/api/UAuth";
+import UBilling from "../utils/api/UBilling";
+import UNotification from "../utils/api/UNotification";
 
-// 1. Buat Context
-const ProfileContext = createContext({
-  userData: null,
-  loading: true,
-  error: null,
-  logout: () => {},
-  refetchProfile: () => {},
-});
+const ProfileContext = createContext();
 
-// 2. Buat Custom Hook untuk Konsumsi
-export const useProfile = () => useContext(ProfileContext);
-
-// 3. Buat Provider Component
 export const ProfileProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const socketRef = useRef(null);
 
-  // Fungsi untuk membersihkan token dan state
-  const logout = useCallback(() => {
-    localStorage.removeItem("authToken"); // ✅ Jika Anda menggunakan 'authToken', hapus juga
-    setUserData(null);
-    setError(null);
-    // 💡 Opsional: Redirect ke halaman login setelah logout (bisa dilakukan di sini atau di komponen yang memanggil logout)
-    // window.location.href = "/";
+  // --- 1. Global Data Fetcher ---
+  const fetchAllData = useCallback(async (user) => {
+    if (!user?.member_id) return;
+
+    try {
+      const [notifRes, billRes] = await Promise.all([
+        UNotification.getNotifications({ member_id: user.member_id }),
+        UBilling.getPendingBills({ member_no: user.member_no, limit: 5 }),
+      ]);
+
+      setNotifications(notifRes.data.list || []);
+      setBills(billRes.data.list || []);
+    } catch (err) {
+      console.error("Error fetching sync data:", err);
+    }
   }, []);
 
   const fetchProfile = useCallback(async () => {
-    // Gunakan 'token' atau 'authToken' sesuai yang Anda gunakan saat login
     if (!localStorage.getItem("authToken")) {
-      setUserData(null);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
     try {
-      // Mengambil data profil dari API (GET /anggota/profil)
       const response = await UAuth.getProfile();
-
-      // Asumsi: response.data.user berisi objek profil (sesuai respons dari accountLogin.js)
-      setUserData(response.data.data);
+      const user = response.data.data;
+      setUserData(user);
+      await fetchAllData(user); // Ambil data terkait setelah profil siap
     } catch (err) {
-      console.error("Gagal memuat profil:", err);
-      // Jika error 401/403 (Unauthorized/Forbidden), mungkin token expired
-      if (
-        err.response &&
-        (err.response.status === 401 || err.response.status === 403)
-      ) {
-        logout(); // Logout otomatis jika otorisasi gagal
-      }
-      setError("Gagal memuat data profil. Silakan coba login ulang.");
+      console.error("Profile Load Error:", err);
+      if (err.response?.status === 401) logout();
     } finally {
       setLoading(false);
     }
-  }, [logout]);
+  }, [fetchAllData]);
+
+  // --- 2. Centralized Socket Management ---
+  useEffect(() => {
+    if (userData?.member_id && !socketRef.current) {
+      const socket = io("https://api.kkpus.id", {
+        transports: ["websocket"],
+        reconnection: true,
+      });
+
+      socket.on("connect", () => {
+        socket.emit("register", String(userData.member_id));
+      });
+
+      // Listener: Dashboard/Global Update
+      socket.on("update_dashboard", () => {
+        fetchAllData(userData);
+      });
+
+      // Listener: Notifikasi Baru
+      socket.on("new_notification", (data) => {
+        setNotifications((prev) => [data, ...prev]);
+        toast.info(data.title || "Notifikasi Baru", { icon: "🔔" });
+      });
+
+      socketRef.current = socket;
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [userData, fetchAllData]);
 
   useEffect(() => {
-    fetchProfile(); // Muat profil saat komponen pertama kali dirender
+    fetchProfile();
   }, [fetchProfile]);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("authToken");
+    setUserData(null);
+    setNotifications([]);
+    setBills([]);
+    if (socketRef.current) socketRef.current.disconnect();
+  }, []);
 
   const value = {
     userData,
+    notifications,
+    bills,
     loading,
-    error,
-    logout, // Sediakan fungsi logout di context
-    refetchProfile: fetchProfile, // Sediakan fungsi untuk muat ulang
+    logout,
+    refetchAll: () => fetchAllData(userData),
+    refetchProfile: fetchProfile,
   };
 
   return (
     <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
   );
 };
+
+export const useProfile = () => useContext(ProfileContext);

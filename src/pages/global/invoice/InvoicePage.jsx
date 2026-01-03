@@ -1,379 +1,314 @@
-// 📁 pages/global/InvoicePage.jsx (KODE FINAL DAN LENGKAP - Tombol Kembali Menggunakan JWT)
-
-import React, { useCallback, useMemo, useState, useEffect } from "react";
-import { Card, Button, Spinner, Alert, Row, Col, Table } from "react-bootstrap";
+// 📁 src/pages/member/InvoicePage.jsx
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import {
+  Card,
+  Button,
+  Spinner,
+  Alert,
+  Row,
+  Col,
+  Table,
+  Container,
+} from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
   FaMoneyBillWave,
-  FaCheckCircle,
   FaPrint,
-  FaQuestionCircle,
+  FaCheckCircle,
+  FaRegFileAlt,
 } from "react-icons/fa";
-import { jwtEncode } from "../../../routes/helpers";
 import UBilling from "../../../utils/api/UBilling";
+import { jwtDecodePage, jwtEncode } from "../../../routes/helpers";
 
-// --- HELPER FUNCTIONS ---
-const getValueFromToken = (token, key) => {
-  if (!token) return null;
-  try {
-    const [, payload] = token.split(".");
-    const json = decodeURIComponent(
-      escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
-    );
-    const decodedPayload = JSON.parse(json);
-    return decodedPayload?.[key] ?? null;
-  } catch (err) {
-    console.error("[getValueFromToken] Gagal decoding token:", err);
-    return null;
-  }
-};
-
-const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) return "N/A";
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
-
-const formatDateWithTime = (dateString) => {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
-
-  const dateOptions = { year: "numeric", month: "long", day: "numeric" };
-  const timeOptions = { hour: "2-digit", minute: "2-digit" };
-
-  const datePart = date.toLocaleDateString("id-ID", dateOptions);
-  const timePart = date.toLocaleTimeString("id-ID", timeOptions);
-
-  return `${datePart} Pukul ${timePart} WIB`;
-};
-
-// --- KOMPONEN UTAMA ---
 export default function InvoicePage() {
   const navigate = useNavigate();
   const { token } = useParams();
+  const pollingRef = useRef(null);
 
-  // 1. DECODING TOKEN (billId, returnPage)
-  const { billId, returnPage } = useMemo(() => {
-    const id = getValueFromToken(token, "billId");
-    // Mengambil nilai 'return' dari token, default ke 'dashboard' jika tidak ada
-    const page = getValueFromToken(token, "return") || "dashboard";
-    return { billId: id, returnPage: page };
+  // 1. Dekode data dari JWT (Bill IDs & Jalur Kembali)
+  const { billItemIds, returnPage, category } = useMemo(() => {
+    const payload = token ? jwtDecodePage(token) : {};
+    let ids = payload.billItemIds || payload.billIds || [];
+    return {
+      billItemIds: Array.isArray(ids) ? ids : [ids],
+      returnPage: payload.return || "dashboard",
+      category: payload.category || "GENERAL",
+    };
   }, [token]);
 
   const [billData, setBillData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // 2. FETCH DATA INVOICE
-  const fetchBillDetail = useCallback(async () => {
-    if (!billId) {
-      setError("ID Tagihan tidak ditemukan atau tidak valid.");
-      setLoading(false);
-      return;
-    }
+  // 2. Fungsi Fetch Detail Tagihan
+  const fetchBillDetail = useCallback(
+    async (isPolling = false) => {
+      try {
+        if (billItemIds.length === 0) return;
+        const response = await UBilling.getInvoiceDetail(billItemIds);
 
-    setLoading(true);
-    setError(null);
+        if (response.data?.status) {
+          const newData = response.data.data;
+          setBillData(newData);
 
-    try {
-      const response = await UBilling.getInvoiceDetail(billId);
-
-      if (response.status && response.data) {
-        setBillData(response.data.data);
-      } else {
-        setError(response.message || "Gagal mengambil detail tagihan.");
+          // Jika status sudah PAID, hentikan polling & loading
+          if (newData.status === "PAID") {
+            setIsProcessing(false);
+            stopPolling();
+          }
+        }
+      } catch (err) {
+        console.error("Fetch invoice error:", err);
+      } finally {
+        if (!isPolling) setLoading(false);
       }
-    } catch (err) {
-      console.error("Fetch Bill Detail Error:", err);
-      setError("Terjadi kesalahan koneksi saat mengambil data tagihan.");
-    } finally {
-      setLoading(false);
+    },
+    [billItemIds]
+  );
+
+  const startPolling = () => {
+    if (pollingRef.current) return;
+    pollingRef.current = setInterval(() => fetchBillDetail(true), 5000);
+  };
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
     }
-  }, [billId]);
+  };
 
   useEffect(() => {
     fetchBillDetail();
+    return () => stopPolling();
   }, [fetchBillDetail]);
 
-  // 3. LOGIKA PERHITUNGAN DAN STATUS
-  const totalAmount = useMemo(() => {
-    if (!billData || !billData.details) return 0;
-    return billData.details.reduce(
-      (sum, item) => sum + (parseFloat(item.amount) || 0),
-      0
-    );
-  }, [billData]);
+  const totalAmount = useMemo(
+    () =>
+      billData?.details?.reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+      ) || 0,
+    [billData]
+  );
 
-  const billStatus = billData?.bill_status || "UNPAID";
-  const isUnpaid = billStatus === "UNPAID";
-  const isPending = billStatus === "PENDING";
-  const isPaid = billStatus === "PAID" || billStatus === "SETTLED";
+  // 3. Navigasi Kembali Dinamis
+  const handleBack = () => {
+    // Navigasi berdasarkan returnPage yang dikirim dari payload origin
+    const validPages = ["simpananPage", "transaksiPage", "billingPage"];
+    const targetPage = validPages.includes(returnPage)
+      ? returnPage
+      : "dashboard";
 
-  let statusText = "Tidak Diketahui";
-  if (isUnpaid) {
-    statusText = "Belum Dibayar (UNPAID)";
-  } else if (isPending) {
-    statusText = "Menunggu Konfirmasi Pembayaran (PENDING)";
-  } else if (isPaid) {
-    statusText = "Sudah Dibayar (PAID/SETTLED)";
-  }
-
-  // ✅ 4. HANDLER TOMBOL KEMBALI DINAMIS (MENGGUNAKAN JWT ENCODE)
-  const handleBack = useCallback(() => {
-    // 🚨 Gunakan jwtEncode dengan payload hanya berisi halaman tujuan (`returnPage`)
-    const backToken = jwtEncode({
-      page: returnPage, // 'registrationPage' atau 'billingPage'
-    });
-
-    // Navigasi menggunakan format token: /token
-    navigate(`/${backToken}`);
-  }, [navigate, returnPage]);
-
-  // 5. HANDLER PEMBAYARAN (INTEGRASI MIDTRANS)
-  const handlePay = useCallback(async () => {
-    if (!billId) return;
-
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await UBilling.createMidtransTransaction({
-        bill_id: billId,
-        tx_category: "MEMBER_REGISTRATION",
-      });
-      const snapToken =
-        response.data?.data?.snapToken || response.data?.snapToken;
-      if (snapToken && window.snap) {
-        window.snap.pay(snapToken, {
-          onSuccess: function (result) {
-            // ✅ MEMBERIKAN JEDA 3 DETIK SEBELUM REFRESH DATA
-            // Agar backend memiliki waktu untuk memproses notifikasi Midtrans
-            const successToken = jwtEncode({
-              page: "invoicePage",
-              billId: billId,
-              return: returnPage,
-              status: "success",
-            });
-
-            setTimeout(() => {
-              navigate(`/${successToken}`);
-              fetchBillDetail();
-            }, 3000);
-          },
-          onPending: function (result) {
-            const pendingToken = jwtEncode({
-              page: "invoicePage",
-              billId: billId,
-              return: returnPage,
-              status: "pending",
-            });
-            setTimeout(() => {
-              navigate(`/${pendingToken}`);
-              fetchBillDetail();
-            }, 2000);
-          },
-          onError: function (result) {
-            fetchBillDetail();
-          },
-          onClose: function () {
-            fetchBillDetail();
-          },
-        });
-      } else {
-        setError("Gagal mendapatkan Snap Token.");
-      }
-    } catch (err) {
-      console.error("Error Midtrans:", err);
-      setError("Gagal memproses pembayaran.");
-    } finally {
-      setLoading(false);
-    }
-  }, [billId, fetchBillDetail, navigate, returnPage]);
-
-  // 6. RENDER KONDISIONAL
-  if (loading && !billData) {
-    return (
-      <div className="text-center mt-5">
-        <Spinner animation="border" /> <p>Memuat data tagihan...</p>
-      </div>
-    );
-  }
-  if (error || !billData) {
-    return (
-      <div className="container mt-5 text-center">
-        <Alert variant="danger">
-          {error || "Data tagihan tidak ditemukan."}
-        </Alert>
-        <Button onClick={() => navigate("/dashboard")}>Kembali</Button>
-      </div>
-    );
-  }
-
-  const { member_no, full_name, due_date, details } = billData;
-
-  const RenderStatusDisplay = () => {
-    if (isPaid)
-      return (
-        <Alert variant="success" className="mb-3 text-center">
-          <FaCheckCircle className="me-2" /> Tagihan Sudah Lunas
-        </Alert>
-      );
-    if (isPending)
-      return (
-        <Alert variant="warning" className="mb-3 text-center">
-          <Spinner animation="border" size="sm" className="me-2" /> Menunggu
-          Pembayaran
-        </Alert>
-      );
-    if (isUnpaid)
-      return (
-        <Alert variant="danger" className="mb-3 text-center">
-          Pembayaran Belum Berhasil
-        </Alert>
-      );
-    return null;
+    navigate(`/${jwtEncode({ page: targetPage })}`);
   };
 
+  // 4. Proses Pembayaran Snap Midtrans
+  const handlePay = async () => {
+    if (!window.snap)
+      return alert("Sistem pembayaran belum siap. Mohon refresh halaman.");
+
+    setIsProcessing(true);
+    try {
+      const response = await UBilling.createMidtransTransaction({
+        bill_item_ids: billItemIds,
+        tx_category:
+          category === "SUKARELA" ? "SAVINGS_DEPOSIT" : "MEMBER_REGISTRATION",
+      });
+
+      if (response.data?.status) {
+        startPolling(); // Pantau perubahan status di background
+
+        window.snap.pay(response.data.data.snapToken, {
+          onSuccess: () => {
+            fetchBillDetail();
+            stopPolling();
+          },
+          onPending: () => {
+            fetchBillDetail();
+          },
+          onClose: () => {
+            setIsProcessing(false);
+            // Jangan stop polling di sini jika user menutup snap tapi sudah bayar (nunggu webhook)
+            fetchBillDetail();
+          },
+          onError: () => {
+            setIsProcessing(false);
+            stopPolling();
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      setIsProcessing(false);
+      stopPolling();
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2 text-muted">Menyiapkan Invoice...</p>
+        </div>
+      </div>
+    );
+
+  const isPaid = billData?.status === "PAID";
+
   return (
-    <div className="container-fluid">
-      <Row className="justify-content-center">
-        <Col lg={12} xl={12}>
-          {/* ✅ TOMBOL KEMBALI DINAMIS (MENGGUNAKAN LOGIKA returnPage) */}
-          <Button
-            onClick={handleBack}
-            variant="outline-secondary"
-            className="mb-3"
-          >
-            <FaArrowLeft className="me-2" /> Kembali
-            {returnPage === "registrationPage"
-              ? " ke Ringkasan Pendaftaran"
-              : " ke Halaman Utama"}
-          </Button>
+    <Container className="py-5" style={{ maxWidth: "800px" }}>
+      {/* Header Navigasi */}
+      <div className="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        <Button
+          variant="white"
+          className="rounded-3 shadow-sm border"
+          onClick={handleBack}
+        >
+          <FaArrowLeft className="me-2" /> Kembali
+        </Button>
+        <Button
+          variant="outline-dark"
+          className="rounded-3 shadow-sm"
+          onClick={() => window.print()}
+        >
+          <FaPrint className="me-2" /> Cetak
+        </Button>
+      </div>
 
-          <Card className="shadow-lg mb-4">
-            <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">Tagihan Anggota (Kewajiban Awal)</h5>
-            </Card.Header>
-            <Card.Body>
-              <RenderStatusDisplay />
+      <Card className="border-0 shadow-lg rounded-4 overflow-hidden">
+        {/* Banner Status */}
+        <div
+          className={`text-center py-4 ${
+            isPaid ? "bg-success" : "bg-primary"
+          } text-white`}
+        >
+          {isPaid ? (
+            <>
+              <FaCheckCircle size={50} className="mb-2" />
+              <h4 className="fw-bold mb-0">TRANSAKSI BERHASIL</h4>
+            </>
+          ) : (
+            <>
+              <FaRegFileAlt size={50} className="mb-2" />
+              <h4 className="fw-bold mb-0">DETAIL TAGIHAN</h4>
+            </>
+          )}
+        </div>
 
-              {/* Detail Anggota dan Tagihan */}
-              <div className="p-3 border-bottom">
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <small className="d-block text-muted">Nomor Tagihan</small>
-                    <strong className="d-block fs-5">#{billId}</strong>
-                  </Col>
-                  <Col md={6} className="text-md-end">
-                    <small className="d-block text-muted">
-                      Tanggal Jatuh Tempo
-                    </small>
-                    <strong className="d-block fs-5 text-danger">
-                      {formatDateWithTime(due_date)}
-                    </strong>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={6}>
-                    <small className="d-block text-muted">Nama Anggota</small>
-                    <strong className="d-block fs-6">{full_name}</strong>
-                  </Col>
-                  <Col md={6} className="text-md-end">
-                    <small className="d-block text-muted">Nomor Anggota</small>
-                    <strong className="d-block fs-6">{member_no}</strong>
-                  </Col>
-                </Row>
+        <Card.Body className="p-4 p-md-5">
+          <Row className="mb-5">
+            <Col xs={7}>
+              <small className="text-uppercase text-muted fw-bold">
+                Diterbitkan Untuk:
+              </small>
+              <h5 className="fw-bold mt-1 mb-1">
+                {billData?.full_name || "Anggota"}
+              </h5>
+              <p className="text-muted small">
+                {billData?.member_no || "ID Registrasi"}
+              </p>
+            </Col>
+            <Col xs={5} className="text-end">
+              <small className="text-uppercase text-muted fw-bold">
+                Nomor Invoice:
+              </small>
+              <p className="fw-bold mt-1 mb-1">
+                #{billData?.invoice_no || "INV/2024/000"}
+              </p>
+              <small className="text-muted d-block">
+                {new Date(billData?.createdAt).toLocaleDateString("id-ID", {
+                  dateStyle: "long",
+                })}
+              </small>
+            </Col>
+          </Row>
+
+          {/* Tabel Rincian */}
+          <Table responsive borderless className="align-middle mb-4">
+            <thead className="bg-light text-muted small">
+              <tr>
+                <th className="py-3 px-3 rounded-start">DESKRIPSI ITEM</th>
+                <th className="py-3 px-3 text-end rounded-end">SUBTOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {billData?.details?.map((item, index) => (
+                <tr key={index} className="border-bottom border-light">
+                  <td className="py-4 px-3 fw-semibold text-dark">
+                    {item.description}
+                  </td>
+                  <td className="py-4 px-3 text-end fw-bold h5">
+                    Rp {Number(item.amount).toLocaleString("id-ID")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+
+          <Row className="justify-content-end text-end mt-4">
+            <Col md={6}>
+              <div className="p-4 rounded-4 bg-light border border-dashed">
+                <p className="text-muted mb-1 fw-bold small text-uppercase">
+                  Total Pembayaran
+                </p>
+                <h2 className="fw-bold text-primary mb-0">
+                  Rp {totalAmount.toLocaleString("id-ID")}
+                </h2>
               </div>
+            </Col>
+          </Row>
+        </Card.Body>
 
-              {/* Detail Item Tagihan */}
-              <div className="p-3">
-                <h6 className="mt-0 mb-3 fw-bold">Rincian Tagihan</h6>
-                <Table responsive striped bordered size="sm">
-                  <thead>
-                    <tr>
-                      <th style={{ width: "5%" }}>#</th>
-                      <th style={{ width: "65%" }}>Deskripsi</th>
-                      <th style={{ width: "30%" }} className="text-end">
-                        Jumlah
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {details && details.length > 0 ? (
-                      details.map((item, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{item.description}</td>
-                          <td className="text-end">
-                            {formatCurrency(item.amount)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="3" className="text-center">
-                          Tidak ada rincian tagihan.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th colSpan="2" className="text-end">
-                        Total Pembayaran
-                      </th>
-                      <th className="text-end text-danger fs-5">
-                        {formatCurrency(totalAmount)}
-                      </th>
-                    </tr>
-                  </tfoot>
-                </Table>
-              </div>
-            </Card.Body>
-            <Card.Footer className="text-center">
-              {/* Tombol Bayar Midtrans */}
-              {(isUnpaid || isPending) && (
-                <Button
-                  onClick={handlePay}
-                  variant="success"
-                  size="lg"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Spinner animation="border" size="sm" className="me-2" />
-                      Mempersiapkan Pembayaran
-                    </>
-                  ) : (
-                    <>
-                      <FaMoneyBillWave className="me-2" /> Bayar Sekarang
-                      (Midtrans)
-                    </>
-                  )}
-                </Button>
-              )}
-
-              {/* Tombol Jika Sudah Dibayar */}
-              {isPaid && (
-                <Button variant="outline-success" disabled>
-                  <FaCheckCircle className="me-2" /> Sudah Dibayar
-                </Button>
-              )}
-
-              {/* Tombol Cetak/Bantuan */}
-              <Button variant="info" className="ms-2">
-                <FaPrint className="me-2" /> Cetak Invoice
+        {/* Footer Aksi */}
+        <Card.Footer className="bg-white p-4 p-md-5 border-top d-print-none">
+          {!isPaid ? (
+            <div className="text-center">
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-100 py-3 fw-bold rounded-4 shadow-sm mb-3"
+                onClick={handlePay}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />{" "}
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <FaMoneyBillWave className="me-2" /> BAYAR SEKARANG
+                  </>
+                )}
               </Button>
-              <Button variant="secondary" className="ms-2">
-                <FaQuestionCircle className="me-2" /> Bantuan
-              </Button>
-            </Card.Footer>
-          </Card>
-        </Col>
-      </Row>
-    </div>
+              <small className="text-muted">
+                Klik tombol di atas untuk memilih metode pembayaran melalui
+                Midtrans.
+              </small>
+            </div>
+          ) : (
+            <Alert
+              variant="success"
+              className="rounded-4 py-4 mb-0 text-center border-0 shadow-sm"
+            >
+              <FaCheckCircle className="me-2 h4 mb-0" />
+              <div className="fw-bold">Transaksi ini telah dibayar lunas.</div>
+              <small>
+                Saldo akan otomatis bertambah ke akun simpanan Anda.
+              </small>
+            </Alert>
+          )}
+        </Card.Footer>
+      </Card>
+    </Container>
   );
 }

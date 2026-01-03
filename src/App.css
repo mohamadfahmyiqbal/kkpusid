@@ -1,8 +1,6 @@
-/* src/App.css (Menggunakan Class Baru 'l-') */
-
-/* -------------------------------------------------------
-   PERBAIKAN KRITIS UNTUK KETINGGIAN
-   ------------------------------------------------------- */
+/* =======================================================
+   GLOBAL RESET & HEIGHT FIX (KRITIS)
+   ======================================================= */
 html,
 body {
   height: 100% !important;
@@ -10,24 +8,29 @@ body {
   padding: 0 !important;
 }
 
-/* -------------------------------------------------------
-   1. Wrapper Utama (Pengganti #main-wrapper)
-   ------------------------------------------------------- */
+/* =======================================================
+      LAYOUT UTAMA
+      ======================================================= */
+
+/* Wrapper Utama (Pengganti #main-wrapper) */
 #l-main-wrapper {
-  /* Gradient: Biru tua ke Hijau/Teal */
-  background: linear-gradient(to bottom, #0d47a1 0%, #00838f 60%, #00bfa5 100%) !important;
+  background: linear-gradient(to bottom,
+      #0d47a1 0%,
+      #00838f 60%,
+      #00bfa5 100%) !important;
+
   min-height: 100vh !important;
   display: flex;
   flex-direction: column;
 }
 
-/* 2. Header Topbar Kustom (Perubahan di sini) */
+/* =======================================================
+      HEADER / TOPBAR
+      ======================================================= */
 .l-header {
-  /* Menggunakan warna solid yang sama dengan puncak gradient (#0d47a1) */
   background-color: #0d47a1 !important;
 
-  /* Hapus 'position: fixed;' jika Anda tidak ingin header menempel */
-  /* Jika Anda ingin header tetap menempel (fixed), biarkan ini: */
+  /* Header menempel */
   position: fixed;
   width: 100%;
   z-index: 1030;
@@ -35,18 +38,53 @@ body {
 
 .l-header .navbar-brand,
 .l-header .nav-link {
-  color: white !important;
+  color: #ffffff !important;
 }
 
-/* 3. Area Konten (l-content) */
+/* Ukuran logo */
+.l-logo-size {
+  height: 40px;
+  width: auto;
+}
+
+/* =======================================================
+      CONTENT AREA
+      ======================================================= */
 .l-content {
   background-color: transparent !important;
+
+  /* Offset untuk fixed header */
   padding-top: 60px;
-  /* Jarak dari fixed header */
+
   flex-grow: 1;
 }
 
-/* Styling untuk Dot Indicator di Card (Bisa tetap sama jika tidak ada konflik) */
+/* =======================================================
+      DROPDOWN & USER MENU
+      ======================================================= */
+.dropdown-item-custom:hover {
+  background-color: #f0f7ff !important;
+  color: #007bff !important;
+}
+
+.dropdown-item-custom:hover .text-muted {
+  color: #007bff !important;
+}
+
+.logout-item:hover {
+  background-color: #fff5f5 !important;
+}
+
+.user-dropdown .dropdown-menu {
+  margin-top: 10px !important;
+  border-radius: 12px !important;
+}
+
+/* =======================================================
+      UTILITIES
+      ======================================================= */
+
+/* Dot Indicator */
 .dot {
   height: 8px;
   width: 8px;
@@ -55,8 +93,103 @@ body {
   display: inline-block;
 }
 
-/* Tambahkan class kustom untuk ukuran logo */
-.l-logo-size {
-  height: 40px;
-  width: auto;
+/* =======================================================
+      DASHBOARD CARD (REGISTRATION / ACTION CARD)
+      ======================================================= */
+.bg-blueGrad {
+  background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+  transition: all 0.3s ease;
+}
+
+.bg-blueGrad:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.animate-arrow {
+  transition: transform 0.3s ease;
+}
+
+.bg-blueGrad:hover .animate-arrow {
+  transform: translateX(8px);
+}
+
+/* === Registration Page Utilities === */
+
+.rounded-20 {
+  border-radius: 20px !important;
+}
+
+.rounded-15 {
+  border-radius: 15px !important;
+}
+
+.rounded-12 {
+  border-radius: 12px !important;
+}
+
+.bg-soft-primary {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.icon-box {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.2rem;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.btn-modern-action {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size: 1.1rem;
+}
+
+.btn-modern-action:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(13, 110, 253, 0.3) !important;
+}
+
+.requirement-items span {
+  line-height: 1.5;
+}
+
+/* Container Kamera harus relative */
+.webcam-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+/* Bingkai Panduan KTP (Persegi Panjang) */
+.ktp-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 60%;
+  border: 2px dashed #007bff;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Bingkai Panduan Wajah (Oval) */
+.face-overlay {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%;
+  height: 65%;
+  border: 2px dashed #28a745;
+  border-radius: 50%;
+  pointer-events: none;
 }

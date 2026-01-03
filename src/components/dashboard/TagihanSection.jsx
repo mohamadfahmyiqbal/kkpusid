@@ -112,13 +112,14 @@ const TagihanSection = () => {
           className="d-flex flex-nowrap overflow-x-auto text-center pb-2 ps-3"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {bills.map((item) => (
+          {bills.map((item, index) => (
             <BillingCard
-              key={item.bill_id}
+              key={item.bill_id ?? `bill-${index}`}
               item={item}
               handleNavigation={handleNavigation}
             />
           ))}
+
           <div className="flex-shrink-0 pe-3" style={{ width: "0" }}></div>
         </div>
       ) : (

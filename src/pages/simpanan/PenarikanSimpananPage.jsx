@@ -1,260 +1,471 @@
-// pages/simpanan/PenarikanSimpananPage.jsx
-
-import React, { useState, useCallback, useMemo } from "react";
-import { Card, Button, Form, Row, Col } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+// 📁 pages/member/PenarikanSimpananPage.jsx
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  Card,
+  Button,
+  Form,
+  Row,
+  Col,
+  InputGroup,
+  Spinner,
+  ListGroup,
+  Alert,
+} from "react-bootstrap";
 import {
   FaArrowLeft,
   FaDownload,
-  FaCheckCircle,
   FaFileInvoice,
+  FaUniversity,
+  FaMoneyBillWave,
+  FaExclamationTriangle,
+  FaInfoCircle,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-// Import helper untuk encoding JWT
+import { useProfile } from "../../contexts/ProfileContext";
+import USimpanan from "../../utils/api/USimpanan";
 import { jwtEncode } from "../../routes/helpers";
-import DashboardLayout from "../../components/layout/DashboardLayout";
 
-// --- FUNGSI HELPER UNTUK MENDAPATKAN KUNCI KEMBALI DINAMIS ---
-const getReturnPageKey = (token) => {
-  if (!token) return "dashboardPage";
-  try {
-    const [, payload] = token.split(".");
-    const json = decodeURIComponent(
-      escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
-    );
-    // Mengambil key 'return' dari payload, default ke 'dashboardPage'
-    return JSON.parse(json)?.return ?? "dashboardPage";
-  } catch (err) {
-    return "dashboardPage";
-  }
+/**
+ * Helper format rupiah
+ */
+const formatRupiah = (value) => {
+  if (!value) return "";
+  const raw = value.toString().replace(/\D/g, "");
+  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
-// --- DATA MOCKUP RIWAYAT TRANSAKSI ---
-const mockHistory = [
-  {
-    id: 1,
-    date: "23-03-2025 10:00",
-    title: "Pencairan Simpanan Sukarela",
-    status: "Approved",
-    amount: "Rp 200.000",
-  },
-  {
-    id: 2,
-    date: "23-03-2025 10:00",
-    title: "Pencairan Simpanan Sukarela",
-    status: "Approved",
-    amount: "Rp 200.000",
-  },
-];
-
-// --- DATA MOCKUP INVOICE PENARIKAN (DETAIL TRANSAKSI) ---
-// Digunakan sebagai template dasar untuk payload navigasi
-const mockInvoicePenarikanTemplate = {
-  invoiceNumber: "INV-C-20250423-001",
-  status: "Menunggu Persetujuan",
-  catatan:
-    "Dana akan diproses dalam 1x24 jam setelah persetujuan. Mohon menunggu konfirmasi.",
-  tanggalPengajuan: new Date().toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }),
-};
-
-export default function PenarikanSimpananPage() {
+const PenarikanSimpananPage = ({ decodedToken }) => {
   const navigate = useNavigate();
-  const { token } = useParams();
+  const { userData, loading: loadingProfile } = useProfile();
 
-  // State untuk data form pencairan
-  const [formData, setFormData] = useState({
-    nominal: "200000",
-    metodePencairan: "Transfer Bank",
-    noRekening: "1231313123123",
-    bank: "Bank Mandiri Syariah",
-    namaNasabah: "Avhan Hadi Bijaksana",
-  });
+  // State Lokal
+  const [currentMaxAmount, setCurrentMaxAmount] = useState(
+    decodedToken?.maxAmount || 0
+  );
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [loadingBalance, setLoadingBalance] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customAmount, setCustomAmount] = useState("");
+  const [errorBalance, setErrorBalance] = useState(null);
 
-  // Tentukan Dynamic Return Path
-  const returnPageKey = useMemo(() => getReturnPageKey(token), [token]);
+  /** ✅ METODE PENCAIRAN */
+  const [method, setMethod] = useState("TRANSFER");
 
-  const handleChange = useCallback((e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  }, []);
+  /** FIELD TUNAI */
+  const [cashName, setCashName] = useState("");
+  const [cashTime, setCashTime] = useState("");
+  const [cashLocation, setCashLocation] = useState("");
 
-  // Handler Navigasi Kembali Dinamis
-  const handleBack = useCallback(() => {
-    const nextToken = jwtEncode({ page: returnPageKey });
-    navigate(`/${nextToken}`);
-  }, [navigate, returnPageKey]);
+  /**
+   * DATA DARI TOKEN
+   */
+  const { returnPage, categoryCode, displayName } = useMemo(() => {
+    return {
+      returnPage: decodedToken?.return || "dashboard",
+      categoryCode: decodedToken?.category || "SS_SUKARELA", // Sesuai database product_code
+      displayName: decodedToken?.displayName || "Simpanan Sukarela",
+    };
+  }, [decodedToken]);
 
-  // Handler Submit: Navigasi ke TransactionDetailPage
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
+  /**
+   * AMBIL SALDO TERBARU (Mencegah ralat "Gagal menyinkronkan saldo")
+   */
+  const fetchBalance = useCallback(async () => {
+    setLoadingBalance(true);
+    setErrorBalance(null);
+    try {
+      const res = await USimpanan.getAccountDetail(categoryCode);
+      if (res.data?.status) {
+        // Jika data ada, update saldo. Jika null, saldo tetap 0.
+        setCurrentMaxAmount(res.data.data?.balance || 0);
+      }
+    } catch (err) {
+      console.error("Fetch Balance Error:", err);
+      setErrorBalance("Gagal menyinkronkan saldo terbaru.");
+    } finally {
+      setLoadingBalance(false);
+    }
+  }, [categoryCode]);
 
-      const nominal = parseFloat(formData.nominal) || 0;
-      const biayaAdmin = 5000;
-      const totalDiproses = nominal + biayaAdmin;
+  /**
+   * LOAD RIWAYAT KHUSUS PENARIKAN (Withdrawals)
+   */
+  const loadHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      // Pastikan endpoint USimpanan.getWithdrawalHistory tersedia di api utility
+      const res = await USimpanan.getWithdrawalHistory({
+        category: categoryCode,
+      });
+      if (res.data?.status) {
+        setHistory(res.data.data || []);
+      }
+    } catch (err) {
+      console.error("Fetch History Error:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [categoryCode]);
 
-      const transactionData = {
-        // Navigasi ke page baru
-        page: "transactionDetailPage",
-        action: "withdrawalDetail",
-        transactionId: mockInvoicePenarikanTemplate.invoiceNumber,
+  useEffect(() => {
+    fetchBalance();
+    loadHistory();
+  }, [fetchBalance, loadHistory]);
 
-        // Data detail yang akan ditampilkan
-        data: {
-          ...mockInvoicePenarikanTemplate,
-          details: [
-            { description: "Pencairan Simpanan Sukarela", amount: nominal },
-            { description: "Biaya Administrasi Pencairan", amount: biayaAdmin },
-          ],
-          total: totalDiproses,
-        },
-        // Kunci untuk kembali ke halaman PenarikanSimpananPage
-        return: "penarikanSimpananPage",
+  /**
+   * BANK PROFILE DARI CONTEXT
+   */
+  const bankAccount = useMemo(() => {
+    if (!userData?.bank_info) return null;
+    return {
+      bankName: userData.bank_info.bank_name,
+      accountNo: userData.bank_info.bank_account_no,
+      accountHolder: userData.bank_info.account_holder,
+    };
+  }, [userData]);
+
+  /**
+   * HANDLERS
+   */
+  const handleBack = () => {
+    const token = jwtEncode({ page: returnPage });
+    navigate(`/${token}`);
+  };
+
+  const handleAmountChange = (e) => {
+    const raw = e.target.value.replace(/\./g, "");
+    if (!isNaN(raw)) {
+      setCustomAmount(formatRupiah(raw));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const amount = Number(customAmount.replace(/\./g, ""));
+
+    // Validasi Nominal
+    if (!amount || amount < 10000) {
+      alert("Minimal penarikan Rp 10.000");
+      return;
+    }
+
+    // Validasi Kecukupan Saldo
+    if (amount > currentMaxAmount) {
+      alert("Saldo tidak mencukupi untuk nominal tersebut.");
+      return;
+    }
+
+    /** VALIDASI METODE */
+    if (method === "TRANSFER" && !bankAccount) {
+      alert("Data rekening bank Anda belum lengkap di profil.");
+      return;
+    }
+
+    if (method === "TUNAI" && (!cashName || !cashTime || !cashLocation)) {
+      alert("Mohon lengkapi detail rencana pengambilan tunai.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const payload = {
+        amount,
+        category: categoryCode,
+        method: method,
+        // Data transfer
+        ...(method === "TRANSFER" && {
+          bank_name: bankAccount.bankName,
+          bank_account_no: bankAccount.accountNo,
+          account_holder: bankAccount.accountHolder,
+        }),
+        // Data tunai
+        ...(method === "TUNAI" && {
+          cash_name: cashName,
+          cash_time: cashTime,
+          cash_location: cashLocation,
+        }),
       };
 
-      const nextToken = jwtEncode(transactionData);
-      navigate(`/${nextToken}`);
-    },
-    [formData, navigate]
-  );
+      const res = await USimpanan.requestWithdrawal(payload);
 
-  // --- Render Component ---
+      if (res.data?.status) {
+        // Navigasi ke detail transaksi penarikan
+        const token = jwtEncode({
+          page: "transactionDetailPage",
+          withdrawalId: res.data.data.withdrawal_id,
+          return: "simpananPage",
+        });
+        navigate(`/${token}`);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Terjadi kesalahan saat pengajuan.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loadingProfile || loadingBalance) {
+    return (
+      <div className="vh-100 d-flex flex-column justify-content-center align-items-center bg-white">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2 text-muted small">Sinkronisasi Saldo...</p>
+      </div>
+    );
+  }
+
   return (
-    <DashboardLayout>
-      {/* JUDUL HALAMAN DENGAN TOMBOL BACK */}
-      <div className="row page-titles pt-3">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0">
-            <span
-              role="button"
-              onClick={handleBack}
-              className="me-3 text-primary"
-              style={{ cursor: "pointer" }}
-            >
-              <FaArrowLeft className="me-2" />
-            </span>
-            Pencairan Simpanan Sukarela
-          </h3>
-        </div>
+    <div className="container-fluid py-4 bg-light min-vh-100">
+      <div className="d-flex align-items-center mb-4">
+        <Button
+          variant="light"
+          onClick={handleBack}
+          className="rounded-circle me-3 shadow-sm"
+        >
+          <FaArrowLeft />
+        </Button>
+        <h5 className="fw-bold mb-0">Pencairan {displayName}</h5>
       </div>
 
-      <div className="row justify-content-center">
-        <Col lg={8} md={10}>
-          {/* Bagian 1: Form Pencairan - Background Biru Gelap */}
-          <Card
-            className="mb-4 text-white"
-            style={{ backgroundColor: "#005a8d" }}
-          >
-            <Card.Body>
-              <h5 className="fw-bold mb-3">
-                Silahkan Masukkan Nominal Pencairan
-              </h5>
+      {errorBalance && (
+        <Alert variant="danger" className="rounded-4 shadow-sm border-0 mb-4">
+          <FaExclamationTriangle className="me-2" /> {errorBalance}
+        </Alert>
+      )}
+
+      <Row className="justify-content-center">
+        <Col lg={8}>
+          <Card className="border-0 shadow-sm mb-4 rounded-4">
+            <Card.Body className="p-4">
+              {/* DISPLAY SALDO REAL-TIME */}
+              <div className="mb-4 p-4 bg-primary text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                  <small className="opacity-75 text-uppercase fw-bold">
+                    Saldo Tersedia
+                  </small>
+                  <h2 className="fw-bold mb-0 mt-1">
+                    Rp {currentMaxAmount.toLocaleString("id-ID")}
+                  </h2>
+                </div>
+                <FaMoneyBillWave size={40} className="opacity-50" />
+              </div>
+
               <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="mb-0">Nominal</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="nominal"
-                    value={formData.nominal}
-                    onChange={handleChange}
-                    placeholder="0"
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="mb-0">Metode Pencairan</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="metodePencairan"
-                    value={formData.metodePencairan}
-                    onChange={handleChange}
-                    readOnly
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="mb-0">No Rekening</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="noRekening"
-                    value={formData.noRekening}
-                    onChange={handleChange}
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="mb-0">Bank</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bank"
-                    value={formData.bank}
-                    onChange={handleChange}
-                    required
-                  />
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-bold small text-muted">
+                    METODE PENCAIRAN
+                  </Form.Label>
+                  <Form.Select
+                    size="lg"
+                    className="rounded-3 border-2"
+                    value={method}
+                    onChange={(e) => setMethod(e.target.value)}
+                  >
+                    <option value="TRANSFER">Transfer Bank</option>
+                    <option value="TUNAI">Tunai / Cash</option>
+                  </Form.Select>
                 </Form.Group>
 
                 <Form.Group className="mb-4">
-                  <Form.Label className="mb-0">Nama Nasabah</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="namaNasabah"
-                    value={formData.namaNasabah}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Form.Label className="fw-bold small text-muted">
+                    NOMINAL PENARIKAN
+                  </Form.Label>
+                  <InputGroup size="lg">
+                    <InputGroup.Text className="bg-white border-2 border-end-0">
+                      Rp
+                    </InputGroup.Text>
+                    <Form.Control
+                      className="border-2 border-start-0 fw-bold text-primary"
+                      placeholder="0"
+                      value={customAmount}
+                      onChange={handleAmountChange}
+                      disabled={isSubmitting || currentMaxAmount <= 0}
+                      required
+                    />
+                  </InputGroup>
+                  <small className="text-muted mt-2 d-block italic">
+                    * Minimal penarikan Rp 10.000
+                  </small>
                 </Form.Group>
 
-                <div className="d-grid">
-                  <Button variant="primary" type="submit" className="fw-bold">
-                    Proses <FaDownload className="ms-1" />
-                  </Button>
+                {/* FORM DETAIL TRANSFER */}
+                {method === "TRANSFER" && (
+                  <Card className="bg-light border-0 rounded-4 mb-4">
+                    <Card.Body>
+                      <div className="d-flex align-items-center mb-3">
+                        <FaUniversity className="text-primary me-2" />
+                        <span className="fw-bold">Tujuan Rekening</span>
+                      </div>
+                      {bankAccount ? (
+                        <div className="ps-4 border-start border-primary border-3">
+                          <div className="fw-bold text-uppercase">
+                            {bankAccount.bankName}
+                          </div>
+                          <div className="h5 fw-bold my-1 text-primary">
+                            {bankAccount.accountNo}
+                          </div>
+                          <div className="text-muted small">
+                            a/n {bankAccount.accountHolder}
+                          </div>
+                        </div>
+                      ) : (
+                        <Alert
+                          variant="warning"
+                          className="py-2 small border-0"
+                        >
+                          <FaExclamationTriangle /> Data rekening belum diisi di
+                          profil.
+                        </Alert>
+                      )}
+                    </Card.Body>
+                  </Card>
+                )}
+
+                {/* FORM DETAIL TUNAI */}
+                {method === "TUNAI" && (
+                  <div className="p-3 bg-light rounded-4 mb-4">
+                    <Form.Group className="mb-3">
+                      <Form.Label className="small fw-bold">
+                        Nama Penerima / Kuasa
+                      </Form.Label>
+                      <Form.Control
+                        className="rounded-3"
+                        value={cashName}
+                        placeholder="Nama Lengkap"
+                        onChange={(e) => setCashName(e.target.value)}
+                        required
+                      />
+                    </Form.Group>
+
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="small fw-bold">
+                            Rencana Waktu
+                          </Form.Label>
+                          <Form.Control
+                            type="datetime-local"
+                            className="rounded-3"
+                            value={cashTime}
+                            onChange={(e) => setCashTime(e.target.value)}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="small fw-bold">
+                            Lokasi / Kantor Cabang
+                          </Form.Label>
+                          <Form.Control
+                            className="rounded-3"
+                            placeholder="Contoh: Kantor Pusat"
+                            value={cashLocation}
+                            onChange={(e) => setCashLocation(e.target.value)}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </div>
+                )}
+
+                <div className="d-flex align-items-start mb-4 text-muted small bg-white p-3 rounded-3 border">
+                  <FaInfoCircle className="me-2 mt-1 text-primary" />
+                  <span>
+                    Setiap pengajuan pencairan akan melalui proses verifikasi
+                    admin sebelum dana dicairkan.
+                  </span>
                 </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-100 fw-bold py-3 rounded-4 shadow"
+                  disabled={
+                    isSubmitting || !customAmount || currentMaxAmount <= 0
+                  }
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner size="sm" className="me-2" /> Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload className="me-2" /> Ajukan Pencairan Sekarang
+                    </>
+                  )}
+                </Button>
               </Form>
             </Card.Body>
           </Card>
 
-          {/* Bagian 2: Histori Transaksi - Background Putih */}
-          <Card>
-            <Card.Header className="bg-primary text-white">
-              <FaCheckCircle className="me-2" /> Histori Transaksi
+          {/* RIWAYAT PENCAIRAN */}
+          <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
+            <Card.Header className="bg-dark text-white fw-bold py-3 border-0">
+              Riwayat Pengajuan
             </Card.Header>
-            <Card.Body>
-              {mockHistory.map((transaksi) => (
-                <Row
-                  key={transaksi.id}
-                  className="d-flex align-items-center border-bottom py-3"
-                >
-                  <Col xs={2} className="text-center">
-                    <FaFileInvoice size={30} className="text-muted" />
-                  </Col>
-                  <Col xs={10}>
-                    <h6 className="mb-0 fw-bold">{transaksi.title}</h6>
-                    <small className="text-muted d-block">
-                      {transaksi.date}
-                    </small>
-                    <span className="fw-bold me-2 d-block text-danger">
-                      {transaksi.amount}
-                    </span>
-                    <span className={`badge bg-success`}>
-                      {transaksi.status}
-                    </span>
-                  </Col>
-                </Row>
-              ))}
+            <Card.Body className="p-0">
+              {loadingHistory ? (
+                <div className="p-5 text-center">
+                  <Spinner size="sm" animation="grow" />
+                </div>
+              ) : history.length ? (
+                <ListGroup variant="flush">
+                  {history.map((item, i) => (
+                    <ListGroup.Item key={i} className="p-3">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center">
+                          <div className="bg-light p-2 rounded-3 me-3">
+                            <FaFileInvoice className="text-danger" />
+                          </div>
+                          <div>
+                            <div className="fw-bold">
+                              {item.description || `Pencairan ${displayName}`}
+                            </div>
+                            <small className="text-muted">
+                              {new Date(
+                                item.created_at || item.createdAt
+                              ).toLocaleDateString("id-ID", {
+                                dateStyle: "long",
+                              })}
+                            </small>
+                          </div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-bold text-danger">
+                            - Rp {Number(item.amount).toLocaleString("id-ID")}
+                          </div>
+                          <span
+                            className={`badge ${
+                              item.status === "APPROVED"
+                                ? "bg-success"
+                                : "bg-warning"
+                            } fw-normal`}
+                          >
+                            {item.status || "WAITING"}
+                          </span>
+                        </div>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              ) : (
+                <div className="p-5 text-center text-muted small">
+                  <FaInfoCircle size={30} className="mb-2 opacity-25" />
+                  <p className="mb-0">Belum ada riwayat pengajuan pencairan.</p>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </Col>
-      </div>
-    </DashboardLayout>
+      </Row>
+    </div>
   );
-}
+};
+
+export default PenarikanSimpananPage;

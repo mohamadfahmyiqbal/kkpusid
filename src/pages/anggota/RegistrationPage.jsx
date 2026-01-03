@@ -1,163 +1,197 @@
-// src/pages/anggota/RegistrationPage.jsx (FINAL DENGAN CEK STATUS & SUMMARY)
-
 import React, { useCallback, useState, useEffect } from "react";
-import { Card, Button, Spinner, Alert } from "react-bootstrap";
+import { Card, Button, Spinner, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
-import { FaArrowLeft, FaFileAlt } from "react-icons/fa";
-import UAnggota from "../../utils/api/UAnggota"; // <-- Menggunakan utility yang Anda sediakan
-import RegistrationSummary from "../../components/anggota/regsitrationForm/RegistrationSummary"; // <-- Import komponen baru
+import {
+  FaArrowLeft,
+  FaFileSignature,
+  FaCheckCircle,
+  FaInfoCircle,
+  FaShieldAlt,
+  FaGavel,
+} from "react-icons/fa";
+import UAnggota from "../../utils/api/UAnggota";
+import RegistrationSummary from "../../components/anggota/regsitrationForm/RegistrationSummary";
 
 export default function RegistrationPage() {
- const navigate = useNavigate();
- // State untuk status dan data pendaftaran
- const [isRegistered, setIsRegistered] = useState(false);
- const [registrationData, setRegistrationData] = useState(null);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState(null);
- // Asumsi base URL untuk gambar, mungkin perlu disesuaikan dengan env Anda
- const BASE_URL = "/public";
+  const navigate = useNavigate();
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
- // Handler untuk kembali ke Dashboard
- const handleBackToDashboard = useCallback(() => {
-  const token = jwtEncode({ page: "dashboard" });
-  navigate(`/${token}`);
- }, [navigate]);
+  const BASE_URL = "https://api.kkpus.id";
 
- // Handler untuk tombol "Isi Form Permohonan Menjadi Anggota"
- const handleFillForm = useCallback(() => {
-  const token = jwtEncode({ page: "registrationFormDetail" });
-  navigate(`/${token}`);
- }, [navigate]);
+  const fetchRegistrationStatus = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      const response = await UAnggota.getRegistrationStatus();
+      const result = response.data;
 
- // LOGIKA CEK STATUS PENDAFTARAN
- useEffect(() => {
-  const fetchRegistrationStatus = async () => {
-   try {
-    // PERHATIAN: Tambahkan method getRegistrationStatus() ke UAnggota.jsx
-    // Asumsi method baru di UAnggota.jsx menggunakan endpoint '/anggota/registration/status'
-    const response = await UAnggota.getRegistrationStatus();
-
-    if (
-     response.data.status === true &&
-     response.data.is_registration_done
-    ) {
-     // Pendaftaran ditemukan
-     setIsRegistered(true);
-     setRegistrationData(response.data.data); // Memuat data summary dari backend
-    } else {
-     // Pendaftaran belum ada atau belum lengkap
-     setIsRegistered(false);
-     setRegistrationData(null);
+      if (result?.status === true && result.data) {
+        setIsRegistered(true);
+        setRegistrationData({ ...result.data });
+      } else {
+        setIsRegistered(false);
+        setRegistrationData(null);
+      }
+    } catch (err) {
+      if (showLoading) setError("Gagal memuat status pendaftaran.");
+    } finally {
+      if (showLoading) setLoading(false);
     }
-   } catch (err) {
-    console.error("Error fetching registration status:", err);
-    setError("Gagal memuat status pendaftaran. Silakan coba lagi.");
-   } finally {
-    setLoading(false);
-   }
-  };
+  }, []);
 
-  fetchRegistrationStatus();
- }, []);
+  useEffect(() => {
+    fetchRegistrationStatus();
+    const handleRefresh = () => fetchRegistrationStatus(false);
+    window.addEventListener("REFRESH_REGISTRATION_STATUS", handleRefresh);
+    return () =>
+      window.removeEventListener("REFRESH_REGISTRATION_STATUS", handleRefresh);
+  }, [fetchRegistrationStatus]);
 
- // LOGIKA RENDERING BERDASARKAN STATUS
+  const handleBackToDashboard = useCallback(() => {
+    navigate(`/${jwtEncode({ page: "dashboard" })}`);
+  }, [navigate]);
 
- // 1. Loading
- if (loading) {
-  return (
-   <div className="text-center py-5">
-    <Spinner animation="border" role="status" variant="primary" />
-    <p className="mt-2">Memuat status pendaftaran...</p>
-   </div>
-  );
- }
+  const handleFillForm = useCallback(() => {
+    navigate(`/${jwtEncode({ page: "registrationFormDetail" })}`);
+  }, [navigate]);
 
- // 2. Error
- if (error) {
-  return <Alert variant="danger">{error}</Alert>;
- }
-
- // 3. JIKA SUDAH MENDAFTAR, TAMPILKAN SUMMARY (STEP 8)
- if (isRegistered && registrationData) {
-  return (
-   <RegistrationSummary
-    data={registrationData}
-    onBackToDashboard={handleBackToDashboard}
-    baseUrl={BASE_URL}
-   />
-  );
- }
-
- // 4. JIKA BELUM MENDAFTAR (Default View)
- return (
-  <div className="container-fluid">
-   {/* JUDUL HALAMAN DENGAN TOMBOL BACK */}
-   <div className="row page-titles pt-3">
-    <div className="col-12 align-self-center">
-     <h3 className="text-themecolor mb-0 mt-0">
-      <span
-       role="button"
-       onClick={handleBackToDashboard}
-       style={{ cursor: "pointer" }}
-       className="me-3"
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "80vh" }}
       >
-       <FaArrowLeft className="me-2" />
-      </span>
-      Pendaftaran Anggota
-     </h3>
-     <ol className="breadcrumb">
-      <li className="breadcrumb-item">Dashboard</li>
-      <li className="breadcrumb-item active">Pendaftaran Anggota</li>
-     </ol>
-    </div>
-   </div>
+        <Spinner animation="grow" variant="primary" />
+      </div>
+    );
+  }
 
-   {/* Konten Utama */}
-   <div className="row">
-    <div className="col-lg-12">
-     {/* Card: Action Button */}
-     <Card className="shadow-lg mb-4 bg-primary text-white">
-      <Card.Body>
-       <h5 className="mb-3">Mulai Proses Pendaftaran Anda</h5>
-       <p>
-        Anda selangkah lagi untuk menjadi Anggota Penuh. Silakan klik
-        tombol **Isi Form Permohonan Menjadi Anggota** di bawah ini:
-       </p>
-       <Button
-        variant="light"
-        className="w-100 py-2 text-primary"
-        onClick={handleFillForm}
-       >
-        <FaFileAlt className="me-2" /> Isi Form Permohonan Menjadi
-        Anggota
-       </Button>
-      </Card.Body>
-     </Card>
+  if (isRegistered && registrationData) {
+    return (
+      <RegistrationSummary
+        data={registrationData}
+        onBackToDashboard={handleBackToDashboard}
+        baseUrl={BASE_URL}
+      />
+    );
+  }
 
-     {/* Card: Ketentuan Pendaftaran Anggota */}
-     <Card className="shadow-lg mb-4">
-      <Card.Header className="bg-white text-dark">
-       Ketentuan Pendaftaran Anggota
-      </Card.Header>
-      <Card.Body>
-       <p>
-        Mengacu pada Peraturan Menteri Koperasi dan Usaha Kecil dan
-        Menengah Republik Indonesia Nomor 10/Per/M.KUKM/IX/2015, syarat
-        untuk menjadi anggota koperasi sebagai berikut :
-       </p>
-       <ol className="ms-3">
-        <li>Warga Negara Indonesia</li>
-        <li>Melengkapi Dokumen Permohonan menjadi Anggota Koperasi</li>
-        <li>
-         Melunasi kewajiban Anggota yang ditentukan pada Anggaran Dasar
-         / Anggaran Dasar Rumah Tangga (Simpanan Pokok & Wajib)
-        </li>
-       </ol>
-      </Card.Body>
-     </Card>
+  return (
+    <div className="container-fluid pb-5 min-vh-100 bg-white">
+      {/* Header Area */}
+      <div className="row pt-4 px-3 mb-4 align-items-center">
+        <div className="col-auto">
+          <button
+            onClick={handleBackToDashboard}
+            className="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
+            style={{ width: "45px", height: "45px" }}
+          >
+            <FaArrowLeft />
+          </button>
+        </div>
+        <div className="col">
+          <Badge
+            bg="soft-primary"
+            className="text-primary mb-1 rounded-pill px-3 py-2"
+          >
+            <FaShieldAlt className="me-2" /> Portal Keanggotaan Resmi
+          </Badge>
+          <h2 className="fw-bold text-dark mb-0">Pendaftaran Anggota</h2>
+        </div>
+      </div>
+
+      <div className="row justify-content-center px-3">
+        <div className="col-xl-10">
+          <div className="row g-4">
+            {/* SISI KIRI */}
+            <div className="col-lg-7">
+              <Card className="border-0 shadow-lg rounded-20 overflow-hidden h-100">
+                <div className="p-4 p-md-5">
+                  <div className="d-flex align-items-center mb-4">
+                    <div className="icon-box bg-primary text-white me-3">
+                      <FaInfoCircle />
+                    </div>
+                    <h4 className="fw-bold mb-0">Instruksi Pendaftaran</h4>
+                  </div>
+
+                  <p
+                    className="text-secondary mb-4 fs-5"
+                    style={{ lineHeight: "1.8" }}
+                  >
+                    Pendaftaran menjadi calon anggota dapat dilakukan dengan
+                    cara mengunjungi kantor layanan terdekat atau secara daring
+                    (online) melalui aplikasi ini.
+                  </p>
+
+                  <div className="bg-light rounded-15 p-4 mb-5 border-start border-primary border-4">
+                    <p className="mb-0 text-dark fw-medium">
+                      Jika anda berminat untuk mendaftar sebagai anggota,
+                      silahkan klik tombol di bawah ini untuk memulai pengisian
+                      formulir digital:
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleFillForm}
+                    variant="primary"
+                    className="w-100 py-3 rounded-15 fw-bold shadow-lg btn-modern-action"
+                  >
+                    <FaFileSignature className="me-2" />
+                    Isi Form Permohonan Menjadi Anggota
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* SISI KANAN */}
+            <div className="col-lg-5">
+              <Card className="border-0 shadow-sm rounded-20 bg-dark text-white h-100">
+                <Card.Body className="p-4 p-md-5">
+                  <div className="d-flex align-items-center mb-4 text-warning">
+                    <FaGavel className="me-2 fs-4" />
+                    <h5 className="fw-bold mb-0">Ketentuan Pendaftaran</h5>
+                  </div>
+
+                  <p className="text-white-50 small mb-4">
+                    Mengacu pada{" "}
+                    <strong>
+                      Peraturan Menteri Koperasi dan Usaha Kecil dan Menengah
+                      Republik Indonesia Nomor 10/Per/M.KUKM/IX/2015
+                    </strong>
+                    , syarat utama meliputi:
+                  </p>
+
+                  <div className="requirement-items">
+                    {[
+                      "Warga Negara Indonesia",
+                      "Melengkapi Dokumen Permohonan menjadi Anggota Koperasi",
+                      "Melunasi kewajiban Anggota yang ditentukan pada Anggaran Dasar / Anggaran Dasar Rumah Tangga",
+                    ].map((text, idx) => (
+                      <div key={idx} className="d-flex align-items-start mb-4">
+                        <FaCheckCircle
+                          className="text-success mt-1 me-3 flex-shrink-0"
+                          size={20}
+                        />
+                        <span className="text-white opacity-90">{text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 p-3 rounded-12 border border-secondary border-dashed">
+                    <small className="text-white-50 d-block text-center">
+                      Sistem ini bersifat <strong>Inclusive Loop</strong> sesuai
+                      UU No 4 Tahun 2023.
+                    </small>
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-   </div>
-  </div>
- );
+  );
 }

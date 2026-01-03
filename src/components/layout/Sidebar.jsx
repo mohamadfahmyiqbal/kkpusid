@@ -1,35 +1,31 @@
-// components/layout/Sidebar.jsx (Final Tanpa Ikon)
-
 import React, { useState, useCallback, memo, useEffect } from "react";
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { jwtEncode } from "../../routes/helpers";
 
-// =========================================================
-// DATA MENU (Tanpa Ikon)
-// =========================================================
 const menuData = [
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Dashboard", href: "dashboard" },
   {
     label: "Akun",
     key: "akun",
     children: [
-      { label: "Anggota", href: "/anggotaList" },
+      { label: "Anggota", href: "anggotaList" },
       {
         label: "Report",
         key: "akun-report",
-        children: [{ label: "Anggota", href: "/anggotaReport" }],
+        children: [{ label: "Anggota", href: "anggotaReport" }],
       },
     ],
   },
-  { label: "Article", href: "/article" },
+  { label: "Article", href: "article" },
   {
     label: "Hibah",
     key: "hibah",
     children: [
-      { label: "List", href: "/hibahList" },
+      { label: "List", href: "hibahList" },
       {
         label: "Report",
         key: "hibah-report",
-        children: [{ label: "Hibah", href: "/hibahReport" }],
+        children: [{ label: "Hibah", href: "hibahReport" }],
       },
     ],
   },
@@ -41,15 +37,14 @@ const menuData = [
         label: "Pinjaman Lunak",
         key: "program-pinjaman",
         children: [
-          { label: "List", href: "/pinjamanList" },
-          { label: "Transaksi", href: "/pinjamanTransaksi" },
+          { label: "List", href: "pinjamanList" },
+          { label: "Transaksi", href: "pinjamanTransaksi" },
         ],
       },
     ],
   },
 ];
 
-// Helper untuk mengecek apakah salah satu anak (rekursif) dari item adalah path saat ini
 const hasActiveChild = (item, currentPath) => {
   if (item.href === currentPath) return true;
   if (item.children) {
@@ -59,10 +54,10 @@ const hasActiveChild = (item, currentPath) => {
 };
 
 // =========================================================
-// SidebarMenuItem (Tanpa Ikon)
+// SidebarMenuItem
 // =========================================================
 const SidebarMenuItem = memo(
-  ({ item, currentPath, openKeys, onDropdownToggle }) => {
+  ({ item, currentPath, openKeys, onDropdownToggle, onCustomNavigate }) => {
     const isDropdown = !!item.children;
     const itemKey = item.key;
     const isActive = isDropdown
@@ -71,30 +66,24 @@ const SidebarMenuItem = memo(
     const isOpen = isDropdown ? !!openKeys[itemKey] : false;
 
     useEffect(() => {
-      if (isDropdown && isActive && !isOpen && onDropdownToggle) {
+      if (isDropdown && isActive && !isOpen) {
         onDropdownToggle(itemKey, { preventDefault: () => {} });
       }
     }, [isActive, isDropdown, isOpen, itemKey, onDropdownToggle]);
 
     if (isDropdown) {
       const activeClass = isActive || isOpen ? "active" : "";
-
       return (
         <li className={activeClass}>
           <a
             className={`has-arrow waves-effect waves-dark ${activeClass}`}
             aria-expanded={isOpen}
-            href="#"
+            href="javascript:void(0)"
             onClick={(e) => onDropdownToggle(itemKey, e)}
-            role="button"
           >
             <span className="hide-menu">{item.label}</span>
           </a>
-
-          <ul
-            aria-expanded={isOpen}
-            className={`collapse ${isOpen ? "in show" : ""}`}
-          >
+          <ul className={`collapse ${isOpen ? "in show" : ""}`}>
             {item.children.map((child, idx) => (
               <SidebarMenuItem
                 key={child.key || `${itemKey}-${idx}`}
@@ -102,6 +91,7 @@ const SidebarMenuItem = memo(
                 currentPath={currentPath}
                 openKeys={openKeys}
                 onDropdownToggle={onDropdownToggle}
+                onCustomNavigate={onCustomNavigate}
               />
             ))}
           </ul>
@@ -109,29 +99,47 @@ const SidebarMenuItem = memo(
       );
     }
 
-    // Link Biasa (Leaf)
     return (
       <li className={isActive ? "active" : ""}>
-        <NavLink
-          to={item.href}
-          className={`waves-effect waves-dark`}
-          aria-expanded="false"
+        <a
+          href="javascript:void(0)"
+          onClick={(e) => onCustomNavigate(e, item.href)}
+          className={`waves-effect waves-dark ${isActive ? "active" : ""}`}
         >
           <span className="hide-menu">{item.label}</span>
-        </NavLink>
+        </a>
       </li>
     );
   }
 );
 
 // =========================================================
-// Sidebar Utama (Hanya Render List)
+// Sidebar Utama
 // =========================================================
 export default function Sidebar({ user }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const [openKeys, setOpenKeys] = useState({});
+
+  const handleNavigation = useCallback(
+    (e, targetHref) => {
+      e.preventDefault();
+
+      // 1. Tentukan halaman asal untuk tombol back
+      const returnPage = currentPath.substring(1) || "dashboard";
+
+      // 2. ENKRIPSI HREF TUJUAN (targetHref) dan returnPage
+      const backToken = jwtEncode({
+        page: targetHref, // 'registrationPage' atau 'billingPage' sesuai permintaan
+      });
+      console.log(targetHref);
+
+      navigate(`/${backToken}`);
+    },
+    [navigate, currentPath]
+  );
 
   const handleDropdownToggle = useCallback((key, e) => {
     e?.preventDefault();
@@ -144,8 +152,6 @@ export default function Sidebar({ user }) {
   return (
     <aside className="left-sidebar">
       <div className="scroll-sidebar">
-        {/* Tambahkan bagian user profile di sini jika diperlukan (diberi props user) */}
-
         <nav className="sidebar-nav">
           <ul id="sidebarnav">
             <li className="nav-small-cap">PERSONAL</li>
@@ -157,6 +163,7 @@ export default function Sidebar({ user }) {
                 currentPath={currentPath}
                 openKeys={openKeys}
                 onDropdownToggle={handleDropdownToggle}
+                onCustomNavigate={handleNavigation}
               />
             ))}
           </ul>

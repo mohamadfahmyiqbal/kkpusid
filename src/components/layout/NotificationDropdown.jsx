@@ -1,85 +1,25 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { NavDropdown, Badge } from "react-bootstrap";
-import { FaBell } from "react-icons/fa";
-import { io } from "socket.io-client";
+import { FaBell, FaCircle, FaEnvelopeOpen } from "react-icons/fa";
 import { useProfile } from "../../contexts/ProfileContext";
-import UNotification from "../../utils/api/UNotification";
-import NotificationModal from "./NotificationModal";
 
-const NotificationDropdown = () => {
-  const { userData } = useProfile();
+export default function NotificationDropdown() {
+  const { notifications } = useProfile();
 
-  const [notifikasi, setNotifikasi] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedNotifikasi, setSelectedNotifikasi] = useState(null);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!userData?.nik) return;
-
-    try {
-      const res = await UNotification.getNotifications({
-        nik: userData.nik,
-        status: 1,
-      });
-
-      if (res?.data?.list) {
-        setNotifikasi(res.data.list);
-        setUnreadCount(res.data.unread_count || 0);
-      }
-    } catch (err) {
-      console.error("Gagal mengambil notifikasi", err);
-    }
-  }, [userData]);
-
-  useEffect(() => {
-    if (!userData?.nik) return;
-
-    fetchNotifications();
-
-    const socket = io("https://api.kkpus.id", {
-      withCredentials: true,
-    });
-
-    socket.on("connect", () => {
-      console.log("🔌 Socket connected");
-      socket.emit("register", userData.nik); // ✅ SESUAI BACKEND
-    });
-
-    socket.on("new_notification", (data) => {
-      setNotifikasi((prev) => [data, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-    });
-
-    return () => {
-      socket.off("new_notification");
-      socket.disconnect();
-    };
-  }, [userData, fetchNotifications]);
-
-  const handleOpenDetail = async (item) => {
-    setSelectedNotifikasi(item);
-    setShowModal(true);
-
-    try {
-      await UNotification.markAsRead(item.id);
-      setUnreadCount((prev) => Math.max(prev - 1, 0));
-    } catch (err) {
-      console.error("Gagal update status baca", err);
-    }
-  };
+  // Status 1 diasumsikan Belum Dibaca
+  const unreadCount = notifications.filter((n) => n.status === 1).length;
 
   return (
     <NavDropdown
       align="end"
       title={
-        <div className="position-relative">
-          <FaBell size={20} className="text-dark" />
+        <div className="position-relative text-white">
+          <FaBell size={18} />
           {unreadCount > 0 && (
             <Badge
-              bg="danger"
+              bg="warning"
               pill
-              className="position-absolute top-0 start-100 translate-middle"
+              className="position-absolute top-0 start-100 translate-middle text-dark"
               style={{ fontSize: "0.6rem" }}
             >
               {unreadCount}
@@ -88,42 +28,50 @@ const NotificationDropdown = () => {
         </div>
       }
     >
-      <div style={{ width: "300px" }}>
-        <div className="p-3 border-bottom fw-bold">
-          Notifikasi Terbaru
+      <div style={{ width: "320px" }}>
+        <div className="p-3 bg-light border-bottom fw-bold text-dark">
+          Notifikasi
         </div>
-
-        <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          {notifikasi.length === 0 ? (
-            <div className="p-3 text-center text-muted small">
-              Tidak ada notifikasi
+        <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+          {notifications.length === 0 ? (
+            <div className="p-4 text-center text-muted small">
+              Tidak ada notifikasi baru
             </div>
           ) : (
-            notifikasi.map((item) => (
-              <NavDropdown.Item
-                key={item.id}
-                className="p-3 border-bottom"
-                onClick={() => handleOpenDetail(item)}
+            notifications.map((notif) => (
+              <div
+                key={notif.id}
+                className={`p-3 border-bottom d-flex align-items-start ${
+                  notif.status === 1 ? "bg-light" : ""
+                }`}
               >
-                <h6 className="mb-1 text-dark" style={{ fontSize: "0.9rem" }}>
-                  {item.title}
-                </h6>
-                <p className="mb-0 text-muted small text-truncate">
-                  {item.body}
-                </p>
-              </NavDropdown.Item>
+                <div className="me-3 mt-1">
+                  {notif.status === 1 ? (
+                    <FaCircle className="text-warning" size={8} />
+                  ) : (
+                    <FaEnvelopeOpen className="text-muted" size={14} />
+                  )}
+                </div>
+                <div className="overflow-hidden">
+                  <div className="fw-bold small text-dark">{notif.title}</div>
+                  <div
+                    className="text-muted small text-truncate-2"
+                    style={{ fontSize: "0.75rem", lineHeight: "1.3" }}
+                  >
+                    {notif.body} {/* Menggunakan body sesuai JSON Anda */}
+                  </div>
+                  <div
+                    className="text-muted mt-1"
+                    style={{ fontSize: "0.65rem" }}
+                  >
+                    {notif.sent_at}
+                  </div>
+                </div>
+              </div>
             ))
           )}
         </div>
       </div>
-
-      <NotificationModal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        notifikasi={selectedNotifikasi}
-      />
     </NavDropdown>
   );
-};
-
-export default NotificationDropdown;
+}

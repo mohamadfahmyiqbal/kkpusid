@@ -2,40 +2,39 @@ import http from "./common";
 
 class UTransaksi {
   /**
-   * Mengambil riwayat transaksi umum (semua jenis).
-   * Endpoint Backend: GET /api/transaksi/riwayat
-   * @param {Object} params - Filter (misal: { type: 'debit', status: 'settlement' })
+   * Mengambil riwayat pengajuan pembiayaan (transaksi pembelian).
+   * Menuju ke: controllers/financing/getFinancingHistory.js
+   * Endpoint Backend: GET /api/financing/history
    */
   getGeneralTransactionHistory(params) {
-    // Karena baseURL sudah /api, kita sesuaikan path-nya
-    return http.get("/transaksi/riwayat", { params });
+    // Diubah dari /transaksi/riwayat menjadi /financing/history
+    return http.get("/financing/history", { params });
+  }
+
+  /**
+   * Mengirim form pengajuan pembelian baru.
+   * Menuju ke: controllers/financing/createFinancingApplication.js
+   * Endpoint Backend: POST /api/financing/apply
+   */
+  submitPengajuan(data) {
+    return http.post("/financing/apply", data);
   }
 
   /**
    * Mengambil detail transaksi berdasarkan ID.
-   * Endpoint Backend: GET /api/transaksi/detail/:id
-   * @param {number|string} id - ID unik transaksi
+   * Tetap dipertahankan jika Anda memiliki endpoint detail di modul transaksi umum.
    */
-  getTransactionDetail(id) {
-    return http.get(`/transaksi/detail/${id}`);
+  getFinancingDetail(id) {
+    return http.get(`/financing/detail/${id}`);
+    // Pastikan path /financing/detail/${id} sesuai dengan route di Express/Backend Anda
   }
 
   /**
-   * Memproses pembayaran tagihan atau transaksi lainnya secara umum.
-   * Endpoint Backend: POST /api/transaksi/pembayaran/proses
-   * @param {Object} data - Payload (misal: { invoiceId, paymentMethod })
-   */
-  processPayment(data) {
-    return http.post("/transaksi/pembayaran/proses", data);
-  }
-
-  /**
-   * Mengunduh struk atau bukti transaksi dalam format PDF (jika tersedia).
-   * Endpoint Backend: GET /api/transaksi/receipt/:id
+   * Mengunduh struk atau bukti transaksi.
    */
   downloadReceipt(id) {
     return http.get(`/transaksi/receipt/${id}`, {
-      responseType: 'blob' // Penting untuk menangani file download
+      responseType: "blob",
     });
   }
 }
