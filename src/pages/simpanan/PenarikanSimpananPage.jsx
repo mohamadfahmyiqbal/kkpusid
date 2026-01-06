@@ -31,7 +31,7 @@ import { jwtEncode } from "../../routes/helpers";
  */
 const formatRupiah = (value) => {
   if (!value) return "";
-  const raw = value.toString().replace(/\D/g, "");
+  const raw = value.toString().replace(/[^0-9]/g, ""); // Hanya angka
   return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
@@ -49,6 +49,7 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
   const [errorBalance, setErrorBalance] = useState(null);
+  const [errorHistory, setErrorHistory] = useState(null); // State untuk handle error 500
 
   /** ✅ METODE PENCAIRAN */
   const [method, setMethod] = useState("TRANSFER");
@@ -64,13 +65,13 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
   const { returnPage, categoryCode, displayName } = useMemo(() => {
     return {
       returnPage: decodedToken?.return || "dashboard",
-      categoryCode: decodedToken?.category || "SS_SUKARELA", // Sesuai database product_code
+      categoryCode: decodedToken?.category || "SS_SUKARELA",
       displayName: decodedToken?.displayName || "Simpanan Sukarela",
     };
   }, [decodedToken]);
 
   /**
-   * AMBIL SALDO TERBARU (Mencegah ralat "Gagal menyinkronkan saldo")
+   * AMBIL SALDO TERBARU
    */
   const fetchBalance = useCallback(async () => {
     setLoadingBalance(true);
@@ -78,7 +79,6 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
     try {
       const res = await USimpanan.getAccountDetail(categoryCode);
       if (res.data?.status) {
-        // Jika data ada, update saldo. Jika null, saldo tetap 0.
         setCurrentMaxAmount(res.data.data?.balance || 0);
       }
     } catch (err) {
@@ -91,11 +91,12 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
 
   /**
    * LOAD RIWAYAT KHUSUS PENARIKAN (Withdrawals)
+   * Dilengkapi penanganan error untuk mendeteksi ERR_BAD_RESPONSE
    */
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
+    setErrorHistory(null);
     try {
-      // Pastikan endpoint USimpanan.getWithdrawalHistory tersedia di api utility
       const res = await USimpanan.getWithdrawalHistory({
         category: categoryCode,
       });
@@ -104,6 +105,10 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
       }
     } catch (err) {
       console.error("Fetch History Error:", err);
+      setErrorHistory(
+        err.response?.data?.message ||
+          "Internal Server Error (500): Gagal memuat riwayat."
+      );
     } finally {
       setLoadingHistory(false);
     }
@@ -143,22 +148,18 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const amount = Number(customAmount.replace(/\./g, ""));
 
-    // Validasi Nominal
     if (!amount || amount < 10000) {
       alert("Minimal penarikan Rp 10.000");
       return;
     }
 
-    // Validasi Kecukupan Saldo
     if (amount > currentMaxAmount) {
       alert("Saldo tidak mencukupi untuk nominal tersebut.");
       return;
     }
 
-    /** VALIDASI METODE */
     if (method === "TRANSFER" && !bankAccount) {
       alert("Data rekening bank Anda belum lengkap di profil.");
       return;
@@ -171,18 +172,15 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
 
     try {
       setIsSubmitting(true);
-
       const payload = {
         amount,
         category: categoryCode,
         method: method,
-        // Data transfer
         ...(method === "TRANSFER" && {
           bank_name: bankAccount.bankName,
           bank_account_no: bankAccount.accountNo,
           account_holder: bankAccount.accountHolder,
         }),
-        // Data tunai
         ...(method === "TUNAI" && {
           cash_name: cashName,
           cash_time: cashTime,
@@ -193,7 +191,6 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
       const res = await USimpanan.requestWithdrawal(payload);
 
       if (res.data?.status) {
-        // Navigasi ke detail transaksi penarikan
         const token = jwtEncode({
           page: "transactionDetailPage",
           withdrawalId: res.data.data.withdrawal_id,
@@ -237,10 +234,9 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
       )}
 
       <Row className="justify-content-center">
-        <Col lg={8}>
+        <Col lg={12}>
           <Card className="border-0 shadow-sm mb-4 rounded-4">
             <Card.Body className="p-4">
-              {/* DISPLAY SALDO REAL-TIME */}
               <div className="mb-4 p-4 bg-primary text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center">
                 <div>
                   <small className="opacity-75 text-uppercase fw-bold">
@@ -291,7 +287,6 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                   </small>
                 </Form.Group>
 
-                {/* FORM DETAIL TRANSFER */}
                 {method === "TRANSFER" && (
                   <Card className="bg-light border-0 rounded-4 mb-4">
                     <Card.Body>
@@ -324,7 +319,6 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                   </Card>
                 )}
 
-                {/* FORM DETAIL TUNAI */}
                 {method === "TUNAI" && (
                   <div className="p-3 bg-light rounded-4 mb-4">
                     <Form.Group className="mb-3">
@@ -339,7 +333,6 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                         required
                       />
                     </Form.Group>
-
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
@@ -414,6 +407,21 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                 <div className="p-5 text-center">
                   <Spinner size="sm" animation="grow" />
                 </div>
+              ) : errorHistory ? (
+                <div className="p-4 text-center">
+                  <Alert variant="danger" className="border-0 shadow-sm small">
+                    <FaExclamationTriangle className="me-2" /> {errorHistory}
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={loadHistory}
+                      >
+                        Coba Lagi
+                      </Button>
+                    </div>
+                  </Alert>
+                </div>
               ) : history.length ? (
                 <ListGroup variant="flush">
                   {history.map((item, i) => (
@@ -444,6 +452,8 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                             className={`badge ${
                               item.status === "APPROVED"
                                 ? "bg-success"
+                                : item.status === "REJECTED"
+                                ? "bg-danger"
                                 : "bg-warning"
                             } fw-normal`}
                           >
