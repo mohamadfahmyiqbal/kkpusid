@@ -1,4 +1,4 @@
-// src/contexts/ProfileContext.jsx
+// src/context/ProfileContext.jsx
 import React, {
   createContext,
   useContext,
@@ -6,12 +6,9 @@ import React, {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import { io } from "socket.io-client";
-import { toast } from "react-toastify";
-import UAuth from "../utils/api/UAuth";
-import UBilling from "../utils/api/UBilling";
-import UNotification from "../utils/api/UNotification";
 
 const ProfileContext = createContext();
 
@@ -20,69 +17,91 @@ export const ProfileProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
 
-  // --- 1. Global Data Fetcher ---
-  const fetchAllData = useCallback(async (user) => {
-    if (!user?.member_id) return;
-
-    try {
-      const [notifRes, billRes] = await Promise.all([
-        UNotification.getNotifications({ member_id: user.member_id }),
-        UBilling.getPendingBills({ member_no: user.member_no, limit: 5 }),
-      ]);
-
-      setNotifications(notifRes.data.list || []);
-      setBills(billRes.data.list || []);
-    } catch (err) {
-      console.error("Error fetching sync data:", err);
-    }
-  }, []);
-
-  const fetchProfile = useCallback(async () => {
-    if (!localStorage.getItem("authToken")) {
+  const connectSocket = useCallback(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
       setLoading(false);
       return;
     }
 
-    try {
-      const response = await UAuth.getProfile();
-      const user = response.data.data;
-      setUserData(user);
-      await fetchAllData(user); // Ambil data terkait setelah profil siap
-    } catch (err) {
-      console.error("Profile Load Error:", err);
-      if (err.response?.status === 401) logout();
-    } finally {
+    if (socketRef.current?.connected) {
+      return;
+    }
+
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
+    const socket = io("https://api.kkpus.id", {
+      transports: ["websocket"],
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+    });
+
+    socket.on("connect", () => {
+      setSocketConnected(true);
       setLoading(false);
-    }
-  }, [fetchAllData]);
 
-  // --- 2. Centralized Socket Management ---
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        try {
+          const base64Url = token.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const decoded = JSON.parse(atob(base64));
+          if (decoded?.member_id) {
+            socket.emit("register", decoded.member_id);
+          }
+        } catch (err) {}
+      }
+
+      setTimeout(() => {
+        socket.emit("profile:request");
+      }, 100);
+    });
+
+    socket.on("connect_error", () => {
+      setSocketConnected(false);
+      setLoading(false);
+    });
+
+    socket.on("disconnect", () => {
+      setSocketConnected(false);
+    });
+
+    socket.on("profile:update", (data) => {
+      const formattedData = {
+        ...data,
+        bank_info: data.bank_info || null,
+      };
+      setUserData(formattedData);
+      setLoading(false);
+    });
+
+    socket.on("notifications:update", (data) => {
+      setNotifications(data);
+    });
+
+    socket.on("bills:update", (data) => {
+      setBills(data);
+    });
+
+    socket.on("auth:fail", () => {
+      localStorage.removeItem("authToken");
+      setLoading(false);
+    });
+
+    socketRef.current = socket;
+  }, []);
+
   useEffect(() => {
-    if (userData?.member_id && !socketRef.current) {
-      const socket = io("https://api.kkpus.id", {
-        transports: ["websocket"],
-        reconnection: true,
-      });
-
-      socket.on("connect", () => {
-        socket.emit("register", String(userData.member_id));
-      });
-
-      // Listener: Dashboard/Global Update
-      socket.on("update_dashboard", () => {
-        fetchAllData(userData);
-      });
-
-      // Listener: Notifikasi Baru
-      socket.on("new_notification", (data) => {
-        setNotifications((prev) => [data, ...prev]);
-        toast.info(data.title || "Notifikasi Baru", { icon: "🔔" });
-      });
-
-      socketRef.current = socket;
-    }
+    connectSocket();
 
     return () => {
       if (socketRef.current) {
@@ -90,32 +109,38 @@ export const ProfileProvider = ({ children }) => {
         socketRef.current = null;
       }
     };
-  }, [userData, fetchAllData]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  }, [connectSocket]);
 
   const logout = useCallback(() => {
     localStorage.removeItem("authToken");
     setUserData(null);
-    setNotifications([]);
-    setBills([]);
-    if (socketRef.current) socketRef.current.disconnect();
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
   }, []);
 
-  const value = {
-    userData,
-    notifications,
-    bills,
-    loading,
-    logout,
-    refetchAll: () => fetchAllData(userData),
-    refetchProfile: fetchProfile,
-  };
+  const value = useMemo(
+    () => ({
+      userData,
+      notifications,
+      bills,
+      loading,
+      logout,
+      socketConnected,
+      socket: socketRef.current,
+    }),
+    [userData, notifications, bills, loading, logout, socketConnected]
+  );
 
   return (
-    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
+    <ProfileContext.Provider value={value}>
+      {!loading ? (
+        children
+      ) : (
+        <div className="p-10 text-center">Loading Profile...</div>
+      )}
+    </ProfileContext.Provider>
   );
 };
 

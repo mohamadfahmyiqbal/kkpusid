@@ -1,3 +1,4 @@
+// src/App.js
 import React from "react";
 import "./App.css";
 
@@ -9,44 +10,34 @@ import routerConfig from "./routes/RouterConfig";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Custom Hook untuk Real-time Socket
-import useSocketListener from "./utils/helper/SocketListener";
+// ✅ IMPOR PROVIDER YANG DIBUTUHKAN
+import { ProfileProvider } from "./contexts/ProfileContext";
 
 /**
  * Komponen Utama Aplikasi
  * Menangani routing global, notifikasi toast, dan koneksi socket.
  */
 const App = () => {
-  // Mengaktifkan listener socket secara global
-  // Hook ini akan otomatis berjalan saat user login (data tersedia di storage)
-  useSocketListener();
-
   return (
-    <>
-      {/* ToastContainer: Wadah untuk memunculkan notifikasi pop-up.
-          Dipicu oleh perintah toast.info() di SocketListener.js
-      */}
+    <ProfileProvider>
       <ToastContainer
         position="top-right"
         autoClose={5000}
         hideProgressBar={false}
-        newestOnTop={true} // Notifikasi terbaru muncul di paling atas
+        newestOnTop={true}
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored" // Menggunakan warna solid (Info=Biru, Success=Hijau)
+        theme="colored"
       />
 
-      {/* RouterProvider: Menangani navigasi halaman berdasarkan 
-          konfigurasi yang ada di routes/RouterConfig.jsx
-      */}
       <RouterProvider
         router={routerConfig}
         future={{ v7_startTransition: true }}
       />
-    </>
+    </ProfileProvider>
   );
 };
 

@@ -4,7 +4,7 @@ import InvoicePage from "../../pages/global/invoice/InvoicePage";
 import LandingPage from "../../pages/global/landing/LandingPage";
 import NotificationPage from "../../pages/global/NotificationPage";
 import SplashScreen from "../../pages/global/SplashScreen";
-import TransactionDetailPage from "../../pages/global/TransactionDetailPage";
+import TransactionDetailPage from "../../pages/global/transaction/TransactionDetailPage";
 
 const globalRoutes = {
   globalSplash: SplashScreen,

@@ -1,14 +1,18 @@
-// simpananRoutes.jsx (Diperbaiki)
-import DetailSaldoPage from "../../pages/simpanan/DetailSaldoPage";
-import PenarikanSimpananPage from "../../pages/simpanan/PenarikanSimpananPage";
-import SimpananPage from "../../pages/simpanan/SimpananPage";
+import React, { lazy } from "react";
+
+// Gunakan Lazy Loading untuk memutus circular dependency
+const PenarikanSimpananPage = lazy(() =>
+  import("../../pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage")
+);
+const DetailSaldoPage = lazy(() =>
+  import("../../pages/simpanan/DetailSaldoPage")
+);
+const SimpananPage = lazy(() => import("../../pages/simpanan/SimpananPage"));
 
 const simpananRoutes = {
-  // ✅ Tetapkan ke variabel bernama
   simpananDetailSaldo: DetailSaldoPage,
   simpananPage: SimpananPage,
   penarikanSimpananPage: PenarikanSimpananPage,
-  // ...
 };
 
-export default simpananRoutes; // ✅ Ekspor variabel bernama
+export default simpananRoutes;

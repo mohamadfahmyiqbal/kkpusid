@@ -1,5 +1,4 @@
-// 📁 src/pages/member/SimpananPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
@@ -10,25 +9,36 @@ import InformasiRekeningCard from "../../components/shared/InformasiRekeningCard
 const SimpananPage = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-
-  // State awal: menyimpan objek { code, name }
   const [activeTab, setActiveTab] = useState({ code: null, name: null });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const abortControllerRef = useRef(new AbortController());
+
+  const handleBackToDashboard = useCallback(() => {
+    try {
+      const token = jwtEncode({ page: "dashboard" });
+      navigate(`/${token}`);
+    } catch (error) {
+      console.error("Dashboard navigation error:", error);
+      navigate(`/${jwtEncode({ page: "landingPage" })}`);
+    }
+  }, [navigate]);
 
   useEffect(() => {
+    const controller = abortControllerRef.current;
+
     const fetchMasterProducts = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await USimpanan.getProducts();
+        const response = await USimpanan.getProducts({
+          signal: controller.signal,
+        });
 
-        if (response.data && response.data.status) {
+        if (response.data?.status) {
           const products = response.data.data;
           setCategories(products);
 
-          // Set default aktif menggunakan item pertama
           if (products.length > 0) {
             setActiveTab({
               code: products[0].product_code,
@@ -39,27 +49,25 @@ const SimpananPage = () => {
           setError("Gagal memuat kategori simpanan.");
         }
       } catch (err) {
-        console.error("Error Fetching Products:", err);
-        setError("Gagal terhubung ke server.");
+        if (err.name !== "AbortError") {
+          console.error("Error Fetching Products:", err);
+          setError(err.response?.data?.message || "Gagal terhubung ke server.");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchMasterProducts();
-  }, []);
 
-  const handleBackToDashboard = () => {
-    const token = jwtEncode({ page: "dashboard" });
-    navigate(`/${token}`);
-  };
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   if (loading) {
     return (
-      <div
-        className="d-flex flex-column justify-content-center align-items-center"
-        style={{ height: "100vh" }}
-      >
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
         <Spinner animation="border" variant="primary" />
         <p className="mt-3 text-muted">Sinkronisasi Data Produk...</p>
       </div>
@@ -67,11 +75,7 @@ const SimpananPage = () => {
   }
 
   return (
-    <div
-      className="container-fluid py-3"
-      style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}
-    >
-      {/* Tombol Kembali */}
+    <div className="container-fluid py-3 bg-light min-vh-100">
       <div className="mx-2 mb-3">
         <Button
           variant="link"
@@ -88,7 +92,6 @@ const SimpananPage = () => {
         </Alert>
       )}
 
-      {/* Navigasi Tab Vertikal */}
       <div className="d-flex flex-column gap-2 mx-2 mb-4">
         {categories.map((cat) => (
           <Button
@@ -112,17 +115,14 @@ const SimpananPage = () => {
         ))}
       </div>
 
-      {/* Konten Utama (Hanya Informasi Rekening) */}
       {activeTab.code ? (
-        <div className="mx-2 animate__animated animate__fadeIn">
+        <div className="mx-2">
           <section className="mb-4">
             <InformasiRekeningCard
               activeType={activeTab.code}
               displayName={activeTab.name}
             />
           </section>
-
-          {/* Bagian Riwayat/Mutasi telah dihapus sesuai permintaan */}
         </div>
       ) : (
         !loading && (
