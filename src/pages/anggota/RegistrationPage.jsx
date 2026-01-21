@@ -1,4 +1,6 @@
-import React, { useCallback, useState, useEffect } from "react";
+// src/pages/registration/RegistrationPage.jsx
+
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Card, Button, Spinner, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
@@ -18,25 +20,40 @@ export default function RegistrationPage() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [registrationData, setRegistrationData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const intervalRef = useRef(null);
 
   const BASE_URL = "https://api.kkpus.id";
 
   const fetchRegistrationStatus = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
+
       const response = await UAnggota.getRegistrationStatus();
       const result = response.data;
 
-      if (result?.status === true && result.data) {
+      // Validasi berdasarkan flag pendaftaran selesai dari API
+      if (
+        result?.status === true &&
+        result.is_registration_done === true &&
+        result.data
+      ) {
         setIsRegistered(true);
-        setRegistrationData({ ...result.data });
+        setRegistrationData(result.data);
+
+        // Hentikan polling jika sudah disetujui sepenuhnya
+        if (result.data.final_status === "APPROVED" && intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       } else {
         setIsRegistered(false);
         setRegistrationData(null);
       }
     } catch (err) {
-      if (showLoading) setError("Gagal memuat status pendaftaran.");
+      console.error("--- DEBUG ERROR ---");
+      console.error("Error Message:", err.message);
+      setIsRegistered(false);
+      setRegistrationData(null);
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -44,10 +61,21 @@ export default function RegistrationPage() {
 
   useEffect(() => {
     fetchRegistrationStatus();
-    const handleRefresh = () => fetchRegistrationStatus(false);
+
+    // Polling setiap 30 detik
+    intervalRef.current = setInterval(() => {
+      fetchRegistrationStatus(false);
+    }, 30000);
+
+    const handleRefresh = () => {
+      fetchRegistrationStatus(false);
+    };
     window.addEventListener("REFRESH_REGISTRATION_STATUS", handleRefresh);
-    return () =>
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
       window.removeEventListener("REFRESH_REGISTRATION_STATUS", handleRefresh);
+    };
   }, [fetchRegistrationStatus]);
 
   const handleBackToDashboard = useCallback(() => {
@@ -81,7 +109,6 @@ export default function RegistrationPage() {
 
   return (
     <div className="container-fluid pb-5 min-vh-100 bg-white">
-      {/* Header Area */}
       <div className="row pt-4 px-3 mb-4 align-items-center">
         <div className="col-auto">
           <button
@@ -95,7 +122,8 @@ export default function RegistrationPage() {
         <div className="col">
           <Badge
             bg="soft-primary"
-            className="text-primary mb-1 rounded-pill px-3 py-2"
+            className="text-primary mb-1 rounded-pill px-3 py-2 border-0"
+            style={{ backgroundColor: "rgba(13, 110, 253, 0.1)" }}
           >
             <FaShieldAlt className="me-2" /> Portal Keanggotaan Resmi
           </Badge>
@@ -106,13 +134,12 @@ export default function RegistrationPage() {
       <div className="row justify-content-center px-3">
         <div className="col-xl-10">
           <div className="row g-4">
-            {/* SISI KIRI */}
             <div className="col-lg-7">
               <Card className="border-0 shadow-lg rounded-20 overflow-hidden h-100">
                 <div className="p-4 p-md-5">
                   <div className="d-flex align-items-center mb-4">
-                    <div className="icon-box bg-primary text-white me-3">
-                      <FaInfoCircle />
+                    <div className="bg-primary text-white rounded-3 p-2 me-3 d-flex align-items-center justify-content-center">
+                      <FaInfoCircle size={20} />
                     </div>
                     <h4 className="fw-bold mb-0">Instruksi Pendaftaran</h4>
                   </div>
@@ -121,23 +148,22 @@ export default function RegistrationPage() {
                     className="text-secondary mb-4 fs-5"
                     style={{ lineHeight: "1.8" }}
                   >
-                    Pendaftaran menjadi calon anggota dapat dilakukan dengan
-                    cara mengunjungi kantor layanan terdekat atau secara daring
-                    (online) melalui aplikasi ini.
+                    Pendaftaran menjadi calon anggota dapat dilakukan secara
+                    daring (online) melalui portal aplikasi ini untuk
+                    mempercepat proses verifikasi.
                   </p>
 
-                  <div className="bg-light rounded-15 p-4 mb-5 border-start border-primary border-4">
+                  <div className="bg-light rounded-3 p-4 mb-5 border-start border-primary border-4">
                     <p className="mb-0 text-dark fw-medium">
-                      Jika anda berminat untuk mendaftar sebagai anggota,
-                      silahkan klik tombol di bawah ini untuk memulai pengisian
-                      formulir digital:
+                      Silahkan klik tombol di bawah ini untuk memulai pengisian
+                      formulir digital permohonan anggota:
                     </p>
                   </div>
 
                   <Button
                     onClick={handleFillForm}
                     variant="primary"
-                    className="w-100 py-3 rounded-15 fw-bold shadow-lg btn-modern-action"
+                    className="w-100 py-3 rounded-3 fw-bold shadow-lg"
                   >
                     <FaFileSignature className="me-2" />
                     Isi Form Permohonan Menjadi Anggota
@@ -146,7 +172,6 @@ export default function RegistrationPage() {
               </Card>
             </div>
 
-            {/* SISI KANAN */}
             <div className="col-lg-5">
               <Card className="border-0 shadow-sm rounded-20 bg-dark text-white h-100">
                 <Card.Body className="p-4 p-md-5">
@@ -156,34 +181,34 @@ export default function RegistrationPage() {
                   </div>
 
                   <p className="text-white-50 small mb-4">
-                    Mengacu pada{" "}
+                    Berdasarkan{" "}
                     <strong>
-                      Peraturan Menteri Koperasi dan Usaha Kecil dan Menengah
-                      Republik Indonesia Nomor 10/Per/M.KUKM/IX/2015
+                      Peraturan Menteri Koperasi dan UKM RI No. 10/2015
                     </strong>
                     , syarat utama meliputi:
                   </p>
 
                   <div className="requirement-items">
                     {[
-                      "Warga Negara Indonesia",
-                      "Melengkapi Dokumen Permohonan menjadi Anggota Koperasi",
-                      "Melunasi kewajiban Anggota yang ditentukan pada Anggaran Dasar / Anggaran Dasar Rumah Tangga",
+                      "Warga Negara Indonesia (WNI)",
+                      "Melengkapi Dokumen Permohonan Anggota",
+                      "Melunasi kewajiban Anggota (AD/ART)",
                     ].map((text, idx) => (
                       <div key={idx} className="d-flex align-items-start mb-4">
                         <FaCheckCircle
                           className="text-success mt-1 me-3 flex-shrink-0"
-                          size={20}
+                          size={18}
                         />
-                        <span className="text-white opacity-90">{text}</span>
+                        <span className="text-white opacity-90 small">
+                          {text}
+                        </span>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-5 p-3 rounded-12 border border-secondary border-dashed">
-                    <small className="text-white-50 d-block text-center">
-                      Sistem ini bersifat <strong>Inclusive Loop</strong> sesuai
-                      UU No 4 Tahun 2023.
+                  <div className="mt-5 p-3 rounded-3 border border-secondary border-dashed text-center">
+                    <small className="text-white-50">
+                      Layanan <strong>Inclusive Loop</strong> UU No 4/2023.
                     </small>
                   </div>
                 </Card.Body>

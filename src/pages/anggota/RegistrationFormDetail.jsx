@@ -5,8 +5,6 @@ import {
   CardBody,
   CardHeader,
   Col,
-  Container,
-  Form,
   Row,
   ProgressBar,
   Alert,
@@ -16,7 +14,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
-  FaCheckCircle,
   FaUserCircle,
   FaArrowRight,
   FaSave,
@@ -42,7 +39,10 @@ export default function RegistrationFormDetail() {
   const { userData, loading: profileLoading } = useProfile();
 
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem("temp_reg_data");
+    return saved ? JSON.parse(saved) : {};
+  });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCommitmentChecked, setIsCommitmentChecked] = useState(false);
@@ -50,17 +50,19 @@ export default function RegistrationFormDetail() {
 
   const isLastStep = step === totalSteps;
 
-  // Sinkronisasi data profil
   useEffect(() => {
-    if (userData) {
-      setFormData((prev) => ({
-        ...prev,
+    localStorage.setItem("temp_reg_data", JSON.stringify(formData));
+  }, [formData]);
+
+  useEffect(() => {
+    if (userData && Object.keys(formData).length === 0) {
+      setFormData({
         full_name: userData.full_name || "",
         nik_ktp: userData.nik || "",
         email: userData.email || "",
         phone_number: userData.phone_number || "",
         account_holder: userData.full_name || "",
-      }));
+      });
     }
   }, [userData]);
 
@@ -68,11 +70,11 @@ export default function RegistrationFormDetail() {
     navigate(`/${jwtEncode({ page: "registrationPage" })}`);
   }, [navigate]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
-  };
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  }, []);
 
   const handleSetCapturedImage = useCallback((fieldName, base64Image) => {
     setFormData((prev) => ({ ...prev, [fieldName]: base64Image }));
@@ -86,12 +88,6 @@ export default function RegistrationFormDetail() {
         stepErrors.nik_ktp = "NIK harus 16 digit.";
       if (!data.full_name) stepErrors.full_name = "Nama lengkap wajib diisi.";
       if (!data.alamat_ktp) stepErrors.alamat_ktp = "Alamat wajib diisi.";
-      if (!data.province_id) stepErrors.province_id = "Provinsi wajib dipilih.";
-      if (!data.city_id) stepErrors.city_id = "Kota wajib dipilih.";
-      if (!data.district_id)
-        stepErrors.district_id = "Kecamatan wajib dipilih.";
-      if (!data.subdistrict_id)
-        stepErrors.subdistrict_id = "Kelurahan wajib dipilih.";
     }
     return stepErrors;
   };
@@ -107,22 +103,20 @@ export default function RegistrationFormDetail() {
   };
 
   const handleSubmit = async () => {
-    if (!isCommitmentChecked) {
-      setErrors({ commitment: "Anda harus menyetujui komitmen." });
-      return;
-    }
+    if (!isCommitmentChecked) return;
     setIsSubmitting(true);
-    console.log(formData);
+    setSubmitError(null);
 
     try {
       const response = await UAnggota.submitRegistration(formData);
-      if (response.status) {
+      if (response.data?.status || response.status) {
+        localStorage.removeItem("temp_reg_data");
         navigate(`/${jwtEncode({ page: "registrationPage" })}`);
       } else {
-        setSubmitError(response.message || "Gagal mengirim data.");
+        setSubmitError(response.message || "Gagal mengirim data permohonan.");
       }
     } catch (err) {
-      setSubmitError("Kesalahan sistem, coba lagi nanti.");
+      setSubmitError("Terjadi kesalahan sistem saat pengiriman data.");
     } finally {
       setIsSubmitting(false);
     }
@@ -170,73 +164,70 @@ export default function RegistrationFormDetail() {
     isCommitmentChecked,
     userData,
     handleSetCapturedImage,
+    handleChange,
   ]);
 
   if (profileLoading)
     return (
-      <Container className="py-5 text-center">
-        <Spinner animation="border" variant="primary" />
-      </Container>
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <Spinner animation="grow" variant="primary" />
+      </div>
     );
 
   return (
-    <div className="container-fluid pb-5">
-      <div className="row page-titles pt-3 mb-4">
-        <div className="col-12 d-flex align-items-center">
-          <button
-            onClick={handleBack}
-            className="btn btn-white shadow-sm rounded-circle me-3"
-          >
-            <FaArrowLeft className="text-primary" />
-          </button>
-          <div>
-            <h3 className="fw-bold mb-0">Formulir Pendaftaran</h3>
-            <small className="text-muted">
-              Lengkapi 8 tahap data keanggotaan Anda
-            </small>
-          </div>
+    <div className="container-fluid px-0 pb-5">
+      <div className="page-titles pt-3 mb-4 px-4 d-flex align-items-center">
+        <button
+          onClick={handleBack}
+          className="btn btn-white shadow-sm rounded-circle me-3 border-0"
+        >
+          <FaArrowLeft className="text-primary" />
+        </button>
+        <div>
+          <h3 className="fw-bold mb-0">Formulir Pendaftaran</h3>
+          <small className="text-muted">
+            Tahap {step} dari {totalSteps}
+          </small>
         </div>
       </div>
 
-      <Container>
-        <Row className="justify-content-center">
-          <Col lg={10}>
-            <Card className="border-0 shadow-lg rounded-20 overflow-hidden">
-              <div className="bg-primary p-1">
-                <ProgressBar
-                  now={(step / totalSteps) * 100}
-                  variant="success"
-                  className="rounded-0"
-                  style={{ height: "8px" }}
-                />
-              </div>
-
-              <CardHeader className="bg-white border-bottom p-4">
+      <div className="px-0">
+        <Row className="g-0">
+          <Col xs={12}>
+            <Card className="border-0 shadow-none rounded-0 overflow-hidden min-vh-100">
+              <ProgressBar
+                now={(step / totalSteps) * 100}
+                variant="primary"
+                className="rounded-0"
+                style={{ height: "6px" }}
+              />
+              <CardHeader className="bg-white border-0 p-4">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
-                    <div className="step-number-circle me-3 bg-primary-soft text-primary fw-bold">
+                    <div
+                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                      style={{ width: "35px", height: "35px" }}
+                    >
                       {step}
                     </div>
-                    <h5 className="mb-0 fw-bold text-dark">
-                      Langkah {step} dari {totalSteps}
-                    </h5>
+                    <h5 className="mb-0 fw-bold">Data Keanggotaan</h5>
                   </div>
-                  <Badge bg="info" className="px-3 py-2 rounded-pill">
-                    <FaUserCircle className="me-2" />
-                    {userData?.full_name || "Calon Anggota"}
+                  <Badge
+                    bg="light"
+                    className="text-primary border px-3 py-2 rounded-pill"
+                  >
+                    <FaUserCircle className="me-1" />{" "}
+                    {userData?.full_name || "Calon"}
                   </Badge>
                 </div>
               </CardHeader>
-
-              <CardBody className="p-4 p-md-5">
+              <CardBody className="p-4 p-md-5 pt-0">
                 {submitError && (
                   <Alert variant="danger" className="rounded-12">
                     {submitError}
                   </Alert>
                 )}
-
-                <div className="step-content-area min-vh-40">{renderStep}</div>
-
+                <div className="step-container">{renderStep}</div>
                 <div className="d-flex justify-content-between mt-5 pt-4 border-top">
                   <Button
                     variant="light"
@@ -248,10 +239,9 @@ export default function RegistrationFormDetail() {
                   >
                     {step === 1 ? "Batalkan" : "Sebelumnya"}
                   </Button>
-
                   {isLastStep ? (
                     <Button
-                      variant="success"
+                      variant="primary"
                       className="px-5 py-2 fw-bold shadow-sm rounded-12"
                       onClick={handleSubmit}
                       disabled={!isCommitmentChecked || isSubmitting}
@@ -260,7 +250,7 @@ export default function RegistrationFormDetail() {
                         <Spinner size="sm" />
                       ) : (
                         <>
-                          <FaSave className="me-2" /> Kirim Permohonan
+                          <FaSave className="me-2" /> Kirim Sekarang
                         </>
                       )}
                     </Button>
@@ -278,7 +268,7 @@ export default function RegistrationFormDetail() {
             </Card>
           </Col>
         </Row>
-      </Container>
+      </div>
     </div>
   );
 }

@@ -6,10 +6,13 @@ import {
   FaCheckCircle,
   FaChevronRight,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../contexts/ProfileContext";
+import { jwtEncode } from "../../routes/helpers";
 
 export default function KeranjangDropdown() {
   const { bills } = useProfile();
+  const navigate = useNavigate();
 
   const formatIDR = (val) =>
     new Intl.NumberFormat("id-ID", {
@@ -17,6 +20,11 @@ export default function KeranjangDropdown() {
       currency: "IDR",
       maximumFractionDigits: 0,
     }).format(val || 0);
+
+  const handleNavigate = () => {
+    const token = jwtEncode({ page: "billingPage" });
+    navigate(`/${token}`);
+  };
 
   return (
     <NavDropdown
@@ -38,7 +46,7 @@ export default function KeranjangDropdown() {
       }
     >
       <div style={{ width: "300px" }}>
-        <div className="p-3 bg-light border-bottom fw-bold">
+        <div className="p-3 bg-light border-bottom fw-bold text-dark">
           <FaWallet className="me-2" /> Tagihan Pending
         </div>
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
@@ -52,9 +60,13 @@ export default function KeranjangDropdown() {
               <div
                 key={item.id}
                 className="p-3 border-bottom d-flex justify-content-between"
+                style={{ cursor: "pointer" }}
+                onClick={handleNavigate}
               >
                 <div>
-                  <div className="fw-bold small">{item.description}</div>
+                  <div className="fw-bold small text-dark">
+                    {item.description}
+                  </div>
                   <small className="text-danger">{item.due_date}</small>
                 </div>
                 <div className="fw-bold text-primary small">
@@ -66,7 +78,10 @@ export default function KeranjangDropdown() {
         </div>
         {bills.length > 0 && (
           <div className="p-2 border-top text-center">
-            <button className="btn btn-link btn-sm text-decoration-none fw-bold">
+            <button
+              className="btn btn-link btn-sm text-decoration-none fw-bold"
+              onClick={handleNavigate}
+            >
               Lihat Semua <FaChevronRight size={10} />
             </button>
           </div>

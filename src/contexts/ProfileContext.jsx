@@ -1,4 +1,3 @@
-// src/context/ProfileContext.jsx
 import React, {
   createContext,
   useContext,
@@ -16,72 +15,65 @@ export const ProfileProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [bills, setBills] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => !!localStorage.getItem("authToken")
+  );
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
 
   const connectSocket = useCallback(() => {
     const token = localStorage.getItem("authToken");
+
     if (!token) {
+      setUserData(null);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+
     if (socketRef.current?.connected) {
+      socketRef.current.emit("profile:request");
       return;
     }
 
     if (socketRef.current) {
       socketRef.current.disconnect();
-      socketRef.current = null;
     }
 
     const socket = io("https://api.kkpus.id", {
       transports: ["websocket"],
       auth: { token },
+      forceNew: true,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
       timeout: 20000,
     });
 
     socket.on("connect", () => {
       setSocketConnected(true);
-      setLoading(false);
-
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        try {
-          const base64Url = token.split(".")[1];
-          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-          const decoded = JSON.parse(atob(base64));
-          if (decoded?.member_id) {
-            socket.emit("register", decoded.member_id);
-          }
-        } catch (err) {}
+      try {
+        const base64Url = token.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const decoded = JSON.parse(atob(base64));
+        if (decoded?.member_id) {
+          socket.emit("register", decoded.member_id);
+        }
+      } catch (err) {
+        console.error("Token decoding failed", err);
       }
-
-      setTimeout(() => {
-        socket.emit("profile:request");
-      }, 100);
-    });
-
-    socket.on("connect_error", () => {
-      setSocketConnected(false);
-      setLoading(false);
-    });
-
-    socket.on("disconnect", () => {
-      setSocketConnected(false);
+      socket.emit("profile:request");
     });
 
     socket.on("profile:update", (data) => {
-      const formattedData = {
-        ...data,
-        bank_info: data.bank_info || null,
-      };
-      setUserData(formattedData);
+      setUserData(data);
       setLoading(false);
+    });
+
+    // Listener Pasca Approval Ketua: Memicu refresh data akun & tagihan
+    socket.on("registration:status_update", () => {
+      socket.emit("profile:request");
+      socket.emit("bills:request"); // Jika ada endpoint khusus request tagihan
     });
 
     socket.on("notifications:update", (data) => {
@@ -90,10 +82,17 @@ export const ProfileProvider = ({ children }) => {
 
     socket.on("bills:update", (data) => {
       setBills(data);
+      setLoading(false);
+    });
+
+    socket.on("connect_error", () => {
+      setSocketConnected(false);
+      setLoading(false);
     });
 
     socket.on("auth:fail", () => {
       localStorage.removeItem("authToken");
+      setUserData(null);
       setLoading(false);
     });
 
@@ -101,18 +100,26 @@ export const ProfileProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    const handleLoginSync = () => {
+      setLoading(true);
+      setUserData(null);
+      connectSocket();
+    };
+
+    window.addEventListener("storage_sync", handleLoginSync);
     connectSocket();
 
     return () => {
+      window.removeEventListener("storage_sync", handleLoginSync);
       if (socketRef.current) {
         socketRef.current.disconnect();
-        socketRef.current = null;
       }
     };
   }, [connectSocket]);
 
   const logout = useCallback(() => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
     setUserData(null);
     if (socketRef.current) {
       socketRef.current.disconnect();
@@ -134,13 +141,7 @@ export const ProfileProvider = ({ children }) => {
   );
 
   return (
-    <ProfileContext.Provider value={value}>
-      {!loading ? (
-        children
-      ) : (
-        <div className="p-10 text-center">Loading Profile...</div>
-      )}
-    </ProfileContext.Provider>
+    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
   );
 };
 

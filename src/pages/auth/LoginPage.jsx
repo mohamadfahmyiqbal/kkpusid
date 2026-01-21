@@ -47,7 +47,6 @@ const LoginPage = () => {
     setEmailHpInvalid(false);
     setPasswordInvalid(false);
 
-    // 1. Validasi Sisi Klien
     if (!emailHp || !password) {
       if (!emailHp) setEmailHpInvalid(true);
       if (!password) setPasswordInvalid(true);
@@ -58,35 +57,30 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // 2. Panggil API Login
       const response = await UAuth.accountLogin({
         emailHp: emailHp,
         password: password,
       });
 
-      // 3. Penanganan Sukses (Status 200)
       if (response.status === 200 && response.data.success) {
-        // Simpan JWT Token dan Data Pengguna ke Local Storage
         const { token, user } = response.data.data;
+
         localStorage.setItem("authToken", token);
         localStorage.setItem("userData", JSON.stringify(user));
 
-        // Redirect ke halaman Dashboard
+        // Memicu update pada ProfileContext tanpa reload
+        window.dispatchEvent(new Event("storage_sync"));
+
         navigate(DASHBOARD_PATH);
       } else {
-        // Ini menangani kasus jika API merespon 200 tapi success: false
         setError(response.data.message || "Login gagal. Silakan coba lagi.");
+        setLoading(false);
       }
     } catch (apiError) {
-      console.log(apiError);
-
-      // 4. Penanganan Kesalahan API
       const errorMessage =
         apiError.response?.data?.message ||
         "Terjadi kesalahan saat menghubungi server.";
       setError(errorMessage);
-    } finally {
-      // 5. Akhiri Loading
       setLoading(false);
     }
   };

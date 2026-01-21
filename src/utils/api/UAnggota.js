@@ -2,7 +2,10 @@ import http from "./common";
 
 class UAnggota {
   submitRegistration(formData) {
-    return http.post("/anggota/pendaftaran", formData);
+    // Gunakan timeout lebih lama khusus untuk pendaftaran karena ada upload gambar
+    return http.post("/anggota/pendaftaran", formData, {
+      timeout: 30000,
+    });
   }
 
   getRegistrationStatus() {

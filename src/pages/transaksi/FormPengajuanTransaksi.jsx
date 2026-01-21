@@ -1,27 +1,19 @@
 import React, { useState, useCallback, useMemo, memo } from "react";
-import { Card, Button, Form, Row, Col, Container } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  Card,
+  Button,
+  Form,
+  Row,
+  Col,
+  Container,
+  InputGroup,
+} from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-
-// Helpers
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/api/UTransaksi";
-
-/* =======================
-   HELPER FUNCTIONS
-======================= */
-const getReturnPageKey = (token) => {
-  if (!token) return "transaksiPage";
-  try {
-    const [, payload] = token.split(".");
-    const json = decodeURIComponent(
-      escape(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))
-    );
-    return JSON.parse(json)?.return ?? "transaksiPage";
-  } catch {
-    return "transaksiPage";
-  }
-};
+import { useProfile } from "../../contexts/ProfileContext";
+import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
 
 const formatCurrency = (amount) =>
   amount.toLocaleString("id-ID", {
@@ -30,258 +22,209 @@ const formatCurrency = (amount) =>
     minimumFractionDigits: 0,
   });
 
-const formatInputDisplay = (amount) =>
-  parseInt(amount || 0).toLocaleString("id-ID");
-
-/* =======================
-   CONSTANTS
-======================= */
 const TIPE_OPTIONS = ["Elektronik", "Kendaraan", "Property"];
 const TERMS_OPTIONS = [
-  "1x Pembayaran",
-  "3x Pembayaran",
-  "6x Pembayaran",
-  "12x Pembayaran",
+  { label: "1x Pembayaran", value: "1" },
+  { label: "3x Pembayaran", value: "3" },
+  { label: "6x Pembayaran", value: "6" },
+  { label: "12x Pembayaran", value: "12" },
+  { label: "24x Pembayaran", value: "24" },
 ];
 
-/* =======================
-   COMPONENT
-======================= */
 function FormPengajuanTransaksi() {
   const navigate = useNavigate();
-  const { token } = useParams();
-  const returnPageKey = getReturnPageKey(token);
+  const { userData } = useProfile();
 
-  const [form, setForm] = useState({
-    tipe: "Elektronik",
-    nama: "Lenovo Ideapad 330",
-    harga: "5000000",
-    dp: "1000000",
-    jumlahTerm: "3x Pembayaran",
-  });
+  const [tipeDipilih, setTipeDipilih] = useState(TIPE_OPTIONS[0]);
+  const [namaBarang, setNamaBarang] = useState("");
+  const [tenorDipilih, setTenorDipilih] = useState("12");
+  const [nominalHarga, setNominalHarga] = useState(0);
+  const [nominalDP, setNominalDP] = useState(0);
 
-  /* =======================
-     CREDIT CALCULATION
-  ======================= */
-  const { nominalKredit, estimasiAngsuran } = useMemo(() => {
-    const harga = parseInt(form.harga || 0);
-    const dp = parseInt(form.dp || 0);
-    const kredit = harga - dp;
+  const nominalKredit = useMemo(
+    () => Math.max(0, Number(nominalHarga) - Number(nominalDP)),
+    [nominalHarga, nominalDP]
+  );
+  const estimasiAngsuran = useMemo(
+    () =>
+      nominalKredit > 0
+        ? Math.ceil(nominalKredit / parseInt(tenorDipilih || 1))
+        : 0,
+    [nominalKredit, tenorDipilih]
+  );
 
-    const termMatch = form.jumlahTerm.match(/^(\d+)x/);
-    const totalTerm = termMatch ? parseInt(termMatch[1]) : 1;
+  const handleBack = useCallback(() => {
+    navigate(`/${jwtEncode({ page: "transaksiPage" })}`);
+  }, [navigate]);
 
-    const angsuran = kredit > 0 && totalTerm > 0 ? kredit / totalTerm : 0;
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    return {
-      nominalKredit: kredit,
-      estimasiAngsuran: Math.round(angsuran),
-    };
-  }, [form]);
+      const amountReq = Number(nominalHarga);
+      if (amountReq <= 0 || !namaBarang) return;
 
-  /* =======================
-     HANDLERS
-  ======================= */
-  const handleGoBack = useCallback(() => {
-    navigate(`/${jwtEncode({ page: returnPageKey })}`);
-  }, [navigate, returnPageKey]);
+      try {
+        const payload = {
+          category: tipeDipilih,
+          item_name: namaBarang,
+          tenure: parseInt(tenorDipilih),
+          amount_requested: amountReq,
+          down_payment: Number(nominalDP),
+          principal_amount: Number(nominalKredit),
+          monthly_installment: Number(estimasiAngsuran),
+        };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        name === "harga" || name === "dp" ? value.replace(/\D/g, "") : value,
-    }));
-  };
+        const res = await UTransaksi.submitPengajuan(payload);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (nominalKredit <= 0) {
-      alert("Harga harus lebih besar dari DP");
-      return;
-    }
-
-    try {
-      const payload = {
-        tipe: form.tipe,
-        nama: form.nama,
-        harga: parseInt(form.harga),
-        dp: parseInt(form.dp),
-        nominalKredit: nominalKredit,
-        estimasiAngsuran: estimasiAngsuran,
-        jumlahTerm: form.jumlahTerm,
-      };
-
-      const response = await UTransaksi.submitPengajuan(payload);
-
-      if (response.data.status) {
-        // ✅ PENYESUAIAN: Kirim financingId agar detail ambil dari DB
-        const detailToken = jwtEncode({
-          page: "transactionDetailPage",
-          financingId: response.data.data.financing_id, // KUNCI: Harus financingId
-          return: returnPageKey,
-        });
-
-        navigate(`/${detailToken}`);
+        if (res.data?.status || res.status) {
+          const targetId = res.data?.data?.financing_id;
+          navigate(
+            `/${jwtEncode({
+              page: "transactionDetailPage",
+              financingId: targetId,
+              return: "transaksiPage",
+            })}`
+          );
+        }
+      } catch (error) {
+        console.error("Submission error:", error);
       }
-    } catch (error) {
-      console.error("Gagal mengirim pengajuan:", error);
-      alert("Terjadi kesalahan saat mengirim pengajuan.");
-    }
-  };
+    },
+    [
+      tipeDipilih,
+      namaBarang,
+      tenorDipilih,
+      nominalHarga,
+      nominalDP,
+      nominalKredit,
+      estimasiAngsuran,
+      navigate,
+    ]
+  );
 
-  /* =======================
-     RENDER
-  ======================= */
   return (
-    <div style={{ minHeight: "100vh" }}>
-      {/* HEADER */}
-      <div className="">
-        <Container fluid="sm" className="d-flex align-items-center py-3">
+    <div className="min-vh-100 bg-light pb-5">
+      <Container className="py-4">
+        <div className="mx-2 mb-3">
           <Button
             variant="link"
-            className="p-0 me-3 text-dark"
-            onClick={handleGoBack}
+            className="p-0 text-decoration-none text-muted fw-bold d-flex align-items-center"
+            onClick={handleBack}
           >
-            <FaArrowLeft size={20} />
+            <FaArrowLeft className="me-2" /> Kembali
           </Button>
-          <h6 className="mb-0 fw-bold">Pengajuan Pembelian</h6>
-        </Container>
-      </div>
+        </div>
 
-      <Container fluid="sm" className="px-3 py-3">
-        <Card className="shadow-sm border-0">
-          <Card.Body>
+        <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
+          <Card.Body className="p-4">
             <Form onSubmit={handleSubmit}>
-              {/* TIPE */}
               <Form.Group className="mb-3">
-                <Form.Label className="small fw-bold text-muted">
-                  Tipe
-                </Form.Label>
+                <Form.Label className="fw-bold mb-1">Tipe</Form.Label>
                 <Form.Select
-                  name="tipe"
-                  value={form.tipe}
-                  onChange={handleChange}
+                  className="fw-bold"
+                  value={tipeDipilih}
+                  onChange={(e) => setTipeDipilih(e.target.value)}
                 >
-                  {TIPE_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {TIPE_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
 
-              {/* NAMA */}
               <Form.Group className="mb-3">
-                <Form.Label className="small fw-bold text-muted">
-                  Nama
-                </Form.Label>
+                <Form.Label className="fw-bold mb-1">Nama Barang</Form.Label>
                 <Form.Control
-                  name="nama"
-                  value={form.nama}
-                  onChange={handleChange}
+                  type="text"
+                  className="fw-bold"
+                  value={namaBarang}
+                  onChange={(e) => setNamaBarang(e.target.value)}
+                  required
                 />
               </Form.Group>
 
-              {/* HARGA */}
               <Form.Group className="mb-3">
-                <Form.Label className="small fw-bold text-muted">
-                  Harga
-                </Form.Label>
-                <div className="input-group">
-                  <span className="input-group-text">Rp</span>
+                <Form.Label className="fw-bold mb-1">Harga</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text className="fw-bold bg-secondary text-white">
+                    Rp.
+                  </InputGroup.Text>
                   <Form.Control
-                    name="harga"
-                    className="text-end"
-                    value={formatInputDisplay(form.harga)}
-                    onChange={handleChange}
+                    type="text"
+                    className="fw-bold"
+                    value={formatRupiah(nominalHarga)}
+                    onChange={(e) =>
+                      setNominalHarga(parseRawNumber(e.target.value))
+                    }
                   />
-                </div>
+                </InputGroup>
               </Form.Group>
 
-              {/* DP */}
               <Form.Group className="mb-3">
-                <Form.Label className="small fw-bold text-muted">DP</Form.Label>
-                <div className="input-group">
-                  <span className="input-group-text">Rp</span>
+                <Form.Label className="fw-bold mb-1">DP</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text className="fw-bold bg-secondary text-white">
+                    Rp.
+                  </InputGroup.Text>
                   <Form.Control
-                    name="dp"
-                    className="text-end"
-                    value={formatInputDisplay(form.dp)}
-                    onChange={handleChange}
-                    isInvalid={parseInt(form.dp) >= parseInt(form.harga)}
+                    type="text"
+                    className="fw-bold"
+                    value={formatRupiah(nominalDP)}
+                    onChange={(e) =>
+                      setNominalDP(parseRawNumber(e.target.value))
+                    }
                   />
-                </div>
-                <Form.Control.Feedback type="invalid">
-                  DP tidak boleh lebih besar dari harga
-                </Form.Control.Feedback>
+                </InputGroup>
               </Form.Group>
 
-              {/* TERM */}
               <Form.Group className="mb-4">
-                <Form.Label className="small fw-bold text-muted">
-                  Jumlah Term
-                </Form.Label>
+                <Form.Label className="fw-bold mb-1">Tenor</Form.Label>
                 <Form.Select
-                  name="jumlahTerm"
-                  value={form.jumlahTerm}
-                  onChange={handleChange}
+                  className="fw-bold"
+                  value={tenorDipilih}
+                  onChange={(e) => setTenorDipilih(e.target.value)}
                 >
-                  {TERMS_OPTIONS.map((term) => (
-                    <option key={term} value={term}>
-                      {term}
+                  {TERMS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
 
-              {/* SUMMARY */}
-              <Card className="mb-4 border-0 bg-light">
-                <Card.Body>
-                  <h6 className="fw-bold mb-3">Summary Detail Credit</h6>
-                  <Row>
-                    <Col xs={6}>
-                      <small className="text-muted">Nominal Kredit</small>
-                      <div className="fw-bold text-primary">
-                        {formatCurrency(nominalKredit)}
-                      </div>
-                    </Col>
-                    <Col xs={6} className="text-end">
-                      <small className="text-muted">Estimasi / Term</small>
-                      <div className="fw-bold text-success">
-                        {formatCurrency(estimasiAngsuran)}
-                      </div>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-
-              {/* AKAD */}
-              <details className="mb-4">
-                <summary className="fw-bold">Akad</summary>
-                <p className="small text-muted mt-2 text-justify">
-                  Lorem Ipsum adalah contoh teks atau dummy dalam industri
-                  percetakan dan penataan huruf.
-                </p>
-              </details>
-
-              {/* SUBMIT */}
-              <div className="position-sticky bottom-0 bg-white pt-3 pb-4">
-                <Button
-                  type="submit"
-                  className="w-100 fw-bold"
-                  disabled={nominalKredit <= 0}
-                  style={{
-                    backgroundColor: "#1c5b7a",
-                    borderColor: "#1c5b7a",
-                    borderRadius: "20px",
-                  }}
-                >
-                  Proses
-                </Button>
+              <div className="border-top pt-3 mb-4">
+                <Row>
+                  <Col xs={6} className="text-muted">
+                    Pokok Pinjaman
+                  </Col>
+                  <Col xs={6} className="text-end fw-bold">
+                    {formatCurrency(nominalKredit)}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col xs={6} className="text-muted">
+                    Angsuran / Bulan
+                  </Col>
+                  <Col xs={6} className="text-end fw-bold text-primary">
+                    {formatCurrency(estimasiAngsuran)}
+                  </Col>
+                </Row>
               </div>
+
+              <Button
+                type="submit"
+                className="w-100 fw-bold py-2"
+                disabled={nominalKredit <= 0 || !namaBarang}
+                style={{
+                  backgroundColor: "#1c5b7a",
+                  borderColor: "#1c5b7a",
+                  borderRadius: "25px",
+                }}
+              >
+                Proses Pengajuan
+              </Button>
             </Form>
           </Card.Body>
         </Card>

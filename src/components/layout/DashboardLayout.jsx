@@ -1,25 +1,33 @@
-import React, { useState, useCallback } from "react";
+// src/components/layout/DashboardLayout.jsx
+import React, { useState, useCallback, useEffect } from "react";
 import { useProfile } from "../../contexts/ProfileContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import SkeletonContent from "./SkeletonContent"; // <-- Import Skeleton
+import SkeletonContent from "./SkeletonContent";
+import NotificationPrompt from "../ui/NotificationPrompt";
 
 const DashboardLayout = ({ children }) => {
   const { userData, loading, error, logout } = useProfile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Sync class body dengan state sidebar menggunakan useEffect
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add("show-sidebar");
+    } else {
+      document.body.classList.remove("show-sidebar");
+    }
+
+    // CLEANUP: Hapus class saat komponen di-unmount agar tidak merusak halaman lain
+    return () => {
+      document.body.classList.remove("show-sidebar");
+    };
+  }, [isSidebarOpen]);
+
   // Handler untuk toggle sidebar (Mobile & Desktop Mini)
   const handleToggleSidebar = useCallback(() => {
-    setIsSidebarOpen((prev) => {
-      const newState = !prev;
-      if (newState) {
-        document.body.classList.add("show-sidebar");
-      } else {
-        document.body.classList.remove("show-sidebar");
-      }
-      return newState;
-    });
+    setIsSidebarOpen((prev) => !prev);
   }, []);
 
   // Class dinamis untuk pembungkus utama
@@ -29,10 +37,6 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div id="main-wrapper" className={wrapperClass}>
-      {/* HEADER & SIDEBAR tetap di-render meski loading. 
-          Jika userData belum ada, komponen Header/Sidebar akan 
-          menangani tampilan default (nama guest/foto default).
-      */}
       <Header
         user={userData}
         logout={logout}
@@ -44,12 +48,9 @@ const DashboardLayout = ({ children }) => {
 
       <div className="page-wrapper">
         <div className="container-fluid pt-4">
-          {/* LOGIKA KONDISIONAL ISI KONTEN */}
           {loading ? (
-            // Tampilan 1: Saat data profil sedang di-fetch
             <SkeletonContent />
           ) : error || !userData ? (
-            // Tampilan 2: Jika terjadi error atau sesi habis
             <div className="py-5 text-center">
               <div
                 className="card shadow-sm border-0 p-4 mx-auto"
@@ -69,12 +70,19 @@ const DashboardLayout = ({ children }) => {
               </div>
             </div>
           ) : (
-            // Tampilan 3: Konten asli halaman (Dashboard/Simpanan/dll)
-            children
+            <>
+              {/* KONTEN HALAMAN UTAMA */}
+              {children}
+
+              {/* PROMPT NOTIFIKASI 
+                  Hanya dipicu jika data user sudah siap.
+                  Prompt ini akan menangani pengecekan izin browser secara otomatis.
+              */}
+              <NotificationPrompt memberId={userData.member_id} />
+            </>
           )}
         </div>
 
-        {/* Footer selalu di bawah */}
         <Footer />
       </div>
     </div>

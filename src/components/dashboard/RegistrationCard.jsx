@@ -1,5 +1,3 @@
-// components/dashboard/RegistrationCard.jsx
-
 import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
@@ -13,24 +11,18 @@ const RegistrationCard = ({
 }) => {
   const navigate = useNavigate();
 
-  // Navigasi terenkripsi ke halaman pendaftaran
   const handleRegister = useCallback(() => {
     if (!user) return;
+    // Menggunakan helper jwtEncode untuk navigasi aman
     const token = jwtEncode({ page: pageKey });
     navigate(`/${token}`);
   }, [navigate, pageKey, user]);
 
-  // Status anggota
-  // status_id:
-  // 0 / 1 = Calon Anggota
-  // >1    = Anggota Tetap
-  const statusId = parseInt(user?.status_id, 10) || 0;
-  const isCandidate = statusId <= 1;
+  // Validasi Role ID 1 (Calon Anggota)
+  const roleId = parseInt(user?.status_id, 10) || 1;
+  const isCandidate = roleId === 1;
 
-  // Jika sudah anggota tetap, kartu tidak ditampilkan
-  if (!user || !isCandidate) {
-    return null;
-  }
+  if (!user || !isCandidate) return null;
 
   return (
     <div
@@ -48,7 +40,6 @@ const RegistrationCard = ({
               <FaUserShield className="me-2" />
               {title}
             </h4>
-
             <p
               className="card-text mb-0 opacity-90"
               style={{ fontSize: "0.85rem", lineHeight: "1.5" }}
@@ -56,13 +47,11 @@ const RegistrationCard = ({
               {description}
             </p>
           </div>
-
-          <div className="text-white flex-shrink-0 animate-arrow">
+          <div className="text-white flex-shrink-0">
             <FaArrowRight size={28} />
           </div>
         </div>
-
-        {/* Ornamen Background */}
+        {/* Dekorasi Background */}
         <div
           className="position-absolute"
           style={{

@@ -1,13 +1,20 @@
 import React from "react";
 import { NavDropdown, Badge } from "react-bootstrap";
 import { FaBell, FaCircle, FaEnvelopeOpen } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../contexts/ProfileContext";
+import { jwtEncode } from "../../routes/helpers";
 
 export default function NotificationDropdown() {
   const { notifications } = useProfile();
+  const navigate = useNavigate();
 
-  // Status 1 diasumsikan Belum Dibaca
   const unreadCount = notifications.filter((n) => n.status === 1).length;
+
+  const handleNavigate = (page) => {
+    const token = jwtEncode({ page });
+    navigate(`/${token}`);
+  };
 
   return (
     <NavDropdown
@@ -29,8 +36,15 @@ export default function NotificationDropdown() {
       }
     >
       <div style={{ width: "320px" }}>
-        <div className="p-3 bg-light border-bottom fw-bold text-dark">
-          Notifikasi
+        <div className="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+          <span className="fw-bold text-dark">Notifikasi</span>
+          <button
+            className="btn btn-link btn-sm p-0 text-decoration-none fw-bold"
+            style={{ fontSize: "0.75rem" }}
+            onClick={() => handleNavigate("notificationPage")}
+          >
+            Lihat Semua
+          </button>
         </div>
         <div style={{ maxHeight: "350px", overflowY: "auto" }}>
           {notifications.length === 0 ? (
@@ -44,6 +58,8 @@ export default function NotificationDropdown() {
                 className={`p-3 border-bottom d-flex align-items-start ${
                   notif.status === 1 ? "bg-light" : ""
                 }`}
+                style={{ cursor: "pointer" }}
+                onClick={() => handleNavigate("notificationPage")}
               >
                 <div className="me-3 mt-1">
                   {notif.status === 1 ? (
@@ -58,7 +74,7 @@ export default function NotificationDropdown() {
                     className="text-muted small text-truncate-2"
                     style={{ fontSize: "0.75rem", lineHeight: "1.3" }}
                   >
-                    {notif.body} {/* Menggunakan body sesuai JSON Anda */}
+                    {notif.body}
                   </div>
                   <div
                     className="text-muted mt-1"

@@ -1,5 +1,4 @@
-// src/utils/helper/formatrupiah.jsx
-
+// src\utils\helper\formatRupiah.js
 /**
  * Mengubah angka murni menjadi format Rupiah dengan titik ribuan
  * Contoh: 50000 -> 50.000

@@ -1,4 +1,3 @@
-// src/pages/global/transaction/TransactionDetailPage.jsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Row, Col, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +23,6 @@ const LoadingSpinner = () => (
 const TransactionDetailPage = ({ decodedToken }) => {
   const navigate = useNavigate();
   const { socket } = useSocket();
-  const { socketConnected } = useProfile();
   const isFinancing = !!decodedToken?.financingId;
   const transactionId = isFinancing
     ? decodedToken?.financingId
@@ -43,6 +41,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
           : await USimpanan.getWithdrawalDetail(transactionId);
         setDetail(res.data.data);
       } catch (err) {
+        console.error("Fetch Detail Error:", err);
       } finally {
         setLoading(false);
       }
@@ -61,31 +60,35 @@ const TransactionDetailPage = ({ decodedToken }) => {
 
   useEffect(() => {
     if (!socket) return;
-    const handleSocketUpdate = (data) => {
-      if (String(data.entityId) === String(transactionId)) {
+
+    const handleGenericUpdate = (data) => {
+      const incomingId =
+        data.entityId || data.financing_id || data.withdrawal_id;
+      if (String(incomingId) === String(transactionId)) {
         fetchDetail(false);
       }
     };
-    socket.on("REGISTRATION_UPDATED", handleSocketUpdate);
-    socket.on("TRANSACTION_UPDATED", handleSocketUpdate);
-    socket.on("withdrawals:update", (data) => {
-      const hasMatchingWithdrawal = data.withdrawals?.some(
+
+    const handleWithdrawalUpdate = (data) => {
+      const hasMatch = data.withdrawals?.some(
         (w) => String(w.withdrawal_id) === String(transactionId)
       );
-      if (hasMatchingWithdrawal) {
-        fetchDetail(false);
-      }
-    });
+      if (hasMatch) fetchDetail(false);
+    };
+
+    socket.on("REGISTRATION_UPDATED", handleGenericUpdate);
+    socket.on("TRANSACTION_UPDATED", handleGenericUpdate);
+    socket.on("withdrawals:update", handleWithdrawalUpdate);
+
     return () => {
-      socket.off("REGISTRATION_UPDATED", handleSocketUpdate);
-      socket.off("TRANSACTION_UPDATED", handleSocketUpdate);
-      socket.off("withdrawals:update", handleSocketUpdate);
+      socket.off("REGISTRATION_UPDATED", handleGenericUpdate);
+      socket.off("TRANSACTION_UPDATED", handleGenericUpdate);
+      socket.off("withdrawals:update", handleWithdrawalUpdate);
     };
   }, [socket, transactionId, fetchDetail]);
 
   const approvalStatus = useMemo(() => {
     if (!detail) return null;
-
     return {
       pengawasDone: detail.is_approved_pengawas || false,
       ketuaDone: detail.is_approved_ketua || false,
@@ -95,9 +98,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
     };
   }, [detail]);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="container-fluid py-3 bg-light min-vh-100">

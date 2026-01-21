@@ -1,9 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useProfile } from "../../../contexts/ProfileContext";
-import { Spinner, Alert, Badge } from "react-bootstrap";
-import { FaInfoCircle } from "react-icons/fa";
+import { Spinner, Alert, Badge, Button } from "react-bootstrap";
+import { FaInfoCircle, FaLock } from "react-icons/fa";
 
-// --- Import Komponen Dashboard ---
 import RegistrationCard from "../../../components/dashboard/RegistrationCard";
 import EvaluasiSection from "../../../components/dashboard/EvaluasiSection";
 import FinancialSection from "../../../components/dashboard/FinancialSection";
@@ -16,7 +15,20 @@ import WelcomeGreeting from "../../../components/dashboard/WelcomeGreeting.jsx";
 const DashboardPage = () => {
   const { userData, loading } = useProfile();
 
-  // Guard Clause: Loading State untuk mencegah error undefined
+  const roleConfigs = useMemo(() => {
+    if (!userData) return null;
+    const roleId = parseInt(userData.status_id, 10) || 1;
+
+    return {
+      roleId,
+      isCandidate: roleId === 1,
+      isManagement: roleId >= 2 && roleId <= 4,
+      isFullMember: roleId >= 2,
+      isReguler: roleId === 5,
+      isALB: roleId === 6,
+    };
+  }, [userData]);
+
   if (loading) {
     return (
       <div
@@ -28,34 +40,30 @@ const DashboardPage = () => {
     );
   }
 
-  if (!userData) {
+  if (!userData || !roleConfigs) {
     return (
-      <div className="container-fluid p-5">
+      <div className="container-fluid p-5 text-center">
         <Alert variant="danger">
-          Gagal memuat profil. Silakan coba login kembali.
+          Sesi Anda tidak valid atau gagal memuat profil.
         </Alert>
+        <Button onClick={() => window.location.reload()}>
+          Refresh Halaman
+        </Button>
       </div>
     );
   }
 
-  const statusId = parseInt(userData.status_id) || 0;
-  const roleId = parseInt(userData.role) || 0;
-
-  const isCandidate = statusId <= 1;
-  const isFullMember = statusId >= 2;
-  const isManagement = roleId >= 2 && roleId <= 4;
-  const isReguler = roleId === 5;
-  const isALB = roleId === 6;
+  const { isCandidate, isManagement, isFullMember, isReguler, isALB } =
+    roleConfigs;
 
   return (
     <div className="container-fluid pb-5 animated fadeIn">
       <WelcomeGreeting name={userData.full_name} />
 
-      {/* --- AREA KONDISIONAL BERDASARKAN ROLE & STATUS --- */}
-
       {isCandidate && (
         <section className="mb-4">
           <RegistrationCard user={userData} />
+          <TagihanSection />
         </section>
       )}
 
@@ -71,7 +79,7 @@ const DashboardPage = () => {
         </Alert>
       )}
 
-      {isFullMember && (
+      {isFullMember ? (
         <div className="animated slideInUp">
           <FinancialSection />
           <MainMenuSection
@@ -82,6 +90,14 @@ const DashboardPage = () => {
           />
           <TagihanSection />
         </div>
+      ) : (
+        !isCandidate && (
+          <Alert variant="warning" className="border-0 shadow-sm mb-4">
+            <FaLock className="me-2" />
+            Fitur operasional akan terbuka otomatis setelah status keanggotaan
+            aktif.
+          </Alert>
+        )
       )}
 
       <div className="row mt-4">

@@ -5,8 +5,9 @@ import simpananRoutes from "./pages/simpananRoutes";
 import transaksiRoutes from "./pages/transaksiRoutes";
 import programRoutes from "./pages/programRoutes";
 import tabunganRoutes from "./pages/tabunganRoutes";
+import investasiRoutes from "./pages/investasiRoutes";
+import trainingRoutes from "./pages/trainingRoutes";
 
-// Menggabungkan semua routes menjadi satu objek utama
 const PAGE_COMPONENTS = {
   ...globalRoutes,
   ...authRoutes,
@@ -15,7 +16,8 @@ const PAGE_COMPONENTS = {
   ...transaksiRoutes,
   ...programRoutes,
   ...tabunganRoutes,
-  // Hapus impor JBRoutes dan ProgramRoutes jika tidak digunakan
+  ...investasiRoutes,
+  ...trainingRoutes,
 };
 
 export default PAGE_COMPONENTS;

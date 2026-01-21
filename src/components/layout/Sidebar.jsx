@@ -1,68 +1,32 @@
-import React, { useState, useCallback, memo, useEffect } from "react";
+import React, { useState, useCallback, memo, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../routes/helpers";
+import { jwtEncode, jwtDecodePage } from "../../routes/helpers";
 
 const menuData = [
   { label: "Dashboard", href: "dashboard" },
-  {
-    label: "Akun",
-    key: "akun",
-    children: [
-      { label: "Anggota", href: "anggotaList" },
-      {
-        label: "Report",
-        key: "akun-report",
-        children: [{ label: "Anggota", href: "anggotaReport" }],
-      },
-    ],
-  },
-  { label: "Article", href: "article" },
-  {
-    label: "Hibah",
-    key: "hibah",
-    children: [
-      { label: "List", href: "hibahList" },
-      {
-        label: "Report",
-        key: "hibah-report",
-        children: [{ label: "Hibah", href: "hibahReport" }],
-      },
-    ],
-  },
-  {
-    label: "Program",
-    key: "program",
-    children: [
-      {
-        label: "Pinjaman Lunak",
-        key: "program-pinjaman",
-        children: [
-          { label: "List", href: "pinjamanList" },
-          { label: "Transaksi", href: "pinjamanTransaksi" },
-        ],
-      },
-    ],
-  },
+  { label: "Simpanan", href: "simpananPage" },
+  { label: "Transaksi", href: "transaksiPage" },
+  { label: "Program", href: "programPage" },
+  { label: "Tabungan", href: "tabunganPage" },
+  { label: "Investasi", href: "investasiPage" },
+  { label: "Training", href: "trainingPage" },
 ];
 
-const hasActiveChild = (item, currentPath) => {
-  if (item.href === currentPath) return true;
+const hasActiveChild = (item, currentPage) => {
+  if (item.href === currentPage) return true;
   if (item.children) {
-    return item.children.some((child) => hasActiveChild(child, currentPath));
+    return item.children.some((child) => hasActiveChild(child, currentPage));
   }
   return false;
 };
 
-// =========================================================
-// SidebarMenuItem
-// =========================================================
 const SidebarMenuItem = memo(
-  ({ item, currentPath, openKeys, onDropdownToggle, onCustomNavigate }) => {
+  ({ item, currentPage, openKeys, onDropdownToggle, onCustomNavigate }) => {
     const isDropdown = !!item.children;
     const itemKey = item.key;
     const isActive = isDropdown
-      ? hasActiveChild(item, currentPath)
-      : item.href === currentPath;
+      ? hasActiveChild(item, currentPage)
+      : item.href === currentPage;
     const isOpen = isDropdown ? !!openKeys[itemKey] : false;
 
     useEffect(() => {
@@ -88,7 +52,7 @@ const SidebarMenuItem = memo(
               <SidebarMenuItem
                 key={child.key || `${itemKey}-${idx}`}
                 item={child}
-                currentPath={currentPath}
+                currentPage={currentPage}
                 openKeys={openKeys}
                 onDropdownToggle={onDropdownToggle}
                 onCustomNavigate={onCustomNavigate}
@@ -113,32 +77,26 @@ const SidebarMenuItem = memo(
   }
 );
 
-// =========================================================
-// Sidebar Utama
-// =========================================================
 export default function Sidebar({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentPath = location.pathname;
+
+  // Ambil nama halaman dari token URL untuk highlight menu
+  const currentPage = useMemo(() => {
+    const token = location.pathname.substring(1);
+    const decoded = jwtDecodePage(token);
+    return decoded?.page || "";
+  }, [location.pathname]);
 
   const [openKeys, setOpenKeys] = useState({});
 
   const handleNavigation = useCallback(
     (e, targetHref) => {
       e.preventDefault();
-
-      // 1. Tentukan halaman asal untuk tombol back
-      const returnPage = currentPath.substring(1) || "dashboard";
-
-      // 2. ENKRIPSI HREF TUJUAN (targetHref) dan returnPage
-      const backToken = jwtEncode({
-        page: targetHref, // 'registrationPage' atau 'billingPage' sesuai permintaan
-      });
-      console.log(targetHref);
-
-      navigate(`/${backToken}`);
+      const token = jwtEncode({ page: targetHref });
+      navigate(`/${token}`);
     },
-    [navigate, currentPath]
+    [navigate]
   );
 
   const handleDropdownToggle = useCallback((key, e) => {
@@ -154,13 +112,12 @@ export default function Sidebar({ user }) {
       <div className="scroll-sidebar">
         <nav className="sidebar-nav">
           <ul id="sidebarnav">
-            <li className="nav-small-cap">PERSONAL</li>
-
+            <li className="nav-small-cap">MENU UTAMA</li>
             {menuData.map((item, idx) => (
               <SidebarMenuItem
                 key={item.key || idx}
                 item={item}
-                currentPath={currentPath}
+                currentPage={currentPage}
                 openKeys={openKeys}
                 onDropdownToggle={handleDropdownToggle}
                 onCustomNavigate={handleNavigation}
