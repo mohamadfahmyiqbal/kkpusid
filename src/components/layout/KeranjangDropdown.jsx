@@ -1,3 +1,5 @@
+// src/components/layout/KeranjangDropdown.jsx
+
 import React from "react";
 import { NavDropdown, Badge } from "react-bootstrap";
 import {
@@ -13,6 +15,9 @@ import { jwtEncode } from "../../routes/helpers";
 export default function KeranjangDropdown() {
   const { bills } = useProfile();
   const navigate = useNavigate();
+
+  // Helper untuk memastikan kita selalu bekerja dengan Array
+  const safeBills = Array.isArray(bills) ? bills : [];
 
   const formatIDR = (val) =>
     new Intl.NumberFormat("id-ID", {
@@ -32,14 +37,14 @@ export default function KeranjangDropdown() {
       title={
         <div className="position-relative text-white">
           <FaShoppingCart size={18} />
-          {bills.length > 0 && (
+          {safeBills.length > 0 && (
             <Badge
               bg="danger"
               pill
               className="position-absolute top-0 start-100 translate-middle"
               style={{ fontSize: "0.6rem" }}
             >
-              {bills.length}
+              {safeBills.length}
             </Badge>
           )}
         </div>
@@ -50,24 +55,28 @@ export default function KeranjangDropdown() {
           <FaWallet className="me-2" /> Tagihan Pending
         </div>
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          {bills.length === 0 ? (
+          {safeBills.length === 0 ? (
             <div className="p-4 text-center">
               <FaCheckCircle className="text-success mb-2" size={24} />
               <p className="text-muted small mb-0">Semua tagihan lunas!</p>
             </div>
           ) : (
-            bills.map((item) => (
+            safeBills.map((item) => (
               <div
-                key={item.id}
+                key={item.bill_item_id || item.id}
                 className="p-3 border-bottom d-flex justify-content-between"
                 style={{ cursor: "pointer" }}
                 onClick={handleNavigate}
               >
-                <div>
-                  <div className="fw-bold small text-dark">
+                <div style={{ maxWidth: "70%" }}>
+                  <div className="fw-bold small text-dark text-truncate">
                     {item.description}
                   </div>
-                  <small className="text-danger">{item.due_date}</small>
+                  <small className="text-danger" style={{ fontSize: "10px" }}>
+                    {item.due_date
+                      ? new Date(item.due_date).toLocaleDateString("id-ID")
+                      : "-"}
+                  </small>
                 </div>
                 <div className="fw-bold text-primary small">
                   {formatIDR(item.amount)}
@@ -76,7 +85,7 @@ export default function KeranjangDropdown() {
             ))
           )}
         </div>
-        {bills.length > 0 && (
+        {safeBills.length > 0 && (
           <div className="p-2 border-top text-center">
             <button
               className="btn btn-link btn-sm text-decoration-none fw-bold"

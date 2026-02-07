@@ -35,15 +35,21 @@ export default function RegistrationSummary({
   useSocketListener((payload) => {
     if (
       payload.entityId === String(data?.registration_id) &&
-      payload.entityRef === "member_registration"
+      (payload.entityRef === "member_registration" ||
+        payload.entityRef === "members")
     ) {
       console.log("✅ Update Real-time diterima:", payload);
       setData((prev) => ({
         ...prev,
         final_status: payload.status || prev.final_status,
         is_approved_pengawas:
-          payload.is_approved_pengawas ?? prev.is_approved_pengawas,
-        is_approved_ketua: payload.is_approved_ketua ?? prev.is_approved_ketua,
+          payload.is_approved_pengawas !== undefined
+            ? payload.is_approved_pengawas
+            : prev.is_approved_pengawas,
+        is_approved_ketua:
+          payload.is_approved_ketua !== undefined
+            ? payload.is_approved_ketua
+            : prev.is_approved_ketua,
         bill_id: payload.billId || payload.bill_id || prev.bill_id,
         current_step_id: payload.current_step_id || prev.current_step_id,
       }));
@@ -67,28 +73,55 @@ export default function RegistrationSummary({
   } = data || {};
 
   /**
-   * LOGIKA STEPPER
-   * Menggunakan flag boolean dari JSON root agar akurat 100%
+   * LOGIKA STEPPER SIKRON (FIXED)
+   * Memvalidasi flag boolean terhadap current_step_id dan final_status
+   * untuk mencegah "Ketua Selesai" prematur.
    */
   const approvalStatus = useMemo(() => {
-    const pengawasDone = is_approved_pengawas === true;
-    const ketuaDone = is_approved_ketua === true;
+    // 52: Pengawas, 53: Ketua
+    // Pengawas dianggap selesai jika flag true ATAU berkas sudah di tangan Ketua/Selesai
+    const pengawasDone =
+      is_approved_pengawas === true ||
+      (current_step_id !== 52 && current_step_id !== null);
 
-    // Siap bayar jika kedua pihak setuju ATAU bill_id sudah terbit
-    const readyForInvoice = (pengawasDone && ketuaDone) || !!bill_id;
+    // Ketua dianggap selesai HANYA jika flag true DAN workflow sudah mencapai status akhir
+    const ketuaDone =
+      is_approved_ketua === true &&
+      (final_status === "APPROVED" || final_status === "REJECTED");
+
+    // Siap bayar jika kedua pihak setuju ATAU status sudah masuk fase bayar
+    const readyForInvoice =
+      (pengawasDone && ketuaDone) ||
+      final_status === "APPROVED" ||
+      final_status === "WAITING_PAYMENT";
 
     return { pengawasDone, ketuaDone, readyForInvoice };
-  }, [is_approved_pengawas, is_approved_ketua, bill_id]);
+  }, [
+    is_approved_pengawas,
+    is_approved_ketua,
+    bill_id,
+    current_step_id,
+    final_status,
+  ]);
 
   const handleNavigateToInvoice = useCallback(() => {
-    if (!bill_id) {
-      alert("ID Tagihan belum tersedia. Mohon tunggu proses sistem.");
-      return;
-    }
+    // Menghapus pengecekan ketat bill_id karena sistem menggunakan BillItems
+    console.log({
+      page: "billingPage",
+      registration_id: registration_id,
+      billId: bill_id,
+      category: "MEMBER_REGISTRATION",
+      filter: {
+        bill_type_id: [1, 2],
+        registration_id: registration_id,
+      },
+      displayName: "Pendaftaran Anggota",
+      return: "registrationPage",
+    });
 
     const token = jwtEncode({
       page: "billingPage",
-      registrationId: registration_id,
+      registration_id: registration_id,
       billId: bill_id,
       category: "MEMBER_REGISTRATION",
       filter: {
@@ -132,7 +165,6 @@ export default function RegistrationSummary({
 
       <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
         <Card.Body className="p-0">
-          {/* Section: Profil */}
           <div className="px-3 py-2 bg-white border-bottom d-flex align-items-center">
             <FaUser className="me-2 text-primary" size={14} />
             <span className="fw-bold small text-uppercase text-secondary">
@@ -160,7 +192,6 @@ export default function RegistrationSummary({
             </Table>
           </div>
 
-          {/* Section: Dokumen */}
           <div className="px-3 py-2 bg-white border-bottom border-top d-flex align-items-center">
             <FaIdCard className="me-2 text-primary" size={14} />
             <span className="fw-bold small text-uppercase text-secondary">
@@ -188,7 +219,6 @@ export default function RegistrationSummary({
             </Row>
           </div>
 
-          {/* Section: Stepper (Real-time) */}
           <div className="px-3 py-4 border-top bg-white text-center">
             <p className="fw-bold small text-muted text-uppercase mb-3">
               Status Persetujuan
@@ -212,7 +242,9 @@ export default function RegistrationSummary({
                   ? "DI VERIFIKASI PENGAWAS"
                   : current_step_id === 53
                   ? "DI APPROVAL KETUA"
-                  : final_status?.toUpperCase()}
+                  : final_status === "APPROVED"
+                  ? "MENUNGGU PEMBAYARAN"
+                  : final_status?.toUpperCase() || "MENUNGGU ANTRIAN"}
               </span>
             </div>
           </div>

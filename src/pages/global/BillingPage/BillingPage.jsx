@@ -49,6 +49,7 @@ const BillingPage = ({ decodedToken }) => {
   const [loadingData, setLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
+  console.log(bills);
 
   // --- EKSTRAKSI DATA DARI TOKEN ---
   const {
@@ -63,7 +64,8 @@ const BillingPage = ({ decodedToken }) => {
       decodedToken?.category || decodedToken?.setoranType || null;
     return {
       returnPage: decodedToken?.return || "dashboard",
-      registrationId: decodedToken?.registrationId || null,
+      registrationId:
+        decodedToken?.registration_id || decodedToken?.registrationId || null,
       categoryName: category,
       displayName: decodedToken?.displayName || "Simpanan",
       isSukarela: category?.toUpperCase().includes("SUKARELA"),
@@ -76,7 +78,9 @@ const BillingPage = ({ decodedToken }) => {
 
   // --- OPTIMASI: HITUNG TOTAL TERPILIH ---
   const totalAmount = useMemo(() => {
-    return bills
+    // Memastikan bills adalah array sebelum filter
+    const safeBills = Array.isArray(bills) ? bills : [];
+    return safeBills
       .filter((bill) => selectedBills.includes(bill.bill_item_id))
       .reduce((sum, bill) => sum + parseFloat(bill.amount || 0), 0);
   }, [selectedBills, bills]);
@@ -93,18 +97,29 @@ const BillingPage = ({ decodedToken }) => {
       ]);
 
       if (resPending.data?.status) {
-        // Optimasi: Urutkan berdasarkan due_date (kronologis)
-        const sorted = (resPending.data.data || []).sort(
+        // Validasi Array: Mencegah TypeError jika API mengirim non-array
+        const rawData = resPending.data.data;
+        const dataArray = Array.isArray(rawData) ? rawData : [];
+
+        const sorted = dataArray.sort(
           (a, b) =>
             new Date(a.due_date || a.createdAt) -
             new Date(b.due_date || b.createdAt)
         );
         setBills(sorted);
+      } else {
+        setBills([]);
       }
 
-      if (resHistory.data?.status) setHistory(resHistory.data.data || []);
+      if (resHistory.data?.status) {
+        setHistory(
+          Array.isArray(resHistory.data.data) ? resHistory.data.data : []
+        );
+      }
     } catch (err) {
       console.error("Gagal memuat data billing:", err);
+      setBills([]);
+      setHistory([]);
     } finally {
       setLoadingData(false);
     }
@@ -126,10 +141,12 @@ const BillingPage = ({ decodedToken }) => {
 
   // --- HANDLERS ---
   const handleSelectAll = () => {
-    if (selectedBills.length === bills.length) {
+    // Validasi Array sebelum akses length
+    const safeBills = Array.isArray(bills) ? bills : [];
+    if (selectedBills.length === safeBills.length) {
       setSelectedBills([]);
     } else {
-      setSelectedBills(bills.map((b) => b.bill_item_id));
+      setSelectedBills(safeBills.map((b) => b.bill_item_id));
     }
   };
 
@@ -150,9 +167,10 @@ const BillingPage = ({ decodedToken }) => {
         });
 
         if (response.data?.status) {
+          const itemIds = response.data.data.bill_item_ids;
           const token = jwtEncode({
             page: "invoicePage",
-            billItemIds: [response.data.data.bill_item_ids],
+            billItemIds: Array.isArray(itemIds) ? itemIds : [itemIds],
             return: "billingPage",
           });
           navigate(`/${token}`);
@@ -191,7 +209,8 @@ const BillingPage = ({ decodedToken }) => {
           <span className="fw-bold" style={{ fontSize: "14px" }}>
             {isSukarela ? "Input Nominal" : "Daftar Tagihan"}
           </span>
-          {!isSukarela && bills.length > 0 && (
+          {/* Pengecekan aman terhadap array */}
+          {!isSukarela && Array.isArray(bills) && bills.length > 0 && (
             <Form.Check
               type="checkbox"
               label={<small className="fw-bold">Pilih Semua</small>}
@@ -242,7 +261,7 @@ const BillingPage = ({ decodedToken }) => {
                 )}
               </Button>
             </div>
-          ) : bills.length > 0 ? (
+          ) : Array.isArray(bills) && bills.length > 0 ? (
             <>
               <div style={{ maxHeight: "350px", overflowY: "auto" }}>
                 <ListGroup variant="flush">
@@ -268,7 +287,10 @@ const BillingPage = ({ decodedToken }) => {
                             {bill.description || bill.type?.type_name}
                           </div>
                           <div className="text-primary fw-bold">
-                            Rp {parseFloat(bill.amount).toLocaleString("id-ID")}
+                            Rp{" "}
+                            {parseFloat(bill.amount || 0).toLocaleString(
+                              "id-ID"
+                            )}
                           </div>
                           {bill.due_date && (
                             <div
@@ -328,7 +350,7 @@ const BillingPage = ({ decodedToken }) => {
           Histori Transaksi
         </Card.Header>
         <Card.Body className="p-0">
-          {history.length > 0 ? (
+          {Array.isArray(history) && history.length > 0 ? (
             <div style={{ maxHeight: "300px", overflowY: "auto" }}>
               <ListGroup variant="flush">
                 {history.map((item, idx) => (
@@ -345,16 +367,22 @@ const BillingPage = ({ decodedToken }) => {
                           {item.description}
                         </div>
                         <div className="text-success fw-bold small">
-                          Rp {parseFloat(item.amount).toLocaleString("id-ID")}
+                          Rp{" "}
+                          {parseFloat(item.amount || 0).toLocaleString("id-ID")}
                         </div>
                         <div
                           className="text-muted"
                           style={{ fontSize: "10px" }}
                         >
-                          {new Date(item.createdAt).toLocaleDateString(
-                            "id-ID",
-                            { day: "2-digit", month: "short", year: "numeric" }
-                          )}
+                          {item.createdAt &&
+                            new Date(item.createdAt).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
                         </div>
                       </div>
                       <Badge bg="success" className="fw-normal">

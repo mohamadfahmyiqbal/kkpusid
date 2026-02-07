@@ -165,7 +165,7 @@ export default function InvoicePage() {
   const isPaid = billData?.status === "PAID";
 
   return (
-    <Container className="py-5" style={{ maxWidth: "800px" }}>
+    <Container className="py-5">
       {/* Header Navigasi */}
       <div className="d-flex justify-content-between align-items-center mb-4 d-print-none">
         <Button

@@ -1,10 +1,11 @@
 import React from "react";
 import { FaCamera, FaIdCard } from "react-icons/fa";
 
-export default function PhotoDisplay({ label, imageSource, type }) {
-  const PlaceholderIcon = type === "KTP" ? FaIdCard : FaCamera;
+export default function PhotoDisplay({ label, base64Image: imageSource }) {
+  // Menggunakan label untuk menentukan ikon placeholder
+  const PlaceholderIcon = label === "KTP" ? FaIdCard : FaCamera;
 
-  // Deteksi apakah source adalah Base64 atau URL
+  // Variabel src mengambil data dari imageSource (alias dari props base64Image)
   const src = imageSource;
 
   return (
@@ -22,6 +23,7 @@ export default function PhotoDisplay({ label, imageSource, type }) {
             backgroundColor: "#000",
           }}
           onError={(e) => {
+            e.target.onerror = null; // Mencegah looping error
             e.target.src =
               "https://placehold.co/400x300?text=Error+Loading+Image";
           }}

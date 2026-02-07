@@ -1,6 +1,7 @@
 // src/components/layout/DashboardLayout.jsx
 import React, { useState, useCallback, useEffect } from "react";
 import { useProfile } from "../../contexts/ProfileContext";
+import { useNavigate } from "react-router-dom"; // Tambahkan navigasi
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
@@ -8,6 +9,7 @@ import SkeletonContent from "./SkeletonContent";
 import NotificationPrompt from "../ui/NotificationPrompt";
 
 const DashboardLayout = ({ children }) => {
+  const navigate = useNavigate();
   const { userData, loading, error, logout } = useProfile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -19,13 +21,19 @@ const DashboardLayout = ({ children }) => {
       document.body.classList.remove("show-sidebar");
     }
 
-    // CLEANUP: Hapus class saat komponen di-unmount agar tidak merusak halaman lain
+    // CLEANUP: Hapus class saat komponen di-unmount
     return () => {
       document.body.classList.remove("show-sidebar");
     };
   }, [isSidebarOpen]);
 
-  // Handler untuk toggle sidebar (Mobile & Desktop Mini)
+  // FIX: Wrapper logout untuk memastikan navigasi ke halaman login
+  const handleLogout = useCallback(() => {
+    logout();
+    navigate("/login", { replace: true });
+  }, [logout, navigate]);
+
+  // Handler untuk toggle sidebar
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
@@ -39,7 +47,7 @@ const DashboardLayout = ({ children }) => {
     <div id="main-wrapper" className={wrapperClass}>
       <Header
         user={userData}
-        logout={logout}
+        logout={handleLogout} // Gunakan handler baru
         handleToggleSidebar={handleToggleSidebar}
         isSidebarShown={isSidebarOpen}
       />
@@ -63,7 +71,7 @@ const DashboardLayout = ({ children }) => {
                 </p>
                 <button
                   className="btn btn-primary w-100 mt-3 fw-bold"
-                  onClick={logout}
+                  onClick={handleLogout} // Gunakan handler baru
                 >
                   Kembali ke Login
                 </button>
@@ -75,10 +83,13 @@ const DashboardLayout = ({ children }) => {
               {children}
 
               {/* PROMPT NOTIFIKASI 
-                  Hanya dipicu jika data user sudah siap.
-                  Prompt ini akan menangani pengecekan izin browser secara otomatis.
+                  FIX: Memastikan ID yang dikirim valid (bisa member_id atau registration_id)
               */}
-              <NotificationPrompt memberId={userData.member_id} />
+              <NotificationPrompt
+                memberId={
+                  userData.member_id || userData.registration_id || userData.id
+                }
+              />
             </>
           )}
         </div>

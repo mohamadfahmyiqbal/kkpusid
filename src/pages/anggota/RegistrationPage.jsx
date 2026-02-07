@@ -13,6 +13,7 @@ import {
   FaGavel,
 } from "react-icons/fa";
 import UAnggota from "../../utils/api/UAnggota";
+import NotificationPrompt from "../../components/ui/NotificationPrompt";
 import RegistrationSummary from "../../components/anggota/regsitrationForm/RegistrationSummary";
 
 export default function RegistrationPage() {
@@ -30,6 +31,7 @@ export default function RegistrationPage() {
 
       const response = await UAnggota.getRegistrationStatus();
       const result = response.data;
+      console.log(result);
 
       // Validasi berdasarkan flag pendaftaran selesai dari API
       if (
@@ -99,11 +101,16 @@ export default function RegistrationPage() {
 
   if (isRegistered && registrationData) {
     return (
-      <RegistrationSummary
-        data={registrationData}
-        onBackToDashboard={handleBackToDashboard}
-        baseUrl={BASE_URL}
-      />
+      <>
+        {registrationData.final_status !== "APPROVED" && (
+          <NotificationPrompt memberId={registrationData.registration_id} />
+        )}
+        <RegistrationSummary
+          data={registrationData}
+          onBackToDashboard={handleBackToDashboard}
+          baseUrl={BASE_URL}
+        />
+      </>
     );
   }
 

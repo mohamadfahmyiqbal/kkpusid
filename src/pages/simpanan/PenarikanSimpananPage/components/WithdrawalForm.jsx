@@ -1,3 +1,5 @@
+// src/pages/simpanan/PenarikanSimpananPage/components/WithdrawalForm.jsx
+
 import React, { useState, useCallback } from "react";
 import { Form, Button, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -45,14 +47,17 @@ const WithdrawalForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const numericAmount = parseInt(parseRawNumber(formData.amount)) || 0;
+
+    // 1. Sanitasi amount: Pastikan menjadi angka murni sebelum divalidasi dan dikirim
+    const numericAmount = Number(parseRawNumber(formData.amount)) || 0;
 
     const error = validate({
       amount: numericAmount,
       balance,
       minAmount: 10000,
       method: formData.method,
-      bankAccount: userData?.bank_info,
+      // Perbaikan: Kirim bankAccount string (no rek), bukan objek bank_info
+      bankAccount: userData?.bank_info?.bank_account_no,
       cashDetails: formData.cashDetails,
     });
 
@@ -64,17 +69,27 @@ const WithdrawalForm = ({
     try {
       setLoading(true);
 
-      if (formData.method === "TRANSFER" && !userData?.bank_info) {
+      if (
+        formData.method === "TRANSFER" &&
+        !userData?.bank_info?.bank_account_no
+      ) {
         alert("Data rekening bank belum diatur. Silahkan hubungi admin.");
         setLoading(false);
         return;
       }
 
+      /**
+       * PAYLOAD FINAL:
+       * Diselaraskan dengan skema tabel fisik database kkpus.id:
+       * - amount: numeric (clean)
+       * - method: string
+       * - bank_name & bank_account_no: string flat (bukan nested object)
+       * - description: Digunakan untuk menyimpan detail penarikan tunai karena kolom fisik terbatas
+       */
       const payload = {
         amount: numericAmount,
         category: categoryCode,
         method: formData.method,
-        admin_fee: 4000,
         bank_name:
           formData.method === "TRANSFER"
             ? userData?.bank_info?.bank_name
@@ -83,12 +98,12 @@ const WithdrawalForm = ({
           formData.method === "TRANSFER"
             ? userData?.bank_info?.bank_account_no
             : null,
-        account_holder:
-          formData.method === "TRANSFER"
-            ? userData?.bank_info?.account_holder
-            : null,
-        pickup_details:
-          formData.method === "TUNAI" ? formData.cashDetails : null,
+        description:
+          formData.method === "TUNAI"
+            ? `Penarikan Tunai oleh ${formData.cashDetails.cashName} di ${formData.cashDetails.cashLocation}`
+            : `Penarikan Simpanan ${categoryCode}`,
+        // Field admin_fee dan field boolean manual (is_approved_...) dihapus
+        // karena tidak ada di skema database MySQL dan memicu ER_BAD_FIELD_ERROR.
       };
 
       const res = await USimpanan.requestWithdrawal(payload);
@@ -96,15 +111,24 @@ const WithdrawalForm = ({
       if (res.data.status) {
         onSuccess();
         setFormData((prev) => ({ ...prev, amount: "" }));
+
+        // Memastikan withdrawalId diambil dari properti yang tepat dalam response data
+        const withdrawalId = res.data.data.withdrawal_id || res.data.data.id;
+
         navigate(
           `/${jwtEncode({
             page: "transactionDetailPage",
-            withdrawalId: res.data.data.withdrawal_id,
+            withdrawalId: withdrawalId,
           })}`
         );
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal memproses penarikan");
+      // Mengambil pesan error spesifik dari MySQL/Sequelize jika ada
+      const errorMessage =
+        err.response?.data?.message ||
+        "Gagal memproses penarikan. Silahkan cek koneksi.";
+      alert(errorMessage);
+      console.error("Submit Error Context:", err.response?.data);
     } finally {
       setLoading(false);
     }
@@ -135,7 +159,10 @@ const WithdrawalForm = ({
         }}
       >
         {loading ? (
-          <Spinner animation="border" size="sm" />
+          <>
+            <Spinner animation="border" size="sm" className="me-2" />
+            MEMPROSES...
+          </>
         ) : (
           "PROSES PENCAIRAN"
         )}

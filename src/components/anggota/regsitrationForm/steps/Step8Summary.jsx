@@ -40,8 +40,8 @@ export default function Step8Summary({
   const fullAddress = `
     ${formData.alamat_ktp || ""} 
     RT.${formData.rt || "00"}/RW.${formData.rw || "00"}, 
-    ${formData.subdistrict_name || "-"}, ${formData.district_name || "-"}, 
-    ${formData.city_name || "-"}, ${formData.province_name || "-"}
+    ${formData.kelurahan || "-"}, ${formData.kecamatan || "-"}, 
+    ${formData.kota_kab || "-"}, ${formData.provinsi || "-"}
   `
     .replace(/\s+/g, " ")
     .trim();
@@ -73,10 +73,16 @@ export default function Step8Summary({
         <SectionHeader title="Dokumen Foto" onEdit={() => handleEditStep(3)} />
         <Row className="mt-3">
           <Col xs={6}>
-            <PhotoDisplay base64Image={formData.foto_ktp} label="KTP" />
+            <PhotoDisplay
+              base64Image={formData.foto_ktp || formData.ktp_photo}
+              label="KTP"
+            />
           </Col>
           <Col xs={6}>
-            <PhotoDisplay base64Image={formData.foto_swafoto} label="Swafoto" />
+            <PhotoDisplay
+              base64Image={formData.foto_swafoto || formData.selfie_photo}
+              label="Swafoto"
+            />
           </Col>
         </Row>
 

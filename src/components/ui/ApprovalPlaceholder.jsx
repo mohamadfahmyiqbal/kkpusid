@@ -1,6 +1,11 @@
 // src/components/ui/ApprovalPlaceholder.jsx
 import React from "react";
-import { FaUserShield, FaUserTie, FaCheckCircle } from "react-icons/fa";
+import {
+  FaUserShield,
+  FaUserTie,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "react-icons/fa";
 
 export default function ApprovalPlaceholder({
   role,
@@ -17,31 +22,45 @@ export default function ApprovalPlaceholder({
         style={{
           width: "65px",
           height: "65px",
-          backgroundColor: isReadyToPay
+          backgroundColor: isRejected
+            ? "#ffebee"
+            : isReadyToPay
             ? "#e3f2fd"
             : isApproved
             ? "#e8f5e9"
             : "#f8f9fa",
-          border: isReadyToPay
+          border: isRejected
+            ? "2px solid #f44336"
+            : isReadyToPay
             ? "2px solid #2196f3"
             : isApproved
             ? "2px solid #28a745"
             : "2px dashed #dee2e6",
-          color: isReadyToPay ? "#2196f3" : isApproved ? "#28a745" : "#adb5bd",
+          color: isRejected
+            ? "#f44336"
+            : isReadyToPay
+            ? "#2196f3"
+            : isApproved
+            ? "#28a745"
+            : "#adb5bd",
           transition: "all 0.3s ease",
         }}
       >
         <IconRole size={28} />
 
-        {(isApproved || isReadyToPay) && (
+        {(isApproved || isReadyToPay || isRejected) && (
           <div
             className="position-absolute bg-white rounded-circle"
             style={{ bottom: "-2px", right: "-2px", lineHeight: 0 }}
           >
-            <FaCheckCircle
-              size={20}
-              className={isReadyToPay ? "text-primary" : "text-success"}
-            />
+            {isRejected ? (
+              <FaTimesCircle size={20} className="text-danger" />
+            ) : (
+              <FaCheckCircle
+                size={20}
+                className={isReadyToPay ? "text-primary" : "text-success"}
+              />
+            )}
           </div>
         )}
       </div>
@@ -50,12 +69,22 @@ export default function ApprovalPlaceholder({
         className={`mt-2 d-block fw-bold text-uppercase`}
         style={{
           fontSize: "10px",
-          color: isReadyToPay ? "#2196f3" : isApproved ? "#28a745" : "#6c757d",
+          color: isRejected
+            ? "#f44336"
+            : isReadyToPay
+            ? "#2196f3"
+            : isApproved
+            ? "#28a745"
+            : "#6c757d",
           letterSpacing: "0.5px",
         }}
       >
         {role}
-        {isReadyToPay ? (
+        {isRejected ? (
+          <span className="d-block" style={{ fontSize: "9px" }}>
+            DITOLAK
+          </span>
+        ) : isReadyToPay ? (
           <span className="d-block" style={{ fontSize: "9px" }}>
             SIAP BAYAR
           </span>

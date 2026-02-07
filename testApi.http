@@ -1,0 +1,105 @@
+
+#####
+POST https://api.kkpus.id/api/auth/accountLogin HTTP/1.1
+Content-Type: application/json
+
+{
+ "emailHp" : "ketua@kkpus.id",
+ "password": "qwerty123!!"
+}
+#####pengawas
+PUT https://api.kkpus.id/api/approvals/pendaftaran/approve/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjcsIm1lbWJlcl9ubyI6IjAwMTAxMjI1MTYyMyIsImZ1bGxfbmFtZSI6IlBlbmdhd2FzIiwiZW1haWwiOiJwZW5nYXdhc0Bra3B1cy5pZCIsInN0YXR1c19pZCI6MiwiaWF0IjoxNzY5OTAyNTE3LCJleHAiOjE3Njk5ODg5MTd9._UVk6QjwoywNIe0a_e6af1KrojlirgJFKOQLMEfR8sk
+
+{
+    "action": "approve",
+    "notes": "Persetujuan verifikasi pendaftaran."
+}
+#####ketua
+PUT https://api.kkpus.id/api/approvals/pendaftaran/approve/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjksIm1lbWJlcl9ubyI6IjAwMTAxMjI1MTYyNSIsImZ1bGxfbmFtZSI6IktldHVhIiwiZW1haWwiOiJrZXR1YUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzY5OTEyMTk5LCJleHAiOjE3Njk5OTg1OTl9.S4nuLItLZDHUv9e1IxSwuWMXLpqyM5dBA9lu4KfZepo
+
+{
+    "action": "approve",
+    "notes": "Persetujuan verifikasi pendaftaran."
+}
+#####push
+POST https://api.kkpus.id/api/push/test-push HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjksIm1lbWJlcl9ubyI6IjAwMTAxMjI1MTYyNSIsImZ1bGxfbmFtZSI6IktldHVhIiwiZW1haWwiOiJrZXR1YUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzY5OTEyMTk5LCJleHAiOjE3Njk5OTg1OTl9.S4nuLItLZDHUv9e1IxSwuWMXLpqyM5dBA9lu4KfZepo
+
+{
+  "member_id": 23,
+  "title": "Halo!",
+  "content": "Ini tes notifikasi dari DevTools",
+  "url": "/"
+}
+###
+POST http://172.17.100.11:5002/pollingMIPS HTTP/1.1
+Content-Type: application/json
+
+{
+ "pass" : "123456",
+ "start": "2023-03-23 00:00:00",
+ "end": "2023-03-24 23:59:00"
+}
+###
+POST http://172.17.20.245:8080/newFindRecords HTTP/1.1
+Content-Type: multipart/form-data
+Access-Control-Allow-Origin: *
+
+{
+ "pass" : "123456",
+ "startTime": "2022-12-05 00:00",
+ "endTime": "2022-12-05 23:59"
+}
+###
+POST http://172.17.12.63:5001/DSNew HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc5MzczNDQyLCJleHAiOjE2Nzk0NTk4NDJ9.F1gRlPPss2OzQVvOOzPpA8kmlmpcHI5ju-ioEcdRbhs
+
+####
+POST http://172.17.12.63:5001/DSFinish HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc5MzczNDQyLCJleHAiOjE2Nzk0NTk4NDJ9.F1gRlPPss2OzQVvOOzPpA8kmlmpcHI5ju-ioEcdRbhs
+
+####
+POST http://172.17.12.63:5001/getKar HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc5MzczNDQyLCJleHAiOjE2Nzk0NTk4NDJ9.F1gRlPPss2OzQVvOOzPpA8kmlmpcHI5ju-ioEcdRbhs
+
+###
+POST http://172.17.12.63:5001/Logout HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc5MzcyOTc3LCJleHAiOjE2Nzk0NTkzNzd9.HPjkYC2_rCfIuzy2JibwGxC2um3dR6FIXDj0AONj6I4
+
+{
+ "nik" : "1803070",
+ "nama": "TEST",
+ "level": "Admin",
+ "password": "F4hmyiqbal"
+}
+###
+POST http://172.17.12.63:5001/Register HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc4NjczOTU5LCJleHAiOjE2Nzg3NjAzNTl9.ZyNhXbbvzMHfxw9DrpIgU0TelFwBhb0mZZbFpJCLgiI
+
+{
+ "nik" : "1008002",
+ "nama": "TEST",
+ "level": "Admin",
+ "password": "1008002"
+}
+###
+POST http://172.17.100.11:5002/Login HTTP/1.1
+Content-Type: application/json
+x-access-token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWsiOiIxODAzMDcwIiwiaWF0IjoxNjc5MzczNDQyLCJleHAiOjE2Nzk0NTk4NDJ9.F1gRlPPss2OzQVvOOzPpA8kmlmpcHI5ju-ioEcdRbhs
+
+{
+ "nik" : "1803070",
+ "nama": "TEST",
+ "level": "Admin",
+ "password": "1803070"
+}

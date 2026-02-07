@@ -1,47 +1,69 @@
-/* eslint-disable no-restricted-globals */
-
-self.addEventListener("install", () => {
-  self.skipWaiting();
-});
+// public/sw.js
+/*
+ * DEBUG MODE: Aktifkan Logging Ekstra
+ * Gunakan file ini untuk melacak di mana data terhenti.
+ */
 
 self.addEventListener("push", function (event) {
-  if (event.data) {
-    try {
-      // Coba baca sebagai JSON
-      const data = event.data.json();
+  console.group(
+    "%c 🛰️ PUSH RECEIVER DEBUG ",
+    "background: #222; color: #bada55"
+  );
 
-      const options = {
-        body: data.content || "Ada notifikasi baru untuk Anda.",
-        icon: "/assets/icons/PUSlogo.png",
-        badge: "/assets/icons/PUSlogo.png",
-        vibrate: [100, 50, 100],
-        data: {
-          url: data.url || "/",
-        },
-      };
-
-      event.waitUntil(
-        self.registration.showNotification(
-          data.title || "Koperasi PUS",
-          options
-        )
-      );
-    } catch (err) {
-      // JIKA BUKAN JSON (Contoh: Klik tombol Push di DevTools),
-      // tampilkan data sebagai teks biasa agar tidak crash
-      const textData = event.data.text();
-
-      event.waitUntil(
-        self.registration.showNotification("Koperasi PUS (Test)", {
-          body: textData,
-          icon: "/assets/icons/PUSlogo.png",
-        })
-      );
-    }
+  // 1. Cek apakah ada data masuk
+  if (!event.data) {
+    console.error(
+      "❌ ERROR: Push event diterima tapi TIDAK ADA DATA (Payload Kosong)."
+    );
+    console.groupEnd();
+    return;
   }
+
+  // 2. Ambil data mentah (Raw Text)
+  const rawText = event.data.text();
+  console.log("📄 Raw Payload dari Server:", rawText);
+
+  let title = "Koperasi PUS";
+  let options = {
+    icon: "/assets/icons/PUSlogo.png",
+    badge: "/assets/icons/PUSlogo.png",
+    data: { url: "/" },
+  };
+
+  try {
+    // 3. Cek apakah formatnya JSON valid
+    const data = JSON.parse(rawText);
+    console.log("✅ JSON Parsed Successfully:", data);
+
+    title = data.title || title;
+    options.body = data.content || data.body || "Pesan berhasil diurai.";
+    options.data.url = data.url || "/";
+  } catch (err) {
+    // 4. Jika bukan JSON, tampilkan sebagai teks biasa
+    console.warn("⚠️ Payload BUKAN JSON. Menggunakan fallback Text.");
+    options.body = rawText;
+  }
+
+  console.log("📢 Menampilkan Notifikasi dengan Options:", options);
+  console.groupEnd();
+
+  event.waitUntil(
+    self.registration
+      .showNotification(title, options)
+      .then(() => console.log("🚀 Notifikasi muncul di layar!"))
+      .catch((err) =>
+        console.error("❌ Browser menolak menampilkan notifikasi:", err)
+      )
+  );
 });
 
-self.addEventListener("notificationclick", function (event) {
-  event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data?.url || "/"));
-});
+/* * INSTRUKSI DEBUGGING DI CONSOLE:
+ * 1. Buka Chrome DevTools -> Tab Console.
+ * 2. Klik dropdown "top" (biasanya di bawah tab Elements/Console).
+ * 3. Pilih "Service Worker (sw.js)".
+ * 4. Tembak API PUT /approve Anda.
+ * * JIKA LOG DI ATAS TIDAK MUNCUL:
+ * Masalah ada di BACKEND (Server tidak berhasil mengirim signal ke Push Service Google/Mozilla).
+ * * JIKA LOG MUNCUL TAPI NOTIFIKASI TIDAK:
+ * Masalah ada di IZIN BROWSER atau PATH ICON/BADGE salah (404).
+ */
