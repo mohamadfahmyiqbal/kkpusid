@@ -16,10 +16,12 @@ class UAuth {
   }
 
   logout() {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("userData");
     window.location.href = "/";
   }
 }
 
-export default new UAuth();
+const uAuth = new UAuth();
+
+export default uAuth;

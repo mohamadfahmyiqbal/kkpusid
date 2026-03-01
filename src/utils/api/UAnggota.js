@@ -21,4 +21,6 @@ class UAnggota {
   }
 }
 
-export default new UAnggota();
+const uAnggota = new UAnggota();
+
+export default uAnggota;

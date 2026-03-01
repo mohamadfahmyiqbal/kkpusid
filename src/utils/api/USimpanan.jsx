@@ -7,9 +7,9 @@ class USimpanan {
    * Digunakan untuk sinkronisasi saldo real-time di halaman penarikan.
    * @param {string} category - Contoh: 'SS_SUKARELA' atau 'SW_POKOK'
    */
-  getAccountDetail(category) {
+  getAccountDetail(params) {
     // Menyesuaikan dengan backend yang membutuhkan query params 'category'
-    return http.get("/simpanan/account-detail", { params: { category } });
+    return http.get("/simpanan/account-detail", { params });
   }
 
   /**
@@ -63,4 +63,6 @@ class USimpanan {
   }
 }
 
-export default new USimpanan();
+const uSimpanan = new USimpanan();
+
+export default uSimpanan;

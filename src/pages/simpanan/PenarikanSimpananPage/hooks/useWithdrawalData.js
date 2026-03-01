@@ -1,10 +1,10 @@
 // src/pages/simpanan/PenarikanSimpananPage/hooks/useWithdrawalData.js
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useProfile } from "../../../../contexts/ProfileContext";
-import { useSocket } from "../../../../contexts/SocketContext";
+import { useProfile, useSocket } from "../../../../components/layout/contexts";
 
 export const useWithdrawalData = (categoryCode) => {
   const [history, setHistory] = useState([]);
+  const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState({
     balance: true,
     history: true,
@@ -12,10 +12,6 @@ export const useWithdrawalData = (categoryCode) => {
 
   const { userData } = useProfile();
   const { socket } = useSocket();
-
-  const balance = useMemo(() => {
-    return userData?.balance || 0;
-  }, [userData?.balance]);
 
   const bankInfo = useMemo(() => {
     return userData?.bank_info || null;
@@ -37,7 +33,8 @@ export const useWithdrawalData = (categoryCode) => {
         console.log("Update penarikan:", data);
         if (data.category === categoryCode) {
           setHistory(data.withdrawals || []);
-          setLoading((prev) => ({ ...prev, history: false }));
+          setBalance(data.balance || 0);
+          setLoading((prev) => ({ ...prev, history: false, balance: false }));
         }
       };
 
@@ -55,12 +52,6 @@ export const useWithdrawalData = (categoryCode) => {
       };
     }
   }, [socket, categoryCode, requestWithdrawals]);
-
-  useEffect(() => {
-    if (userData) {
-      setLoading((prev) => ({ ...prev, balance: false }));
-    }
-  }, [userData]);
 
   return {
     balance,

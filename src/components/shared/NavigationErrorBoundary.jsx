@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Alert, Button, Card } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { FaExclamationTriangle, FaHome, FaRedo } from "react-icons/fa";
-import { jwtEncode } from "../../routes/helpers";
+import { jwtEncode } from "../../utils/helpers";
 
 class NavigationErrorBoundary extends Component {
   constructor(props) {

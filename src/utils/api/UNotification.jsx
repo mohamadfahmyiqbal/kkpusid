@@ -23,6 +23,13 @@ class UNotification {
   }
 
   /**
+   * Mengambil kunci VAPID publik dari backend
+   */
+  getVapidPublicKey() {
+    return http.get("/push/vapid-public-key");
+  }
+
+  /**
    * Registrasi Web-Push (Opsional jika controller tersedia)
    */
   async subscribePush(subscription, memberId) {
@@ -34,14 +41,14 @@ class UNotification {
           p256dh: btoa(
             String.fromCharCode.apply(
               null,
-              new Uint8Array(subscription.getKey("p256dh"))
-            )
+              new Uint8Array(subscription.getKey("p256dh")),
+            ),
           ),
           auth: btoa(
             String.fromCharCode.apply(
               null,
-              new Uint8Array(subscription.getKey("auth"))
-            )
+              new Uint8Array(subscription.getKey("auth")),
+            ),
           ),
         },
       },
@@ -50,4 +57,6 @@ class UNotification {
   }
 }
 
-export default new UNotification();
+const uNotification = new UNotification();
+
+export default uNotification;

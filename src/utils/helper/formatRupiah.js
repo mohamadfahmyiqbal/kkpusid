@@ -4,7 +4,7 @@
  * Contoh: 50000 -> 50.000
  */
 export const formatRupiah = (value) => {
-  if (!value) return "";
+  if (value == null || value === undefined || value === "") return "";
   // Pastikan input adalah string dan ambil hanya angka
   const numberString = value.toString().replace(/[^,\d]/g, "");
   const split = numberString.split(",");

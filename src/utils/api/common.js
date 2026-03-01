@@ -1,8 +1,11 @@
 import axios from "axios";
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "https://localhost:3000/api";
+
 const api = axios.create({
-  // URL dasar yang mencakup prefix /api dari backend
-  baseURL: "https://api.kkpus.id/api",
+  // Default ke backend lokal, bisa dioverride via REACT_APP_API_BASE_URL
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +15,7 @@ const api = axios.create({
 // Interceptor untuk menyisipkan Token JWT di setiap request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     if (token) {
       // Format standar Bearer Token
       config.headers.Authorization = `Bearer ${token}`;

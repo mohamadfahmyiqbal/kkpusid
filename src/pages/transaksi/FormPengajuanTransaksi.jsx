@@ -9,10 +9,8 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
-import { jwtEncode } from "../../routes/helpers";
+import { jwtEncode } from "../../utils/helpers";
 import UTransaksi from "../../utils/api/UTransaksi";
-import { useProfile } from "../../contexts/ProfileContext";
 import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
 
 const formatCurrency = (amount) =>
@@ -33,7 +31,6 @@ const TERMS_OPTIONS = [
 
 function FormPengajuanTransaksi() {
   const navigate = useNavigate();
-  const { userData } = useProfile();
 
   const [tipeDipilih, setTipeDipilih] = useState(TIPE_OPTIONS[0]);
   const [namaBarang, setNamaBarang] = useState("");
@@ -43,19 +40,15 @@ function FormPengajuanTransaksi() {
 
   const nominalKredit = useMemo(
     () => Math.max(0, Number(nominalHarga) - Number(nominalDP)),
-    [nominalHarga, nominalDP]
+    [nominalHarga, nominalDP],
   );
   const estimasiAngsuran = useMemo(
     () =>
       nominalKredit > 0
         ? Math.ceil(nominalKredit / parseInt(tenorDipilih || 1))
         : 0,
-    [nominalKredit, tenorDipilih]
+    [nominalKredit, tenorDipilih],
   );
-
-  const handleBack = useCallback(() => {
-    navigate(`/${jwtEncode({ page: "transaksiPage" })}`);
-  }, [navigate]);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -84,7 +77,7 @@ function FormPengajuanTransaksi() {
               page: "transactionDetailPage",
               financingId: targetId,
               return: "transaksiPage",
-            })}`
+            })}`,
           );
         }
       } catch (error) {
@@ -100,22 +93,12 @@ function FormPengajuanTransaksi() {
       nominalKredit,
       estimasiAngsuran,
       navigate,
-    ]
+    ],
   );
 
   return (
     <div className="min-vh-100 bg-light pb-5">
       <Container className="py-4">
-        <div className="mx-2 mb-3">
-          <Button
-            variant="link"
-            className="p-0 text-decoration-none text-muted fw-bold d-flex align-items-center"
-            onClick={handleBack}
-          >
-            <FaArrowLeft className="me-2" /> Kembali
-          </Button>
-        </div>
-
         <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
           <Card.Body className="p-4">
             <Form onSubmit={handleSubmit}>

@@ -28,4 +28,6 @@ class UTransaksi {
   }
 }
 
-export default new UTransaksi();
+const uTransaksi = new UTransaksi();
+
+export default uTransaksi;

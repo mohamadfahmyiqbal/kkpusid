@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { jwtEncode } from "./helpers";
+import { jwtEncode } from "../utils/helpers";
 import { EncryptedPage } from "./EncryptedPage";
 import NavigationErrorBoundary from "../components/shared/NavigationErrorBoundary";
 

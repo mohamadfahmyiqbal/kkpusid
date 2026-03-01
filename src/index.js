@@ -5,19 +5,32 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// --- PENDAFTARAN SERVICE WORKER ---
+// --- SERVICE WORKER ---
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    // Pastikan file sw.js ada di folder public/
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((reg) => {
-        console.log("✅ Service Worker terdaftar dengan scope:", reg.scope);
-      })
-      .catch((err) => {
-        console.error("❌ Registrasi Service Worker gagal:", err);
-      });
-  });
+  if (process.env.NODE_ENV === "production") {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("Service Worker terdaftar:", reg.scope);
+        })
+        .catch((err) => {
+          console.error("Registrasi Service Worker gagal:", err);
+        });
+    });
+  } else {
+    // Register service worker in development for testing push notifications
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("Service Worker terdaftar di development:", reg.scope);
+        })
+        .catch((err) => {
+          console.error("Registrasi Service Worker gagal di development:", err);
+        });
+    });
+  }
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

@@ -1,6 +1,7 @@
-// src/pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage.jsx
 import React, { useMemo } from "react";
 import { Container, Card, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { jwtEncode } from "utils/helpers";
 import { useWithdrawalValidation } from "./hooks/useWithdrawalValidation";
 import WithdrawalForm from "./components/WithdrawalForm";
 import HistoryList from "./components/HistoryList";
@@ -8,15 +9,26 @@ import SaldoHeader from "./components/SaldoHeader";
 import { useWithdrawalData } from "./hooks/useWithdrawalData";
 
 const PenarikanSimpananPage = ({ decodedToken }) => {
+  const navigate = useNavigate();
   const { categoryCode } = decodedToken || {};
   const effectiveCategory = useMemo(
     () => categoryCode || "SS_SUKARELA",
-    [categoryCode]
+    [categoryCode],
   );
 
   const { balance, history, loading, refreshHistory, userData } =
     useWithdrawalData(effectiveCategory);
   const { validate } = useWithdrawalValidation();
+
+  const handleItemClick = (item) => {
+    const withdrawalId = item.withdrawal_id || item.id;
+    navigate(
+      `/${jwtEncode({
+        page: "transactionDetailPage",
+        withdrawalId: withdrawalId,
+      })}`,
+    );
+  };
 
   console.log("User Data for Withdrawal:", userData);
   console.log("Balance:", balance);
@@ -73,7 +85,11 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
                 </div>
               </Card.Header>
               <Card.Body className="px-4 pb-4">
-                <HistoryList history={history} loading={loading.history} />
+                <HistoryList
+                  history={history}
+                  loading={loading.history}
+                  onItemClick={handleItemClick}
+                />
               </Card.Body>
             </Card>
           </Col>

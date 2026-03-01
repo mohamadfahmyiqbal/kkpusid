@@ -30,6 +30,17 @@ const CashDetails = ({ cashDetails, onChange }) => {
           onChange={(e) => handleChange("cashLocation", e.target.value)}
         />
       </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label className="text-muted mb-0" style={{ fontSize: "10px" }}>
+          WAKTU TRANSAKSI
+        </Form.Label>
+        <Form.Control
+          size="sm"
+          type="text"
+          value={cashDetails.cashTime}
+          onChange={(e) => handleChange("cashTime", e.target.value)}
+        />
+      </Form.Group>
     </div>
   );
 };

@@ -6,11 +6,11 @@ class UGlobal {
   }
 
   getLandingArticles() {
-    return http.get("/articles");
+    return http.get("/content/articles");
   }
 
   getLandingText() {
-    return http.get("/landingtext");
+    return http.get("/content/landing-text");
   }
 
   // --- API WILAYAH INDONESIA ---
@@ -40,4 +40,6 @@ class UGlobal {
   }
 }
 
-export default new UGlobal();
+const uGlobal = new UGlobal();
+
+export default uGlobal;

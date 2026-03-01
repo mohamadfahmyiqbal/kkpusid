@@ -15,6 +15,7 @@ export const useWithdrawalValidation = () => {
       if (!cashDetails?.cashName?.trim()) return "Nama penerima harus diisi.";
       if (!cashDetails?.cashLocation?.trim())
         return "Lokasi pengambilan harus diisi.";
+      if (!cashDetails?.cashTime?.trim()) return "Waktu transaksi harus diisi.";
     }
 
     return null;

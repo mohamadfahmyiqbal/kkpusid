@@ -3,12 +3,9 @@
 import React, { useState, useCallback } from "react";
 import { Form, Button, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../../../routes/helpers";
+import { jwtEncode } from "../../../../utils/helpers";
 import USimpanan from "../../../../utils/api/USimpanan";
-import {
-  formatRupiah,
-  parseRawNumber,
-} from "../../../../utils/helper/formatRupiah";
+import { parseRawNumber } from "../../../../utils/helper/formatRupiah";
 import AmountInput from "./AmountInput";
 import MethodSelector from "./MethodSelector";
 import TransferDetails from "./TransferDetails";
@@ -98,10 +95,14 @@ const WithdrawalForm = ({
           formData.method === "TRANSFER"
             ? userData?.bank_info?.bank_account_no
             : null,
-        description:
+        cash_name:
+          formData.method === "TUNAI" ? formData.cashDetails.cashName : null,
+        cash_time:
+          formData.method === "TUNAI" ? formData.cashDetails.cashTime : null,
+        cash_location:
           formData.method === "TUNAI"
-            ? `Penarikan Tunai oleh ${formData.cashDetails.cashName} di ${formData.cashDetails.cashLocation}`
-            : `Penarikan Simpanan ${categoryCode}`,
+            ? formData.cashDetails.cashLocation
+            : null,
         // Field admin_fee dan field boolean manual (is_approved_...) dihapus
         // karena tidak ada di skema database MySQL dan memicu ER_BAD_FIELD_ERROR.
       };
@@ -119,7 +120,7 @@ const WithdrawalForm = ({
           `/${jwtEncode({
             page: "transactionDetailPage",
             withdrawalId: withdrawalId,
-          })}`
+          })}`,
         );
       }
     } catch (err) {

@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button, Spinner, Container, Row, Col, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaHandshake } from "react-icons/fa";
-import { jwtEncode } from "../../routes/helpers";
-import { useProfile } from "../../contexts/ProfileContext";
-import { useTransaction } from "../../contexts/TransactionContext";
+import { FaHandshake } from "react-icons/fa";
+import { jwtEncode } from "../../utils/helpers";
+import { useProfile } from "../../components/layout/contexts";
 import UTransaksi from "../../utils/api/UTransaksi";
 
 const TransaksiDashboardPage = () => {
   const navigate = useNavigate();
   const { userData } = useProfile();
-  const { activeFinancing } = useTransaction();
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +36,7 @@ const TransaksiDashboardPage = () => {
       `/${jwtEncode({
         page: "formPengajuanTransaksi",
         return: "transaksiPage",
-      })}`
+      })}`,
     );
   };
 
@@ -49,13 +47,11 @@ const TransaksiDashboardPage = () => {
         page: "transactionDetailPage",
         financingId: id,
         return: "transaksiPage",
-      })}`
+      })}`,
     );
   };
 
-  const isApproved = transactions.some(
-    (t) => t.status === "APPROVED" || t.status === 2
-  );
+  const isApproved = transactions.some((t) => t.status === "APPROVED");
   const hasPending = transactions.length > 0 && !isApproved;
 
   if (loading) {
@@ -69,16 +65,6 @@ const TransaksiDashboardPage = () => {
   return (
     <div className="min-vh-100 bg-light pb-5 animated fadeIn">
       <Container className="py-4">
-        <div className="mx-2 mb-3">
-          <Button
-            variant="link"
-            className="p-0 text-decoration-none text-muted fw-bold d-flex align-items-center"
-            onClick={() => navigate(`/${jwtEncode({ page: "dashboard" })}`)}
-          >
-            <FaArrowLeft className="me-2" /> Kembali ke Dashboard
-          </Button>
-        </div>
-
         <Row className="justify-content-center">
           <Col lg={10}>
             {isApproved ? (
@@ -109,9 +95,8 @@ const TransaksiDashboardPage = () => {
                     <span className="fw-bold">
                       Rp{" "}
                       {Number(
-                        transactions.find(
-                          (t) => t.status === "APPROVED" || t.status === 2
-                        )?.principal_amount || 0
+                        transactions.find((t) => t.status === "APPROVED")
+                          ?.nominal_kredit || 0,
                       ).toLocaleString("id-ID")}
                     </span>
                   </div>
@@ -154,11 +139,7 @@ const TransaksiDashboardPage = () => {
                   <Button
                     variant="light"
                     className="rounded-pill px-5 fw-bold text-danger border-0"
-                    onClick={() =>
-                      handleGoToDetail(
-                        transactions[0]?.financing_id || transactions[0]?.id
-                      )
-                    }
+                    onClick={() => handleGoToDetail(transactions[0]?.id)}
                   >
                     Lihat Pengajuan
                   </Button>

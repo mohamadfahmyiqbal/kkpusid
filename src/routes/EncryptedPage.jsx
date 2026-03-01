@@ -1,13 +1,15 @@
 import React, { Suspense, useMemo } from "react";
 import { Navigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import PAGE_COMPONENTS from "./PageRoutes";
-import { jwtDecodePage } from "./helpers";
-import DashboardLayoutProvider from "../components/layout/DashboardLayoutProvider";
-import { TransactionProvider } from "../contexts/TransactionContext";
+import { jwtDecodePage } from "../utils/helpers";
+import DashboardLayoutProvider from "../components/layout/providers/DashboardLayoutProvider";
+import { TransactionProvider } from "../components/layout/contexts";
 
 const PROTECTED_ROUTES = [
   "dashboard",
   "notificationPage",
+  "notificationDetailPage",
   "billingPage",
   "invoicePage",
   "accountPage",
@@ -50,9 +52,23 @@ export const EncryptedPage = React.memo(() => {
     </Suspense>
   );
 
+  const animatedPageContent = (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pageName}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {pageContent}
+      </motion.div>
+    </AnimatePresence>
+  );
+
   return needsDashboardLayout ? (
-    <DashboardLayoutProvider>{pageContent}</DashboardLayoutProvider>
+    <DashboardLayoutProvider>{animatedPageContent}</DashboardLayoutProvider>
   ) : (
-    pageContent
+    animatedPageContent
   );
 });

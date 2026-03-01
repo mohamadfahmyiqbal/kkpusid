@@ -1,36 +1,46 @@
 // src/utils/pushHelper.js
 
-function urlBase64ToUint8Array(base64String) {
-  if (!base64String || typeof base64String !== "string") {
-    throw new Error(
-      "VAPID_PUBLIC_KEY is missing or invalid. Check .env and RESTART your dev server."
-    );
-  }
+import api from '../api/common';
+import { urlBase64ToUint8Array } from './vapidHelper';
 
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
+const getVapidPublicKey = async () => {
+  try {
+    const res = await api.get('/push/vapid-public-key');
+    if (res.data?.success) {
+      return res.data.vapid_public_key;
+    } else {
+      throw new Error('Failed to fetch VAPID key');
+    }
+  } catch (error) {
+    console.error('Error fetching VAPID key:', error);
+    throw error;
   }
-  return outputArray;
-}
+};
 
 export const subscribeUser = async (memberId) => {
   try {
     const registration = await navigator.serviceWorker.ready;
-    const publicKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+    const existingSubscription = await registration.pushManager.getSubscription();
+    if (existingSubscription) {
+      console.log("Already subscribed to push notifications");
+      return;
+    }
 
-    console.log("🛠 Debug VAPID Key:", publicKey); // Pastikan ini muncul di console browser
+    const publicKey = await getVapidPublicKey();
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
 
-    // ... kirim ke backend ...
+    // Kirim subscription ke backend
+    const dataToSend = {
+      subscription,
+      member_id: memberId,
+      device_type: 'Web Browser'
+    };
+    const response = await api.post('/push/subscribe', dataToSend);
+
   } catch (error) {
     console.error("❌ Gagal Subscribe:", error.message);
   }

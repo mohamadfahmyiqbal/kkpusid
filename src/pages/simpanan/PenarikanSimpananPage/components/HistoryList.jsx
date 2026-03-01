@@ -3,7 +3,7 @@ import { ListGroup, Spinner } from "react-bootstrap";
 import { FaArrowUp } from "react-icons/fa";
 import { formatRupiah } from "../../../../utils/helper/formatRupiah";
 
-const HistoryList = ({ history, loading }) => {
+const HistoryList = ({ history, loading, onItemClick }) => {
   const getStatusStyle = useMemo(
     () => (status) => {
       const upperStatus = status?.toUpperCase();
@@ -14,7 +14,7 @@ const HistoryList = ({ history, loading }) => {
       if (upperStatus === "PENDING") return { bg: "#FFF3E0", color: "#EF6C00" };
       return { bg: "#F5F5F5", color: "#757575" };
     },
-    []
+    [],
   );
 
   const historyItems = useMemo(() => {
@@ -30,14 +30,15 @@ const HistoryList = ({ history, loading }) => {
           year: "numeric",
           hour: "2-digit",
           minute: "2-digit",
-        }
+        },
       );
 
       return (
         <ListGroup.Item
           key={item.withdrawal_id || item.id}
           className="px-0 py-3 border-0 d-flex align-items-center justify-content-between"
-          style={{ borderBottom: "1px solid #F1F4F8" }}
+          style={{ borderBottom: "1px solid #F1F4F8", cursor: "pointer" }}
+          onClick={() => onItemClick && onItemClick(item)}
         >
           <div className="d-flex align-items-center">
             <div

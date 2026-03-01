@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Row, Col, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../../routes/helpers";
+import { jwtEncode } from "../../../utils/helpers";
 import USimpanan from "../../../utils/api/USimpanan";
-import { useSocket } from "../../../contexts/SocketContext";
+import { useSocket } from "../../../components/layout/contexts";
 import UTransaksi from "../../../utils/api/UTransaksi";
-import { useProfile } from "../../../contexts/ProfileContext";
 import PageHeader from "./components/PageHeader";
 import MemberInfoSection from "./components/MemberInfoSection";
 import PaymentDetailsSection from "./components/PaymentDetailsSection";
@@ -46,7 +45,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
         setLoading(false);
       }
     },
-    [transactionId, isFinancing]
+    [transactionId, isFinancing],
   );
 
   useEffect(() => {
@@ -70,20 +69,21 @@ const TransactionDetailPage = ({ decodedToken }) => {
     };
 
     const handleWithdrawalUpdate = (data) => {
-      const hasMatch = data.withdrawals?.some(
-        (w) => String(w.withdrawal_id) === String(transactionId)
-      );
-      if (hasMatch) fetchDetail(false);
+      if (String(data.entityId) === String(transactionId)) {
+        fetchDetail(false);
+      }
     };
 
     socket.on("REGISTRATION_UPDATED", handleGenericUpdate);
     socket.on("TRANSACTION_UPDATED", handleGenericUpdate);
     socket.on("withdrawals:update", handleWithdrawalUpdate);
+    socket.on("financing_applications:update", handleGenericUpdate);
 
     return () => {
       socket.off("REGISTRATION_UPDATED", handleGenericUpdate);
       socket.off("TRANSACTION_UPDATED", handleGenericUpdate);
       socket.off("withdrawals:update", handleWithdrawalUpdate);
+      socket.off("financing_applications:update", handleGenericUpdate);
     };
   }, [socket, transactionId, fetchDetail]);
 

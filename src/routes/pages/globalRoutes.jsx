@@ -1,15 +1,18 @@
-import AccountPage from "../../pages/anggota/AccountPage";
-import BillingPage from "../../pages/global/BillingPage/BillingPage";
-import InvoicePage from "../../pages/global/invoice/InvoicePage";
-import LandingPage from "../../pages/global/landing/LandingPage";
-import NotificationPage from "../../pages/global/NotificationPage";
-import SplashScreen from "../../pages/global/SplashScreen";
+import AccountPage from "../../pages/anggota/AccountPage/AccountPage";
+import BillingPage from "../../pages/global/BillingPage/pages/BillingPage";
+import InvoicePage from "../../pages/global/InvoicePage/pages/InvoicePage";
+import LandingPage from "../../pages/global/LandingPage/LandingPage";
+import NotificationPage, {
+  NotificationDetailPage,
+} from "../../pages/global/NotificationPage";
+import SplashPage from "../../pages/global/SplashPage/page/SplashPage";
 import TransactionDetailPage from "../../pages/global/transaction/TransactionDetailPage";
 
 const globalRoutes = {
-  globalSplash: SplashScreen,
+  globalSplash: SplashPage,
   landingPage: LandingPage,
   notificationPage: NotificationPage,
+  notificationDetailPage: NotificationDetailPage,
   billingPage: BillingPage,
   invoicePage: InvoicePage,
   accountPage: AccountPage,

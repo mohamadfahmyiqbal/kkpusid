@@ -25,24 +25,24 @@ export default function ApprovalPlaceholder({
           backgroundColor: isRejected
             ? "#ffebee"
             : isReadyToPay
-            ? "#e3f2fd"
-            : isApproved
-            ? "#e8f5e9"
-            : "#f8f9fa",
+              ? "#e3f2fd"
+              : isApproved
+                ? "#e8f5e9"
+                : "#f8f9fa",
           border: isRejected
             ? "2px solid #f44336"
             : isReadyToPay
-            ? "2px solid #2196f3"
-            : isApproved
-            ? "2px solid #28a745"
-            : "2px dashed #dee2e6",
+              ? "2px solid #2196f3"
+              : isApproved
+                ? "2px solid #28a745"
+                : "2px dashed #dee2e6",
           color: isRejected
             ? "#f44336"
             : isReadyToPay
-            ? "#2196f3"
-            : isApproved
-            ? "#28a745"
-            : "#adb5bd",
+              ? "#2196f3"
+              : isApproved
+                ? "#28a745"
+                : "#adb5bd",
           transition: "all 0.3s ease",
         }}
       >
@@ -72,10 +72,10 @@ export default function ApprovalPlaceholder({
           color: isRejected
             ? "#f44336"
             : isReadyToPay
-            ? "#2196f3"
-            : isApproved
-            ? "#28a745"
-            : "#6c757d",
+              ? "#2196f3"
+              : isApproved
+                ? "#28a745"
+                : "#6c757d",
           letterSpacing: "0.5px",
         }}
       >

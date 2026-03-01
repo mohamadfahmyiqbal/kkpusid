@@ -17,13 +17,13 @@ const PaymentDetailsSection = ({ detail, isFinancing }) => (
         <InfoRow
           label="Harga"
           value={`Rp ${(Number(detail?.item_price) || 0).toLocaleString(
-            "id-ID"
+            "id-ID",
           )}`}
         />
         <InfoRow
           label="DP"
           value={`Rp ${(Number(detail?.down_payment) || 0).toLocaleString(
-            "id-ID"
+            "id-ID",
           )}`}
         />
         <InfoRow
@@ -39,9 +39,7 @@ const PaymentDetailsSection = ({ detail, isFinancing }) => (
         />
         <InfoRow
           label="Total"
-          value={`Rp ${(
-            Number(detail?.amount) + Number(detail?.admin_fee || 4000)
-          ).toLocaleString("id-ID")}`}
+          value={`Rp ${(Number(detail?.amount) || 0).toLocaleString("id-ID")}`}
           isTotal
         />
       </>

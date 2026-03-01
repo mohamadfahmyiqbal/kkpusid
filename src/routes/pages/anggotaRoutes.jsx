@@ -1,7 +1,7 @@
-import RegistrationSummary from "../../components/anggota/regsitrationForm/RegistrationSummary";
-import AccountPage from "../../pages/anggota/AccountPage";
-import RegistrationFormDetail from "../../pages/anggota/RegistrationFormDetail";
-import RegistrationPage from "../../pages/anggota/RegistrationPage";
+import RegistrationSummary from "../../pages/anggota/RegistrationSummary";
+import AccountPage from "../../pages/anggota/AccountPage/AccountPage";
+import RegistrationFormDetail from "../../pages/anggota/RegistrationFormDetail/pages/RegistrationFormDetail";
+import RegistrationPage from "../../pages/anggota/RegistrationPage/pages/RegistrationPage";
 
 const anggotaRoutes = {
   accountPage: AccountPage,

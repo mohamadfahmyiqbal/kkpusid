@@ -58,4 +58,6 @@ class UBilling {
   }
 }
 
-export default new UBilling();
+const uBilling = new UBilling();
+
+export default uBilling;

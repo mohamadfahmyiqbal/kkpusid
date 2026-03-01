@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Alert, Button } from "react-bootstrap";
 import { FaBell, FaTimes } from "react-icons/fa";
 import { subscribeUser } from "../../utils/helper/pushHelper";
+import api from "../../utils/api/common";
 
 export default function NotificationPrompt({ memberId }) {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -14,16 +15,39 @@ export default function NotificationPrompt({ memberId }) {
       Notification.permission === "default"
     ) {
       // Tampilkan prompt setelah delay 2 detik agar tidak terlalu intrusif
-      const timer = setTimeout(() => setShowPrompt(true), 2000);
+      const timer = setTimeout(() => {
+        setShowPrompt(true);
+      }, 2000);
       return () => clearTimeout(timer);
+    } else {
+      // Jika izin sudah granted, langsung subscribe
+      if (Notification.permission === "granted") {
+        subscribeUser(memberId);
+      }
     }
-  }, []);
+  }, [memberId]);
 
   const handleEnable = async () => {
     setShowPrompt(false);
     // Memicu prompt asli browser
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
+      // Kirim notifikasi test dulu untuk debug
+      try {
+        const testResponse = await api.post("/push/test-push", {
+          member_id: memberId,
+          title: "Notifikasi Diaktifkan",
+          message:
+            "Aktivasi notifikasi real-time berhasil! Anda akan menerima update terkini.",
+          url: "/dashboard",
+        });
+      } catch (error) {
+        console.error(
+          "❌ [NotificationPrompt] Failed to send test notification:",
+          error,
+        );
+      }
+
       await subscribeUser(memberId);
     }
   };
