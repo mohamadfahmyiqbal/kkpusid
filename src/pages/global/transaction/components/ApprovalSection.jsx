@@ -6,29 +6,48 @@ const ApprovalSection = ({ approvalStatus }) => {
   if (!approvalStatus) return null;
 
   return (
-    <section className="mb-4 pt-3 border-top">
-      <h6 className="fw-bold small text-uppercase text-secondary mb-4 text-center">
-        Approval
-      </h6>
-      <div className="d-flex justify-content-around pb-3">
-        <ApprovalPlaceholder
-          role="Pengawas"
-          isApproved={approvalStatus.pengawasDone}
-          isRejected={approvalStatus.isRejected}
-          isReadyToPay={approvalStatus.isReadyToPay}
+    <section className="mt-5 p-4 rounded-4 bg-light bg-opacity-50 border border-light-subtle shadow-sm">
+      <div className="text-center mb-4">
+        <h6 className="fw-bold small text-uppercase text-secondary tracking-wider mb-1" style={{ fontSize: '11px', letterSpacing: '2px' }}>
+          Alur Persetujuan
+        </h6>
+        <div className="mx-auto" style={{ width: '30px', height: '2px', background: '#cbd5e1' }}></div>
+      </div>
+      
+      <div className="position-relative">
+        {/* Connector Line */}
+        <div 
+          className="position-absolute d-none d-md-block" 
+          style={{ 
+            top: '32px', 
+            left: '15%', 
+            right: '15%', 
+            height: '2px', 
+            background: 'linear-gradient(90deg, #e2e8f0 0%, #e2e8f0 100%)',
+            zIndex: 0 
+          }} 
         />
-        <ApprovalPlaceholder
-          role="Ketua"
-          isApproved={approvalStatus.ketuaDone}
-          isRejected={approvalStatus.isRejected}
-          isReadyToPay={approvalStatus.isReadyToPay}
-        />
-        <ApprovalPlaceholder
-          role="Bendahara"
-          isApproved={approvalStatus.bendaharaDone}
-          isRejected={approvalStatus.isRejected}
-          isReadyToPay={approvalStatus.isReadyToPay}
-        />
+        
+        <div className="d-flex justify-content-between align-items-start position-relative" style={{ zIndex: 1 }}>
+          <ApprovalPlaceholder
+            role="Pengawas"
+            isApproved={approvalStatus.isApproved || approvalStatus.pengawasDone}
+            isRejected={approvalStatus.isRejected}
+            isReadyToPay={approvalStatus.isReadyToPay}
+          />
+          <ApprovalPlaceholder
+            role="Ketua"
+            isApproved={approvalStatus.isApproved || approvalStatus.ketuaDone}
+            isRejected={approvalStatus.isRejected}
+            isReadyToPay={approvalStatus.isReadyToPay}
+          />
+          <ApprovalPlaceholder
+            role="Bendahara"
+            isApproved={approvalStatus.isApproved || approvalStatus.bendaharaDone}
+            isRejected={approvalStatus.isRejected}
+            isReadyToPay={approvalStatus.isReadyToPay}
+          />
+        </div>
       </div>
     </section>
   );

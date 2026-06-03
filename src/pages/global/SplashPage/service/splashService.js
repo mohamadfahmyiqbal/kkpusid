@@ -1,6 +1,6 @@
 import { jwtEncode } from "../../../../utils/helpers";
 
-export const DEFAULT_SPLASH_DELAY = 1200;
+export const DEFAULT_SPLASH_DELAY = 5000;
 
 export const getSplashDelay = (delay) => {
   const parsed = Number(delay);

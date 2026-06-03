@@ -1,77 +1,137 @@
 import React from "react";
-import { Container, Nav } from "react-bootstrap";
-import { IoLogIn, IoArrowBack } from "react-icons/io5";
-// Pastikan path import ini sesuai dengan struktur folder Anda
+import { Container, Navbar, Nav, Button } from "react-bootstrap";
 import { jwtEncode } from "../../../../utils/helpers";
 
-/**
- * Header Landing yang dinamis dengan proteksi Encrypted Routing.
- * * @param {object} props
- * @param {string} props.targetPageName - Nama halaman tujuan (default: 'authLogin').
- * @param {string} props.linkText - Teks tombol (default: 'Login').
- * @param {string} props.iconType - Tipe ikon 'login' atau 'back'.
- */
-const LandingHeader = ({
-  targetPageName = "authLogin",
-  linkText = "Login",
-  iconType = "login",
-}) => {
-  const SPLASH_PAGE_NAME = "globalSplash";
-
-  // Helper untuk melakukan encode secara aman
-  const getSafePath = (pageName) => {
-    try {
-      // Validasi: jwtEncode mewajibkan properti 'page' string
-      if (!pageName) {
-        console.warn(
-          "LandingHeader: targetPageName is missing, falling back to Splash",
-        );
-        return `/${jwtEncode({ page: SPLASH_PAGE_NAME })}`;
-      }
-      return `/${jwtEncode({ page: pageName })}`;
-    } catch (error) {
-      console.error("LandingHeader JWT Error:", error);
-      return "/"; // Fallback ke root jika gagal total
+const LandingHeader = () => {
+  const handleScrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  const SPLASH_PATH = getSafePath(SPLASH_PAGE_NAME);
-  const TARGET_PATH = getSafePath(targetPageName);
+  const handleRegister = () => {
+    window.location.href = "/" + jwtEncode({ page: "accountRegisterPage" });
+  };
 
-  // Seleksi Ikon
-  const targetIcon =
-    iconType === "back" ? <IoArrowBack size={24} /> : <IoLogIn size={24} />;
+  const handleLogin = () => {
+    window.location.href = "/" + jwtEncode({ page: "authLogin" });
+  };
 
   return (
-    <header className="l-header fixed-top py-1 shadow-sm">
-      <nav className="navbar navbar-expand-md navbar-dark">
-        <Container>
-          {/* LOGO: Navigasi ke Splash Page */}
-          <a className="navbar-brand me-3 fw-bold fs-4" href={SPLASH_PATH}>
-            <img
-              src="/assets/icons/pusLogo.png"
-              alt="Logo PUS"
-              className="l-logo-size"
-              style={{ height: "40px", objectFit: "contain" }}
-              loading="lazy"
-            />
-          </a>
-
-          <div className="ms-auto d-flex align-items-center">
-            <Nav>
-              <Nav.Link
-                href={TARGET_PATH}
-                className="text-white d-flex align-items-center"
-                style={{ cursor: "pointer", textDecoration: "none" }}
-              >
-                {targetIcon}
-                <span className="ms-2 d-none d-sm-inline">{linkText}</span>
-              </Nav.Link>
-            </Nav>
+    <Navbar expand="lg" fixed="top" variant="dark" className="pbs-navbar py-2">
+      <Container fluid className="px-3 px-md-5">
+        <Navbar.Brand
+          className="text-white d-flex align-items-center gap-2"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          style={{ fontSize: "14px" }}
+        >
+          <img
+            src="/assets/icons/PUSlogo.png"
+            alt="PUS Logo"
+            style={{ height: "30px", width: "auto" }}
+          />
+          <div style={{ lineHeight: "1.1", fontWeight: "700" }}>
+            Paguyuban Usaha
+            <br />
+            <span style={{ fontSize: "10px", fontWeight: "600", color: "#00c6a7", textTransform: "uppercase", letterSpacing: "0.5px" }}>Sukses</span>
           </div>
-        </Container>
-      </nav>
-    </header>
+        </Navbar.Brand>
+
+        <Navbar.Toggle aria-controls="landing-navbar-nav" />
+        <Navbar.Collapse id="landing-navbar-nav">
+          <Nav className="mx-auto gap-2">
+            <Nav.Link
+              className="text-white"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Beranda
+            </Nav.Link>
+            <Nav.Link
+              className="text-white"
+              href="#layanan"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("layanan");
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Layanan
+            </Nav.Link>
+            <Nav.Link
+              className="text-white"
+              href="#tentang"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("tentang");
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Tentang Kami
+            </Nav.Link>
+            <Nav.Link
+              className="text-white"
+              href="#cara-kerja"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("cara-kerja");
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Cara Kerja
+            </Nav.Link>
+            <Nav.Link
+              className="text-white"
+              href="#artikel"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("artikel");
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Artikel
+            </Nav.Link>
+            <Nav.Link
+              className="text-white"
+              href="#kontak"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("kontak");
+              }}
+              style={{ fontSize: "13px", fontWeight: "500" }}
+            >
+              Kontak
+            </Nav.Link>
+          </Nav>
+
+          <Button
+            variant="light"
+            className="rounded-pill px-3 me-2"
+            onClick={handleRegister}
+            style={{ fontSize: "12.5px", fontWeight: "600", padding: "5px 14px" }}
+          >
+            Daftar Sekarang
+          </Button>
+          <Button
+            variant="outline-light"
+            className="rounded-pill px-3"
+            onClick={handleLogin}
+            style={{ fontSize: "12.5px", fontWeight: "600", padding: "5px 14px" }}
+          >
+            Login
+          </Button>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 };
 

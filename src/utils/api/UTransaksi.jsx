@@ -2,27 +2,27 @@ import http from "./common";
 
 class UTransaksi {
   getGeneralTransactionHistory(params) {
-    return http.get("/financing/history", { params });
+    return http.get("/financial/history", { params });
   }
 
   submitPengajuan(data) {
-    return http.post("/financing/apply", data);
+    return http.post("/financial/apply", data);
   }
 
   getFinancingDetail(id) {
-    return http.get(`/financing/detail/${id}`);
+    return http.get(`/financial/detail/${id}`);
   }
 
   getOptions() {
-    return http.get("/financing/options");
+    return http.get("/financial/options");
   }
 
   getTerms() {
-    return http.get("/financing/terms");
+    return http.get("/financial/terms");
   }
 
   downloadReceipt(id) {
-    return http.get(`/financing/receipt/${id}`, {
+    return http.get(`/financial/receipt/${id}`, {
       responseType: "blob",
     });
   }

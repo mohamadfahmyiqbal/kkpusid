@@ -1,202 +1,374 @@
-// pages/program/FormPengajuanPinjaman.jsx (Final & Integrated)
+// pages/program/pinjaman/FormPengajuanPinjaman.jsx
 
-import React, { useState, useCallback } from "react";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import { FaArrowLeft } from "react-icons/fa";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { Row, Col, Card, Form, Alert } from "react-bootstrap";
+import { FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
+import useSocketListener from "../../../utils/helper/SocketListener";
+import { useProfile } from "../../../components/layout/contexts";
 
-// --- Komponen Pembantu (Dihilangkan untuk brevity, asumsikan berada di sini) ---
-const FormInputField = ({
-  label,
-  value,
-  name,
-  type = "text",
-  readOnly = false,
-  onChange,
-  placeholder = "",
-}) => (
-  // ... (JSX for FormInputField)
-  <Form.Group className="mb-3">
-    <Form.Label className="small mb-0 text-muted">{label}</Form.Label>
-    <Form.Control
-      type={type}
-      name={name}
-      defaultValue={value}
-      placeholder={placeholder}
-      readOnly={readOnly}
-      onChange={onChange}
-      className="fw-bold border-0 border-bottom rounded-0 px-0"
-    />
-  </Form.Group>
-);
+// Import modular sub-components
+import NominalTenorSection from "./components/NominalTenorSection";
+import DisbursementSection from "./components/DisbursementSection";
+import FileUploadField from "./components/FileUploadField";
+import SimulationSummary from "./components/SimulationSummary";
 
-const SummaryDetailCredit = ({ nominal, angsuran, akad }) => (
-  // ... (JSX for SummaryDetailCredit)
-  <Card className="shadow-sm border-0 mt-4">
-    <Card.Body>
-      <h5 className="fw-bold mb-3 text-primary">Summary Detail Credit</h5>
-      {/* ... details ... */}
-    </Card.Body>
-  </Card>
-);
+import "./FormPengajuanPinjaman.css";
 
-const FileUploadField = () => (
-  // ... (JSX for FileUploadField)
-  <Form.Group className="mb-4">
-    <Form.Label className="fw-bold">Upload Evidence (Maks. 5MB)</Form.Label>
-    <div className="border border-dashed border-secondary text-center p-5 text-muted hover-shadow">
-      **Drag & Drop File** atau **Klik untuk Memilih**
-    </div>
-  </Form.Group>
-);
-// -----------------------------------------------------------------------------
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://localhost:3445/api";
+
+const getApiUrl = (endpoint) => {
+  const base = API_BASE_URL.endsWith("/api") ? API_BASE_URL : `${API_BASE_URL}/api`;
+  return `${base}/${endpoint}`;
+};
+
+const normalizeBankName = (bankName) => {
+  if (!bankName) return "Bank Syariah Indonesia";
+  const name = bankName.toLowerCase();
+  if (name.includes("syariah") || name.includes("bsi")) return "Bank Syariah Indonesia";
+  if (name.includes("mandiri")) return "Bank Mandiri";
+  if (name.includes("bca") || name.includes("central asia")) return "BCA";
+  if (name.includes("bri") || name.includes("rakyat indonesia")) return "BRI";
+  if (name.includes("bni") || name.includes("negara indonesia")) return "BNI";
+  return "Bank Syariah Indonesia";
+};
 
 export default function FormPengajuanPinjaman() {
   const navigate = useNavigate();
+  const { userData } = useProfile();
   const [formData, setFormData] = useState({
     nominalPinjaman: "3000000",
     termPembayaran: "3",
+    jenisPinjaman: "",
+    metodePencairan: "Non Tunai",
+    noRekening: "",
+    bankTujuan: "Bank Syariah Indonesia",
+    lokasiPencairan: "",
+    tanggalPencairan: "",
+    jamPencairan: "",
+    namaNasabah: "",
   });
 
-  const handleInputChange = useCallback((e) => {
-    const value = e.target.type === "number" ? e.target.value : e.target.value;
-    setFormData((prev) => ({ ...prev, [e.target.name]: value }));
+  useEffect(() => {
+    if (userData) {
+      const rawBankName = userData.bank_name || userData.bank_info?.bank_name || "";
+      const defaultBankName = normalizeBankName(rawBankName);
+      const defaultAccountNo = userData.bank_account_no || userData.bank_info?.bank_account_no || "";
+      const defaultName = userData.name || userData.full_name || userData.member?.name || "";
+
+      setFormData((prev) => ({
+        ...prev,
+        noRekening: prev.noRekening || defaultAccountNo,
+        bankTujuan: prev.noRekening === "" ? defaultBankName : prev.bankTujuan,
+        namaNasabah: prev.namaNasabah || defaultName,
+      }));
+    }
+  }, [userData]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [loanProducts, setLoanProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [errors, setErrors] = useState({});
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "",
+    message: "",
+  });
+
+  const formatCurrency = (val) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(val);
+
+  const fetchLoanProducts = useCallback(async () => {
+    try {
+      const response = await fetch(getApiUrl("program/pinjaman/produk"), {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setLoanProducts(result.data);
+        if (result.data.length > 0) {
+          const first = result.data[0];
+          setFormData((prev) => ({
+            ...prev,
+            jenisPinjaman: first.name,
+            termPembayaran: (first.default_term || 12).toString(),
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error products:", error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
   }, []);
 
-  const handleProses = useCallback(() => {
-    if (
-      parseInt(formData.nominalPinjaman) <= 0 ||
-      parseInt(formData.termPembayaran) <= 0
-    ) {
-      alert("Nominal dan Term Pembayaran harus lebih dari nol.");
-      return;
+  useEffect(() => {
+    fetchLoanProducts();
+  }, [fetchLoanProducts]);
+
+  useSocketListener((payload) => {
+    if (payload?.entityRef === "financing_applications") {
+      console.log("🔄 Financing application updated via socket");
+      fetchLoanProducts();
     }
+  });
 
-    // Navigasi ke Halaman Detail Pinjaman (Key Baru)
-    const token = jwtEncode({ page: "pinjamanDetailPage" });
-    navigate(`/${token}`);
+  const selectedProduct = useMemo(
+    () => loanProducts.find((p) => p.name === formData.jenisPinjaman),
+    [loanProducts, formData.jenisPinjaman],
+  );
 
-    console.log("Navigasi ke Halaman Detail Pinjaman.");
-  }, [formData, navigate]);
+  const validateForm = () => {
+    const newErrors = {};
+    const nominal = parseInt(formData.nominalPinjaman) || 0;
+    if (nominal < 1000000) newErrors.nominalPinjaman = "Minimal pinjaman Rp 1.000.000";
+    if (formData.metodePencairan === "Non Tunai") {
+      if (!formData.noRekening) newErrors.noRekening = "Nomor rekening wajib diisi";
+      if (!formData.bankTujuan) newErrors.bankTujuan = "Pilih bank tujuan";
+    } else {
+      if (!formData.lokasiPencairan) newErrors.lokasiPencairan = "Lokasi wajib diisi";
+      if (!formData.tanggalPencairan) newErrors.tanggalPencairan = "Pilih tanggal";
+      if (!formData.jamPencairan) newErrors.jamPencairan = "Pilih jam";
+    }
+    if (!formData.namaNasabah) newErrors.namaNasabah = "Nama nasabah wajib diisi";
 
-  const handleBack = useCallback(() => {
-    const token = jwtEncode({ page: "programPage" });
-    navigate(`/${token}`);
-  }, [navigate]);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  // --- Kalkulasi untuk Summary ---
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (name === "nominalPinjaman") {
+      setFormData((prev) => ({ ...prev, [name]: value.replace(/\D/g, "") }));
+    } else if (name === "jenisPinjaman") {
+      const product = loanProducts.find((p) => p.name === value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        termPembayaran: (product?.default_term || 12).toString(),
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const setNominalQuick = (val) => {
+    setErrors((prev) => ({ ...prev, nominalPinjaman: "" }));
+    setFormData((prev) => ({ ...prev, nominalPinjaman: val.toString() }));
+  };
+
+  const setTenorQuick = (val) => {
+    setFormData((prev) => ({ ...prev, termPembayaran: val.toString() }));
+  };
+
+  const uploadEvidenceFile = async (financingId, file) => {
+    const formDataFile = new FormData();
+    formDataFile.append("evidence", file);
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", getApiUrl(`financing/evidence/${financingId}`));
+      xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("token")}`);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        const res = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) resolve(res);
+        else reject(new Error(res.message || "Gagal upload file"));
+      };
+
+      xhr.onerror = () => reject(new Error("Network Error"));
+      xhr.send(formDataFile);
+    });
+  };
+
+  const handleProses = async () => {
+    if (!validateForm()) return;
+    setIsLoading(true);
+
+    try {
+      const nominal = parseInt(formData.nominalPinjaman);
+      const tenure = parseInt(formData.termPembayaran);
+
+      const payload = {
+        category: formData.jenisPinjaman,
+        item_name: `Pinjaman ${formData.jenisPinjaman}`,
+        amount_requested: nominal,
+        down_payment: 0,
+        principal_amount: nominal,
+        tenure: tenure,
+        monthly_installment: Math.ceil(nominal / tenure),
+        metode_pencairan: formData.metodePencairan,
+        nama_nasabah: formData.namaNasabah,
+        akad_type: selectedProduct?.akad_type || "Murabahah",
+        ...(formData.metodePencairan === "Non Tunai"
+          ? {
+              no_rekening: formData.noRekening,
+              bank_tujuan: formData.bankTujuan,
+            }
+          : {
+              lokasi_pencairan: formData.lokasiPencairan,
+              tanggal_pencairan: formData.tanggalPencairan,
+              jam_pencairan: formData.jamPencairan,
+            }),
+      };
+
+      const res = await fetch(getApiUrl("financing/apply"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message);
+
+      if (uploadedFile) {
+        setIsUploading(true);
+        try {
+          await uploadEvidenceFile(result.data.financing_id, uploadedFile);
+        } catch (uploadError) {
+          console.error("Upload error:", uploadError);
+          setNotification({
+            show: true,
+            type: "warning",
+            message:
+              "Pengajuan berhasil, namun upload bukti gagal. Silakan upload melalui halaman detail.",
+          });
+        }
+      }
+
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Pengajuan berhasil dikirim!",
+      });
+      const financingId = result.data?.financing_id || result.data?.id;
+      setTimeout(
+        () => navigate(`/${jwtEncode({ page: "pinjamanDetailPage", financingId })}`),
+        1500,
+      );
+    } catch (error) {
+      setNotification({ show: true, type: "danger", message: error.message });
+    } finally {
+      setIsLoading(false);
+      setIsUploading(false);
+    }
+  };
+
   const nominal = parseInt(formData.nominalPinjaman) || 0;
   const tenor = parseInt(formData.termPembayaran) || 1;
-  const estimasiAngsuran = nominal / tenor;
-
-  const formattedNominal = `Rp. ${nominal.toLocaleString("id-ID")} / ${tenor} Bulan`;
-  const formattedAngsuran = `Rp. ${estimasiAngsuran.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-
-  const akadText =
-    "Berdasarkan akad Qardh Hasan (Pinjaman Kebajikan), di mana nasabah hanya mengembalikan pokok pinjaman tanpa tambahan imbalan/bunga. Estimasi angsuran dihitung rata per bulan.";
+  const estimasiAngsuran = Math.ceil(nominal / tenor);
 
   return (
-    <LayoutGlobal>
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center d-flex align-items-center">
-          <Button
-            variant="link"
-            onClick={handleBack}
-            className="text-dark p-0 me-3"
-          >
-            <FaArrowLeft size={24} />
-          </Button>
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            Pengajuan Pinjaman Lunak
-          </h3>
-        </div>
+    <div className="form-page-container px-3 pb-5">
+      {/* Toast Notification Container */}
+      <div className="floating-alert-container">
+        <AnimatePresence>
+          {notification.show && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Alert
+                variant={notification.type}
+                className="alert-premium"
+                dismissible
+                onClose={() => setNotification({ show: false })}
+              >
+                <div className="d-flex align-items-center gap-2">
+                  <FaInfoCircle size={18} />
+                  <span className="font-outfit fw-bold">{notification.message}</span>
+                </div>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} md={12}>
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleProses();
-              }}
-            >
-              <Card className="shadow-sm p-3 mb-4 border-0">
+      <div className="container-fluid py-4 font-plus-jakarta px-0">
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleProses();
+          }}
+        >
+          <Row className="g-4">
+            {/* Left Column: Form Fields */}
+            <Col lg={7} xl={8} className="animate-fade-in">
+              <Card className="premium-form-card border-0 p-3 p-md-4">
                 <Card.Body>
-                  {/* DATA NASABAH (Read Only) */}
-                  <FormInputField label="Jenis Pinjaman" value="BBN" readOnly />
-                  <FormInputField
-                    label="Metode Pencairan"
-                    value="Non Tunai"
-                    readOnly
-                  />
-                  <FormInputField
-                    label="No Rekening Tujuan"
-                    value="2342342342423424"
-                    readOnly
-                  />
-                  <FormInputField
-                    label="Bank Tujuan"
-                    value="Bank Mandiri Syariah"
-                    readOnly
-                  />
-                  <FormInputField
-                    label="Nama Nasabah"
-                    value="Avhan Hadi"
-                    readOnly
+                  <NominalTenorSection
+                    loanProducts={loanProducts}
+                    formData={formData}
+                    errors={errors}
+                    isLoadingProducts={isLoadingProducts}
+                    handleInputChange={handleInputChange}
+                    setNominalQuick={setNominalQuick}
+                    setTenorQuick={setTenorQuick}
                   />
 
-                  {/* INPUT USER */}
-                  <hr className="my-4" />
+                  <hr className="my-4 border-slate-100" />
 
-                  <FormInputField
-                    label="Nominal Pinjaman (Rp)"
-                    name="nominalPinjaman"
-                    value={formData.nominalPinjaman}
-                    onChange={handleInputChange}
-                    type="number"
-                    placeholder="Masukkan nominal pinjaman"
+                  <DisbursementSection
+                    formData={formData}
+                    errors={errors}
+                    handleInputChange={handleInputChange}
                   />
 
-                  <FormInputField
-                    label="Pilih Term Pembayaran (Bulan)"
-                    name="termPembayaran"
-                    value={formData.termPembayaran}
-                    onChange={handleInputChange}
-                    type="number"
-                    placeholder="Contoh: 12"
-                  />
+                  <hr className="my-4 border-slate-100" />
 
-                  {/* Upload Evidence */}
-                  <FileUploadField />
+                  <FileUploadField
+                    onFileChange={setUploadedFile}
+                    isUploading={isUploading}
+                    uploadProgress={uploadProgress}
+                    uploadedFile={uploadedFile}
+                    setUploadedFile={setUploadedFile}
+                  />
                 </Card.Body>
               </Card>
+            </Col>
 
-              {/* Bagian Summary Detail Credit */}
-              <SummaryDetailCredit
-                nominal={formattedNominal}
-                angsuran={formattedAngsuran}
-                akad={akadText}
+            {/* Right Column: Sticky Summary & Simulation */}
+            <Col lg={5} xl={4} className="animate-fade-in">
+              <SimulationSummary
+                formData={formData}
+                selectedProduct={selectedProduct}
+                formatCurrency={formatCurrency}
+                nominal={nominal}
+                tenor={tenor}
+                estimasiAngsuran={estimasiAngsuran}
+                isLoading={isLoading}
+                isLoadingProducts={isLoadingProducts}
               />
-
-              {/* Tombol Proses */}
-              <div className="d-grid gap-2 mt-5 mb-5">
-                <Button
-                  variant="primary"
-                  type="submit"
-                  size="lg"
-                  className="fw-bold py-3"
-                  disabled={nominal <= 0 || tenor <= 0}
-                >
-                  Proses Pengajuan
-                </Button>
-              </div>
-            </Form>
-          </Col>
-        </Row>
-      </Container>
-    </LayoutGlobal>
+            </Col>
+          </Row>
+        </Form>
+      </div>
+    </div>
   );
 }

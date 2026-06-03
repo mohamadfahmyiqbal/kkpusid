@@ -1,14 +1,21 @@
-import RegistrationSummary from "../../pages/anggota/RegistrationSummary";
-import AccountPage from "../../pages/anggota/AccountPage/AccountPage";
-import RegistrationFormDetail from "../../pages/anggota/RegistrationFormDetail/pages/RegistrationFormDetail";
-import RegistrationPage from "../../pages/anggota/RegistrationPage/pages/RegistrationPage";
-
+import React, { lazy } from "react";
 const anggotaRoutes = {
-  accountPage: AccountPage,
-  registrationPage: RegistrationPage,
-  registrationFormDetail: RegistrationFormDetail,
-  registrationSummary: RegistrationSummary,
-  // Tambahkan halaman lain dari folder anggota di sini
+  accountPage: {
+    component: lazy(() => import("../../pages/anggota/AccountPage/AccountPage")),
+    isProtected: true,
+  },
+  registrationPage: {
+    component: lazy(() => import("../../pages/anggota/RegistrationPage/pages/RegistrationPage")),
+    isProtected: true,
+  },
+  registrationFormDetail: {
+    component: lazy(() => import("../../pages/anggota/RegistrationFormDetail/pages/RegistrationFormDetail")),
+    isProtected: true,
+  },
+  registrationSummary: {
+    component: lazy(() => import("../../pages/anggota/RegistrationSummary")),
+    isProtected: true,
+  },
 };
 
-export default anggotaRoutes; // <--- Variabel diekspor
+export default anggotaRoutes;

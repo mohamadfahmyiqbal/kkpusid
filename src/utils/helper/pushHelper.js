@@ -1,18 +1,18 @@
 // src/utils/pushHelper.js
 
-import api from '../api/common';
-import { urlBase64ToUint8Array } from './vapidHelper';
+import api from "../api/common";
+import { urlBase64ToUint8Array } from "./vapidHelper";
 
 const getVapidPublicKey = async () => {
   try {
-    const res = await api.get('/push/vapid-public-key');
+    const res = await api.get("/push/vapid-public-key");
     if (res.data?.success) {
       return res.data.vapid_public_key;
     } else {
-      throw new Error('Failed to fetch VAPID key');
+      throw new Error("Failed to fetch VAPID key");
     }
   } catch (error) {
-    console.error('Error fetching VAPID key:', error);
+    console.error("Error fetching VAPID key:", error);
     throw error;
   }
 };
@@ -20,7 +20,8 @@ const getVapidPublicKey = async () => {
 export const subscribeUser = async (memberId) => {
   try {
     const registration = await navigator.serviceWorker.ready;
-    const existingSubscription = await registration.pushManager.getSubscription();
+    const existingSubscription =
+      await registration.pushManager.getSubscription();
     if (existingSubscription) {
       console.log("Already subscribed to push notifications");
       return;
@@ -37,10 +38,9 @@ export const subscribeUser = async (memberId) => {
     const dataToSend = {
       subscription,
       member_id: memberId,
-      device_type: 'Web Browser'
+      device_type: "Web Browser",
     };
-    const response = await api.post('/push/subscribe', dataToSend);
-
+    await api.post("/push/subscribe", dataToSend);
   } catch (error) {
     console.error("❌ Gagal Subscribe:", error.message);
   }

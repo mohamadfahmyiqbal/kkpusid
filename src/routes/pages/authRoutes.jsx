@@ -1,20 +1,42 @@
-import AccountRegisterPage from "../../pages/auth/AccountRegisterPage/pages/AccountRegisterPage";
-import ForgotOtpPage from "../../pages/auth/ForgotOtpPage/ForgotOtpPage";
-import ForgotPasswordPage from "../../pages/auth/ForgotPasswordPage/ForgotPasswordPage";
-import LoginPage from "../../pages/auth/LoginPage/LoginPage";
-import ResetPasswordPage from "../../pages/auth/ResetPasswordPage/ResetPasswordPage";
-import DashboardPage from "../../features/dashboard/page/DashboardPage";
+import { lazy } from "react";
 
 const authRoutes = {
-  accountRegisterPage: AccountRegisterPage,
-  authLogin: LoginPage,
-  authForgotPassword: ForgotPasswordPage,
-  authForgotOtp: ForgotOtpPage,
-  authResetPassword: ResetPasswordPage,
-
-  // Routes Dashboard (Baru)
-  dashboard: DashboardPage, // <--- Route Dashboard
-  // Tambahkan halaman lain dari folder auth di sini
+  accountRegisterPage: {
+    component: lazy(
+      () => import("../../features/auth/page/AccountRegisterPage"),
+    ),
+    isProtected: false,
+  },
+  authLogin: {
+    component: lazy(() => import("../../features/auth/login/page/LoginPage")),
+    isProtected: false,
+  },
+  authForgotPassword: {
+    component: lazy(
+      () =>
+        import("../../features/auth/forgot-password/page/ForgotPasswordPage"),
+    ),
+    isProtected: false,
+  },
+  authForgotOtp: {
+    component: lazy(
+      () => import("../../features/auth/forgot-password/page/ForgotOtpPage"),
+    ),
+    isProtected: false,
+  },
+  authResetPassword: {
+    component: lazy(
+      () =>
+        import("../../features/auth/forgot-password/page/ResetPasswordPage"),
+    ),
+    isProtected: false,
+  },
+  dashboard: {
+    component: lazy(
+      () => import("../../features/dashboard/page/DashboardPage"),
+    ),
+    isProtected: true,
+  },
 };
 
 export default authRoutes;

@@ -34,7 +34,7 @@ export default function NotificationPrompt({ memberId }) {
     if (permission === "granted") {
       // Kirim notifikasi test dulu untuk debug
       try {
-        const testResponse = await api.post("/push/test-push", {
+        await api.post("/push/test-push", {
           member_id: memberId,
           title: "Notifikasi Diaktifkan",
           message:

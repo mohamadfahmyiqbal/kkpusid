@@ -1,307 +1,292 @@
-// 📁 src/pages/global/invoice/pages/InvoicePage.jsx
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
-import {
-  Card,
-  Button,
-  Spinner,
-  Alert,
-  Row,
-  Col,
-  Table,
-  Container,
-} from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  FaArrowLeft,
-  FaMoneyBillWave,
-  FaPrint,
-  FaCheckCircle,
-  FaRegFileAlt,
-} from "react-icons/fa";
+import React, { useCallback, useEffect, useState } from "react";
+import { Container, Spinner, Alert, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { FaExclamationTriangle, FaArrowLeft } from "react-icons/fa";
+
+// Components
+import InvoiceHeader from "../components/InvoiceHeader";
+import InvoiceCard from "../components/InvoiceCard";
+import InvoiceActions from "../components/InvoiceActions";
+
+// Hooks
+import { useInvoiceData } from "../hooks/useInvoiceData";
+
+// Utils
 import UBilling from "../../../../utils/api/UBilling";
-import { jwtDecodePage, jwtEncode } from "../../../../utils/helpers";
+import { jwtEncode } from "../../../../utils/helpers";
 
-export default function InvoicePage() {
+const InvoicePage = () => {
   const navigate = useNavigate();
-  const { token } = useParams();
-  const pollingRef = useRef(null);
-
-  // 1. Dekode data dari JWT (Bill IDs & Jalur Kembali)
-  const { billItemIds, returnPage, category } = useMemo(() => {
-    const payload = token ? jwtDecodePage(token) : {};
-    let ids = payload.billItemIds || payload.billIds || [];
-    return {
-      billItemIds: Array.isArray(ids) ? ids : [ids],
-      returnPage: payload.return || "dashboard",
-      category: payload.category || "GENERAL",
-    };
-  }, [token]);
-
-  const [billData, setBillData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLocalPaid, setIsLocalPaid] = useState(false);
 
-  // 2. Fungsi Fetch Detail Tagihan
-  const fetchBillDetail = useCallback(
-    async (isPolling = false) => {
-      try {
-        if (billItemIds.length === 0) return;
-        const response = await UBilling.getInvoiceDetail(billItemIds);
+  const {
+    billData,
+    loading,
+    error,
+    totalAmount,
+    billItemIds,
+    financingId,
+    category,
+    returnPage,
+    registrationId,
+    categoryName,
+    originalReturn,
+    startPolling,
+    stopPolling,
+    refreshData,
+    status,
+    product,
+    id,
+  } = useInvoiceData();
 
-        if (response.data?.status) {
-          const newData = response.data.data;
-          setBillData(newData);
-
-          // Jika status sudah PAID, hentikan polling & loading
-          if (newData.status === "PAID") {
-            setIsProcessing(false);
-            stopPolling();
-          }
-        }
-      } catch (err) {
-        console.error("Fetch invoice error:", err);
-      } finally {
-        if (!isPolling) setLoading(false);
-      }
-    },
-    [billItemIds],
-  );
-
-  const startPolling = () => {
-    if (pollingRef.current) return;
-    pollingRef.current = setInterval(() => fetchBillDetail(true), 5000);
-  };
-
-  const stopPolling = () => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-  };
-
+  // Listener untuk menutup Snap popup dari socket notification
   useEffect(() => {
-    fetchBillDetail();
-    return () => stopPolling();
-  }, [fetchBillDetail]);
+    const handlePaymentComplete = () => {
+      console.log("🔔 InvoicePage: Payment completion event received");
+      
+      // Beri sedikit jeda agar backend selesai memproses ledger
+      setTimeout(async () => {
+        if (window.snap && window.snap.hide) {
+          window.snap.hide();
+        }
+        await refreshData();
+        setIsProcessing(false);
+      }, 1500);
+    };
 
-  const totalAmount = useMemo(
-    () =>
-      billData?.details?.reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0,
-      ) || 0,
-    [billData],
-  );
+    window.addEventListener("CLOSE_SNAP_POPUP", handlePaymentComplete);
+    window.addEventListener("PAYMENT_SUCCESSFUL", handlePaymentComplete);
 
-  // 3. Navigasi Kembali Dinamis
-  const handleBack = () => {
-    // Navigasi berdasarkan returnPage yang dikirim dari payload origin
-    const validPages = ["simpananPage", "transaksiPage", "billingPage"];
-    const targetPage = validPages.includes(returnPage)
-      ? returnPage
-      : "dashboard";
+    return () => {
+      window.removeEventListener("CLOSE_SNAP_POPUP", handlePaymentComplete);
+      window.removeEventListener("PAYMENT_SUCCESSFUL", handlePaymentComplete);
+    };
+  }, [refreshData]);
 
-    navigate(`/${jwtEncode({ page: targetPage })}`);
-  };
+  const isPaid = billData?.status === "PAID" || status === "success" || isLocalPaid;
+  const isRegistrationFlow = returnPage === "registrationPage" || (returnPage === "billingPage" && registrationId);
+  const isSimpananFlow = isPaid && originalReturn === "simpananPage";
 
-  // 4. Proses Pembayaran Snap Midtrans
+  const handleNavigateBack = useCallback(() => {
+    // Redirect to dashboard if paid and part of registration flow
+    if (isPaid && isRegistrationFlow) {
+      navigate(`/${jwtEncode({ page: "dashboard" })}`);
+      return;
+    }
+
+    if (isSimpananFlow) {
+      navigate(`/${jwtEncode({ page: "simpananPage", activeTab: categoryName })}`);
+      return;
+    }
+
+    if (isPaid && category === "FINANCING") {
+      navigate(`/${jwtEncode({ page: "transaksiPage" })}`);
+      return;
+    }
+
+    if (returnPage === "billingPage") {
+      const billingToken = jwtEncode({
+        page: "billingPage",
+        registrationId: registrationId,
+        category: categoryName,
+        return: originalReturn || "dashboard",
+      });
+      navigate(`/${billingToken}`);
+      return;
+    }
+
+    if (returnPage === "registrationPage") {
+      navigate(`/${jwtEncode({ page: "dashboard" })}`);
+      return;
+    }
+
+    if (returnPage === "dashboard") {
+      navigate("/dashboard");
+      return;
+    }
+
+    if (returnPage === "setoranTabungan") {
+      const tabunganToken = jwtEncode({
+        page: "setoranTabungan",
+        product: product,
+        id: id,
+      });
+      navigate(`/${tabunganToken}`);
+      return;
+    }
+
+    navigate(`/${returnPage}`);
+  }, [navigate, returnPage, registrationId, categoryName, product, id, isPaid, isRegistrationFlow, isSimpananFlow, originalReturn, category]);
+
   const handlePay = async () => {
-    if (!window.snap)
+    if (!window.snap) {
       return alert("Sistem pembayaran belum siap. Mohon refresh halaman.");
+    }
+
+    if (totalAmount <= 0.01) {
+      return alert("Terjadi kesalahan: Jumlah pembayaran tidak valid.");
+    }
 
     setIsProcessing(true);
+    
+    // Safety timeout: Reset processing state after 30 seconds if no response
+    const safetyTimeout = setTimeout(() => {
+      setIsProcessing(false);
+      console.warn("⚠️ Payment processing timeout reached");
+    }, 30000);
+
     try {
       const response = await UBilling.createMidtransTransaction({
         bill_item_ids: billItemIds,
+        amount: totalAmount,
         tx_category:
-          category === "SUKARELA" ? "SAVINGS_DEPOSIT" : "MEMBER_REGISTRATION",
+          category === "SUKARELA"
+            ? "SAVINGS_DEPOSIT"
+            : category === "FINANCING"
+              ? "FINANCING_PAYMENT"
+              : category === "TABUNGAN_DEPOSIT"
+                ? "TABUNGAN_DEPOSIT"
+                : financingId
+                  ? "FINANCING_PAYMENT"
+                  : "MEMBER_REGISTRATION",
       });
 
       if (response.data?.status) {
-        startPolling(); // Pantau perubahan status di background
+        clearTimeout(safetyTimeout); // Batalkan safety timeout karena transaksi berhasil dibuat
+        startPolling();
 
         window.snap.pay(response.data.data.snapToken, {
-          onSuccess: () => {
-            fetchBillDetail();
-            stopPolling();
+          onSuccess: async (result) => {
+            clearTimeout(safetyTimeout);
+            console.log("💰 Midtrans onSuccess:", result);
+            setIsLocalPaid(true); // Set local paid status immediately for instant success UI
+            startPolling(); // Keep polling to verify payment receipt in the DB
+            await refreshData();
+            setIsProcessing(false);
+            window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
+            window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
+            setTimeout(() => {
+              if (window.snap && window.snap.hide) window.snap.hide();
+            }, 1000);
           },
-          onPending: () => {
-            fetchBillDetail();
+          onPending: (result) => {
+            clearTimeout(safetyTimeout);
+            console.log("⏳ Midtrans onPending:", result);
+            startPolling(); // Start polling to watch for status changes
+            refreshData();
+            setIsProcessing(false);
           },
           onClose: () => {
+            clearTimeout(safetyTimeout);
+            console.log("🚪 Midtrans onClose");
             setIsProcessing(false);
-            // Jangan stop polling di sini jika user menutup snap tapi sudah bayar (nunggu webhook)
-            fetchBillDetail();
+            refreshData();
           },
-          onError: () => {
+          onError: (result) => {
+            clearTimeout(safetyTimeout);
+            console.error("❌ Midtrans onError:", result);
             setIsProcessing(false);
             stopPolling();
           },
         });
       }
     } catch (err) {
+      clearTimeout(safetyTimeout);
       console.error("Payment error:", err);
       setIsProcessing(false);
       stopPolling();
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
         <div className="text-center">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-2 text-muted">Menyiapkan Invoice...</p>
+          <Spinner animation="grow" variant="primary" />
+          <p className="mt-3 text-muted fw-semibold">Menyiapkan Invoice Anda...</p>
         </div>
       </div>
     );
+  }
 
-  const isPaid = billData?.status === "PAID";
+  if (error || (!billData && !loading)) {
+    return (
+      <Container className="py-5">
+        <Alert variant="warning" className="rounded-4 p-4 shadow-sm border-0 bg-warning bg-opacity-10 text-warning-emphasis">
+          <div className="d-flex align-items-center gap-3">
+            <FaExclamationTriangle size={30} />
+            <div>
+              <h5 className="fw-bold mb-1">Data Invoice Tidak Ditemukan</h5>
+              <p className="mb-0">{error || "Kami tidak dapat menemukan data tagihan yang Anda cari."}</p>
+            </div>
+          </div>
+          <hr />
+          <div className="d-flex justify-content-end">
+            <Button variant="warning" onClick={handleNavigateBack} className="rounded-3 fw-bold border-0 text-white" style={{ backgroundColor: "#ffc107" }}>
+              Kembali ke Beranda
+            </Button>
+          </div>
+        </Alert>
+      </Container>
+    );
+  }
+
+  let returnPageName = "Kembali";
+  if (isPaid && isRegistrationFlow) {
+    returnPageName = "Dashboard";
+  } else if (isSimpananFlow) {
+    returnPageName = "Simpanan";
+  } else if (isPaid && category === "FINANCING") {
+    returnPageName = "Transaksi";
+  } else {
+    returnPageName = 
+      returnPage === "dashboard" ? "Dashboard" : 
+      returnPage === "billingPage" ? "Billing" : 
+      returnPage === "setoranTabungan" ? "Setoran Tabungan" : 
+      returnPage === "registrationPage" ? "Registrasi" : "Kembali";
+  }
 
   return (
-    <Container className="py-5">
-      {/* Header Navigasi */}
-      <div className="d-flex justify-content-end align-items-center mb-4 d-print-none">
-        <Button
-          variant="outline-dark"
-          className="rounded-3 shadow-sm"
-          onClick={() => window.print()}
-        >
-          <FaPrint className="me-2" /> Cetak
-        </Button>
+    <Container className="py-4 py-md-5" style={{ maxWidth: "800px" }}>
+      <InvoiceHeader onBack={handleNavigateBack} onPrint={() => window.print()} />
+      
+      <InvoiceCard 
+        billData={billData} 
+        totalAmount={totalAmount} 
+        isPaid={isPaid} 
+      />
+      
+      <InvoiceActions 
+        isPaid={isPaid} 
+        isProcessing={isProcessing} 
+        onPay={handlePay} 
+        onBack={handleNavigateBack}
+        returnPageName={returnPageName}
+      />
+
+      {/* Footer Branding d-print-none */}
+      <div className="text-center mt-5 d-print-none opacity-50">
+        <small className="text-muted">
+          &copy; {new Date().getFullYear()} Koperasi Digital - System Generated Invoice
+        </small>
       </div>
 
-      <Card className="border-0 shadow-lg rounded-4 overflow-hidden">
-        {/* Banner Status */}
-        <div
-          className={`text-center py-4 ${
-            isPaid ? "bg-success" : "bg-primary"
-          } text-white`}
-        >
-          {isPaid ? (
-            <>
-              <FaCheckCircle size={50} className="mb-2" />
-              <h4 className="fw-bold mb-0">TRANSAKSI BERHASIL</h4>
-            </>
-          ) : (
-            <>
-              <FaRegFileAlt size={50} className="mb-2" />
-              <h4 className="fw-bold mb-0">DETAIL TAGIHAN</h4>
-            </>
-          )}
-        </div>
-
-        <Card.Body className="p-4 p-md-5">
-          <Row className="mb-5">
-            <Col xs={7}>
-              <small className="text-uppercase text-muted fw-bold">
-                Diterbitkan Untuk:
-              </small>
-              <h5 className="fw-bold mt-1 mb-1">
-                {billData?.full_name || "Anggota"}
-              </h5>
-              <p className="text-muted small">
-                {billData?.member_no || "ID Registrasi"}
-              </p>
-            </Col>
-            <Col xs={5} className="text-end">
-              <small className="text-uppercase text-muted fw-bold">
-                Nomor Invoice:
-              </small>
-              <p className="fw-bold mt-1 mb-1">
-                #{billData?.invoice_no || "INV/2024/000"}
-              </p>
-              <small className="text-muted d-block">
-                {new Date(billData?.createdAt).toLocaleDateString("id-ID", {
-                  dateStyle: "long",
-                })}
-              </small>
-            </Col>
-          </Row>
-
-          {/* Tabel Rincian */}
-          <Table responsive borderless className="align-middle mb-4">
-            <thead className="bg-light text-muted small">
-              <tr>
-                <th className="py-3 px-3 rounded-start">DESKRIPSI ITEM</th>
-                <th className="py-3 px-3 text-end rounded-end">SUBTOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {billData?.details?.map((item, index) => (
-                <tr key={index} className="border-bottom border-light">
-                  <td className="py-4 px-3 fw-semibold text-dark">
-                    {item.description}
-                  </td>
-                  <td className="py-4 px-3 text-end fw-bold h5">
-                    Rp {Number(item.amount).toLocaleString("id-ID")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-
-          <Row className="justify-content-end text-end mt-4">
-            <Col md={6}>
-              <div className="p-4 rounded-4 bg-light border border-dashed">
-                <p className="text-muted mb-1 fw-bold small text-uppercase">
-                  Total Pembayaran
-                </p>
-                <h2 className="fw-bold text-primary mb-0">
-                  Rp {totalAmount.toLocaleString("id-ID")}
-                </h2>
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-
-        {/* Footer Aksi */}
-        <Card.Footer className="bg-white p-4 p-md-5 border-top d-print-none">
-          {!isPaid ? (
-            <div className="text-center">
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-100 py-3 fw-bold rounded-4 shadow-sm mb-3"
-                onClick={handlePay}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Spinner animation="border" size="sm" className="me-2" />{" "}
-                    Memproses...
-                  </>
-                ) : (
-                  <>
-                    <FaMoneyBillWave className="me-2" /> BAYAR SEKARANG
-                  </>
-                )}
-              </Button>
-              <small className="text-muted">
-                Klik tombol di atas untuk memilih metode pembayaran melalui
-                Midtrans.
-              </small>
-            </div>
-          ) : (
-            <Alert
-              variant="success"
-              className="rounded-4 py-4 mb-0 text-center border-0 shadow-sm"
-            >
-              <FaCheckCircle className="me-2 h4 mb-0" />
-              <div className="fw-bold">Transaksi ini telah dibayar lunas.</div>
-              <small>
-                Saldo akan otomatis bertambah ke akun simpanan Anda.
-              </small>
-            </Alert>
-          )}
-        </Card.Footer>
-      </Card>
+      {/* Print Specific Styles */}
+      <style>{`
+        @media print {
+          body { background: white !important; }
+          .container { padding: 0 !important; max-width: 100% !important; }
+          .card { border: none !important; box-shadow: none !important; }
+          .bg-gradient-primary, .bg-gradient-success { 
+            -webkit-print-color-adjust: exact; 
+            color-adjust: exact;
+          }
+          .d-print-none { display: none !important; }
+        }
+      `}</style>
     </Container>
   );
-}
+};
+
+export default InvoicePage;

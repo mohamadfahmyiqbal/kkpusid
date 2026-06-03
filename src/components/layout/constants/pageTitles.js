@@ -62,10 +62,11 @@ export const PAGE_TITLES = {
   // Registration pages
   registrationPage: {
     title: 'Pendaftaran Anggota',
-    subtitle: 'Formulir pendaftaran anggota baru',
+    subtitle: 'Informasi dan persyaratan untuk menjadi anggota Paguyuban Usaha Sukses.',
+    icon: 'FaUsers',
     breadcrumbs: [
       { label: 'Beranda', path: '/dashboard' },
-      { label: 'Pendaftaran' }
+      { label: 'Pendaftaran Anggota' }
     ]
   },
   registrationFormDetail: {

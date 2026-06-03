@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Card, Spinner, Badge } from "react-bootstrap";
-import { FaCheckCircle, FaBell, FaFilter } from "react-icons/fa";
+import { FaCheckCircle, FaBell } from "react-icons/fa";
 
 const NotificationCard = ({
   loading,
@@ -10,31 +10,37 @@ const NotificationCard = ({
   children,
 }) => {
   return (
-    <Card className="notification-main-card border-0 shadow-sm">
-      <Card.Header className="notification-header bg-white border-bottom">
+    <Card className="notification-main-card border-0 shadow-sm hover:shadow-lg transition-shadow duration-300">
+      <Card.Header className="notification-header bg-white border-bottom py-3">
         <div className="d-flex justify-content-between align-items-center">
-          <div className="notification-header-left">
-            <div className="d-flex align-items-center">
+          <div className="notification-header-left flex-grow-1">
+            <div className="d-flex align-items-center flex-wrap">
               <FaBell className="text-primary me-2" size={18} />
-              <h5 className="mb-0 fw-semibold">Kotak Masuk Notifikasi</h5>
+              <h5 className="mb-0 fw-semibold me-2">Kotak Masuk</h5>
               {unreadCount > 0 && (
-                <Badge bg="danger" pill className="ms-2 notification-badge">
+                <Badge
+                  bg="danger"
+                  pill
+                  className="notification-badge animate-pulse"
+                >
                   {unreadCount} Baru
                 </Badge>
               )}
             </div>
           </div>
 
-          <div className="notification-header-right">
+          <div className="notification-header-right ms-2">
             <Button
               variant="outline-primary"
               size="sm"
               onClick={onMarkAllAsRead}
               disabled={loading || unreadCount === 0}
-              className="notification-action-header-btn"
+              className="notification-action-header-btn hover:bg-primary hover:text-white transition-colors duration-200"
             >
-              <FaCheckCircle className="me-1" />
-              Tandai Semua Dibaca
+              <FaCheckCircle className="me-1 d-none d-sm-inline" />
+              <span className="d-sm-none">✓</span>
+              <span className="d-none d-md-inline"> Tandai Semua Dibaca</span>
+              <span className="d-md-none"> Semua</span>
             </Button>
           </div>
         </div>

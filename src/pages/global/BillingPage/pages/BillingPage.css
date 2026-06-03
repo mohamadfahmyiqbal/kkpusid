@@ -1,0 +1,652 @@
+/* ============================================================ */
+/* BillingPage.css — Pusat Tagihan Premium                      */
+/* ============================================================ */
+
+/* ---- Variables ---- */
+:root {
+  --bp-primary:       #2563eb;
+  --bp-primary-dark:  #1d4ed8;
+  --bp-primary-light: #eff6ff;
+  --bp-success:       #10b981;
+  --bp-success-bg:    #ecfdf5;
+  --bp-warning:       #f59e0b;
+  --bp-warning-bg:    #fffbeb;
+  --bp-danger:        #ef4444;
+  --bp-danger-bg:     #fef2f2;
+  --bp-border:        #e5e7eb;
+  --bp-text:          #111827;
+  --bp-text-muted:    #6b7280;
+  --bp-bg:            #f8fafc;
+  --bp-card-radius:   16px;
+  --bp-transition:    all 0.2s ease;
+}
+
+/* ---- Hero Header ---- */
+.bp-hero {
+  background: linear-gradient(135deg, #02113d 0%, #1e3a8a 60%, #2563eb 100%);
+  border-radius: var(--bp-card-radius);
+  padding: 28px 28px 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+.bp-hero::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+
+.bp-hero-icon {
+  width: 54px; height: 54px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.bp-hero-title { font-size: 22px; font-weight: 800; margin: 0; }
+.bp-hero-sub   { font-size: 13px; color: rgba(255,255,255,0.75); margin: 4px 0 0; }
+
+/* ---- Summary Stats ---- */
+.bp-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.bp-stat-card {
+  flex: 1 1 140px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bp-stat-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.bp-stat-label  { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+.bp-stat-value  { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.2; margin-top: 2px; }
+.bp-stat-sub    { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+/* ---- Tab Navigation ---- */
+.bp-tabs {
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border-radius: var(--bp-card-radius);
+  padding: 6px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bp-tabs::-webkit-scrollbar { display: none; }
+
+.bp-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--bp-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--bp-transition);
+  position: relative;
+}
+
+.bp-tab:hover { background: #f1f5f9; color: var(--bp-text); }
+
+.bp-tab.active {
+  background: var(--bp-primary);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+
+.bp-tab-badge {
+  background: #ef4444;
+  color: #fff;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.bp-tab.active .bp-tab-badge {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ---- Cards ---- */
+.bp-card {
+  background: #fff;
+  border-radius: var(--bp-card-radius);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.bp-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bp-border);
+}
+
+.bp-card-title { font-size: 15px; font-weight: 700; color: var(--bp-text); margin: 0; }
+.bp-card-sub   { font-size: 12px; color: var(--bp-text-muted); margin-top: 2px; }
+
+/* ---- Bills Table ---- */
+.bp-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+/* Allow horizontal scrolling on mobile instead of hiding columns */
+@media (max-width: 768px) {
+  .bp-table { min-width: 520px; }
+}
+
+@media (max-width: 576px) {
+  .bp-table { min-width: 520px; } /* Keep same min-width to ensure all content fits during scroll */
+}
+
+.bp-table thead th {
+  background: #f8fafc;
+  color: var(--bp-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--bp-border);
+  white-space: nowrap;
+}
+
+.bp-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: var(--bp-transition);
+}
+
+.bp-table tbody tr:hover { background: #f8fafc; }
+.bp-table tbody tr.bp-row-selected { background: #eff6ff; }
+.bp-table tbody tr:last-child { border-bottom: none; }
+
+.bp-table tbody td {
+  padding: 13px 14px;
+  font-size: 13px;
+  color: var(--bp-text);
+  vertical-align: middle;
+}
+
+.bp-inv-number {
+  font-weight: 700;
+  color: var(--bp-primary);
+  font-size: 12px;
+}
+
+.bp-due-soon {
+  font-size: 10px;
+  color: var(--bp-danger);
+  font-weight: 600;
+  display: flex; align-items: center; gap: 3px;
+}
+
+.bp-type-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--bp-primary-light);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---- Badges ---- */
+.bp-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bp-badge-pending  { background: #fef3c7; color: #b45309; }
+.bp-badge-overdue  { background: #fee2e2; color: #b91c1c; }
+.bp-badge-paid     { background: var(--bp-success-bg); color: #065f46; }
+.bp-badge-new      { background: #ede9fe; color: #7c3aed; }
+
+/* ---- Action Button ---- */
+.bp-btn-pay {
+  background: var(--bp-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--bp-transition);
+  white-space: nowrap;
+}
+
+.bp-btn-pay:hover { background: var(--bp-primary-dark); }
+.bp-btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bp-btn-download {
+  background: transparent;
+  color: var(--bp-primary);
+  border: 1px solid var(--bp-primary);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--bp-transition);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+.bp-btn-download:hover { background: var(--bp-primary-light); }
+
+/* ---- Pagination ---- */
+.bp-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--bp-border);
+}
+
+.bp-page-info { font-size: 12px; color: var(--bp-text-muted); }
+
+.bp-page-buttons { display: flex; gap: 4px; align-items: center; }
+
+.bp-page-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--bp-border);
+  background: #fff;
+  color: var(--bp-text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--bp-transition);
+}
+
+.bp-page-btn:hover { background: #f1f5f9; }
+.bp-page-btn.active { background: var(--bp-primary); color: #fff; border-color: var(--bp-primary); }
+.bp-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- Sidebar ---- */
+.bp-sidebar-card {
+  background: #fff;
+  border-radius: var(--bp-card-radius);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.bp-sidebar-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--bp-border);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bp-text);
+}
+
+.bp-payment-method {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: var(--bp-transition);
+}
+
+.bp-payment-method:last-of-type { border-bottom: none; }
+.bp-payment-method:hover { background: #f8fafc; }
+
+.bp-bank-logo {
+  width: 38px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  flex-shrink: 0;
+}
+
+.bp-bank-bca     { background: #003087; color: #fff; }
+.bp-bank-mandiri { background: #003087; color: #ffcc00; }
+.bp-bank-gopay   { background: #00a8e0; color: #fff; }
+
+.bp-badge-primary-sm {
+  background: var(--bp-primary-light);
+  color: var(--bp-primary);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.bp-add-method {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 18px;
+  color: var(--bp-primary);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border: none; background: transparent; width: 100%;
+  border-top: 1px solid var(--bp-border);
+  transition: var(--bp-transition);
+}
+
+.bp-add-method:hover { background: var(--bp-primary-light); }
+
+/* ---- Info Items ---- */
+.bp-info-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bp-info-item:last-child { border-bottom: none; }
+
+.bp-info-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--bp-primary-light);
+  color: var(--bp-primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.bp-info-title { font-size: 13px; font-weight: 700; color: var(--bp-text); }
+.bp-info-desc  { font-size: 11px; color: var(--bp-text-muted); margin-top: 2px; line-height: 1.4; }
+
+.bp-hubungi-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--bp-primary); font-size: 13px; font-weight: 600;
+  text-decoration: none; padding: 12px 18px;
+  transition: var(--bp-transition);
+}
+
+.bp-hubungi-link:hover { color: var(--bp-primary-dark); }
+
+/* ---- Auto Debit Banner ---- */
+.bp-banner {
+  background: linear-gradient(135deg, #02113d 0%, #1e3a8a 60%, #2563eb 100%);
+  border-radius: var(--bp-card-radius);
+  padding: 28px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+
+.bp-banner::after {
+  content: "";
+  position: absolute; top: -50px; right: 120px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+
+.bp-banner-title { font-size: 18px; font-weight: 800; color: #fff; margin: 0 0 6px; }
+.bp-banner-desc  { font-size: 13px; color: rgba(255,255,255,0.75); max-width: 340px; margin: 0 0 20px; }
+
+.bp-btn-banner {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 24px;
+  background: #fff;
+  color: var(--bp-primary);
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: var(--bp-transition);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.bp-btn-banner:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+
+.bp-banner-illustration {
+  width: 140px; height: 100px;
+  opacity: 0.9;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ---- Unduh Tagihan button ---- */
+.bp-btn-unduh {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--bp-primary);
+  border: 1.5px solid var(--bp-primary);
+  border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: var(--bp-transition);
+}
+
+.bp-btn-unduh:hover { background: var(--bp-primary-light); }
+
+/* ---- Empty State ---- */
+.bp-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--bp-text-muted);
+}
+
+.bp-empty-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.bp-empty-title { font-size: 16px; font-weight: 700; color: var(--bp-text); margin-bottom: 6px; }
+.bp-empty-desc  { font-size: 13px; color: var(--bp-text-muted); }
+
+/* ---- Loading ---- */
+.bp-loading {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+/* ---- Scroll table ---- */
+.bp-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 480px;
+  -webkit-overflow-scrolling: touch;
+}
+.bp-table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+.bp-table-wrap::-webkit-scrollbar-track { background: #f1f5f9; }
+.bp-table-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.bp-table-wrap::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ---- Overdue row highlight ---- */
+.bp-row-overdue td:first-child { border-left: 3px solid var(--bp-danger); }
+.bp-row-overdue { background: #fff5f5 !important; }
+
+/* ---- Ringkasan Tab ---- */
+.bp-ringkasan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.bp-ringkasan-card {
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.bp-ringkasan-card--pending {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+}
+
+.bp-ringkasan-card--paid {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.bp-ringkasan-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bp-ringkasan-card-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.bp-ringkasan-card--pending .bp-ringkasan-card-title { color: #b91c1c; }
+.bp-ringkasan-card--paid .bp-ringkasan-card-title { color: #065f46; }
+
+.bp-ringkasan-card-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.bp-ringkasan-card-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.bp-ringkasan-card-alert {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bp-ringkasan-card--pending .bp-ringkasan-card-alert { color: #ef4444; }
+.bp-ringkasan-card--paid .bp-ringkasan-card-alert { color: #10b981; }
+
+.bp-ringkasan-btn {
+  margin-top: 12px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--bp-transition);
+}
+
+.bp-ringkasan-btn:hover { background: #dc2626; }
+
+.bp-ringkasan-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bp-ringkasan-history-item:last-child { border-bottom: none; }
+
+.bp-ringkasan-history-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bp-ringkasan-history-desc { font-size: 13px; font-weight: 600; }
+.bp-ringkasan-history-date { font-size: 11px; color: #6b7280; }
+.bp-ringkasan-history-amount { font-weight: 700; color: #10b981; }
+
+.bp-banner-coming-soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+}
+
+/* ---- Billing Page Layout ---- */
+.bp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .bp-layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bp-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .bp-hero { padding: 20px 18px 16px; }
+  .bp-hero-title { font-size: 18px; }
+  .bp-hero-sub { font-size: 12px; }
+  .bp-hero-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .bp-stats { gap: 8px; }
+  .bp-stat-card { flex: 1 1 120px; padding: 10px 12px; }
+  .bp-stat-value { font-size: 13px; }
+  .bp-banner { flex-direction: column; gap: 16px; padding: 20px; }
+  .bp-banner-illustration { display: none; }
+  .bp-table tbody td, .bp-table thead th { padding: 10px; }
+  .bp-card-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .bp-pagination { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .bp-pagination .bp-page-buttons { width: 100%; justify-content: center; }
+  .bp-ringkasan-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 576px) {
+  .bp-tab { padding: 8px 12px; font-size: 12px; gap: 5px; }
+  .bp-stat-card { flex: 1 1 100%; }
+  .bp-hero { padding: 16px 14px 14px; }
+  .bp-hero-icon { width: 38px; height: 38px; }
+  .bp-hero-icon svg { width: 18px; height: 18px; }
+  .bp-hero-title { font-size: 16px; }
+  .bp-card-header { padding: 14px 16px; }
+  .bp-card-title { font-size: 14px; }
+  .bp-table-wrap { max-height: 360px; }
+}

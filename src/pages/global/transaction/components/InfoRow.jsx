@@ -1,19 +1,23 @@
-// src/pages/transaction/components/InfoRow.jsx
+// src/pages/global/transaction/components/InfoRow.jsx
 import React from "react";
 
-const InfoRow = ({ label, value, isPrimary = false, isTotal = false }) => (
+const InfoRow = ({ icon, label, value, isPrimary = false, isTotal = false }) => (
   <div
-    className={`d-flex justify-content-between mb-2 border-bottom border-light pb-1 ${
-      isTotal ? "pt-2 border-dark border-top" : ""
+    className={`d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle ${
+      isTotal ? "mt-3 pt-3 border-secondary-subtle border-top border-bottom-0" : ""
     }`}
   >
-    <span className={`${isTotal ? "fw-bold" : "text-muted"} small`}>
-      {label}
-    </span>
+    <div className="d-flex align-items-center gap-2">
+      {icon && <span className="text-secondary opacity-75">{icon}</span>}
+      <span className={`${isTotal ? "fw-bold text-dark" : "text-secondary"} small text-uppercase tracking-tight`} style={{ fontSize: '11px', fontWeight: 600 }}>
+        {label}
+      </span>
+    </div>
     <span
-      className={`small ${
-        isPrimary || isTotal ? "text-primary fw-bold" : "text-dark"
-      } ${isTotal ? "fs-6" : ""}`}
+      className={`text-end ${
+        isPrimary || isTotal ? "text-primary fw-bold fs-6" : "text-dark fw-medium"
+      }`}
+      style={{ fontSize: isTotal ? '1.1rem' : '14px' }}
     >
       {value || "-"}
     </span>

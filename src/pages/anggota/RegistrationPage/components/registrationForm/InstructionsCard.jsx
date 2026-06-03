@@ -3,38 +3,58 @@ import { Card, Button } from "react-bootstrap";
 import { FaInfoCircle, FaFileSignature } from "react-icons/fa";
 
 export default function InstructionsCard({ onFillForm }) {
+  const steps = [
+    {
+      no: 1,
+      title: "Isi Formulir Anggota",
+      desc: "Masukkan data pribadi, data pekerjaan/usaha, kontak darurat, dan data rekening bank Anda secara lengkap."
+    },
+    {
+      no: 2,
+      title: "Unggah Foto Identitas",
+      desc: "Siapkan dan unggah foto KTP asli dan foto swafoto (selfie) memegang KTP dengan pencahayaan yang terang."
+    },
+    {
+      no: 3,
+      title: "Kirim & Verifikasi",
+      desc: "Periksa ringkasan data, kirim berkas, lalu pantau verifikasi oleh Pengawas dan persetujuan oleh Ketua Koperasi."
+    }
+  ];
+
   return (
-    <Card className="border-0 shadow-lg rounded-20 overflow-hidden h-100">
+    <Card className="border-0 rp-card-instructions h-100">
       <div className="p-4 p-md-5">
         <div className="d-flex align-items-center mb-4">
-          <div className="bg-primary text-white rounded-3 p-2 me-3 d-flex align-items-center justify-content-center">
-            <FaInfoCircle size={20} />
+          <div className="rp-icon-box me-3">
+            <FaInfoCircle />
           </div>
-          <h4 className="fw-bold mb-0">Instruksi Pendaftaran</h4>
+          <div>
+            <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: "16px" }}>Instruksi Pendaftaran</h5>
+            <small className="text-muted">Proses pengisian berkas keanggotaan online</small>
+          </div>
         </div>
 
-        <p
-          className="text-secondary mb-4 fs-5"
-          style={{ lineHeight: "1.8" }}
-        >
-          Pendaftaran menjadi calon anggota dapat dilakukan secara
-          daring (online) melalui portal aplikasi ini untuk
-          mempercepat proses verifikasi.
+        <p className="text-secondary mb-4" style={{ fontSize: "13px", lineHeight: "1.6" }}>
+          Pendaftaran calon anggota koperasi dilakukan secara daring (online) untuk mempercepat verifikasi data Anda secara aman dan efisien sesuai peraturan yang berlaku.
         </p>
 
-        <div className="bg-light rounded-3 p-4 mb-5 border-start border-primary border-4">
-          <p className="mb-0 text-dark fw-medium">
-            Silahkan klik tombol di bawah ini untuk memulai pengisian
-            formulir digital permohonan anggota:
-          </p>
+        <div className="rp-step-list mb-4">
+          {steps.map((step) => (
+            <div key={step.no} className="rp-step-list-item">
+              <div className="rp-step-number-badge">{step.no}</div>
+              <div className="rp-step-text">
+                <strong>{step.title}</strong>
+                <span>{step.desc}</span>
+              </div>
+            </div>
+          ))}
         </div>
 
         <Button
           onClick={onFillForm}
-          variant="primary"
-          className="w-100 py-3 rounded-3 fw-bold shadow-lg"
+          className="rp-btn-cta mt-2"
         >
-          <FaFileSignature className="me-2" />
+          <FaFileSignature />
           Isi Form Permohonan Menjadi Anggota
         </Button>
       </div>

@@ -1,23 +1,54 @@
-import ArisanConfirmationPage from "../../pages/program/arisan/ArisanConfirmationPage";
-import ArisanDetailPage from "../../pages/program/arisan/ArisanDetailPage";
-import ArisanJoinPage from "../../pages/program/arisan/ArisanJoinPage";
-import ArisanPage from "../../pages/program/arisan/ArisanPage";
-import FormPengajuanArisan from "../../pages/program/arisan/FormPengajuanArisan";
-import FormPengajuanPinjaman from "../../pages/program/pinjaman/FormPengajuanPinjaman";
-import PinjamanDetailPage from "../../pages/program/pinjaman/PinjamanDetailPage";
-import ProgramPage from "../../pages/program/ProgramPage";
-
+import { lazy } from "react";
 
 const programRoutes = {
-  programPage: ProgramPage,
-  formPengajuanPinjaman: FormPengajuanPinjaman,
-  pinjamanDetailPage: PinjamanDetailPage,
-  arisanPage: ArisanPage,
-  arisanJoinPage: ArisanJoinPage,
-  arisanConfirmationPage: ArisanConfirmationPage,
-  formPengajuanArisan: FormPengajuanArisan,
-  arisanDetailPage: ArisanDetailPage,
-  // Tambahkan halaman lain dari folder transaksi di sini
+  programPage: {
+    component: lazy(() => import("../../pages/program/ProgramPage")),
+    isProtected: true,
+  },
+  formPengajuanPinjaman: {
+    component: lazy(
+      () => import("../../pages/program/pinjaman/FormPengajuanPinjaman"),
+    ),
+    isProtected: true,
+  },
+  pinjamanDetailPage: {
+    component: lazy(
+      () => import("../../pages/program/pinjaman/PinjamanDetailPage"),
+    ),
+    isProtected: true,
+  },
+  pinjamanReceiptPage: {
+    component: lazy(
+      () => import("../../pages/program/pinjaman/PinjamanReceiptPage"),
+    ),
+    isProtected: true,
+  },
+  arisanPage: {
+    component: lazy(() => import("../../pages/program/arisan/ArisanPage")),
+    isProtected: true,
+  },
+  arisanJoinPage: {
+    component: lazy(() => import("../../pages/program/arisan/ArisanJoinPage")),
+    isProtected: true,
+  },
+  arisanConfirmationPage: {
+    component: lazy(
+      () => import("../../pages/program/arisan/ArisanConfirmationPage"),
+    ),
+    isProtected: true,
+  },
+  formPengajuanArisan: {
+    component: lazy(
+      () => import("../../pages/program/arisan/FormPengajuanArisan"),
+    ),
+    isProtected: true,
+  },
+  arisanDetailPage: {
+    component: lazy(
+      () => import("../../pages/program/arisan/ArisanDetailPage"),
+    ),
+    isProtected: true,
+  },
 };
 
 export default programRoutes;

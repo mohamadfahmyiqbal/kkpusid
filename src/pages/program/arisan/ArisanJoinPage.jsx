@@ -2,10 +2,9 @@
 
 import React, { useCallback } from "react";
 import { Card, Button, Container, Row, Col } from "react-bootstrap";
-import { FaArrowLeft, FaUsers, FaFileSignature } from "react-icons/fa";
+import { FaUsers, FaFileSignature } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
 import { jwtEncode } from "../../../utils/helpers";
 
 // --- MOCK DATA DAFTAR ARISAN ---
@@ -114,16 +113,11 @@ const ArisanListItem = React.memo(({ arisan, handleJoin, handleWaitlist }) => {
 export default function ArisanJoinPage() {
   const navigate = useNavigate();
 
-  const handleBack = useCallback(() => {
-    const token = jwtEncode({ page: "arisanPage" });
-    navigate(`/${token}`);
-  }, [navigate]);
-
   const handleJoin = useCallback(
     (arisan) => {
       const token = jwtEncode({
         page: "formPengajuanArisan",
-        arisan: arisan,
+        arisanId: arisan.arisan_id || arisan.id || 1, // Fallback to 1 if not set
       });
       navigate(`/${token}`);
     },
@@ -135,22 +129,7 @@ export default function ArisanJoinPage() {
   }, []);
 
   return (
-    <LayoutGlobal>
-      {/* HEADER JUDUL DENGAN TOMBOL KEMBALI */}
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center d-flex align-items-center">
-          <Button
-            variant="link"
-            onClick={handleBack}
-            className="text-dark p-0 me-3"
-          >
-            <FaArrowLeft size={24} />
-          </Button>
-          {/* JUDUL SESUAI MOCKUP */}
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">Arisan</h3>
-        </div>
-      </div>
-
+    <div className="arisan-join-page-container pb-5">
       <Container className="mt-4">
         <Row className="justify-content-center">
           <Col lg={10} md={12}>
@@ -165,6 +144,6 @@ export default function ArisanJoinPage() {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 }

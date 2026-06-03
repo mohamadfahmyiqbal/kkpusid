@@ -1,7 +1,7 @@
 // 📁 src/pages/global/BillingPage/components/BillList.jsx
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card, ListGroup, Form, Button, Spinner } from "react-bootstrap";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
 
 const BillList = ({
   bills,
@@ -13,28 +13,43 @@ const BillList = ({
   loadingData,
   disabledBills = [],
 }) => {
-  const handleSelectAll = () => {
-    // Validasi Array sebelum akses length
-    const safeBills = Array.isArray(bills) ? bills : [];
-    if (selectedBills.length === safeBills.length) {
+  const safeBills = useMemo(
+    () => (Array.isArray(bills) ? bills : []),
+    [bills],
+  );
+  const allSelected = safeBills.length > 0 && selectedBills.length === safeBills.length;
+
+  const handleToggleBill = useCallback(
+    (billId) => {
+      if (disabledBills.includes(billId)) return;
+      setSelectedBills((prev) =>
+        prev.includes(billId)
+          ? prev.filter((id) => id !== billId)
+          : [...prev, billId],
+      );
+    },
+    [disabledBills, setSelectedBills],
+  );
+
+  const handleSelectAll = useCallback(() => {
+    if (allSelected) {
       setSelectedBills([]);
     } else {
       setSelectedBills(safeBills.map((b) => b.bill_item_id));
     }
-  };
+  }, [allSelected, safeBills, setSelectedBills]);
 
   if (loadingData) {
     return (
       <>
-        <Card.Header className="bg-primary text-white py-2 d-flex justify-content-between align-items-center">
-          <span className="fw-bold" style={{ fontSize: "14px" }}>
+        <Card.Header className="bg-primary text-white py-3 px-4 d-flex align-items-center">
+          <span className="fw-bold" style={{ fontSize: "15px" }}>
             Daftar Tagihan
           </span>
         </Card.Header>
-        <Card.Body>
-          <div className="p-5 text-center">
-            <Spinner animation="border" variant="primary" />
-          </div>
+        <Card.Body className="p-5 text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="text-muted mt-3 small">Memuat tagihan...</p>
         </Card.Body>
       </>
     );
@@ -42,61 +57,48 @@ const BillList = ({
 
   return (
     <>
-      <Card.Header className="bg-primary text-white py-2 d-flex justify-content-between align-items-center">
-        <span className="fw-bold" style={{ fontSize: "14px" }}>
+      <Card.Header className="bg-primary text-white py-3 px-4 d-flex justify-content-between align-items-center">
+        <span className="fw-bold" style={{ fontSize: "15px" }}>
           Daftar Tagihan
         </span>
-        {/* Pengecekan aman terhadap array */}
-        {Array.isArray(bills) && bills.length > 0 && (
+        {safeBills.length > 0 && (
           <Form.Check
             type="checkbox"
-            label={<small className="fw-bold">Pilih Semua</small>}
-            checked={selectedBills.length === bills.length}
+            id="select-all-bills"
+            label={<span className="fw-bold small text-white">Pilih Semua</span>}
+            checked={allSelected}
             onChange={handleSelectAll}
+            className="mb-0"
           />
         )}
       </Card.Header>
       <Card.Body className="p-0">
-        {Array.isArray(bills) && bills.length > 0 ? (
+        {safeBills.length > 0 ? (
           <>
-            <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+            <div className="bp-bill-scroll">
               <ListGroup variant="flush">
-                {bills.map((bill) => (
-                  <ListGroup.Item
-                    key={bill.bill_item_id}
-                    className="py-3 px-3 border-bottom border-light"
-                  >
-                    <Form.Check
-                      className="d-flex align-items-start"
-                      checked={selectedBills.includes(bill.bill_item_id)}
-                      disabled={disabledBills.includes(bill.bill_item_id)}
-                      onChange={() => {
-                        setSelectedBills((prev) =>
-                          prev.includes(bill.bill_item_id)
-                            ? prev.filter((id) => id !== bill.bill_item_id)
-                            : [...prev, bill.bill_item_id],
-                        );
-                      }}
-                      label={
-                        <div
-                          className="ms-3 w-100"
-                          onClick={() => {
-                            if (!disabledBills.includes(bill.bill_item_id)) {
-                              setSelectedBills((prev) =>
-                                prev.includes(bill.bill_item_id)
-                                  ? prev.filter(
-                                      (id) => id !== bill.bill_item_id,
-                                    )
-                                  : [...prev, bill.bill_item_id],
-                              );
-                            }
-                          }}
-                          style={{
-                            cursor: disabledBills.includes(bill.bill_item_id)
-                              ? "not-allowed"
-                              : "pointer",
-                          }}
-                        >
+                {safeBills.map((bill) => {
+                  const isDisabled = disabledBills.includes(bill.bill_item_id);
+                  const isChecked = selectedBills.includes(bill.bill_item_id);
+                  return (
+                    <ListGroup.Item
+                      key={bill.bill_item_id}
+                      className={`py-3 px-4 border-bottom border-light bp-bill-item ${isChecked ? "bp-bill-selected" : ""}`}
+                      action={!isDisabled}
+                      onClick={() => handleToggleBill(bill.bill_item_id)}
+                      disabled={isDisabled}
+                    >
+                      <div className="d-flex align-items-center gap-3">
+                        <Form.Check
+                          type="checkbox"
+                          id={`bill-${bill.bill_item_id}`}
+                          checked={isChecked}
+                          disabled={isDisabled}
+                          onChange={() => handleToggleBill(bill.bill_item_id)}
+                          className="mb-0"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex-grow-1 min-w-0">
                           <div className="fw-bold text-dark small">
                             {bill.description || bill.type?.type_name}
                           </div>
@@ -119,29 +121,37 @@ const BillList = ({
                             </div>
                           )}
                         </div>
-                      }
-                    />
-                  </ListGroup.Item>
-                ))}
+                        {isChecked && (
+                          <FaCheckCircle className="text-success flex-shrink-0" size={16} />
+                        )}
+                      </div>
+                    </ListGroup.Item>
+                  );
+                })}
               </ListGroup>
             </div>
-            <div className="p-3 bg-white border-top shadow-sm">
-              <div className="d-flex justify-content-between mb-2">
-                <span className="small text-muted">
+
+            {/* Footer Total + Bayar */}
+            <div className="p-4 bg-white border-top shadow-sm">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="text-muted fw-semibold" style={{ fontSize: "13px" }}>
                   Total Terpilih ({selectedBills.length}):
                 </span>
-                <span className="fw-bold text-primary">
+                <span className="fw-bold text-primary" style={{ fontSize: "18px" }}>
                   Rp {totalAmount.toLocaleString("id-ID")}
                 </span>
               </div>
               <Button
                 variant="primary"
-                className="w-100 fw-bold py-2 rounded-pill"
+                className="w-100 fw-bold py-2 rounded-12 shadow-sm"
                 onClick={handleNavigateToInvoice}
                 disabled={selectedBills.length === 0 || isSubmitting}
               >
                 {isSubmitting ? (
-                  <Spinner animation="border" size="sm" />
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Memproses...
+                  </>
                 ) : (
                   "Bayar Sekarang"
                 )}
@@ -149,9 +159,9 @@ const BillList = ({
             </div>
           </>
         ) : (
-          <div className="p-5 text-center text-muted small">
-            <FaExclamationTriangle className="mb-2 opacity-50" size={24} />
-            <p className="mb-0">Tidak ada tagihan tertunda.</p>
+          <div className="p-5 text-center text-muted">
+            <FaExclamationTriangle className="mb-2 opacity-50" size={28} />
+            <p className="mb-0 small">Tidak ada tagihan tertunda.</p>
           </div>
         )}
       </Card.Body>
@@ -159,4 +169,4 @@ const BillList = ({
   );
 };
 
-export default BillList;
+export default React.memo(BillList);

@@ -13,7 +13,8 @@ export default function ApprovalPlaceholder({
   isRejected,
   isReadyToPay,
 }) {
-  const IconRole = role === "Pengawas" ? FaUserShield : FaUserTie;
+  const IconRole =
+    role === "PENGAWAS" || role === "Pengawas" ? FaUserShield : FaUserTie;
 
   return (
     <div className="text-center">

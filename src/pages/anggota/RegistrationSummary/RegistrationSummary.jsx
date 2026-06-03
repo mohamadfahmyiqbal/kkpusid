@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ApprovalPlaceholder from "../../ui/ApprovalPlaceholder";
-import { jwtEncode } from "../../../routes/helpers";
+import { jwtEncode } from "../../../utils/helpers";
 import useSocketListener from "../../../utils/helper/SocketListener";
 
 export default function RegistrationSummary({
@@ -72,6 +72,8 @@ export default function RegistrationSummary({
     member,
   } = data || {};
 
+  console.log("DEBUG FOTO:", { foto_ktp, foto_swafoto });
+
   /**
    * LOGIKA STEPPER SIKRON (FIXED)
    * Memvalidasi flag boolean terhadap current_step_id dan final_status
@@ -103,6 +105,12 @@ export default function RegistrationSummary({
     current_step_id,
     final_status,
   ]);
+
+  const getImgSrc = useCallback((photoPath) => {
+    if (!photoPath) return "https://via.placeholder.com/150?text=No+Image";
+    if (photoPath.startsWith("http")) return photoPath;
+    return `${baseUrl || ""}${photoPath}`;
+  }, [baseUrl]);
 
   const handleNavigateToInvoice = useCallback(() => {
     // Menghapus pengecekan ketat bill_id karena sistem menggunakan BillItems
@@ -202,17 +210,23 @@ export default function RegistrationSummary({
             <Row className="g-2">
               <Col xs={6}>
                 <img
-                  src={foto_ktp}
+                  src={getImgSrc(foto_ktp)}
                   className="img-fluid rounded border shadow-sm"
                   alt="KTP"
+                  onError={(e) =>
+                    console.error("Failed to load KTP image:", e.target.src)
+                  }
                 />
                 <p className="text-center small text-muted mt-1">Foto KTP</p>
               </Col>
               <Col xs={6}>
                 <img
-                  src={foto_swafoto}
+                  src={getImgSrc(foto_swafoto)}
                   className="img-fluid rounded border shadow-sm"
                   alt="Selfie"
+                  onError={(e) =>
+                    console.error("Failed to load Swafoto image:", e.target.src)
+                  }
                 />
                 <p className="text-center small text-muted mt-1">Swafoto</p>
               </Col>
@@ -241,10 +255,10 @@ export default function RegistrationSummary({
                 {current_step_id === 52
                   ? "DI VERIFIKASI PENGAWAS"
                   : current_step_id === 53
-                  ? "DI APPROVAL KETUA"
-                  : final_status === "APPROVED"
-                  ? "MENUNGGU PEMBAYARAN"
-                  : final_status?.toUpperCase() || "MENUNGGU ANTRIAN"}
+                    ? "DI APPROVAL KETUA"
+                    : final_status === "APPROVED"
+                      ? "MENUNGGU PEMBAYARAN"
+                      : final_status?.toUpperCase() || "MENUNGGU ANTRIAN"}
               </span>
             </div>
           </div>

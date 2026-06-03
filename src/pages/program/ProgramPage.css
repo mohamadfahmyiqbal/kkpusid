@@ -1,0 +1,539 @@
+/* ProgramPage.css */
+
+.program-page-container {
+  width: 100%;
+  max-width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Premium Card base and hover */
+.premium-card {
+  border-radius: 24px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25) !important;
+}
+
+.premium-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Active State Card (Teal/Emerald Shariah theme) */
+.premium-card-active {
+  background: linear-gradient(135deg, #022c22 0%, #064e3b 40%, #0d9488 80%, #14b8a6 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.premium-card-active::before {
+  content: "";
+  position: absolute;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, transparent 75%);
+  top: -80px; right: -80px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Pending State Card (Warm Amber/Rust theme) */
+.premium-card-pending {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 45%, #7c2d12 85%, #b45309 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Empty State Card (Deep Blue/Indigo theme) */
+.premium-card-empty {
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 45%, #1e1b4b 80%, #3730a3 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Glossy visual reflections on premium cards */
+.glass-sheen {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating blurred spheres in cards */
+.card-decor-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+  pointer-events: none;
+}
+.card-decor-circle.c1 {
+  width: 180px; height: 180px;
+  top: -50px; left: 5%;
+}
+.card-decor-circle.c2 {
+  width: 240px; height: 240px;
+  bottom: -90px; right: 8%;
+}
+
+/* EMV Gold Chip Mockup */
+.card-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #ffd700 0%, #d4af37 55%, #b8860b 100%);
+  border-radius: 6px;
+  position: relative;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.card-chip::before {
+  content: "";
+  position: absolute;
+  top: 12%; left: 12%; right: 12%; bottom: 12%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.card-chip-line {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.15);
+}
+.card-chip-line.v1 { top: 0; bottom: 0; left: 33%; width: 1px; }
+.card-chip-line.v2 { top: 0; bottom: 0; left: 66%; width: 1px; }
+.card-chip-line.h { left: 0; right: 0; top: 50%; height: 1px; }
+
+/* Monospace Layout for Account IDs */
+.card-number-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+  font-weight: bold;
+}
+
+.card-holder-name {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Glassmorphism Badge styles */
+.premium-status-badge {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 4px 14px;
+  border-radius: 99px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Stepper Approval Tracker */
+.stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  margin: 28px auto 0;
+  position: relative;
+  z-index: 2;
+}
+
+.stepper-line {
+  position: absolute;
+  top: 14px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  z-index: -1;
+}
+
+.stepper-line-progress {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: #f59e0b;
+  transition: width 0.5s ease;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stepper-node {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.stepper-step.completed .stepper-node {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.stepper-step.active .stepper-node {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: white;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.stepper-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stepper-step.completed .stepper-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stepper-step.active .stepper-label {
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+/* Pulsing radar for active step */
+.pending-radar-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pending-radar-pulse::after {
+  content: '';
+  position: absolute;
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  border-radius: 50%;
+  animation: radar-pulse-anim 2.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes radar-pulse-anim {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Glassmorphism Quick Action Buttons inside Card Footer */
+.premium-actions-footer {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(5px);
+  padding: 16px 24px !important;
+}
+
+.action-icon-wrapper {
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.action-icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-icon-wrapper:hover .action-icon-circle {
+  transform: translateY(-4px) scale(1.08);
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.25);
+}
+
+.action-icon-text {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.2s ease;
+}
+
+.action-icon-wrapper:hover .action-icon-text {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Empty State Benefits Grid */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-top: 28px;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 12px;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.benefit-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-3px);
+}
+
+.benefit-icon-wrapper {
+  color: #a5b4fc;
+  margin-bottom: 8px;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.benefit-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.benefit-desc {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* Premium Available Arisan Layout */
+.dc-arisan-card {
+  border-radius: 24px;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dc-arisan-card:hover {
+  transform: translateY(-5px);
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.dc-arisan-card-header {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  padding: 14px 24px;
+}
+
+.dc-arisan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.dc-arisan-info-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.dc-arisan-info-item svg {
+  color: #0f766e;
+  flex-shrink: 0;
+}
+
+.dc-arisan-info-item small {
+  display: block;
+  color: #64748b;
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 1px;
+}
+
+.dc-arisan-info-item strong {
+  display: block;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+/* Participant Progress Bar */
+.arisan-progress-section {
+  background: #fdfdfd;
+  border: 1px dashed #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0d9488 0%, #14b8a6 100%);
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Shared typography and animation styles */
+.font-outfit {
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 768px) {
+  .benefits-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .benefit-card {
+    padding: 12px 8px;
+  }
+  .benefit-title {
+    font-size: 11px;
+  }
+  .benefit-desc {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 576px) {
+  .premium-card {
+    border-radius: 20px;
+  }
+  .card-number-display {
+    font-size: 15px;
+    letter-spacing: 1.5px;
+  }
+  .stepper-container {
+    margin-top: 20px;
+  }
+  .stepper-label {
+    font-size: 8px;
+  }
+  .stepper-node {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  .stepper-line {
+    top: 11px;
+  }
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .benefit-card {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+  .benefit-icon-wrapper {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .dc-arisan-grid {
+    gap: 10px;
+  }
+  .dc-arisan-info-item {
+    gap: 8px;
+    padding: 8px;
+  }
+  .dc-arisan-info-item strong {
+    font-size: 10.5px;
+  }
+  .action-icon-circle {
+    width: 44px;
+    height: 44px;
+  }
+  .action-icon-text {
+    font-size: 10px;
+  }
+}
+
+.program-skeleton-tab {
+  width: 100%;
+  height: 40px;
+}
+@media (min-width: 768px) {
+  .program-skeleton-tab {
+    width: 120px;
+  }
+}

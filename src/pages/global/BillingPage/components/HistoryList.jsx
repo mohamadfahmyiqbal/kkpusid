@@ -1,64 +1,77 @@
 // 📁 src/pages/global/BillingPage/components/HistoryList.jsx
 import React from "react";
-import { Card, ListGroup, Badge } from "react-bootstrap";
-import { FaCheckCircle } from "react-icons/fa";
+import { Card, Badge } from "react-bootstrap";
+import { FaCheckCircle, FaHistory } from "react-icons/fa";
 
 const HistoryList = ({ history }) => {
+  const safeHistory = Array.isArray(history) ? history : [];
+  const hasHistory = safeHistory.length > 0;
+
   return (
-    <Card className="border-0 shadow-sm rounded-3 overflow-hidden">
-      <Card.Header
-        className="bg-dark text-white py-2 fw-bold"
-        style={{ fontSize: "14px" }}
-      >
-        Histori Transaksi
+    <Card className="border-0 shadow-sm rounded-20 overflow-hidden">
+      <Card.Header className="bg-dark text-white py-3 px-4 d-flex align-items-center gap-2">
+        <FaHistory size={14} />
+        <span className="fw-bold" style={{ fontSize: "15px" }}>
+          Histori Transaksi
+        </span>
+        {hasHistory && (
+          <span className="ms-auto text-white-50 small">
+            {safeHistory.length} transaksi
+          </span>
+        )}
       </Card.Header>
       <Card.Body className="p-0">
-        {Array.isArray(history) && history.length > 0 ? (
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            <ListGroup variant="flush">
-              {history.map((item, idx) => (
-                <ListGroup.Item
-                  key={idx}
-                  className="p-3 border-bottom border-light"
+        {hasHistory ? (
+          <div className="bp-history-scroll">
+            {safeHistory.map((item) => {
+              // Generate unique key dari data
+              const itemKey = item.id || item.bill_item_id || `${item.createdAt}-${item.amount}-${Math.random()}`;
+              return (
+                <div
+                  key={itemKey}
+                  className="bp-history-item d-flex align-items-center gap-3 p-3 px-4 border-bottom border-light"
                 >
-                  <div className="d-flex align-items-center">
-                    <div className="bg-light p-2 rounded me-3">
-                      <FaCheckCircle className="text-success" size={18} />
+                  <div className="bp-history-icon">
+                    <FaCheckCircle className="text-success" size={16} />
+                  </div>
+                  <div className="flex-grow-1 min-w-0">
+                    <div className="fw-bold text-dark small text-truncate">
+                      {item.description || "Transaksi"}
                     </div>
-                    <div className="flex-grow-1">
-                      <div className="fw-bold text-dark small">
-                        {item.description}
-                      </div>
-                      <div className="text-success fw-bold small">
-                        Rp{" "}
-                        {parseFloat(item.amount || 0).toLocaleString("id-ID")}
-                      </div>
+                    <div className="text-success fw-bold small">
+                      Rp{" "}
+                      {parseFloat(item.amount || 0).toLocaleString("id-ID")}
+                    </div>
+                    {item.createdAt && (
                       <div
                         className="text-muted"
                         style={{ fontSize: "10px" }}
                       >
-                        {item.createdAt &&
-                          new Date(item.createdAt).toLocaleDateString(
-                            "id-ID",
-                            {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            },
-                          )}
+                        {new Date(item.createdAt).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </div>
-                    </div>
-                    <Badge bg="success" className="fw-normal">
-                      Lunas
-                    </Badge>
+                    )}
                   </div>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
+                  <Badge
+                    bg="success"
+                    className="fw-normal rounded-pill flex-shrink-0"
+                    style={{ fontSize: "10px" }}
+                  >
+                    Lunas
+                  </Badge>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="p-4 text-center text-muted small">
-            Belum ada transaksi.
+          <div className="p-5 text-center text-muted">
+            <FaHistory className="mb-2 opacity-25" size={28} />
+            <p className="mb-0 small">Belum ada transaksi.</p>
           </div>
         )}
       </Card.Body>
@@ -66,4 +79,4 @@ const HistoryList = ({ history }) => {
   );
 };
 
-export default HistoryList;
+export default React.memo(HistoryList);

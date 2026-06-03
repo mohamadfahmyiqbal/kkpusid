@@ -73,7 +73,7 @@ class NavigationErrorBoundary extends Component {
                 </Button>
               </div>
 
-              {process.env.NODE_ENV === "development" && (
+              {import.meta.env.MODE === "development" && (
                 <div className="mt-4 text-start">
                   <small className="text-muted d-block">Debug Info:</small>
                   <code className="small text-danger d-block mt-1">

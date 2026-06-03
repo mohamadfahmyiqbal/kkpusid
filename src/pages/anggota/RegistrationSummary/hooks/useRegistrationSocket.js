@@ -1,15 +1,14 @@
-import { useEffect } from "react";
 import useSocketListener from "../../../../utils/helper/SocketListener";
 
 const useRegistrationSocket = (registration_id, setData) => {
   console.log("🔌 Setting up registration socket for ID:", registration_id);
-  
+
   useSocketListener((payload) => {
     console.log("🔌 Socket payload received:", payload);
     console.log("🔌 Expected registration_id:", registration_id);
     console.log("🔌 Payload entityId:", payload.entityId);
     console.log("🔌 Payload entityRef:", payload.entityRef);
-    
+
     if (
       payload.entityId === String(registration_id) &&
       (payload.entityRef === "member_registration" ||
@@ -34,11 +33,16 @@ const useRegistrationSocket = (registration_id, setData) => {
           // Tambahkan field lain yang mungkin diperlukan
           member: {
             ...prev.member,
-            status: payload.status ? {
-              ...prev.member?.status,
-              status_name: payload.status === "APPROVED" ? "APPROVED" : prev.member?.status?.status_name
-            } : prev.member?.status
-          }
+            status: payload.status
+              ? {
+                  ...prev.member?.status,
+                  status_name:
+                    payload.status === "APPROVED"
+                      ? "APPROVED"
+                      : prev.member?.status?.status_name,
+                }
+              : prev.member?.status,
+          },
         };
         console.log("🔄 New state:", newState);
         return newState;

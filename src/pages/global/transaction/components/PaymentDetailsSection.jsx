@@ -1,50 +1,63 @@
-// src/pages/transaction/components/PaymentDetailsSection.jsx
+// src/pages/global/transaction/components/PaymentDetailsSection.jsx
 import React from "react";
+import { FaFileInvoiceDollar, FaCalendarAlt, FaTag, FaWallet } from "react-icons/fa";
 import InfoRow from "./InfoRow";
+import moment from "moment";
 
-const PaymentDetailsSection = ({ detail, isFinancing }) => (
-  <div className="mb-4">
-    <h6 className="fw-bold border-bottom pb-2 mb-3">
-      {isFinancing ? "Detail Pengajuan" : "Pembayaran"}
-    </h6>
-    {isFinancing ? (
-      <>
-        <InfoRow label="Tipe" value={detail?.purpose?.split(":")[0]} />
-        <InfoRow
-          label="Nama"
-          value={detail?.purpose?.split(":")[1] || detail?.purpose}
+const PaymentDetailsSection = ({ detail, isFinancing, isTabungan }) => {
+  const amount = parseFloat(
+    isTabungan ? (detail?.catalog?.target_amount || 0) : (detail?.amount || detail?.item_price || 0)
+  );
+  
+  return (
+    <div className="mb-4">
+      <div className="d-flex align-items-center gap-2 mb-3">
+        <div className="p-2 rounded-3 bg-success bg-opacity-10 text-success">
+          <FaFileInvoiceDollar size={14} />
+        </div>
+        <h6 className="fw-bold mb-0 text-dark">Rincian Transaksi</h6>
+      </div>
+
+      <div className="ps-1">
+        <InfoRow 
+          icon={<FaTag size={12} />} 
+          label="Kategori" 
+          value={isFinancing ? "Pembiayaan" : isTabungan ? (detail?.catalog?.target_name || "Pengajuan Tabungan") : (detail?.account_type || detail?.displayName || "Penarikan Simpanan")} 
         />
-        <InfoRow
-          label="Harga"
-          value={`Rp ${(Number(detail?.item_price) || 0).toLocaleString(
-            "id-ID",
-          )}`}
+        <InfoRow 
+          icon={<FaCalendarAlt size={12} />} 
+          label="Tanggal Pengajuan" 
+          value={moment(detail?.created_at || detail?.createdAt).format("DD MMMM YYYY, HH:mm")} 
         />
-        <InfoRow
-          label="DP"
-          value={`Rp ${(Number(detail?.down_payment) || 0).toLocaleString(
-            "id-ID",
-          )}`}
+        <InfoRow 
+          icon={<FaWallet size={12} />} 
+          label="Metode" 
+          value={detail?.method || "Transfer Bank"} 
         />
-        <InfoRow
-          label="Jumlah term"
-          value={`${detail?.cooperation_months}x Pembayaran`}
+        <InfoRow 
+          icon={<FaFileInvoiceDollar size={12} />} 
+          label={isFinancing ? "Total Pembiayaan" : isTabungan ? "Target Tabungan" : "Jumlah Penarikan"} 
+          value={`Rp ${amount.toLocaleString("id-ID")}`}
+          isTotal={true}
+          isPrimary={true}
         />
-      </>
-    ) : (
-      <>
-        <InfoRow
-          label="Penarikan Simpanan Sukarela"
-          value={`Rp ${(Number(detail?.amount) || 0).toLocaleString("id-ID")}`}
-        />
-        <InfoRow
-          label="Total"
-          value={`Rp ${(Number(detail?.amount) || 0).toLocaleString("id-ID")}`}
-          isTotal
-        />
-      </>
-    )}
-  </div>
-);
+        {isTabungan && detail?.catalog?.min_monthly_deposit && (
+          <InfoRow 
+            icon={<FaFileInvoiceDollar size={12} />} 
+            label="Minimal Setoran Bulanan" 
+            value={`Rp ${parseFloat(detail.catalog.min_monthly_deposit).toLocaleString("id-ID")}`}
+          />
+        )}
+        {isTabungan && detail?.catalog?.term_months && (
+          <InfoRow 
+            icon={<FaCalendarAlt size={12} />} 
+            label="Tenor (Bulan)" 
+            value={`${detail.catalog.term_months} Bulan`}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default React.memo(PaymentDetailsSection);

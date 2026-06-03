@@ -37,7 +37,7 @@ export const debugPushSubscription = async () => {
     }
 
     // 4. Verifikasi VAPID Key dari .env
-    const publicKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+    const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
     console.log(
       "🔑 VAPID Key terdeteksi:",
       publicKey

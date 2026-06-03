@@ -2,10 +2,8 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Card, Button, Container, Row, Col } from "react-bootstrap";
-import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
 import { jwtEncode } from "../../../utils/helpers";
 import ApprovalPlaceholder from "../../../components/ui/ApprovalPlaceholder";
 // Asumsi ApprovalPlaceholder diimpor dari PinjamanDetailPage.jsx
@@ -65,24 +63,7 @@ export default function ArisanDetailPage() {
   }, [navigate]);
 
   return (
-    <LayoutGlobal>
-      {/* HEADER JUDUL DENGAN TOMBOL KEMBALI */}
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center d-flex align-items-center">
-          <Button
-            variant="link"
-            onClick={handleBack}
-            className="text-dark p-0 me-3"
-          >
-            <FaArrowLeft size={24} />
-          </Button>
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            Detail Pengajuan
-          </h3>{" "}
-          {/* Sesuai Arisan_Detail.png */}
-        </div>
-      </div>
-
+    <div className="arisan-detail-page-container pb-5">
       <Container className="mt-4">
         <Row className="justify-content-center">
           <Col lg={10} md={12}>
@@ -209,6 +190,6 @@ export default function ArisanDetailPage() {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 }

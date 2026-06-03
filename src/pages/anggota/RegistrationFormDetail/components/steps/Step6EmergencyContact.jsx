@@ -1,76 +1,86 @@
-// src/components/anggota/regsitrationForm/steps/Step6EmergencyContact.jsx (BARU)
-
 import React from "react";
 import { Form, Row, Col } from "react-bootstrap";
+import { FaUserFriends, FaPhoneAlt, FaLink } from "react-icons/fa";
 
-/**
- * Komponen untuk mengisi Data Kontak Darurat (Langkah 6 BARU).
- * Menerima props: formData, handleChange, errors.
- */
 export default function Step6EmergencyContact({ formData, handleChange, errors }) {
   return (
-    <div className="p-3">
-      <h5 className="mb-4 text-primary">Informasi Kontak Darurat</h5>
-      
-      {/* 1. NAMA KONTAK DARURAT (contact_name) */}
-      <Form.Group as={Row} className="mb-3" controlId="formContactName">
-        <Form.Label column sm="3">
-          Nama Kontak Darurat <span className="text-danger">*</span>
-        </Form.Label>
-        <Col sm="9">
-          <Form.Control
-            type="text"
-            name="contact_name"
-            placeholder="Nama Lengkap Kontak Darurat"
-            value={formData.contact_name || ""}
-            onChange={handleChange}
-            isInvalid={!!errors.contact_name}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.contact_name}
-          </Form.Control.Feedback>
-        </Col>
-      </Form.Group>
+    <div className="p-2">
+      <div className="d-flex align-items-center mb-4">
+        <div className="icon-box bg-soft-primary text-primary me-3">
+          <FaUserFriends />
+        </div>
+        <div>
+          <h5 className="fw-bold mb-0 text-dark">Kontak Darurat</h5>
+          <small className="text-muted">
+            Informasi yang dapat dihubungi dalam situasi darurat
+          </small>
+        </div>
+      </div>
 
-      {/* 2. NO. HP (phone_number_emergency) */}
-      <Form.Group as={Row} className="mb-3" controlId="formEmergencyPhone">
-        <Form.Label column sm="3">
-          No. HP Kontak Darurat <span className="text-danger">*</span>
-        </Form.Label>
-        <Col sm="9">
-          <Form.Control
-            type="tel"
-            name="phone_number_emergency" // 🚨 Menggunakan nama berbeda agar tidak bentrok dengan phone_number anggota
-            placeholder="Contoh: 08123456789"
-            value={formData.phone_number_emergency || ""}
-            onChange={handleChange}
-            isInvalid={!!errors.phone_number_emergency}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.phone_number_emergency}
-          </Form.Control.Feedback>
-        </Col>
-      </Form.Group>
+      <div className="p-4 rounded-20 bg-light border-0">
+        <Form.Group className="mb-4">
+          <Form.Label className="fw-bold small mb-2">
+            Nama Kontak Darurat <span className="text-danger">*</span>
+          </Form.Label>
+          <div className="input-icon-wrapper">
+            <FaUserFriends className="input-icon" />
+            <Form.Control
+              type="text"
+              name="contact_name"
+              value={formData.contact_name || ""}
+              onChange={handleChange}
+              isInvalid={!!errors.contact_name}
+              className="rounded-12 border-0 shadow-sm py-2"
+              placeholder="Nama Lengkap Kontak Darurat"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.contact_name}
+            </Form.Control.Feedback>
+          </div>
+        </Form.Group>
 
-      {/* 3. HUBUNGAN (relation) */}
-      <Form.Group as={Row} className="mb-3" controlId="formRelation">
-        <Form.Label column sm="3">
-          Hubungan <span className="text-danger">*</span>
-        </Form.Label>
-        <Col sm="9">
-          <Form.Control
-            type="text"
-            name="relation"
-            placeholder="Contoh: Saudara Kandung, Suami/Istri"
-            value={formData.relation || ""}
-            onChange={handleChange}
-            isInvalid={!!errors.relation}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.relation}
-          </Form.Control.Feedback>
-        </Col>
-      </Form.Group>
+        <Form.Group className="mb-4">
+          <Form.Label className="fw-bold small mb-2">
+            No. HP Kontak Darurat <span className="text-danger">*</span>
+          </Form.Label>
+          <div className="input-icon-wrapper">
+            <FaPhoneAlt className="input-icon" />
+            <Form.Control
+              type="tel"
+              name="phone_number_emergency"
+              value={formData.phone_number_emergency || ""}
+              onChange={handleChange}
+              isInvalid={!!errors.phone_number_emergency}
+              className="rounded-12 border-0 shadow-sm py-2"
+              placeholder="Contoh: 08123456789"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.phone_number_emergency}
+            </Form.Control.Feedback>
+          </div>
+        </Form.Group>
+
+        <Form.Group className="mb-2">
+          <Form.Label className="fw-bold small mb-2">
+            Hubungan dengan Anda <span className="text-danger">*</span>
+          </Form.Label>
+          <div className="input-icon-wrapper">
+            <FaLink className="input-icon" />
+            <Form.Control
+              type="text"
+              name="relation"
+              value={formData.relation || ""}
+              onChange={handleChange}
+              isInvalid={!!errors.relation}
+              className="rounded-12 border-0 shadow-sm py-2"
+              placeholder="Contoh: Saudara Kandung, Suami/Istri, Teman"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.relation}
+            </Form.Control.Feedback>
+          </div>
+        </Form.Group>
+      </div>
     </div>
   );
 }

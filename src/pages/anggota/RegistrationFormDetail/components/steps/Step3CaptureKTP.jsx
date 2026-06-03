@@ -49,13 +49,7 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
               capturedImage={formData.foto_ktp}
               setCapturedImage={handleSetCapturedImage}
               isInvalid={!!errors.foto_ktp}
-              // --- TAMBAHKAN PROPS OPTIMASI BERIKUT ---
-              mirrored={false} // UX: Agar teks KTP tidak terbalik saat disimpan
-              videoConstraints={{
-                width: 1280,
-                height: 720,
-                facingMode: "environment", // UX: Utamakan kamera belakang untuk fokus lebih baik
-              }}
+              defaultFacingMode="environment"
             />
             {!!errors.foto_ktp && (
               <Form.Control.Feedback

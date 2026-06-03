@@ -1,6 +1,6 @@
 // src/utils/helper/SocketListener.js
 import { useEffect } from "react";
-import { useSocket } from "../../components/layout/contexts";
+import { useSocket } from "../../components/layout/contexts/SocketContext";
 import { toast } from "react-toastify";
 
 const useSocketListener = (callback) => {
@@ -47,6 +47,44 @@ const useSocketListener = (callback) => {
         }
       };
 
+      // 3. Listen untuk notifikasi baru dari backend
+      socket.on("new_notification", (data) => {
+        console.log("🔔 New Notification Received:", data);
+        
+        // Tampilkan toast notifikasi
+        toast.success(data.title || "Notifikasi Baru", {
+          description: data.content || "",
+        });
+
+        // Handle khusus untuk PAYMENT_SUCCESS
+        if (data.type === "PAYMENT_SUCCESS") {
+          console.log("💰 Payment success detected, closing Snap and updating UI");
+          
+          // Trigger event untuk menutup Snap popup
+          window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));
+          
+          // Trigger refresh status registrasi
+          window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
+          
+          // Trigger update UI global
+          window.dispatchEvent(new CustomEvent("PAYMENT_SUCCESSFUL", {
+            detail: {
+              notificationId: data.notification_id,
+              amount: data.content?.match(/Rp ([\d,.]+)/)?.[1],
+              timestamp: data.sent_datetime
+            }
+          }));
+        }
+
+        // Panggil callback untuk update state komponen
+        if (callback && typeof callback === 'function') {
+          callback({
+            type: 'notification',
+            data: data
+          });
+        }
+      });
+
       socket.on("member_registration:update", handleUpdate);
       socket.on("members:update", handleUpdate); // Tambah untuk pendaftaran anggota
       socket.on("financing_applications:update", handleUpdate);
@@ -56,6 +94,7 @@ const useSocketListener = (callback) => {
 
       return () => {
         socket.off("notification");
+        socket.off("new_notification");
         socket.off("member_registration:update", handleUpdate);
         socket.off("members:update", handleUpdate); // Cleanup untuk members:update
         socket.off("financing_applications:update", handleUpdate);

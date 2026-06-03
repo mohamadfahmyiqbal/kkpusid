@@ -49,13 +49,6 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
               capturedImage={formData.foto_swafoto}
               setCapturedImage={handleSetCapturedImage}
               isInvalid={!!errors.foto_swafoto}
-              // --- TAMBAHKAN PROPS OPTIMASI BERIKUT ---
-              mirrored={true} // UX: Memberikan pengalaman seperti cermin bagi pengguna
-              videoConstraints={{
-                width: 1280,
-                height: 720,
-                facingMode: "user", // UX: Menggunakan kamera depan
-              }}
             />
             {!!errors.foto_swafoto && (
               <Form.Control.Feedback

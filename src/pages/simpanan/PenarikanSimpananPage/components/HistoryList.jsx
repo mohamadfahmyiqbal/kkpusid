@@ -83,7 +83,7 @@ const HistoryList = ({ history, loading, onItemClick }) => {
         </ListGroup.Item>
       );
     });
-  }, [history, getStatusStyle]);
+  }, [history, getStatusStyle, onItemClick]);
 
   if (loading) {
     return (

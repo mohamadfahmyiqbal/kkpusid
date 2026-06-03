@@ -1,0 +1,396 @@
+/* src/pages/anggota/AccountPage/AccountPage.css */
+
+.ap-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 1. Header Profil Card */
+.ap-profile-header-card {
+  background: linear-gradient(135deg, #0d9488 0%, #115e59 40%, #031b5a 100%);
+  border-radius: 20px !important;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(3, 27, 90, 0.15);
+  border: none !important;
+}
+
+.ap-profile-header-card::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 30%;
+  height: 80%;
+  background: url('../../../assets/images/masjid.png') no-repeat right bottom / contain;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.ap-avatar-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.ap-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.ap-avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ap-avatar-edit-btn:hover {
+  background-color: #f1f5f9;
+  transform: scale(1.1);
+}
+
+.ap-role-badge {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ap-verified-box {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ap-verified-icon {
+  color: #00d9a6;
+  font-size: 24px;
+}
+
+/* 2. Informasi Pribadi Card */
+.ap-info-card {
+  background: #ffffff;
+  border-radius: 20px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+.ap-card-header {
+  border-bottom: 1px solid #f1f5f9 !important;
+  background-color: transparent !important;
+}
+
+.ap-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ap-header-icon {
+  color: #2563eb;
+  font-size: 18px;
+}
+
+.ap-edit-btn {
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 16px !important;
+}
+
+.ap-grid-container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 20px;
+}
+
+.ap-grid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ap-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-info-label {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.ap-info-value {
+  font-size: 13.5px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.ap-status-badge {
+  border: 1.5px solid #22c55e;
+  color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.05);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* 3. Akses Cepat */
+.ap-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.ap-section-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.ap-quick-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  height: 100%;
+}
+
+.ap-quick-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+  border-color: #cbd5e1;
+}
+
+.ap-quick-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.ap-quick-arrow {
+  color: #cbd5e1;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.ap-quick-card:hover .ap-quick-arrow {
+  color: #2563eb;
+  transform: translateX(3px);
+}
+
+/* 4. Keamanan & Aktivitas */
+.ap-security-card, .ap-activity-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  height: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+}
+
+.ap-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ap-list-row:last-child {
+  border-bottom: none;
+}
+
+.ap-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ap-row-icon {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.ap-row-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ap-row-desc {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.ap-verified-badge {
+  background-color: #f0fdf4;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+}
+
+.ap-active-text {
+  color: #22c55e;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Aktivitas list */
+.ap-activity-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.ap-activity-item:last-child {
+  border-bottom: none;
+}
+
+.ap-act-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ap-act-text strong {
+  display: block;
+  font-size: 12.5px;
+  color: #1e293b;
+}
+
+.ap-act-text span {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+/* 5. Danger Zone */
+.ap-danger-card {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca !important;
+  border-radius: 20px !important;
+}
+
+.ap-danger-icon {
+  color: #ef4444;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.ap-danger-btn {
+  color: #ef4444 !important;
+  border-color: #fca5a5 !important;
+  background-color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  padding: 10px 18px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.ap-danger-btn:hover {
+  background-color: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-1px);
+}
+
+/* Form controls in Modal */
+.ap-form-control {
+  border-radius: 10px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  padding: 10px 14px !important;
+  font-size: 13.5px !important;
+}
+
+.ap-form-control:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+@media (max-width: 991px) {
+  .ap-grid-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .ap-grid-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .ap-profile-header-card {
+    text-align: center;
+  }
+  
+  .ap-profile-header-card .d-flex {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+}

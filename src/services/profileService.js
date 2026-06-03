@@ -3,7 +3,7 @@
 import axios from "axios";
 
 // Base URL untuk API
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 // Create axios instance dengan default config
 const apiClient = axios.create({
@@ -113,6 +113,11 @@ export const profileService = {
       foto: backendData.photo || "",
       status_id: backendData.status_id || 1,
       member_type: backendData.member_type || "Anggota Aktif",
+      gender: backendData.gender || "-",
+      join_date: backendData.join_date || "-",
+      bank_account_no: backendData.bank_info?.bank_account_no || "-",
+      bank_name: backendData.bank_info?.bank_name || "-",
+      account_holder: backendData.bank_info?.account_holder || "-",
     };
   },
 

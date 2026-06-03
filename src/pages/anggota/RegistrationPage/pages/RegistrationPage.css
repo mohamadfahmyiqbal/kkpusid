@@ -1,0 +1,180 @@
+/* src/pages/anggota/RegistrationPage/pages/RegistrationPage.css */
+
+/* ---- Variables ---- */
+:root {
+  --rp-primary:      #2563eb;
+  --rp-primary-dark: #1d4ed8;
+  --rp-primary-bg:   #eff6ff;
+  --rp-teal:         #0ea5e9;
+  --rp-border:       #e5e7eb;
+  --rp-radius:       16px;
+  --rp-shadow:       0 2px 12px rgba(0,0,0,0.06);
+  --rp-transition:   all 0.2s ease;
+}
+
+/* ---- Page wrapper ---- */
+.rp-wrapper { width: 100%; }
+
+/* ---- Section cards ---- */
+.rp-section-card {
+  background: #fff;
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  box-shadow: var(--rp-shadow);
+  overflow: hidden;
+  transition: var(--rp-transition);
+}
+
+.rp-section-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+}
+
+/* ---- Card header icon ---- */
+.rp-card-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.rp-card-icon-blue  { background: #eff6ff; color: var(--rp-primary); }
+.rp-card-icon-teal  { background: #f0fdfa; color: #0d9488; }
+.rp-card-icon-green { background: #f0fdf4; color: #16a34a; }
+
+/* ---- Numbered requirement rows ---- */
+.rp-req-row {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.rp-req-row:last-child { border-bottom: none; }
+
+.rp-req-num {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #16a34a;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid #bbf7d0;
+}
+
+.rp-req-text {
+  font-size: 13.5px;
+  color: #374151;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ---- CTA Button ---- */
+.rp-btn-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--rp-primary);
+  color: #fff !important;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  transition: var(--rp-transition);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  text-decoration: none;
+}
+
+.rp-btn-cta:hover {
+  background: var(--rp-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+  color: #fff !important;
+}
+
+/* ---- Bantuan card ---- */
+.rp-bantuan-card {
+  background: #fff;
+  border: 1.5px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  box-shadow: var(--rp-shadow);
+}
+
+.rp-bantuan-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.rp-btn-hubungi {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--rp-primary);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--rp-primary);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: var(--rp-transition);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.rp-btn-hubungi:hover {
+  background: var(--rp-primary-bg);
+  color: var(--rp-primary);
+}
+
+/* ---- Divider with label ---- */
+.rp-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+/* ---- Stepper (keep for backward compat) ---- */
+.rp-stepper-container {
+  background: #ffffff;
+  padding: 16px 24px;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  max-width: 600px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.rp-step-item { display: flex; align-items: center; flex-direction: column; gap: 6px; }
+
+.rp-step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; flex-shrink: 0;
+}
+
+.rp-step-dot.done   { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
+.rp-step-dot.active { background: var(--rp-primary); color: #fff; border: 1.5px solid var(--rp-primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.15); }
+.rp-step-dot.pending{ background: #f8fafc; color: #94a3b8; border: 1.5px solid #e2e8f0; }
+
+.rp-step-label        { font-size: 11px; font-weight: 600; color: #94a3b8; text-align: center; }
+.rp-step-label.done   { color: #1e293b; }
+.rp-step-label.active { color: var(--rp-primary); font-weight: 700; }
+
+.rp-step-line      { height: 2px; background: #e2e8f0; flex-grow: 1; margin: 0 8px; min-width: 20px; max-width: 60px; margin-bottom: 14px; }
+.rp-step-line.done { background: var(--rp-primary); }
+
+/* ---- Responsive ---- */
+@media (max-width: 576px) {
+  .rp-bantuan-card { flex-direction: column; align-items: flex-start; }
+  .rp-stepper-container { padding: 12px 16px; }
+  .rp-step-label { display: none; }
+}

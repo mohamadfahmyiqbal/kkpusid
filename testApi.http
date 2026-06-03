@@ -1,102 +1,113 @@
+
 #####
-POST https://localhost:3443/api/auth/accountLogin HTTP/1.1
+POST https://api.kkpus.id/api/auth/accountLogin HTTP/1.1
 Content-Type: application/json
 
 {
  "emailHp" : "pengawas@kkpus.id",
  "password": "qwerty123!!"
 }
-#####
-POST https://localhost:3443/api/auth/accountLogin HTTP/1.1
-Content-Type: application/json
-
-{
- "emailHp" : "ketua@kkpus.id",
- "password": "qwerty123!!"
-}
-#####bendahara
-POST https://localhost:3443/api/auth/accountLogin HTTP/1.1
-Content-Type: application/json
-
-{
- "emailHp" : "bendahara@kkpus.id",
- "password": "qwerty123!!"
-}
 #####pengawas
-PUT https://localhost:3443/api/approvals/pendaftaran/approve/2ea0dcba-d86a-4142-afbf-874960eb5d30 HTTP/1.1
+PUT https://api.kkpus.id/api/approvals/pendaftaran/approve/4 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE2YWYzZS0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjMiLCJmdWxsX25hbWUiOiJQZW5nYXdhcyIsImVtYWlsIjoicGVuZ2F3YXNAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MjMzMzk1NSwiZXhwIjoxNzcyNDIwMzU1fQ.1yEVBDbLhSAa00U0aVyOEzDX8dn19OQiAW4kNFtkHBo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE2YWYzZS0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjMiLCJmdWxsX25hbWUiOiJQZW5nYXdhcyIsImVtYWlsIjoicGVuZ2F3YXNAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3NjQ0MzExOSwiZXhwIjoxNzc2NTI5NTE5fQ.YFv3i4JRBitKTHCq_EXK4fD-iT5yr_2jE9ci8msE_Cw
 
 {
     "action": "approve",
     "notes": "Persetujuan verifikasi pendaftaran."
 }
 #####ketua
-PUT https://localhost:3443/api/approvals/pendaftaran/approve/2ea0dcba-d86a-4142-afbf-874960eb5d30 HTTP/1.1
+PUT https://api.kkpus.id/api/approvals/pendaftaran/approve/5 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDhjZi0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjUiLCJmdWxsX25hbWUiOiJLZXR1YSIsImVtYWlsIjoia2V0dWFAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MjMzMzk5MywiZXhwIjoxNzcyNDIwMzkzfQ.VFKic666XW5ALZUJQrbrrI1JZL_QUTaIN67yenrqyLQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDhjZi0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjUiLCJmdWxsX25hbWUiOiJLZXR1YSIsImVtYWlsIjoia2V0dWFAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3NjQzNzUwMiwiZXhwIjoxNzc2NTIzOTAyfQ.C2pVwafC7cP5_fSVBfrcS0a_0gFhOvTm1E4xkEwCIPo
 
 {
     "action": "approve",
     "notes": "Persetujuan verifikasi pendaftaran."
 }
-#####pengawas penarikan
-PUT https://localhost:3443/api/approvals/penarikan/approve/49 HTTP/1.1
+#####penarikan approve by pengawas
+PUT https://api.kkpus.id/api/approvals/penarikan/approve/8 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE2YWYzZS0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjMiLCJmdWxsX25hbWUiOiJQZW5nYXdhcyIsImVtYWlsIjoicGVuZ2F3YXNAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MjMzMzk1NSwiZXhwIjoxNzcyNDIwMzU1fQ.1yEVBDbLhSAa00U0aVyOEzDX8dn19OQiAW4kNFtkHBo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE2YWYzZS0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjMiLCJmdWxsX25hbWUiOiJQZW5nYXdhcyIsImVtYWlsIjoicGVuZ2F3YXNAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3NjQ0MzExOSwiZXhwIjoxNzc2NTI5NTE5fQ.YFv3i4JRBitKTHCq_EXK4fD-iT5yr_2jE9ci8msE_Cw
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh pengawas."
+    "notes": "Persetujuan penarikan simpanan."
 }
-#####ketua penarikan
-PUT https://localhost:3443/api/approvals/penarikan/approve/49 HTTP/1.1
+#####penarikan approve by ketua
+PUT https://api.kkpus.id/api/approvals/penarikan/approve/8 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDhjZi0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjUiLCJmdWxsX25hbWUiOiJLZXR1YSIsImVtYWlsIjoia2V0dWFAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MjMzMzk5MywiZXhwIjoxNzcyNDIwMzkzfQ.VFKic666XW5ALZUJQrbrrI1JZL_QUTaIN67yenrqyLQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDhjZi0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjUiLCJmdWxsX25hbWUiOiJLZXR1YSIsImVtYWlsIjoia2V0dWFAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3NjQzNzUwMiwiZXhwIjoxNzc2NTIzOTAyfQ.C2pVwafC7cP5_fSVBfrcS0a_0gFhOvTm1E4xkEwCIPo
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh ketua."
+    "notes": "Persetujuan penarikan simpanan."
 }
-#####bendahara penarikan
-PUT https://localhost:3443/api/approvals/penarikan/approve/49 HTTP/1.1
+#####penarikan approve by bendahara
+PUT https://api.kkpus.id/api/approvals/penarikan/approve/8 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDczMy0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjQiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzcyMzM2MDI2LCJleHAiOjE3NzI0MjI0MjZ9.4EjiHh2Joem_v4oEUhQy2ZSSTcm7FC0g2tDYirb0cVg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDczMy0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjQiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzc2NDQxMDA2LCJleHAiOjE3NzY1Mjc0MDZ9.WLVmQ4OrcvScHZLu1wARDKV04D7otjqaj3-gDOfA6EA
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh bendahara."
+    "notes": "Persetujuan akhir penarikan simpanan oleh bendahara."
 }
-#####cash disbursement (bendahara)
-POST https://localhost:3443/api/simpanan/penarikan/cash-disburse/49 HTTP/1.1
+#####penarikan disburse by bendahara
+POST https://api.kkpus.id/api/approvals/penarikan/pembayaran/6 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDczMy0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjQiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzcyMzM2MDI2LCJleHAiOjE3NzI0MjI0MjZ9.4EjiHh2Joem_v4oEUhQy2ZSSTcm7FC0g2tDYirb0cVg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDczMy0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjQiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzczMDA3MDEwLCJleHAiOjE3NzMwOTM0MTB9.3XtvHjP0ubWaj2fDfQQZvnROzmGKk9OQetxdIPFhht0
 
-{}
-#####pengawas pembiayaan
-PUT https://localhost:3443/api/approvals/pembiayaan/approve/{financing_id} HTTP/1.1
+#####pembiayaan approve by pengawas
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/6 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {pengawas_token}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE2YWYzZS0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjMiLCJmdWxsX25hbWUiOiJQZW5nYXdhcyIsImVtYWlsIjoicGVuZ2F3YXNAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MzAwNjkxNCwiZXhwIjoxNzczMDkzMzE0fQ.PusEG-3M-1vMN-HmjlfgzdIkX1zMTj_mC-EIHeAWMF4
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh pengawas."
+    "notes": "Persetujuan aplikasi pembiayaan."
 }
-#####ketua pembiayaan
-PUT https://localhost:3443/api/approvals/pembiayaan/approve/{financing_id} HTTP/1.1
+#####pembiayaan approve by ketua
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/1 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {ketua_token}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDhjZi0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjUiLCJmdWxsX25hbWUiOiJLZXR1YSIsImVtYWlsIjoia2V0dWFAa2twdXMuaWQiLCJzdGF0dXNfaWQiOjEsImlhdCI6MTc3MzAwNjk0NSwiZXhwIjoxNzczMDkzMzQ1fQ.RISZWH76K08GPIG2vx0t1hAw8WTxX1vtPXhN2CPYbig
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh ketua."
+    "notes": "Persetujuan aplikasi pembiayaan."
 }
-#####bendahara pembiayaan
-PUT https://localhost:3443/api/approvals/pembiayaan/approve/{financing_id} HTTP/1.1
+#####pembiayaan approve by bendahara
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/1 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {bendahara_token}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOiJhMTE3ZDczMy0xMmI5LTExZjEtOWVjZi1mYTE2M2U5YjUyNWIiLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjQiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MSwiaWF0IjoxNzczMDA3MDEwLCJleHAiOjE3NzMwOTM0MTB9.3XtvHjP0ubWaj2fDfQQZvnROzmGKk9OQetxdIPFhht0
 
 {
     "action": "approve",
-    "notes": "Persetujuan pembiayaan oleh bendahara."
+    "notes": "Persetujuan aplikasi pembiayaan."
+}
+#####pembiayaan approve by pengawas
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjcsIm1lbWJlcl9ubyI6IjAwMTAxMjI1MTYyMyIsImZ1bGxfbmFtZSI6IlBlbmdhd2FzIiwiZW1haWwiOiJwZW5nYXdhc0Bra3B1cy5pZCIsInN0YXR1c19pZCI6MiwiaWF0IjoxNzY5OTAyNTE3LCJleHAiOjE3Njk5ODg5MTd9._UVk6QjwoywNIe0a_e6af1KrojlirgJFKOQLMEfR8sk
+
+{
+    "action": "approve",
+    "notes": "Persetujuan aplikasi pembiayaan."
+}
+#####pembiayaan approve by ketua
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjksIm1lbWJlcl9ubyI6IjAwMTAxMjI1MTYyNSIsImZ1bGxfbmFtZSI6IktldWEiLCJlbWFpbCI6ImtldHVhQGtrcHVzLmlkIiwic3RhdHVzX2lkIjoxLCJpYXQiOjE3Njk5MTIxOTksImV4cCI6MTc2OTk5ODU5OX0.S4nuLItLZDHUv9e1IxSwuWMXLpqyM5dBA9lu4KfZepo
+
+{
+    "action": "approve",
+    "notes": "Persetujuan aplikasi pembiayaan."
+}
+#####pembiayaan approve by bendahara
+PUT https://api.kkpus.id/api/approvals/pembiayaan/approve/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJfaWQiOjEwLCJtZW1iZXJfbm8iOiIwMDEwMTIyNTE2MjYiLCJmdWxsX25hbWUiOiJCZW5kYWhhcmEiLCJlbWFpbCI6ImJlbmRhaGFyYUBra3B1cy5pZCIsInN0YXR1c19pZCI6MywiaWF0IjoxNzY5OTIyODI5LCJleHAiOjE3Njk5OTkyMjl9.8qG6m8j8K3z8Y0p9Y9z9Y9z9Y9z9Y9z9Y9z9Y9z9Y
+
+{
+    "action": "approve",
+    "notes": "Persetujuan aplikasi pembiayaan."
 }

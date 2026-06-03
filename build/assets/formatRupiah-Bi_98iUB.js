@@ -1,0 +1,1 @@
+var e=e=>{if(e==null||e===void 0||e===``)return``;let t=e.toString().replace(/[^,\d]/g,``).split(`,`),n=t[0].length%3,r=t[0].substr(0,n),i=t[0].substr(n).match(/\d{3}/gi);return i&&(r+=(n?`.`:``)+i.join(`.`)),t[1]===void 0?r:r+`,`+t[1]},t=e=>e?e.toString().replace(/[^\d]/g,``):``;export{t as n,e as t};

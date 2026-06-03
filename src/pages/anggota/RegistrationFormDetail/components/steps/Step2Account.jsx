@@ -93,7 +93,7 @@ export default function Step2Account({ formData, handleChange, errors }) {
           </Form.Label>
           <Col sm="9">
             <InputGroup className="shadow-sm rounded-12 overflow-hidden">
-              <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
+              <InputGroup.Text className="bg-light border-0 py-2 ps-3 text-muted">
                 <FaEnvelope size={14} />
               </InputGroup.Text>
               <Form.Control
@@ -103,14 +103,15 @@ export default function Step2Account({ formData, handleChange, errors }) {
                 value={formData.email || ""}
                 onChange={handleChange}
                 isInvalid={!!errors.email}
-                className="border-0 py-2"
+                className="border-0 py-2 bg-light text-muted"
+                disabled
               />
               <Form.Control.Feedback type="invalid" tooltip>
                 {errors.email}
               </Form.Control.Feedback>
             </InputGroup>
             <small className="text-muted mt-1 d-block">
-              Email akan digunakan untuk notifikasi status pendaftaran.
+              Alamat email diambil dari akun registrasi Anda.
             </small>
           </Col>
         </Form.Group>

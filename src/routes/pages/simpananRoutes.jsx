@@ -1,21 +1,18 @@
 import { lazy } from "react";
 
-// Gunakan Lazy Loading untuk memutus circular dependency
-const PenarikanSimpananPage = lazy(
-  () =>
-    import("../../pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage"),
-);
-const DetailSaldoPage = lazy(
-  () => import("../../pages/simpanan/DetailSaldoPage/page/DetailSaldoPage"),
-);
-const SimpananPage = lazy(
-  () => import("../../pages/simpanan/SimpananPage/page/SimpananPage"),
-);
-
 const simpananRoutes = {
-  simpananDetailSaldo: DetailSaldoPage,
-  simpananPage: SimpananPage,
-  penarikanSimpananPage: PenarikanSimpananPage,
+  simpananDetailSaldo: {
+    component: lazy(() => import("../../pages/simpanan/DetailSaldoPage/page/DetailSaldoPage")),
+    isProtected: true,
+  },
+  simpananPage: {
+    component: lazy(() => import("../../pages/simpanan/SimpananPage/page/SimpananPage")),
+    isProtected: true,
+  },
+  penarikanSimpananPage: {
+    component: lazy(() => import("../../pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage")),
+    isProtected: true,
+  },
 };
 
 export default simpananRoutes;

@@ -1,22 +1,22 @@
-// src/components/layout/DashboardLayout.jsx
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-  useMemo,
-} from "react";
+// src/components/layout/components/LayoutGlobal.jsx
+import React, { useCallback, lazy, Suspense } from "react";
 import { useProfile } from "../contexts";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useKeyboardShortcuts } from "../../../hooks/useKeyboardShortcuts";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useLayoutState } from "../../../hooks/useLayoutState";
+import { usePageConfig } from "../../../hooks/usePageConfig";
+
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import SkeletonContent from "../ui/SkeletonContent";
-import NotificationPrompt from "../ui/NotificationPrompt";
-import ErrorBoundary from "../ui/ErrorBoundary";
+import EnhancedErrorBoundary from "../../ui/EnhancedErrorBoundary";
+import { DashboardSkeleton } from "../../ui/AdvancedSkeleton";
 import PageTitle from "./PageTitle";
-import { CSS_CLASSES } from "../../../constants/layout";
-import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
+import { CSS_CLASSES, ACCESSIBILITY_LABELS } from "../../../constants/layout";
+import { jwtEncode } from "../../../utils/helpers";
+
+// Lazy load NotificationPrompt untuk mengurangi bundle size initial
+const NotificationPrompt = lazy(() => import("../../ui/NotificationPrompt"));
 
 const PAGE_TITLES = {
   dashboard: "Dashboard",
@@ -24,7 +24,7 @@ const PAGE_TITLES = {
   notificationDetailPage: "Detail Notifikasi",
   billingPage: "Setoran Simpanan",
   invoicePage: "Invoice",
-  accountPage: "Profil Anggota",
+  accountPage: "Profil Saya",
   transactionDetailPage: "Detail Transaksi",
   registrationPage: "Pendaftaran",
   registrationFormDetail: "Formulir Pendaftaran",
@@ -38,187 +38,154 @@ const PAGE_TITLES = {
   programPage: "Program",
 };
 
-const prettifyPageName = (pageName = "") =>
-  pageName
-    .replace(/Page$/i, "")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-    .trim();
-
-const LayoutGlobal = ({ children, title }) => {
+const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token } = useParams();
   const { userData, loading, error, logout } = useProfile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const bodyClassRef = useRef(CSS_CLASSES.SIDEBAR_BODY_CLASS);
+  const {
+    isSidebarOpen,
+    isDesktop,
+    isTransitioning,
+    handleToggleSidebar,
+    handleCloseSidebar,
+  } = useLayoutState();
 
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const { pageConfig, showPageNavigation } = usePageConfig(propPageName, title);
 
   const effectiveSidebarOpen = isDesktop || isSidebarOpen;
 
-  const decodedToken = useMemo(() => jwtDecodePage(token), [token]);
-  const currentPage = decodedToken?.page || "";
-  const showPageNavigation = currentPage !== "dashboard";
+  const wrapperClass = `dashboard-layout-shell fix-header card-no-border${
+    effectiveSidebarOpen ? " show-sidebar fix-sidebar" : ""
+  }${isTransitioning ? " sidebar-transitioning" : ""}`;
 
-  const currentPageTitle = useMemo(() => {
-    if (title) return title;
-    let baseTitle = PAGE_TITLES[currentPage] || prettifyPageName(currentPage);
+  const memberId =
+    userData?.member_id || userData?.registration_id || userData?.id;
 
-    // Untuk halaman global seperti billingPage, sesuaikan title berdasarkan halaman yang mengakses
-    if (currentPage === "billingPage") {
-      const returnPage = decodedToken?.return;
-      if (!returnPage) {
-        baseTitle = "Daftar Tagihan";
-      } else if (returnPage === "simpananPage") {
-        baseTitle = "Setoran Simpanan";
-      } else if (returnPage === "transaksiPage") {
-        baseTitle = "Setoran Transaksi";
-      } // Tambahkan kondisi lain jika diperlukan
-    }
-
-    const displayName = decodedToken?.displayName;
-    return displayName ? `${baseTitle} - ${displayName}` : baseTitle;
-  }, [currentPage, title, decodedToken]);
-
-  useEffect(() => {
-    const bodyClass = bodyClassRef.current;
-
-    if (effectiveSidebarOpen) {
-      document.body.classList.add(bodyClass);
-    } else {
-      document.body.classList.remove(bodyClass);
-    }
-
-    // CLEANUP: Hapus class saat komponen di-unmount
-    return () => {
-      document.body.classList.remove(bodyClass);
-    };
-  }, [effectiveSidebarOpen]);
-
-  useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
-
+  // Handlers
   const handleLogout = useCallback(() => {
     logout();
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   }, [logout, navigate]);
 
-  const handleToggleSidebar = useCallback(() => {
-    setIsSidebarOpen((prev) => !prev);
-  }, []);
-
-  const handleToggleCollapse = useCallback(() => {
-    if (!isDesktop) {
-      setIsCollapsed((prev) => !prev);
-    }
-  }, [isDesktop]);
-
-  const handleCloseSidebar = useCallback(() => {
-    setIsSidebarOpen(false);
-  }, []);
-
   const handleBack = useCallback(() => {
-    if (window.history.length > 1 && location.key !== "default") {
-      navigate(-1);
-      return;
+    try {
+      if (window.history.length > 1 && location.key !== "default") {
+        navigate(-1);
+      } else {
+        navigate(`/${jwtEncode({ page: "dashboard" })}`);
+      }
+    } catch (error) {
+      console.error("Navigation error:", error);
+      navigate(`/${jwtEncode({ page: "dashboard" })}`);
     }
-
-    navigate(`/${jwtEncode({ page: "dashboard" })}`);
   }, [location.key, navigate]);
 
-  const wrapperClass = `dashboard-layout-shell fix-header card-no-border fix-sidebar${
-    effectiveSidebarOpen ? " show-sidebar" : ""
-  }${isCollapsed ? " sidebar-collapsed" : ""}`;
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onToggleSidebar: handleToggleSidebar,
+    onLogout: handleLogout,
+  });
 
   return (
     <div id="main-wrapper" className={wrapperClass}>
       <Header
         user={userData}
-        logout={handleLogout} // Gunakan handler baru
+        logout={handleLogout}
         handleToggleSidebar={handleToggleSidebar}
-        isSidebarShown={effectiveSidebarOpen}
-        isCollapsed={isCollapsed}
-        handleToggleCollapse={handleToggleCollapse}
+        isSidebarShown={isSidebarOpen}
         isDesktop={isDesktop}
       />
 
       <Sidebar
+        user={userData}
         onNavigate={handleCloseSidebar}
         onClose={handleCloseSidebar}
         isDesktop={isDesktop}
-      />
-      <button
-        type="button"
-        className={`${CSS_CLASSES.SIDEBAR_BACKDROP} ${effectiveSidebarOpen && !isDesktop ? CSS_CLASSES.SIDEBAR_OPEN : ""}`}
-        onClick={handleCloseSidebar}
-        aria-label="Close sidebar"
-        aria-hidden={!effectiveSidebarOpen || isDesktop}
-        tabIndex={effectiveSidebarOpen && !isDesktop ? 0 : -1}
+        isSidebarOpen={isSidebarOpen}
       />
 
-      <div className="page-wrapper dashboard-page-wrapper d-flex flex-column">
+      {/* Backdrop Mobile */}
+      {!isDesktop && isSidebarOpen && (
+        <div
+          className={`${CSS_CLASSES.SIDEBAR_BACKDROP} ${CSS_CLASSES.SIDEBAR_OPEN} ${isTransitioning ? "backdrop-transitioning" : ""}`}
+          onClick={handleCloseSidebar}
+          aria-label={ACCESSIBILITY_LABELS.SIDEBAR_BACKDROP}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleCloseSidebar();
+            }
+          }}
+        />
+      )}
+
+      <div
+        className="page-wrapper dashboard-page-wrapper d-flex flex-column"
+        style={{
+          paddingTop: isDesktop ? "112px" : "64px",
+          marginLeft: "0px",
+          transition: "padding-top 0.3s ease",
+        }}
+      >
         <main
-          className="container-fluid pt-4 pb-4 flex-grow-1 fade-in"
+          className={`container-fluid flex-grow-1 fade-in px-2 px-md-3 ${isTransitioning ? "page-transitioning" : ""}`}
           role="main"
+          aria-label={ACCESSIBILITY_LABELS.MAIN_CONTENT}
         >
           {showPageNavigation && (
             <PageTitle
-              title={currentPageTitle}
-              breadcrumbs={[
-                {
-                  label: "Dashboard",
-                  path: `/${jwtEncode({ page: "dashboard" })}`,
-                },
-                { label: currentPageTitle },
-              ]}
+              title={pageConfig.title}
+              subtitle={pageConfig.subtitle}
+              icon={pageConfig.icon}
+              breadcrumbs={pageConfig.breadcrumbs}
               customBackAction={handleBack}
+              aria-label={ACCESSIBILITY_LABELS.PAGE_NAVIGATION}
             />
           )}
 
           {loading ? (
-            <SkeletonContent />
+            <DashboardSkeleton />
           ) : error || !userData ? (
-            <ErrorBoundary>
-              <div className="py-5 text-center">
-                <div className="error-access-card">
-                  <i className="fa fa-exclamation-triangle text-danger fa-3x mb-3"></i>
-                  <h4 className="text-danger">Akses Terbatas</h4>
-                  <p className="text-muted">
-                    {error ||
-                      "Sesi Anda telah berakhir. Silakan login kembali."}
-                  </p>
-                  <button
-                    className="btn btn-primary w-100 mt-3 fw-bold"
-                    onClick={handleLogout}
-                  >
-                    Kembali ke Login
-                  </button>
+            <div className="py-5 text-center">
+              <div className="error-access-card animate-error-shake">
+                <div className="error-icon-wrapper mb-3">
+                  <i className="fa fa-exclamation-triangle text-danger fa-3x animate-pulse"></i>
                 </div>
+                <h4 className="text-danger mb-3">Akses Terbatas</h4>
+                <p className="text-muted mb-4">
+                  {error || "Sesi Anda telah berakhir. Silakan login kembali."}
+                </p>
+                <button
+                  className="btn btn-primary w-100 mt-3 fw-bold btn-hover-lift"
+                  onClick={handleLogout}
+                  disabled={isTransitioning}
+                >
+                  {isTransitioning ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      Memproses...
+                    </>
+                  ) : (
+                    "Kembali ke Beranda"
+                  )}
+                </button>
               </div>
-            </ErrorBoundary>
+            </div>
           ) : (
-            <ErrorBoundary>
+            <EnhancedErrorBoundary>
               {children}
-
-              <NotificationPrompt
-                memberId={
-                  userData.member_id || userData.registration_id || userData.id
-                }
-              />
-            </ErrorBoundary>
+              <Suspense fallback={null}>
+                <NotificationPrompt memberId={memberId} />
+              </Suspense>
+            </EnhancedErrorBoundary>
           )}
         </main>
-
         <Footer />
       </div>
     </div>

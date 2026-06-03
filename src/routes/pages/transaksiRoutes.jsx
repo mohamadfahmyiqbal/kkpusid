@@ -1,10 +1,14 @@
-import FormPengajuanTransaksi from "../../pages/transaksi/FormPengajuanTransaksi";
-import TransaksiDashboardPage from "../../pages/transaksi/TransaksiDashboardPage";
+import React, { lazy } from "react";
 
 const transaksiRoutes = {
-  transaksiPage: TransaksiDashboardPage,
-  formPengajuanTransaksi: FormPengajuanTransaksi,
-  // Tambahkan halaman lain dari folder transaksi di sini
+  transaksiPage: {
+    component: lazy(() => import("../../pages/transaksi/TransaksiDashboardPage")),
+    isProtected: true,
+  },
+  formPengajuanTransaksi: {
+    component: lazy(() => import("../../pages/transaksi/FormPengajuanTransaksi")),
+    isProtected: true,
+  },
 };
 
 export default transaksiRoutes;

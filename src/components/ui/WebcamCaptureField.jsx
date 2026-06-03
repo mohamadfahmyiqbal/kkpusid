@@ -2,7 +2,13 @@
 
 import React, { useState, useCallback, useRef } from "react";
 import { Card, Button, Form, Spinner } from "react-bootstrap";
-import { FaCamera, FaTimes, FaUndo, FaCheckCircle } from "react-icons/fa";
+import {
+  FaCamera,
+  FaTimes,
+  FaUndo,
+  FaCheckCircle,
+  FaSyncAlt,
+} from "react-icons/fa";
 // 💡 IMPORT UTAMA: Komponen dari library react-webcam
 import Webcam from "react-webcam";
 
@@ -21,10 +27,12 @@ export default function WebcamCaptureField({
   setCapturedImage,
   isInvalid,
   errorText,
+  defaultFacingMode = "user",
 }) {
   const webcamRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [facingMode, setFacingMode] = useState(defaultFacingMode);
 
   // 1. Mengaktifkan/Menonaktifkan Kamera
   const handleToggleCamera = useCallback(() => {
@@ -59,6 +67,11 @@ export default function WebcamCaptureField({
     setIsCameraActive(true);
   }, [fieldName, setCapturedImage]);
 
+  // 4. Switch Kamera Depan/Belakang
+  const handleSwitchCamera = useCallback(() => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  }, []);
+
   // --------------------------------------------------
   // --- Rendering ---
   // --------------------------------------------------
@@ -92,7 +105,7 @@ export default function WebcamCaptureField({
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
                 videoConstraints={{
-                  facingMode: "environment", // Menggunakan kamera belakang (default)
+                  facingMode: facingMode,
                 }}
                 className="w-100 mb-3"
                 style={{
@@ -134,6 +147,14 @@ export default function WebcamCaptureField({
                       <FaCamera className="me-2" /> Ambil Foto
                     </>
                   )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleSwitchCamera}
+                  className="me-2"
+                  title="Ganti Kamera"
+                >
+                  <FaSyncAlt className="me-2" /> Ganti Kamera
                 </Button>
                 <Button variant="danger" onClick={handleToggleCamera}>
                   <FaTimes className="me-2" /> Tutup Kamera

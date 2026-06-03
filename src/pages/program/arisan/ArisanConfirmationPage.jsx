@@ -2,10 +2,9 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Card, Button, Container, Row, Col, Alert } from "react-bootstrap";
-import { FaArrowLeft, FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
 import { jwtEncode } from "../../../utils/helpers";
 
 // --- FUNGSI LOKAL UNTUK DEKODE PAYLOAD TOKEN ---
@@ -51,19 +50,6 @@ export default function ArisanConfirmationPage() {
     const detailToken = jwtEncode({
       page: "transactionDetailPage", // Target halaman
       action: "arisanEnrollment",
-      data: {
-        ...arisanData,
-        invoiceNumber: "INV-ARS-2025001", // Tambahkan invoice number mock
-        status: "Menunggu Persetujuan", // Status awal
-        tanggalPengajuan: new Date().toLocaleDateString("id-ID"),
-        total: arisanData.setoranPerBulan, // Total adalah setoran pertama
-        details: [
-          {
-            description: `Setoran Pertama Grup ${arisanData.batch}`,
-            amount: arisanData.setoranPerBulan,
-          },
-        ],
-      },
       return: "arisanPage",
     });
     navigate(`/${detailToken}`);
@@ -72,35 +58,17 @@ export default function ArisanConfirmationPage() {
   // Pengecekan jika data arisan tidak valid (misal, token rusak)
   if (!arisanData || !arisanData.batch) {
     return (
-      <LayoutGlobal title="Konfirmasi Arisan">
-        <Container className="mt-5 text-center">
-          <Alert variant="danger">Data grup arisan tidak ditemukan.</Alert>
-          <Button variant="secondary" onClick={handleBack}>
-            Kembali
-          </Button>
-        </Container>
-      </LayoutGlobal>
+      <Container className="mt-5 text-center">
+        <Alert variant="danger">Data grup arisan tidak ditemukan.</Alert>
+        <Button variant="secondary" onClick={handleBack}>
+          Kembali
+        </Button>
+      </Container>
     );
   }
 
   return (
-    <LayoutGlobal>
-      {/* HEADER JUDUL DENGAN TOMBOL KEMBALI */}
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center d-flex align-items-center">
-          <Button
-            variant="link"
-            onClick={handleBack}
-            className="text-dark p-0 me-3"
-          >
-            <FaArrowLeft size={24} />
-          </Button>
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            Konfirmasi Gabung Grup Arisan
-          </h3>
-        </div>
-      </div>
-
+    <div className="arisan-confirmation-page-container pb-5">
       <Container className="mt-4">
         <Row className="justify-content-center">
           <Col lg={8} md={10}>
@@ -160,6 +128,6 @@ export default function ArisanConfirmationPage() {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 }

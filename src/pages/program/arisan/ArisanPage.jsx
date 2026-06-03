@@ -1,41 +1,169 @@
-// pages/program/arisan/ArisanPage.jsx (Kode Final)
+// fe/src/pages/program/arisan/ArisanPage.jsx
 
-import React, { useState, useCallback } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Badge,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { FaPlusCircle, FaRedo } from "react-icons/fa";
+import {
+  MdPeople,
+  MdTrackChanges,
+  MdPayments,
+  MdEvent,
+  MdChevronRight,
+  MdGroup,
+  MdAccountBalance,
+} from "react-icons/md";
 
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal"; // Path: Naik 3 tingkat
 import ProgramAccountCard from "../../../components/program/ProgramAccountCard";
-import ProgramStatusCard from "../../../components/program/ProgramStatusCard";
-import ProgramTabMenu from "../../../components/program/ProgramTabMenu";
+import AvailableArisanList from "../../../components/program/AvailableArisanList";
 import { jwtEncode } from "../../../utils/helpers";
+import { useProfile } from "../../../components/layout/contexts/ProfileContext";
+import "./ArisanPage.css";
 
-// --- DATA MOCKUP ---
-const MOCK_ACCOUNT_DATA_ARISAN = {
-  nama: "Budi Santoso",
-  produk: "Arisan Haji/Umroh Skema 1",
-  akad: "Murabahah",
-  tanggalBuka: "01 Februari 2024",
-  saldoAkhir: "Rp 1.400.000", // Setoran terakhir
+// API URL Configuration
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://localhost:3445/api";
+
+const getApiUrl = (endpoint) => {
+  const base = API_BASE_URL.endsWith("/api") ? API_BASE_URL : `${API_BASE_URL}/api`;
+  return `${base}/${endpoint}`;
 };
 
+// Fallback mockup data if API is empty
+const MOCK_LIST_ARISAN = [
+  {
+    title: "Arisan Haji/Umroh Skema 1",
+    batch: "Batch 1",
+    kategori: "Arisan Haji/Umroh",
+    peserta: "6/6 Peserta",
+    target: "Rp. 50.400.000",
+    term: "36 Bulan",
+    setoran: "Rp. 1.400.000",
+    periode: "Jan 2025 - Des 2025",
+    status: "full",
+  },
+  {
+    title: "Arisan Haji/Umroh Skema 1",
+    batch: "Batch 2",
+    kategori: "Arisan Haji/Umroh",
+    peserta: "5/30 Peserta",
+    target: "Rp. 50.400.000",
+    term: "36 Bulan",
+    setoran: "Rp. 1.400.000",
+    periode: "Jan 2025 - Des 2025",
+    status: "available",
+  },
+];
+
 const PROGRAM_OPTIONS = [
-  { label: "Pinjaman Lunak", key: "pinjaman" },
-  { label: "Arisan", key: "arisan" },
+  { label: "Pinjaman Lunak", key: "pinjaman", icon: MdAccountBalance },
+  { label: "Arisan", key: "arisan", icon: MdGroup },
 ];
 
 export default function ArisanPage() {
   const navigate = useNavigate();
+  const { userData } = useProfile();
 
-  // STATE KONDISIONAL: Ubah ke 'true' untuk simulasi Arisan Aktif (Arisan_OK.png)
-  const [hasActiveArisan] = useState(false);
+  // Role check: status_id 2 (Pengawas), 3 (Ketua), 4 (Bendahara) can create
+  const canCreate = !!userData && [2, 3, 4].includes(Number(userData.status_id));
+
   const activeTab = "arisan";
 
-  // Handler untuk navigasi ke halaman daftar grup arisan (ArisanJoinPage.jsx)
-  const handleGabungArisan = useCallback(() => {
-    const token = jwtEncode({ page: "arisanJoinPage" }); // Kunci rute baru
-    navigate(`/${token}`);
-  }, [navigate]);
+  // Dynamic API state
+  const [activeArisan, setActiveArisan] = useState(null);
+  const [availableArisans, setAvailableArisans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchArisanData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      // 1. Fetch active user arisan
+      const activeRes = await fetch(getApiUrl("program/arisan"), {
+        method: "GET",
+        headers,
+      });
+
+      if (!activeRes.ok) {
+        throw new Error(`HTTP error! status: ${activeRes.status}`);
+      }
+
+      const activeResult = await activeRes.json();
+
+      if (activeResult.success && activeResult.data) {
+        setActiveArisan(activeResult.data);
+      } else {
+        setActiveArisan(null);
+        // 2. Fetch available arisans only if no active arisan exists
+        const availableRes = await fetch(getApiUrl("program/arisan/available"), {
+          method: "GET",
+          headers,
+        });
+
+        if (!availableRes.ok) {
+          throw new Error(`HTTP error! status: ${availableRes.status}`);
+        }
+
+        const availableResult = await availableRes.json();
+        if (availableResult.success) {
+          setAvailableArisans(availableResult.data || []);
+        } else {
+          throw new Error(availableResult.message || "Gagal memuat daftar arisan");
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching arisan details:", err);
+      setError("Gagal memuat data dari server. Menampilkan mode preview.");
+      // Fallback to mockup list in case of network or server failure so the user isn't stuck with a broken screen
+      setAvailableArisans(MOCK_LIST_ARISAN);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchArisanData();
+  }, [fetchArisanData]);
+
+  // Handler untuk navigasi ke form pendaftaran arisan (FormPengajuanArisan.jsx) atau detail pengajuan
+  const handleGabungArisan = useCallback(
+    (arisanId) => {
+      // Jika ada pengajuan pending, arahkan ke detail pengajuan
+      if (activeArisan?.is_pending && activeArisan?.financing_id) {
+        const token = jwtEncode({
+          page: "arisanDetailPage",
+          financingId: activeArisan.financing_id,
+        });
+        navigate(`/${token}`);
+        return;
+      }
+
+      const token = jwtEncode({
+        page: "formPengajuanArisan",
+        arisanId: arisanId,
+      });
+      navigate(`/${token}`);
+    },
+    [navigate, activeArisan],
+  );
 
   // Handler untuk navigasi ke halaman Setoran (contoh)
   const handleSetoran = useCallback(() => {
@@ -56,51 +184,176 @@ export default function ArisanPage() {
   );
 
   const renderArisanContent = () => {
-    if (hasActiveArisan) {
-      // Tampilan OK (Arisan Aktif)
+    if (isLoading) {
+      return <ArisanSkeleton />;
+    }
+
+    if (activeArisan) {
+      // Map backend active arisan schema to ProgramAccountCard expected format
+      const formattedAccountData = {
+        nama: activeArisan.member_name || userData?.name || "Anggota Koperasi",
+        produk: `${activeArisan.program_name} (${activeArisan.batch_name})`,
+        akad: `No. Peserta: ${activeArisan.participant_no || "-"}`,
+        tanggalBuka: activeArisan.created_at
+          ? new Date(activeArisan.created_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "-",
+        saldoAkhir: new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+        }).format(activeArisan.current_balance || 0),
+        statusLabel: activeArisan.status_label || activeArisan.status || "Aktif",
+        isApproved: activeArisan.is_approved,
+        isPending: activeArisan.is_pending,
+        financingId: activeArisan.financing_id
+      };
+
       return (
         <ProgramAccountCard
-          accountData={MOCK_ACCOUNT_DATA_ARISAN}
+          accountData={formattedAccountData}
           handleSetoran={handleSetoran}
-          // Tombol 'Pengajuan' di ProgramAccountCard diubah fungsinya menjadi 'Gabung Grup Arisan'
           handlePengajuan={handleGabungArisan}
         />
       );
-    } else {
-      // Tampilan NG (Belum Ada Arisan Aktif)
-      return (
-        <ProgramStatusCard
-          title="Informasi Rekening"
-          message="Anda belum terdaftar dalam grup Arisan manapun."
-          buttonText="Gabung Grup Arisan"
-          onButtonClick={handleGabungArisan}
-        />
-      );
     }
+
+    const currentList = availableArisans;
+
+    return (
+      <>
+        {error && (
+          <Alert variant="warning" className="d-flex align-items-center justify-content-between mb-4 rounded-3 border-0 bg-warning bg-opacity-10 text-warning">
+            <span className="small">{error}</span>
+            <Button variant="link" className="p-0 text-warning text-decoration-none d-flex align-items-center" onClick={fetchArisanData}>
+              <FaRedo className="me-1" size={12} /> Coba Lagi
+            </Button>
+          </Alert>
+        )}
+
+        {/* Header Section */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 className="fw-bold text-dark mb-1 font-outfit">
+              <MdGroup className="me-2 text-primary" size={22} />
+              Arisan Tersedia
+            </h5>
+            <p className="text-muted small mb-0">
+              Pilih grup arisan yang sesuai dengan kebutuhan Anda
+            </p>
+          </div>
+          {canCreate && (
+            <Button
+              variant="outline-primary"
+              size="sm"
+              className="d-none d-md-flex align-items-center rounded-pill px-3"
+              onClick={() => handleGabungArisan("new")}
+            >
+              <FaPlusCircle className="me-2" />
+              Buat Arisan Baru
+            </Button>
+          )}
+        </div>
+
+        {currentList.length === 0 ? (
+          <EmptyState onCreate={() => handleGabungArisan("new")} canCreate={canCreate} />
+        ) : (
+          <AvailableArisanList
+            availableArisan={currentList}
+            onJoinClick={(item) => handleGabungArisan(item.arisan_id || item.id)}
+          />
+        )}
+      </>
+    );
   };
 
   return (
-    <LayoutGlobal title="Arisan">
-      <div className="row page-titles pt-3">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">Arisan</h3>
-        </div>
-      </div>
-
-      <Container className="mt-4">
+    <div className="arisan-page-container pb-5 font-outfit">
+      <Container fluid className="mt-4 px-3 px-md-4">
         <Row className="justify-content-center">
-          <Col lg={10} md={12}>
-            {/* Tab Menu */}
-            <ProgramTabMenu
-              options={PROGRAM_OPTIONS}
-              activeKey={activeTab}
-              onChange={handleTabChange}
-            />
+          <Col xl={10} lg={11} md={12}>
+            {/* Tabs Navigation */}
+            <div className="arisan-tabs-container mb-4 px-2">
+              <div className="d-flex flex-column flex-md-row gap-2 overflow-auto pb-2 arisan-scroll-hide">
+                {PROGRAM_OPTIONS.map((opt) => {
+                  const isActive = activeTab === opt.key;
+                  const IconComponent = opt.icon;
+                  return (
+                    <button
+                      key={opt.key}
+                      onClick={() => handleTabChange(opt.key)}
+                      className={`arisan-tab-btn ${isActive ? "active" : ""}`}
+                    >
+                      <IconComponent size={18} />
+                      <span>{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {renderArisanContent()}
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 }
+
+
+const EmptyState = ({ onCreate, canCreate }) => (
+  <Alert
+    variant="light"
+    className="text-center py-5 border-0 bg-light rounded-4 font-outfit"
+  >
+    <div className="mb-3">
+      <div className="bg-white rounded-circle mx-auto d-flex align-items-center justify-content-center shadow-sm arisan-empty-icon-container">
+        <MdGroup size={32} className="text-muted" />
+      </div>
+    </div>
+    <h6 className="fw-bold text-dark">Belum Ada Arisan Tersedia</h6>
+    <p className="text-muted small mb-3">
+      Saat ini tidak ada grup arisan yang terbuka.
+      {canCreate && (
+        <>
+          <br />
+          Anda bisa membuat arisan baru untuk memulai.
+        </>
+      )}
+    </p>
+    {canCreate && (
+      <Button variant="primary" className="rounded-pill px-4" onClick={onCreate}>
+        <FaPlusCircle className="me-2" />
+        Buat Arisan Baru
+      </Button>
+    )}
+  </Alert>
+);
+
+const ArisanSkeleton = () => (
+  <Row className="g-3">
+    {[1, 2, 3].map((i) => (
+      <Col md={6} lg={6} xl={4} key={i} className="mb-3">
+        <div className="arisan-skeleton-card arisan-skeleton">
+          <div className="d-flex justify-content-between">
+            <div className="arisan-skeleton" style={{ width: "60px", height: "16px" }} />
+            <div className="arisan-skeleton" style={{ width: "80px", height: "20px", borderRadius: "12px" }} />
+          </div>
+          <div className="my-3">
+            <div className="arisan-skeleton mb-2" style={{ width: "80%", height: "24px" }} />
+            <div className="arisan-skeleton" style={{ width: "50%", height: "16px" }} />
+          </div>
+          <div className="grid gap-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            {[1, 2, 3, 4].map((j) => (
+              <div key={j} className="arisan-skeleton" style={{ height: "40px", borderRadius: "8px" }} />
+            ))}
+          </div>
+          <div className="mt-3 arisan-skeleton" style={{ height: "40px", borderRadius: "20px" }} />
+        </div>
+      </Col>
+    ))}
+  </Row>
+);

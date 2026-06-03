@@ -1,0 +1,1 @@
+import{f as e,fr as t,m as n,vr as r,xr as i}from"./index-0Aj5Wkjo.js";var a=i(n()),o=i(r()),s=t(),c=o.forwardRef(({bsPrefix:t,fluid:n=!1,as:r=`div`,className:i,...o},c)=>{let l=e(t,`container`),u=typeof n==`string`?`-${n}`:`-fluid`;return(0,s.jsx)(r,{ref:c,...o,className:(0,a.default)(i,n?`${l}${u}`:l)})});c.displayName=`Container`;export{c as t};

@@ -17,11 +17,12 @@ class UBilling {
   }
 
   /**
-   * Mengambil detail invoice berdasarkan array ID item tagihan
+   * Mengambil detail invoice berdasarkan array ID item tagihan atau billId
    */
-  getInvoiceDetail(billItemIds) {
+  getInvoiceDetail(billItemIds, billId) {
     return http.post("/billing/invoice/details", {
       bill_item_ids: billItemIds,
+      bill_id: billId,
     });
   }
 

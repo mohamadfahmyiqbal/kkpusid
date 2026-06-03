@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Container, Card, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "utils/helpers";
+import { jwtEncode } from "../../../utils/helpers";
 import { useWithdrawalValidation } from "./hooks/useWithdrawalValidation";
 import WithdrawalForm from "./components/WithdrawalForm";
 import HistoryList from "./components/HistoryList";

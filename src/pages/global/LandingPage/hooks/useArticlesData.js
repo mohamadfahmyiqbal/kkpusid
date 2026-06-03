@@ -1,39 +1,51 @@
 import { useState, useEffect } from "react";
 import UGlobal from "../../../../utils/api/UGlobal";
 
+/**
+ * Hook untuk mengambil data artikel landing page
+ * Dioptimasi: Penanganan error yang lebih baik dan fleksibilitas data.
+ */
 export const useArticlesData = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchArticles = async () => {
       try {
+        setLoading(true);
         const response = await UGlobal.getLandingArticles();
-        const fetchedArticles = response.data.data || [];
-        let formattedArticles = [];
+        
+        if (!isMounted) return;
 
-        if (fetchedArticles.length > 0) {
-          formattedArticles = fetchedArticles.map((article, index) => ({
-            title: article.title || "Judul Artikel",
-            text: article.text || "Deskripsi tidak tersedia.",
-            img: article.img || null,
-            showIllustration: index === 0,
-          }));
-        }
+        const fetchedArticles = response?.data?.data || [];
+        
+        const formattedArticles = fetchedArticles.map((article) => ({
+          title: article.title || "Layanan Koperasi",
+          text: article.text || "Informasi detail mengenai layanan kami akan segera hadir.",
+          img: article.img || "/assets/images/placeholder-article.png", // Fallback image
+          showIllustration: !!article.img, // Tampilkan jika ada gambar
+        }));
 
         setArticles(formattedArticles);
-        setError(null); // Reset error on success
+        setError(null);
       } catch (err) {
-        console.error("Gagal mengambil data Artikel:", err);
+        if (!isMounted) return;
+        console.error("Article Fetch Error:", err);
+        setError("Gagal memuat layanan. Silakan coba lagi nanti.");
         setArticles([]);
-        setError(err.message || "Gagal memuat data artikel");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchArticles();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { articles, loading, error };

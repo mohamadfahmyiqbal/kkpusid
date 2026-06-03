@@ -1,7 +1,7 @@
 import React from "react";
 import { Container, Nav } from "react-bootstrap";
 import { IoArrowBack } from "react-icons/io5";
-import { jwtEncode } from "../../../../src/utils/helpers";
+import { jwtEncode } from "../../../utils/helpers";
 
 const LoginHeader = () => {
   const HOME_PATH = `/${jwtEncode({ page: "globalSplash" })}`;
@@ -12,7 +12,7 @@ const LoginHeader = () => {
         <Container>
           <a className="navbar-brand me-3 fw-bold fs-4" href={HOME_PATH}>
             <img
-              src="/assets/icons/pusLogo.png"
+              src="/assets/icons/PUSlogo.png"
               alt="Logo PUS"
               className="l-logo-size"
               style={{ height: "40px", objectFit: "contain" }}

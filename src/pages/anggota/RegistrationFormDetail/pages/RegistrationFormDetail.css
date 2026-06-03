@@ -1,0 +1,139 @@
+/* RegistrationFormDetail.css - Animations & Step Transitions */
+
+/* Step container transitions */
+.step-container {
+  position: relative;
+  min-height: 300px;
+}
+
+.step-enter {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.step-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease-out;
+}
+
+.step-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.step-exit-active {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.3s ease-in;
+}
+
+/* Step indicator dots */
+.step-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px 0;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.step-dot.active {
+  background-color: #2563eb;
+  width: 24px;
+  border-radius: 4px;
+  height: 8px;
+}
+
+.step-dot.completed {
+  background-color: #10b981;
+}
+
+.step-dot:hover:not(.active) {
+  background-color: #cbd5e1;
+}
+
+/* Card hover effects */
+.form-card-step {
+  transition: all 0.3s ease;
+}
+
+.form-card-step:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Smooth progress bar */
+.progress-smooth {
+  transition: width 0.5s ease-in-out;
+}
+
+/* Badge counter */
+.step-badge-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Input icon styling */
+.input-icon-wrapper {
+  position: relative;
+}
+
+.input-icon-wrapper .input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  z-index: 5;
+}
+
+.input-icon-wrapper .form-control {
+  padding-left: 38px;
+}
+
+/* Compact section styling */
+.section-compact {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+}
+
+/* Photo preview card */
+.photo-preview-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.photo-preview-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .step-dot.active {
+    width: 16px;
+  }
+  
+  .step-indicators {
+    gap: 4px;
+  }
+}

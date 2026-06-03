@@ -10,9 +10,9 @@ import { io } from "socket.io-client";
 
 const TransactionContext = createContext();
 const SOCKET_URL =
-  process.env.REACT_APP_SOCKET_URL ||
-  process.env.REACT_APP_API_ORIGIN ||
-  "http://localhost:3000";
+  import.meta.env.VITE_SOCKET_URL ||
+  import.meta.env.VITE_API_ORIGIN ||
+  "https://localhost:3000";
 
 export const TransactionProvider = ({ children }) => {
   const [activeFinancing, setActiveFinancing] = useState([]);

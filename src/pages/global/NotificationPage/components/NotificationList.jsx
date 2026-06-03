@@ -1,19 +1,47 @@
 import React from "react";
 import { ListGroup, Spinner } from "react-bootstrap";
-import { FaInbox, FaBellSlash } from "react-icons/fa";
+import { FaBellSlash } from "react-icons/fa";
 
 const NotificationList = ({ loading, notifications, children }) => {
   return (
     <ListGroup variant="flush" className="notification-list">
       {loading ? (
-        <div className="notification-loading-state text-center p-5">
-          <Spinner
-            animation="border"
-            variant="primary"
-            role="status"
-            className="mb-3"
-          />
-          <p className="text-muted mb-0">Memuat notifikasi...</p>
+        <div className="notification-loading-state p-3">
+          {[...Array(3)].map((_, index) => (
+            <div
+              key={index}
+              className="notification-skeleton mb-3 p-3 border rounded"
+            >
+              <div className="d-flex align-items-center">
+                <div className="skeleton-icon me-3">
+                  <div
+                    className="bg-light rounded-circle"
+                    style={{ width: "40px", height: "40px" }}
+                  ></div>
+                </div>
+                <div className="flex-grow-1">
+                  <div
+                    className="bg-light rounded mb-2"
+                    style={{ height: "16px", width: "60%" }}
+                  ></div>
+                  <div
+                    className="bg-light rounded mb-2"
+                    style={{ height: "14px", width: "90%" }}
+                  ></div>
+                  <div
+                    className="bg-light rounded"
+                    style={{ height: "12px", width: "40%" }}
+                  ></div>
+                </div>
+                <div className="skeleton-action">
+                  <div
+                    className="bg-light rounded"
+                    style={{ height: "32px", width: "80px" }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : notifications.length > 0 ? (
         <div className="notification-items">{children}</div>

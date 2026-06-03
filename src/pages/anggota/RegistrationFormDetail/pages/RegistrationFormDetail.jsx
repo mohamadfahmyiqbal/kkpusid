@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from "react";
+import React, { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import {
   Button,
   Card,
@@ -12,14 +12,11 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import {
-  FaArrowLeft,
-  FaUserCircle,
-  FaArrowRight,
-  FaSave,
-} from "react-icons/fa";
+import { FaUserCircle, FaArrowRight, FaSave, FaArrowLeft, FaCheck, FaFileSignature } from "react-icons/fa";
 import AnggotaService from "../services/AnggotaService";
 import { jwtEncode } from "../../../../utils/helpers";
+import { useProfile } from "../hooks/useProfile";
+import "./RegistrationFormDetail.css";
 
 // Step Components
 import Step1PersonalData from "../components/steps/Step1PersonalData";
@@ -33,9 +30,21 @@ import Step8Summary from "../components/steps/Step8Summary";
 
 const totalSteps = 8;
 
+const stepLabels = [
+  "Data Pribadi",
+  "Akun & Kontak",
+  "Foto KTP",
+  "Swafoto",
+  "Pekerjaan",
+  "Kontak Darurat",
+  "Rekening Bank",
+  "Ringkasan",
+];
+
 export default function RegistrationFormDetail() {
   const navigate = useNavigate();
-  const profileLoading = false;
+  const stepContainerRef = useRef(null);
+  const { userData } = useProfile();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(() => {
@@ -46,9 +55,36 @@ export default function RegistrationFormDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCommitmentChecked, setIsCommitmentChecked] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [animDir, setAnimDir] = useState("next");
 
   const isLastStep = step === totalSteps;
+  const progressPercent = (step / totalSteps) * 100;
 
+  // Auto-scroll to top when changing steps
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
+  // Sync phone_number and email from backend profile data
+  useEffect(() => {
+    if (userData) {
+      setFormData((prev) => {
+        let updated = false;
+        const next = { ...prev };
+        if (userData.phone_number && prev.phone_number !== userData.phone_number) {
+          next.phone_number = userData.phone_number;
+          updated = true;
+        }
+        if (userData.email && prev.email !== userData.email) {
+          next.email = userData.email;
+          updated = true;
+        }
+        return updated ? next : prev;
+      });
+    }
+  }, [userData]);
+
+  // Save to localStorage on data change
   useEffect(() => {
     localStorage.setItem("temp_reg_data", JSON.stringify(formData));
   }, [formData]);
@@ -125,8 +161,15 @@ export default function RegistrationFormDetail() {
       setErrors(currentErrors);
       return;
     }
+    setAnimDir("next");
     setErrors({});
     if (step < totalSteps) setStep((s) => s + 1);
+  };
+
+  const prevStep = () => {
+    setAnimDir("prev");
+    setErrors({});
+    if (step > 1) setStep((s) => s - 1);
   };
 
   const handleSubmit = async () => {
@@ -210,78 +253,145 @@ export default function RegistrationFormDetail() {
   ]);
 
   return (
-    <div className="container-fluid px-0 pb-5">
+    <div className="pb-5 dash-fade-in dashboard-shell">
       <div className="px-0">
-        <Row className="g-0">
+        <Row className="g-0 justify-content-center">
           <Col xs={12}>
             <Card className="border-0 shadow-none rounded-0 overflow-hidden min-vh-100">
-              <ProgressBar
-                now={(step / totalSteps) * 100}
-                variant="primary"
-                className="rounded-0"
-                style={{ height: "6px" }}
-              />
-              <CardHeader className="bg-white border-0 p-4">
-                <div className="d-flex justify-content-between align-items-center">
+              {/* Progress Bar with percentage */}
+              <div className="position-relative">
+                <ProgressBar
+                  now={progressPercent}
+                  variant="primary"
+                  className="rounded-0"
+                  style={{ height: "6px" }}
+                />
+                <div
+                  className="position-absolute top-0 end-0 small fw-bold text-primary pe-3"
+                  style={{ marginTop: "-20px", fontSize: "11px" }}
+                >
+                  {Math.round(progressPercent)}%
+                </div>
+              </div>
+
+              {/* Header */}
+              <CardHeader className="bg-white border-0 p-4 pb-2">
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
                   <div className="d-flex align-items-center">
                     <div
-                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                      style={{ width: "35px", height: "35px" }}
+                      className="step-badge-counter bg-primary text-white me-3"
                     >
                       {step}
                     </div>
-                    <h5 className="mb-0 fw-bold">Data Keanggotaan</h5>
+                    <div>
+                      <h5 className="mb-0 fw-bold">{stepLabels[step - 1]}</h5>
+                      <small className="text-muted">
+                        Langkah {step} dari {totalSteps}
+                      </small>
+                    </div>
                   </div>
                   <Badge
                     bg="light"
                     className="text-primary border px-3 py-2 rounded-pill"
                   >
-                    <FaUserCircle className="me-1" /> Calon
+                    <FaUserCircle className="me-1" /> Calon Anggota
                   </Badge>
                 </div>
+
+                {/* Step Indicator Dots */}
+                <div className="step-indicators">
+                  {Array.from({ length: totalSteps }, (_, i) => (
+                    <div
+                      key={i}
+                      className={`step-dot ${
+                        i + 1 === step
+                          ? "active"
+                          : i + 1 < step
+                          ? "completed"
+                          : ""
+                      }`}
+                      title={`Langkah ${i + 1}: ${stepLabels[i]}`}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        if (i + 1 < step) {
+                          setStep(i + 1);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
               </CardHeader>
+
+              {/* Body */}
               <CardBody className="p-4 p-md-5 pt-0">
                 {submitError && (
-                  <Alert variant="danger" className="rounded-12">
+                  <Alert
+                    variant="danger"
+                    className="rounded-12 border-0 shadow-sm d-flex align-items-center"
+                    dismissible
+                    onClose={() => setSubmitError(null)}
+                  >
+                    <FaFileSignature className="me-2" />
                     {submitError}
                   </Alert>
                 )}
-                <div className="step-container">{renderStep}</div>
-                <div className="d-flex justify-content-between mt-5 pt-4 border-top">
+
+                <div className="step-container" ref={stepContainerRef}>
+                  {renderStep}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
                   <Button
-                    variant="light"
-                    className="px-4 py-2 fw-bold text-muted rounded-12"
+                    variant={step === 1 ? "outline-danger" : "light"}
+                    className={`px-4 py-2 fw-bold rounded-12 ${
+                      step === 1
+                        ? "text-danger"
+                        : "text-muted"
+                    }`}
                     onClick={() =>
-                      step === 1 ? handleBack() : setStep((s) => s - 1)
+                      step === 1 ? handleBack() : prevStep()
                     }
                     disabled={isSubmitting}
                   >
+                    <FaArrowLeft className="me-2" />
                     {step === 1 ? "Batalkan" : "Sebelumnya"}
                   </Button>
-                  {isLastStep ? (
-                    <Button
-                      variant="primary"
-                      className="px-5 py-2 fw-bold shadow-sm rounded-12"
-                      onClick={handleSubmit}
-                      disabled={!isCommitmentChecked || isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Spinner size="sm" />
-                      ) : (
-                        <>
-                          <FaSave className="me-2" /> Kirim Sekarang
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      className="px-5 py-2 fw-bold shadow-sm rounded-12"
-                      onClick={nextStep}
-                    >
-                      Selanjutnya <FaArrowRight className="ms-2" />
-                    </Button>
-                  )}
+
+                  <div className="d-flex align-items-center gap-2">
+                    {isLastStep ? (
+                      <Button
+                        variant="primary"
+                        className="px-5 py-2 fw-bold shadow-sm rounded-12"
+                        onClick={handleSubmit}
+                        disabled={!isCommitmentChecked || isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Spinner
+                              size="sm"
+                              className="me-2"
+                              animation="border"
+                            />
+                            Mengirim...
+                          </>
+                        ) : (
+                          <>
+                            <FaSave className="me-2" /> Kirim Sekarang
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        className="px-5 py-2 fw-bold shadow-sm rounded-12"
+                        onClick={nextStep}
+                      >
+                        Selanjutnya{" "}
+                        <FaArrowRight className="ms-2" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardBody>
             </Card>
