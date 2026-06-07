@@ -1,1 +1,0 @@
-import{vr as e,xr as t}from"./index-0Aj5Wkjo.js";var n=t(e()),r=typeof global<`u`&&global.navigator&&global.navigator.product===`ReactNative`,i=typeof document<`u`||r?n.useLayoutEffect:n.useEffect;export{i as t};

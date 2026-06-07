@@ -1,1 +1,0 @@
-import{vr as e,xr as t}from"./index-0Aj5Wkjo.js";var n=t(e()).createContext(null);n.displayName=`NavbarContext`;export{n as t};

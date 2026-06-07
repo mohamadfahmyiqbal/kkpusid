@@ -1,1 +1,0 @@
-import{hr as e,mr as t,vr as n,xr as r}from"./index-0Aj5Wkjo.js";var i=r(n()),a=()=>{let n=e();return{navigateTo:(0,i.useCallback)((e,r={})=>{if(!n){console.warn(`Navigation not available - Router context missing`);return}try{n(`/${t({page:e})}`,r)}catch(t){console.error(`Navigation error:`,t),n(`/${e}`,r)}},[n])}};export{a as t};

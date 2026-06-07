@@ -27,6 +27,11 @@ const ActionButtons = ({
   }, [isFinancing, isTabungan, isSukukOrder, approvalStatus]);
 
   const handlePay = () => {
+    if (isFinancing && productName === "Pendanaan Syariah UMKM") {
+      navigate(`/${jwtEncode({ page: "pinjamanReceiptPage", financingId: transactionId })}`);
+      return;
+    }
+
     const category = isFinancing ? "FINANCING" : isTabungan ? "TABUNGAN_DEPOSIT" : isSukukOrder ? "SUKUK_INVESTMENT" : "WITHDRAWAL";
     const page = "billingPage";
     const params = {
@@ -49,6 +54,13 @@ const ActionButtons = ({
     navigate(`/${jwtEncode(params)}`);
   };
 
+  const getButtonText = () => {
+    if (isFinancing && productName === "Pendanaan Syariah UMKM") return "LIHAT RESI PENCAIRAN";
+    if (isFinancing) return "BAYAR INVOICE SEKARANG";
+    if (isSukukOrder) return "BAYAR PEMBELIAN SUKUK";
+    return "BAYAR SETORAN PERTAMA";
+  };
+
   return (
     <section className="mt-5 d-print-none">
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
@@ -68,7 +80,7 @@ const ActionButtons = ({
             }}
           >
             <FaFileInvoiceDollar />
-            {isFinancing ? "BAYAR INVOICE SEKARANG" : isSukukOrder ? "BAYAR PEMBELIAN SUKUK" : "BAYAR SETORAN PERTAMA"}
+            {getButtonText()}
           </Button>
         )}
 
