@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { MdSavings, MdAccountBalanceWallet, MdSchool, MdPets } from "react-icons/md";
+import { FaShieldAlt } from "react-icons/fa";
 import TabunganService from "../../services/tabungan.service";
 
 import ProgramStatusCard from "../../components/program/ProgramStatusCard";
@@ -56,6 +57,69 @@ const EmptyState = ({ onPengajuan }) => (
     />
   </div>
 );
+
+// ── ACTIVE ACCOUNT CARD ──
+
+const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
+  const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
+  const currentBalance = parseFloat(accountData.current_balance || 0);
+  const targetAmount = parseFloat(accountData.target_amount || 0);
+  const progressPercent = targetAmount > 0 ? Math.min(100, (currentBalance / targetAmount) * 100) : 0;
+
+  return (
+    <div className="program-status-card program-status-active mb-4 p-4 text-white animate-fade-in" style={{ position: 'relative', overflow: 'hidden', borderRadius: '16px' }}>
+      <div className="program-glass-sheen" />
+      <div className="program-decor-circle c1" />
+      <div className="program-decor-circle c2" />
+      
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        <div className="d-flex justify-content-between align-items-start mb-4">
+          <div>
+            <h4 className="fw-bold mb-1" style={{ fontSize: '1.25rem' }}>Rekening Aktif</h4>
+            <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>Tabungan {accountData.target_name || productName}</p>
+          </div>
+          <button 
+            className="btn btn-light fw-bold rounded-pill px-4" 
+            onClick={onSetoran}
+            style={{ color: '#2563eb', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+          >
+            Setoran
+          </button>
+        </div>
+
+        <div className="bg-white bg-opacity-10 rounded-4 p-3 mb-3" style={{ backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+          <div className="d-flex justify-content-between mb-1 align-items-center">
+            <span className="small opacity-75">Saldo Terkumpul</span>
+            <span className="fw-bold fs-5">{formatIDR(currentBalance)}</span>
+          </div>
+          <div className="d-flex justify-content-between mb-2 align-items-center">
+            <span className="small opacity-75">Target Saldo</span>
+            <span className="fw-bold opacity-75">{formatIDR(targetAmount)}</span>
+          </div>
+          
+          <div className="progress mt-3" style={{ height: '8px', backgroundColor: 'rgba(255,255,255,0.2)' }}>
+            <div 
+              className="progress-bar bg-warning" 
+              role="progressbar" 
+              style={{ width: `${progressPercent}%`, transition: 'width 1s ease-in-out' }}
+            />
+          </div>
+          <div className="text-end mt-1">
+            <span className="small opacity-75" style={{ fontSize: '0.75rem' }}>{progressPercent.toFixed(1)}% Tercapai</span>
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-between align-items-center opacity-75 mt-1" style={{ fontSize: '0.8rem' }}>
+          <div>
+            <FaShieldAlt className="me-1 mb-1" />
+            Min. Bulanan: {formatIDR(accountData.min_monthly_deposit)}
+          </div>
+          <div>ID Rek: #{accountData.member_saving_target_id}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ── MAIN PAGE ──
 
@@ -115,8 +179,16 @@ export default function TabunganPage() {
   }, [navigate, activeProduct]);
 
   const handleSetoran = useCallback(() => {
-    navigateTo(navigate, "setoranTabungan", activeProduct);
-  }, [navigate, activeProduct]);
+    const token = jwtEncode({
+      page: "billingPage",
+      category: "TABUNGAN_DEPOSIT",
+      tabungan_id: accountStatus.data?.member_saving_target_id,
+      productName: activeProduct,
+      displayName: "Setoran Tabungan",
+      return: "tabunganPage",
+    });
+    navigate(`/${token}`);
+  }, [navigate, activeProduct, accountStatus]);
 
   const handleProductChange = useCallback((key) => {
     setActiveProduct(key);
@@ -190,12 +262,10 @@ export default function TabunganPage() {
             )}
 
             {(accountStatus.state === "APPROVED" || accountStatus.state === "OK") && (
-              <ProgramStatusCard
-                title="Rekening Aktif"
-                message={`Tabungan ${formatProductName(activeProduct)}`}
-                buttonText="Setoran"
-                onButtonClick={handleSetoran}
-                status="OK"
+              <ActiveTabunganCard 
+                accountData={accountStatus.data} 
+                onSetoran={handleSetoran}
+                productName={formatProductName(activeProduct)}
               />
             )}
             

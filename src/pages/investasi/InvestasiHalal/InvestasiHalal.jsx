@@ -1,89 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Container,
   Row,
   Col,
   Card,
-  Button,
   Spinner,
   Alert,
-  Badge,
   Table,
   Tabs,
   Tab,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
-import { FaCertificate, FaWallet, FaHistory } from "react-icons/fa";
+import { FaCertificate, FaWallet } from "react-icons/fa";
+import { useInvestasiData } from "./hooks/useInvestasiData";
+import "./InvestasiHalal.css";
 
 const InvestasiHalal = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sukuk");
-  const [sukukList, setSukukList] = useState([]);
-  const [portofolioList, setPortofolioList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { sukukList, portofolioList, loading, error } = useInvestasiData();
 
-  useEffect(() => {
-    // TODO: Fetch data from API
-    // fetchSukukList();
-    // fetchPortofolioList();
-
-    // Mock data
-    setTimeout(() => {
-      setSukukList([
-        {
-          id: 1,
-          name: "Sukuk Ritel SR016",
-          issuer: "Pemerintah RI",
-          type: "Sukuk Ritel",
-          coupon: "6.50%",
-          maturity: "2027-03-15",
-          minInvestment: 1000000,
-          price: 102.5,
-          status: "available",
-        },
-        {
-          id: 2,
-          name: "Sukuk Ritel SR015",
-          issuer: "Pemerintah RI",
-          type: "Sukuk Ritel",
-          coupon: "6.25%",
-          maturity: "2026-09-15",
-          minInvestment: 1000000,
-          price: 101.8,
-          status: "available",
-        },
-        {
-          id: 3,
-          name: "Sukuk Korporasi ABC",
-          issuer: "PT ABC Tbk",
-          type: "Sukuk Korporasi",
-          coupon: "7.00%",
-          maturity: "2028-06-30",
-          minInvestment: 5000000,
-          price: 103.2,
-          status: "available",
-        },
-      ]);
-
-      setPortofolioList([
-        {
-          id: 1,
-          name: "Sukuk Ritel SR014",
-          purchaseDate: "2023-06-15",
-          units: 100,
-          purchasePrice: 100.0,
-          currentValue: 102.5,
-          profit: 2.5,
-          status: "active",
-        },
-      ]);
-
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const activePortofolio = React.useMemo(() => {
+    return portofolioList.filter(item => ['paid', 'approved', 'completed'].includes(item.status));
+  }, [portofolioList]);
 
   const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat("id-ID").format(value);
@@ -96,6 +36,20 @@ const InvestasiHalal = () => {
       year: "numeric",
     });
   }, []);
+
+  const handleBack = useCallback(() => {
+    navigate('/investasiPage');
+  }, [navigate]);
+
+  const calculateTenor = (start, end) => {
+    if (!start || !end) return "-";
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+    months -= startDate.getMonth();
+    months += endDate.getMonth();
+    return `${months > 0 ? months : 1} Bulan`;
+  };
 
   const handleInvestSukuk = useCallback(
     (sukukId) => {
@@ -119,105 +73,116 @@ const InvestasiHalal = () => {
     [navigate],
   );
 
-  const handleBack = useCallback(() => {
-    const token = jwtEncode({ page: "investasiDashboard" });
-    navigate(`/${token}`);
-  }, [navigate]);
-
   if (loading) {
     return (
-      <LayoutGlobal title="Investasi Halal">
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Memuat data investasi...</p>
-        </div>
-      </LayoutGlobal>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+        <Spinner animation="border" variant="success" />
+        <p className="mt-3 text-muted">Memuat data investasi...</p>
+      </div>
     );
   }
 
   return (
-    <LayoutGlobal title="Investasi Halal">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaCertificate className="me-2" />
-            Investasi Halal
-          </h3>
+    <div className="investasi-halal-container">
+      <Container fluid className="px-0">
+        {/* Hero Section */}
+        <div className="investasi-halal-hero">
+          <div className="investasi-halal-hero-content">
+            <div className="investasi-halal-icon-wrap">
+              <FaCertificate />
+            </div>
+            <div>
+              <h1 className="investasi-halal-title">Investasi Halal</h1>
+              <p className="investasi-halal-subtitle">
+                Temukan peluang investasi yang aman dan menguntungkan dalam produk Sukuk syariah. Tumbuhkan aset Anda dengan penuh keberkahan dan transparansi.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <Container className="mt-4">
         <Row className="justify-content-center">
-          <Col lg={10} md={12}>
+          <Col lg={12}>
             {error && (
-              <Alert variant="danger" className="mb-4">
+              <Alert variant="danger" className="mb-4 rounded-4 border-0 shadow-sm">
                 {error}
               </Alert>
             )}
 
-            <Card className="shadow-sm border-0">
+            <Card className="halal-card">
               <Card.Body className="p-4">
                 <Tabs
                   activeKey={activeTab}
                   onSelect={(k) => setActiveTab(k)}
-                  className="mb-4"
+                  className="halal-tabs mb-4"
                 >
                   <Tab
                     eventKey="sukuk"
                     title={
-                      <>
-                        <FaCertificate className="me-2" />
-                        List Sukuk
-                      </>
+                      <div className="d-flex align-items-center gap-2">
+                        <FaCertificate />
+                        <span>Katalog Produk</span>
+                      </div>
                     }
                   >
-                    <h6 className="fw-bold mb-3">Produk Sukuk Tersedia</h6>
-                    <div className="table-responsive">
-                      <Table hover className="align-middle">
-                        <thead>
-                          <tr>
-                            <th>Nama Produk</th>
-                            <th>Penerbit</th>
-                            <th>Tipe</th>
-                            <th>Kupon</th>
-                            <th>Jatuh Tempo</th>
-                            <th className="text-end">Min. Investasi</th>
-                            <th className="text-end">Harga</th>
-                            <th>Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sukukList.map((sukuk) => (
-                            <tr key={sukuk.id}>
-                              <td>
-                                <div className="fw-bold">{sukuk.name}</div>
-                              </td>
-                              <td>{sukuk.issuer}</td>
-                              <td>{sukuk.type}</td>
-                              <td>
-                                <Badge bg="success">{sukuk.coupon}</Badge>
-                              </td>
-                              <td>{formatDate(sukuk.maturity)}</td>
-                              <td className="text-end">
-                                Rp {formatCurrency(sukuk.minInvestment)}
-                              </td>
-                              <td className="text-end">{sukuk.price}%</td>
-                              <td>
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  onClick={() => handleInvestSukuk(sukuk.id)}
-                                >
-                                  Investasi
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                    <h5 className="fw-bold mb-3 mt-2 text-dark">Daftar Sukuk Tersedia</h5>
+                    <div className="mt-3">
+                      <Row>
+                        {sukukList.map((sukuk) => {
+                          return (
+                          <Col lg={4} md={6} sm={12} key={sukuk.id} className="mb-4">
+                            <Card className="h-100 shadow-sm border-0 sukuk-item-card">
+                              <Card.Body className="d-flex flex-column p-4">
+                                <div className="d-flex justify-content-between align-items-start mb-3">
+                                  <div>
+                                    <h5 className="fw-bold text-dark mb-1">{sukuk.name}</h5>
+                                    <small className="text-muted">{sukuk.issuer}</small>
+                                  </div>
+                                  <span className="badge-soft-success px-2 py-1">{sukuk.type === 'Sukuk Ritel' ? 'Ijarah' : 'Mudharabah'}</span>
+                                </div>
+                                
+                                <div className="sukuk-details mb-4 flex-grow-1">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Kategori</span>
+                                    <span className="fw-bold text-dark">{sukuk.type}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Nilai Pendanaan</span>
+                                    <span className="fw-bold text-dark">Rp {formatCurrency(sukuk.totalAmount || 0)}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Minimum Investasi</span>
+                                    <span className="fw-bold text-dark">Rp {formatCurrency(sukuk.minInvestment || 0)}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Tenor</span>
+                                    <span className="fw-bold text-dark">{calculateTenor(sukuk.startDate, sukuk.maturity)}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Jenis Bisnis</span>
+                                    <span className="fw-bold text-dark">Infrastruktur</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <span className="text-muted small">Status Bisnis</span>
+                                    <span className="fw-bold text-dark">Berjalan</span>
+                                  </div>
+                                </div>
+
+                                <div className="mt-auto">
+                                  <button
+                                    className="btn btn-invest w-100 py-2 rounded-3 fw-bold"
+                                    onClick={() => handleInvestSukuk(sukuk.id)}
+                                  >
+                                    Detail Sukuk
+                                  </button>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        )})}
+                      </Row>
                     </div>
                     {sukukList.length === 0 && (
-                      <div className="text-center py-4 text-muted">
+                      <div className="text-center py-5 text-muted">
                         Tidak ada produk sukuk tersedia saat ini
                       </div>
                     )}
@@ -226,80 +191,83 @@ const InvestasiHalal = () => {
                   <Tab
                     eventKey="portofolio"
                     title={
-                      <>
-                        <FaWallet className="me-2" />
-                        Portofolio
-                      </>
+                      <div className="d-flex align-items-center gap-2">
+                        <FaWallet />
+                        <span>Portofolio Saya</span>
+                      </div>
                     }
                   >
-                    <h6 className="fw-bold mb-3">Portofolio Sukuk Anda</h6>
-                    <div className="table-responsive">
-                      <Table hover className="align-middle">
-                        <thead>
-                          <tr>
-                            <th>Nama Produk</th>
-                            <th>Tanggal Pembelian</th>
-                            <th>Unit</th>
-                            <th className="text-end">Harga Beli</th>
-                            <th className="text-end">Nilai Saat Ini</th>
-                            <th className="text-end">Keuntungan</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {portofolioList.map((item) => (
-                            <tr key={item.id}>
-                              <td className="fw-bold">{item.name}</td>
-                              <td>{formatDate(item.purchaseDate)}</td>
-                              <td>{item.units}</td>
-                              <td className="text-end">
-                                {item.purchasePrice}%
-                              </td>
-                              <td className="text-end">{item.currentValue}%</td>
-                              <td className="text-end text-success">
-                                +{item.profit}%
-                              </td>
-                              <td>
-                                <Badge bg="success">Aktif</Badge>
-                              </td>
-                              <td>
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  onClick={() => handleRedeem(item.id)}
-                                >
-                                  Tebus
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                    <h5 className="fw-bold mb-3 mt-2 text-dark">Portofolio Investasi Anda</h5>
+                    <div className="mt-3">
+                      <Row>
+                        {activePortofolio.map((item) => (
+                          <Col lg={4} md={6} sm={12} key={item.id} className="mb-4">
+                            <Card className="h-100 shadow-sm border-0 sukuk-item-card">
+                              <Card.Body className="d-flex flex-column p-4">
+                                <div className="d-flex justify-content-between align-items-start mb-3">
+                                  <div>
+                                    <h5 className="fw-bold text-dark mb-1">{item.name}</h5>
+                                    <small className="text-muted">Tgl Beli: {formatDate(item.purchaseDate)}</small>
+                                  </div>
+                                  <span className="badge-soft-success px-2 py-1">Aktif</span>
+                                </div>
+                                
+                                <div className="sukuk-details mb-4 flex-grow-1">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Unit Dimiliki</span>
+                                    <span className="fw-bold text-dark">{item.units}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Harga Beli</span>
+                                    <span className="fw-bold text-dark">{item.purchasePrice}%</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-muted small">Nilai Saat Ini</span>
+                                    <span className="fw-bold text-dark">{item.currentValue}%</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <span className="text-muted small">Keuntungan</span>
+                                    <span className="fw-bold text-success">+{item.profit}%</span>
+                                  </div>
+                                </div>
+
+                                <div className="mt-auto">
+                                  <button
+                                    className="btn-redeem w-100 py-2 rounded-3 fw-bold"
+                                    onClick={() => handleRedeem(item.id)}
+                                  >
+                                    Pencairan Dana
+                                  </button>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
                     </div>
-                    {portofolioList.length === 0 && (
-                      <div className="text-center py-4 text-muted">
+                    {activePortofolio.length === 0 && (
+                      <div className="text-center py-5 text-muted">
                         Anda belum memiliki portofolio sukuk
                       </div>
                     )}
                   </Tab>
                 </Tabs>
 
-                <div className="mt-4">
-                  <Button
-                    variant="light"
-                    className="px-4 py-2 fw-bold text-muted"
+                <div className="mt-4 pt-3 border-top text-end">
+                  <button
+                    className="btn btn-light px-4 py-2 fw-bold text-muted"
                     onClick={handleBack}
+                    style={{ borderRadius: '8px' }}
                   >
-                    Kembali
-                  </Button>
+                    Kembali ke Pusat
+                  </button>
                 </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 };
 

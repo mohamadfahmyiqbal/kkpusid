@@ -26,21 +26,25 @@ const BillingPage = ({ decodedToken }) => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
-  const { bills, history, loadingData, registrationId, isSukarela, categoryName, bankInfo, displayName } = useBillingData(decodedToken);
+  const { bills, history, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, bankInfo, displayName } = useBillingData(decodedToken);
+
+  const safeBills = Array.isArray(bills) ? bills : [];
+  const pendingCount = safeBills.length;
+  const historyCount = Array.isArray(history) ? history.length : 0;
 
   const tabs = useMemo(
     () => [
       { key: "ringkasan", label: "Ringkasan", icon: <FaInfoCircle size={12} /> },
       {
         key: "pending",
-        label: isSukarela ? "Setoran Sukarela" : "Belum Dibayar",
-        icon: isSukarela ? <FaPlus size={12} /> : <FaExclamationCircle size={12} />,
-        badgeKey: !isSukarela ? "pendingCount" : null,
+        label: (isSukarela && pendingCount === 0) ? (categoryName === "TABUNGAN_DEPOSIT" ? "Setoran Manual" : "Setoran Sukarela") : "Belum Dibayar",
+        icon: (isSukarela && pendingCount === 0) ? <FaPlus size={12} /> : <FaExclamationCircle size={12} />,
+        badgeKey: !(isSukarela && pendingCount === 0) ? "pendingCount" : null,
       },
       { key: "history", label: "Riwayat Pembayaran", icon: <FaHistory size={12} />, badgeKey: "historyCount" },
       { key: "metode", label: "Metode Pembayaran", icon: <FaWallet size={12} /> },
     ],
-    [isSukarela],
+    [isSukarela, categoryName, pendingCount],
   );
 
   /* mandatory bills auto-select */
@@ -64,6 +68,17 @@ const BillingPage = ({ decodedToken }) => {
           b.description?.toLowerCase().includes("uang pangkal") ||
           b.category_code === "TRANSACTION_DOWN_PAYMENT"
       );
+    }
+    if (decodedToken?.return === "transactionDetailPage" && decodedToken?.category === "TABUNGAN_DEPOSIT") {
+      const tId = decodedToken?.tabungan_id || decodedToken?.tabunganId;
+      const tBills = (bills || []).filter((b) => b.category_code === `TAB_DEP_${tId}`);
+      if (tBills.length > 0) {
+        return [tBills[0]]; // Setoran pertama
+      }
+    }
+    if (decodedToken?.return === "transactionDetailPage" && decodedToken?.category === "SUKUK_INVESTMENT") {
+      const orderId = decodedToken?.order_id;
+      return (bills || []).filter((b) => b.description?.includes(`Order #${orderId}`));
     }
     return [];
   }, [bills, decodedToken]);
@@ -97,13 +112,18 @@ const BillingPage = ({ decodedToken }) => {
       try {
         const billsToUse = overrideBills || selectedBills;
 
-        if (isSukarela) {
+        if (isSukarela && pendingCount === 0) {
           const cleanAmt = parseFloat(customAmount.replace(/\./g, ""));
           if (!cleanAmt || cleanAmt < 1000) {
             setError("Nominal setoran minimal Rp 1.000");
             return;
           }
-          const resp = await UBilling.createVoluntaryBill({ category: categoryName, amount: cleanAmt });
+          const payload = { 
+            category: categoryName, 
+            amount: cleanAmt,
+            tabungan_id: decodedToken?.tabungan_id || decodedToken?.tabunganId
+          };
+          const resp = await UBilling.createVoluntaryBill(payload);
           if (resp.data?.status) {
             const ids = resp.data.data.bill_item_ids;
             navigate(`/${jwtEncode({ page: "invoicePage", billItemIds: Array.isArray(ids) ? ids : [ids], return: "billingPage", originalReturn: decodedToken?.return, category: categoryName })}`);
@@ -126,12 +146,10 @@ const BillingPage = ({ decodedToken }) => {
         setIsSubmitting(false);
       }
     },
-    [isSukarela, customAmount, categoryName, selectedBills, registrationId, navigate],
+    [isSukarela, pendingCount, customAmount, categoryName, selectedBills, registrationId, navigate, decodedToken],
   );
 
-  const safeBills = Array.isArray(bills) ? bills : [];
-  const pendingCount = safeBills.length;
-  const historyCount = Array.isArray(history) ? history.length : 0;
+  // Safe counts mapped earlier
 
   /* ─ Render ─ */
   return (
@@ -148,21 +166,32 @@ const BillingPage = ({ decodedToken }) => {
       <div className="bp-hero">
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
           <div className="bp-hero-icon">
-            <FaFileInvoiceDollar size={24} color="#fff" />
+            {categoryName === "TABUNGAN_DEPOSIT" || categoryName?.toUpperCase().includes("SUKARELA") ? (
+              <FaWallet size={24} color="#fff" />
+            ) : (
+              <FaFileInvoiceDollar size={24} color="#fff" />
+            )}
           </div>
           <div>
-            <h1 className="bp-hero-title">Pusat Tagihan</h1>
-            <p className="bp-hero-sub">Kelola semua tagihan dan pembayaran Anda dengan mudah, aman, dan transparan.</p>
+            <h1 className="bp-hero-title">
+              {categoryName === "TABUNGAN_DEPOSIT" ? "Setoran Tabungan" : 
+               categoryName?.toUpperCase().includes("SUKARELA") ? "Setoran Sukarela" : "Pusat Tagihan"}
+            </h1>
+            <p className="bp-hero-sub">
+              {categoryName === "TABUNGAN_DEPOSIT" ? "Kelola setoran dan target tabungan Anda dengan mudah, aman, dan transparan." :
+               categoryName?.toUpperCase().includes("SUKARELA") ? "Lakukan setoran sukarela kapan saja untuk menambah saldo Anda." :
+               "Kelola semua tagihan dan pembayaran Anda dengan mudah, aman, dan transparan."}
+            </p>
           </div>
         </div>
 
         {loadingData ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 20, color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
             <Spinner animation="border" size="sm" />
-            Memuat data tagihan...
+            Memuat data...
           </div>
         ) : (
-          <SummaryStats bills={bills} history={history} />
+          <SummaryStats bills={bills} history={history} categoryName={categoryName} tabunganDetail={tabunganDetail} />
         )}
       </div>
 
@@ -200,7 +229,7 @@ const BillingPage = ({ decodedToken }) => {
 
               {activeTab === "pending" && (
                 <div className="bp-card">
-                  {isSukarela ? (
+                  {(isSukarela && pendingCount === 0) ? (
                     <div style={{ padding: 20 }}>
                       <SukarelaForm
                         customAmount={customAmount}

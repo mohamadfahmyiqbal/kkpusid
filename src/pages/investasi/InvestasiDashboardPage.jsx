@@ -1,41 +1,45 @@
-import React, { useState, useCallback } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import React, { useCallback } from "react";
+import { Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaChartLine, FaCertificate, FaStore } from "react-icons/fa";
-import LayoutGlobal from "../../components/layout/components/LayoutGlobal";
+import { FaChartLine, FaCertificate, FaStore, FaArrowRight } from "react-icons/fa";
 import { jwtEncode } from "../../utils/helpers";
+import "./InvestasiDashboardPage.css";
 
 const INVESTASI_OPTIONS = [
   {
     label: "Investasi Halal",
     key: "investasiHalal",
-    icon: <FaCertificate size={40} />,
+    icon: <FaCertificate size={32} />,
     color: "success",
-    description: "Investasi dalam produk Sukuk yang syariah",
+    description: "Investasi dalam produk Sukuk dan reksadana syariah yang aman, menguntungkan, dan bebas riba.",
+    cta: "Mulai Investasi"
   },
   {
     label: "Pendanaan Syariah",
     key: "pendanaanSyariah",
-    icon: <FaStore size={40} />,
+    icon: <FaStore size={32} />,
     color: "primary",
-    description: "Pendanaan untuk usaha kecil dan menengah",
+    description: "Dukung pertumbuhan usaha kecil menengah (UKM) dengan prinsip bagi hasil yang adil dan memberdayakan.",
+    cta: "Lihat Peluang"
   },
 ];
 
 const InvestasiCard = ({ option, onClick }) => (
-  <Card
-    className="h-100 border-0 shadow-sm hover-shadow transition-all"
-    style={{ cursor: "pointer" }}
+  <div 
+    className={`investasi-option-card ${option.color}`}
     onClick={onClick}
   >
-    <Card.Body className="p-4 text-center">
-      <div className={`text-${option.color} mb-3`} style={{ fontSize: "48px" }}>
-        {option.icon}
-      </div>
-      <h5 className="fw-bold mb-2">{option.label}</h5>
-      <p className="text-muted small mb-0">{option.description}</p>
-    </Card.Body>
-  </Card>
+    <div className={`investasi-card-icon-wrapper ${option.color}`}>
+      {option.icon}
+    </div>
+    <h3 className="investasi-card-title">{option.label}</h3>
+    <p className="investasi-card-desc">{option.description}</p>
+    
+    <div className={`investasi-card-footer ${option.color}`}>
+      <span>{option.cta}</span>
+      <FaArrowRight className="investasi-card-footer-icon" size={14} />
+    </div>
+  </div>
 );
 
 const InvestasiDashboardPage = () => {
@@ -43,54 +47,51 @@ const InvestasiDashboardPage = () => {
 
   const handleOptionClick = useCallback(
     (key) => {
-      if (key === "investasiHalal") {
-        const token = jwtEncode({ page: "investasiHalal" });
-        navigate(`/${token}`);
-      } else if (key === "pendanaanSyariah") {
-        const token = jwtEncode({ page: "pendanaanSyariah" });
-        navigate(`/${token}`);
-      }
+      const token = jwtEncode({ page: key });
+      navigate(`/${token}`);
     },
     [navigate],
   );
 
   return (
-    <LayoutGlobal title="Investasi">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaChartLine className="me-2" />
-            Investasi
-          </h3>
-        </div>
-      </div>
+    <div className="investasi-page-container investasi-fade-in">
+      <Container fluid className="px-0">
+          {/* Hero Section */}
+          <div className="investasi-hero">
+            <div className="investasi-hero-content">
+              <h1 className="investasi-hero-title">
+                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.2)', borderRadius: '16px', display: 'inline-flex', backdropFilter: 'blur(10px)' }}>
+                  <FaChartLine size={30} color="#ffffff" />
+                </div>
+                Pusat Investasi Syariah
+              </h1>
+              <p className="investasi-hero-subtitle">
+                Kembangkan aset Anda dengan aman dan penuh berkah. Jelajahi berbagai instrumen investasi dan pendanaan produktif yang dikelola secara transparan dan sesuai syariat.
+              </p>
+            </div>
+          </div>
 
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} md={12}>
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-4">
-                <h5 className="fw-bold mb-3">Pilih Jenis Investasi</h5>
-                <p className="text-muted mb-4">
-                  Pilih jenis investasi yang sesuai dengan kebutuhan dan
-                  preferensi Anda.
-                </p>
-                <Row className="g-4">
-                  {INVESTASI_OPTIONS.map((option) => (
-                    <Col md={6} key={option.key}>
-                      <InvestasiCard
-                        option={option}
-                        onClick={() => handleOptionClick(option.key)}
-                      />
-                    </Col>
-                  ))}
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </LayoutGlobal>
+          {/* Content Section */}
+          <Row className="justify-content-center">
+            <Col lg={12}>
+              <div className="mb-4 text-center">
+                <h2 className="investasi-section-title">Instrumen Pilihan</h2>
+                <p className="investasi-section-desc">Pilih jenis produk pendanaan atau investasi yang sesuai dengan tujuan finansial Anda.</p>
+              </div>
+              <Row className="g-4">
+                {INVESTASI_OPTIONS.map((option, idx) => (
+                  <Col md={6} key={option.key} style={{ animationDelay: `${idx * 0.15}s` }} className="investasi-fade-in">
+                    <InvestasiCard
+                      option={option}
+                      onClick={() => handleOptionClick(option.key)}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+          </Row>
+        </Container>
+    </div>
   );
 };
 

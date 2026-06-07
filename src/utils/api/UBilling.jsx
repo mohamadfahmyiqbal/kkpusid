@@ -57,6 +57,13 @@ class UBilling {
   processSavingsPayment(payload) {
     return http.post("/billing/process-savings", payload);
   }
+
+  /**
+   * Menarik paksa status transaksi dari Midtrans (berguna di localhost / webhook gagal)
+   */
+  syncMidtransStatus(orderId) {
+    return http.post("/billing/sync-status", { order_id: orderId });
+  }
 }
 
 const uBilling = new UBilling();

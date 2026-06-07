@@ -85,6 +85,11 @@ const InvoicePage = () => {
       return;
     }
 
+    if (isPaid && category === "TABUNGAN_DEPOSIT") {
+      navigate(`/${jwtEncode({ page: "tabunganPage" })}`);
+      return;
+    }
+
     if (returnPage === "billingPage") {
       const billingToken = jwtEncode({
         page: "billingPage",
@@ -147,9 +152,11 @@ const InvoicePage = () => {
               ? "FINANCING_PAYMENT"
               : category === "TABUNGAN_DEPOSIT"
                 ? "TABUNGAN_DEPOSIT"
-                : financingId
-                  ? "FINANCING_PAYMENT"
-                  : "MEMBER_REGISTRATION",
+                : category === "SUKUK_INVESTMENT"
+                  ? "SUKUK_INVESTMENT"
+                  : financingId
+                    ? "FINANCING_PAYMENT"
+                    : "MEMBER_REGISTRATION",
       });
 
       if (response.data?.status) {
@@ -161,6 +168,16 @@ const InvoicePage = () => {
             clearTimeout(safetyTimeout);
             console.log("💰 Midtrans onSuccess:", result);
             setIsLocalPaid(true); // Set local paid status immediately for instant success UI
+            
+            // Lakukan sinkronisasi manual ke backend karena webhook mungkin gagal (terutama di localhost)
+            try {
+              if (result.order_id) {
+                await UBilling.syncMidtransStatus(result.order_id);
+              }
+            } catch (syncErr) {
+              console.error("Gagal melakukan sinkronisasi status transaksi:", syncErr);
+            }
+
             startPolling(); // Keep polling to verify payment receipt in the DB
             await refreshData();
             setIsProcessing(false);
@@ -239,6 +256,8 @@ const InvoicePage = () => {
     returnPageName = "Simpanan";
   } else if (isPaid && category === "FINANCING") {
     returnPageName = "Transaksi";
+  } else if (isPaid && category === "TABUNGAN_DEPOSIT") {
+    returnPageName = "Tabungan";
   } else {
     returnPageName = 
       returnPage === "dashboard" ? "Dashboard" : 

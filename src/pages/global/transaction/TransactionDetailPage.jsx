@@ -8,6 +8,8 @@ import { jwtEncode } from "../../../utils/helpers";
 import USimpanan from "../../../utils/api/USimpanan";
 import { useSocket } from "../../../components/layout/contexts";
 import UTransaksi from "../../../utils/api/UTransaksi";
+import api from "../../../utils/api/common";
+
 
 import MemberInfoSection from "./components/MemberInfoSection";
 import PaymentDetailsSection from "./components/PaymentDetailsSection";
@@ -16,6 +18,7 @@ import FinancingDetailsSection from "./components/FinancingDetailsSection";
 import TabunganDetailsSection from "./components/TabunganDetailsSection";
 import ApprovalSection from "./components/ApprovalSection";
 import ActionButtons from "./components/ActionButtons";
+import SukukOrderSection from "./components/SukukOrderSection";
 
 const LoadingSkeleton = () => (
   <div className="container-fluid px-0 py-4 bg-light min-vh-100">
@@ -40,9 +43,10 @@ const LoadingSkeleton = () => (
 const TransactionDetailPage = ({ decodedToken }) => {
   const navigate = useNavigate();
   const { socket } = useSocket();
-  const isFinancing = !!decodedToken?.financingId || decodedToken?.action === "arisanEnrollment";
+  const isSukukOrder = !!decodedToken?.sukukOrder;
+  const isFinancing = (!isSukukOrder && !!decodedToken?.financingId) || decodedToken?.action === "arisanEnrollment";
   const isTabungan = !!decodedToken?.tabunganId;
-  const transactionId = isFinancing
+  const transactionId = isFinancing || isSukukOrder
     ? (decodedToken?.financingId || null)
     : isTabungan
       ? decodedToken?.tabunganId
@@ -54,16 +58,12 @@ const TransactionDetailPage = ({ decodedToken }) => {
 
   const fetchDetail = useCallback(
     async (showLoading = true) => {
-      if (decodedToken?.data) {
-        setDetail(decodedToken.data);
-        setLoading(false);
-        return;
-      }
       if (!transactionId) return;
       if (showLoading) setLoading(true);
       try {
         let res;
-        if (isFinancing) res = await UTransaksi.getFinancingDetail(transactionId);
+        if (isSukukOrder) res = await api.get(`/financing/sukuk/order/${transactionId}`);
+        else if (isFinancing) res = await UTransaksi.getFinancingDetail(transactionId);
         else if (isTabungan) res = await USimpanan.getTabunganDetail(transactionId);
         else res = await USimpanan.getWithdrawalDetail(transactionId);
         
@@ -76,17 +76,23 @@ const TransactionDetailPage = ({ decodedToken }) => {
         setLoading(false);
       }
     },
-    [transactionId, isFinancing, decodedToken],
+    [transactionId, isFinancing, isTabungan, isSukukOrder],
   );
 
   useEffect(() => {
+    console.log('[TxDetail] decodedToken:', decodedToken);
+    console.log('[TxDetail] isSukukOrder:', isSukukOrder, '| transactionId:', transactionId);
     if (decodedToken?.data) {
       setDetail(decodedToken.data);
       setLoading(false);
+      // Tetap fetch dari backend jika ada ID untuk update status persetujuan
+      if (transactionId) {
+        fetchDetail(false);
+      }
     } else {
-      fetchDetail();
+      fetchDetail(true);
     }
-  }, [fetchDetail, decodedToken]);
+  }, [fetchDetail, decodedToken, transactionId]);
 
   const handleBack = () => {
     const backToken = jwtEncode({ page: returnPage });
@@ -210,18 +216,23 @@ const TransactionDetailPage = ({ decodedToken }) => {
                   
                   <hr className="my-4 opacity-10" />
                   
-                  <PaymentDetailsSection
-                    detail={detail}
-                    isFinancing={isFinancing}
-                    isTabungan={isTabungan}
-                  />
-
-                  {isFinancing ? (
-                    <FinancingDetailsSection detail={detail} />
-                  ) : isTabungan ? (
-                    <TabunganDetailsSection detail={detail} />
+                  {isSukukOrder ? (
+                    <SukukOrderSection detail={detail} />
                   ) : (
-                    <ReturnInfoSection detail={detail} />
+                    <>
+                      <PaymentDetailsSection
+                        detail={detail}
+                        isFinancing={isFinancing}
+                        isTabungan={isTabungan}
+                      />
+                      {isFinancing ? (
+                        <FinancingDetailsSection detail={detail} />
+                      ) : isTabungan ? (
+                        <TabunganDetailsSection detail={detail} />
+                      ) : (
+                        <ReturnInfoSection detail={detail} />
+                      )}
+                    </>
                   )}
 
                   <div className="my-5">
@@ -231,6 +242,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
                   <ActionButtons
                     isFinancing={isFinancing}
                     isTabungan={isTabungan}
+                    isSukukOrder={isSukukOrder}
                     transactionId={transactionId}
                     onBack={handleBack}
                     approvalStatus={approvalStatus}

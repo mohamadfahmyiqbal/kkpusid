@@ -12,8 +12,10 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
-import { FaStore, FaArrowLeft, FaUpload } from "react-icons/fa";
+import { FaStore, FaArrowLeft, FaUpload, FaFileAlt } from "react-icons/fa";
+
+import { profileService } from "../../../services/profileService";
+import api from "../../../utils/api/common";
 
 const SECTOR_OPTIONS = [
   "Retail",
@@ -48,6 +50,24 @@ const FormPendanaanSyariah = () => {
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await profileService.getProfile();
+        const profileData = response.data || response;
+        const mappedProfile = profileService.mapBackendToFrontend(profileData);
+        
+        setFormData(prev => ({
+          ...prev,
+          pemilikUsaha: mappedProfile.nama || "",
+          alamat: mappedProfile.alamat || ""
+        }));
+      } catch (err) {
+        console.error("Gagal mengambil profil", err);
+      }
+    };
+    
+    fetchProfile();
+
     if (firstInputRef.current) {
       firstInputRef.current.focus();
     }
@@ -128,15 +148,67 @@ const FormPendanaanSyariah = () => {
     setSubmitError(null);
 
     try {
-      // TODO: Call API to submit pendanaan application
-      // const response = await InvestasiService.submitPendanaan(formData);
+      const payload = {
+        category: "Pendanaan Syariah UMKM",
+        item_name: formData.tujuanPendanaan,
+        amount_requested: parseInt(String(formData.targetDana).replace(/\D/g, "")),
+        down_payment: 0,
+        principal_amount: parseInt(String(formData.targetDana).replace(/\D/g, "")),
+        tenure: formData.periodeModal,
+        monthly_installment: 0,
+        metode_pencairan: "Non Tunai",
+        nama_nasabah: formData.pemilikUsaha,
+        no_rekening: "0000000000",
+        bank_tujuan: "Bank Syariah"
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await api.post("/financing/apply", payload);
+      const financingId = response.data?.data?.financing_id;
 
-      // Navigate to detail page
-      const token = jwtEncode({ page: "pendanaanSyariah" });
-      navigate(`/${token}`);
+      if (financingId) {
+        const mappedData = {
+          id: financingId,
+          amount: payload.principal_amount,
+          item_price: payload.amount_requested,
+          monthly_installment: 0,
+          cooperation_months: payload.tenure,
+          purpose: payload.item_name,
+          item_name: payload.item_name,
+          account_type: "Pendanaan Syariah",
+          akad_type: "Murabahah",
+          method: "Non Tunai",
+          status: "PENDING",
+          created_at: new Date().toISOString(),
+          is_approved_pengawas: false,
+          is_approved_ketua: false,
+          is_approved_bendahara: false,
+          is_rejected: false,
+          member: {
+            full_name: payload.nama_nasabah,
+            member_code: "-",
+            member_type: "Reguler",
+          },
+          bank_name: payload.bank_tujuan,
+          bank_account_name: payload.nama_nasabah,
+          bank_account_no: payload.no_rekening,
+          catalog: {
+            target_name: payload.item_name,
+            category: payload.category,
+            target_amount: payload.principal_amount,
+            term_months: payload.tenure,
+          }
+        };
+
+        const token = jwtEncode({
+          page: "transactionDetailPage",
+          financingId: financingId,
+          return: "pendanaanSyariah",
+          data: mappedData,
+        });
+        navigate(`/${token}`);
+      } else {
+        throw new Error("Gagal mendapatkan ID Pengajuan");
+      }
     } catch (err) {
       setSubmitError(
         err?.response?.data?.message || "Gagal mengirim pengajuan",
@@ -172,53 +244,54 @@ const FormPendanaanSyariah = () => {
   }, [formData]);
 
   return (
-    <LayoutGlobal title="Form Pendanaan Syariah">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
+    <div className="investasi-wrapper pb-5 bg-light min-vh-100">
+      <div className="row page-titles pt-3 border-bottom mb-4 mx-0 bg-white">
         <div className="col-12 align-self-center">
           <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaStore className="me-2" />
-            Form Pendanaan Syariah
+            <FaFileAlt className="me-2 text-primary" />
+            Form Pengajuan Pendanaan
           </h3>
+          <p className="text-muted mt-2 mb-0">Isi data usaha Anda secara lengkap untuk proses verifikasi pendanaan UMKM.</p>
         </div>
       </div>
 
-      <Container className="mt-4">
+      <Container fluid className="px-4">
         <Row className="justify-content-center">
-          <Col lg={8} md={10}>
+          <Col lg={12}>
             {/* Progress Bar */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-3">
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted small">Progress Formulir</span>
-                  <span className="fw-bold small">{formProgress}%</span>
+            <Card className="shadow-sm border-0 mb-4 rounded-4">
+              <Card.Body className="p-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <span className="text-muted fw-semibold">Kelengkapan Formulir</span>
+                  <span className="fw-bold text-primary px-3 py-1 bg-light rounded-pill">{formProgress}%</span>
                 </div>
                 <ProgressBar
                   now={formProgress}
-                  variant="success"
-                  style={{ height: "8px" }}
+                  variant={formProgress === 100 ? "success" : "primary"}
+                  style={{ height: "10px", borderRadius: "10px" }}
+                  className="bg-light"
                 />
               </Card.Body>
             </Card>
 
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-sm border-0 rounded-4 overflow-hidden mb-5">
               <Card.Body className="p-4 p-md-5">
                 {submitError && (
-                  <Alert variant="danger" className="mb-4">
+                  <Alert variant="danger" className="mb-4 border-0 shadow-sm rounded-3">
                     {submitError}
                   </Alert>
                 )}
 
                 <Form onSubmit={handleSubmit} noValidate>
                   <Row>
-                    {/* Informasi Usaha */}
                     <Col md={12} className="mb-4">
-                      <h6 className="fw-bold mb-3 pb-2 border-bottom">
-                        Informasi Usaha
-                      </h6>
+                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
+                        1. Informasi Usaha
+                      </h5>
                     </Col>
 
-                    <Col md={12} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="nama-usaha">
+                    <Col md={12} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="nama-usaha">
                         Nama Usaha
                       </Form.Label>
                       <Form.Control
@@ -227,7 +300,8 @@ const FormPendanaanSyariah = () => {
                         name="namaUsaha"
                         value={formData.namaUsaha}
                         onChange={handleChange}
-                        placeholder="Masukkan nama usaha"
+                        placeholder="Contoh: Kedai Kopi Nusantara"
+                        className="p-3 bg-light border-0"
                         isInvalid={!!errors.namaUsaha}
                         disabled={loading}
                       />
@@ -236,16 +310,17 @@ const FormPendanaanSyariah = () => {
                       </Form.Control.Feedback>
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="pemilik">
-                        Nama Pemilik
+                    <Col md={6} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="pemilik">
+                        Nama Pemilik Usaha
                       </Form.Label>
                       <Form.Control
                         id="pemilik"
                         name="pemilikUsaha"
                         value={formData.pemilikUsaha}
                         onChange={handleChange}
-                        placeholder="Nama pemilik usaha"
+                        placeholder="Sesuai KTP"
+                        className="p-3 bg-light border-0"
                         isInvalid={!!errors.pemilikUsaha}
                         disabled={loading}
                       />
@@ -254,18 +329,19 @@ const FormPendanaanSyariah = () => {
                       </Form.Control.Feedback>
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="sektor">
-                        Sektor Usaha
+                    <Col md={6} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="sektor">
+                        Sektor Bisnis Utama
                       </Form.Label>
                       <Form.Select
                         id="sektor"
                         name="sektor"
                         value={formData.sektor}
                         onChange={handleChange}
+                        className="p-3 bg-light border-0"
                         disabled={loading}
                       >
-                        <option value="">Pilih sektor</option>
+                        <option value="">-- Pilih sektor industri --</option>
                         {SECTOR_OPTIONS.map((sector) => (
                           <option key={sector} value={sector}>
                             {sector}
@@ -274,9 +350,9 @@ const FormPendanaanSyariah = () => {
                       </Form.Select>
                     </Col>
 
-                    <Col md={12} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="alamat">
-                        Alamat Usaha
+                    <Col md={12} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="alamat">
+                        Alamat Lengkap Tempat Usaha
                       </Form.Label>
                       <Form.Control
                         id="alamat"
@@ -285,7 +361,8 @@ const FormPendanaanSyariah = () => {
                         name="alamat"
                         value={formData.alamat}
                         onChange={handleChange}
-                        placeholder="Alamat lengkap usaha"
+                        placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten"
+                        className="p-3 bg-light border-0"
                         isInvalid={!!errors.alamat}
                         disabled={loading}
                       />
@@ -294,12 +371,9 @@ const FormPendanaanSyariah = () => {
                       </Form.Control.Feedback>
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="omset">
-                        Omset Tahunan
-                        <span className="text-muted ms-2 small">
-                          (Min: Rp 10.000.000)
-                        </span>
+                    <Col md={12} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="omset">
+                        Estimasi Omset Tahunan Saat Ini
                       </Form.Label>
                       <Form.Control
                         id="omset"
@@ -312,7 +386,8 @@ const FormPendanaanSyariah = () => {
                         onChange={(e) =>
                           handleCurrencyChange("omsetTahunan", e)
                         }
-                        placeholder="Contoh: Rp 50.000.000"
+                        placeholder="Min. Rp 10.000.000"
+                        className="p-3 bg-light border-0 fw-bold text-success"
                         isInvalid={!!errors.omsetTahunan}
                         disabled={loading}
                         inputMode="numeric"
@@ -323,24 +398,25 @@ const FormPendanaanSyariah = () => {
                     </Col>
 
                     {/* Informasi Pendanaan */}
-                    <Col md={12} className="mb-4 mt-4">
-                      <h6 className="fw-bold mb-3 pb-2 border-bottom">
-                        Informasi Pendanaan
-                      </h6>
+                    <Col md={12} className="mb-4 mt-5">
+                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
+                        2. Rencana Pendanaan
+                      </h5>
                     </Col>
 
-                    <Col md={12} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="tujuan">
-                        Tujuan Pendanaan
+                    <Col md={12} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="tujuan">
+                        Tujuan Penggunaan Dana
                       </Form.Label>
                       <Form.Control
                         id="tujuan"
                         as="textarea"
-                        rows={2}
+                        rows={3}
                         name="tujuanPendanaan"
                         value={formData.tujuanPendanaan}
                         onChange={handleChange}
-                        placeholder="Jelaskan tujuan penggunaan dana"
+                        placeholder="Contoh: Penambahan modal kerja untuk membeli stok bahan baku menjelang Idul Fitri"
+                        className="p-3 bg-light border-0"
                         isInvalid={!!errors.tujuanPendanaan}
                         disabled={loading}
                       />
@@ -349,12 +425,9 @@ const FormPendanaanSyariah = () => {
                       </Form.Control.Feedback>
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="target">
-                        Target Dana
-                        <span className="text-muted ms-2 small">
-                          (Min: Rp 5.000.000)
-                        </span>
+                    <Col md={6} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="target">
+                        Target Dana yang Dibutuhkan
                       </Form.Label>
                       <Form.Control
                         id="target"
@@ -365,7 +438,8 @@ const FormPendanaanSyariah = () => {
                             : ""
                         }
                         onChange={(e) => handleCurrencyChange("targetDana", e)}
-                        placeholder="Contoh: Rp 20.000.000"
+                        placeholder="Min. Rp 5.000.000"
+                        className="p-3 bg-light border-0 fw-bold text-primary"
                         isInvalid={!!errors.targetDana}
                         disabled={loading}
                         inputMode="numeric"
@@ -375,15 +449,16 @@ const FormPendanaanSyariah = () => {
                       </Form.Control.Feedback>
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="periode">
-                        Periode Modal (bulan)
+                    <Col md={6} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="periode">
+                        Periode Pengembalian Modal
                       </Form.Label>
                       <Form.Select
                         id="periode"
                         name="periodeModal"
                         value={formData.periodeModal}
                         onChange={handleChange}
+                        className="p-3 bg-light border-0"
                         disabled={loading}
                       >
                         {[6, 12, 18, 24, 36].map((periode) => (
@@ -394,12 +469,12 @@ const FormPendanaanSyariah = () => {
                       </Form.Select>
                     </Col>
 
-                    <Col md={6} className="mb-3">
+                    <Col md={6} className="mb-4">
                       <Form.Label
-                        className="fw-semibold"
+                        className="fw-semibold text-dark"
                         htmlFor="omset-kerjasama"
                       >
-                        Omset Kerjasama (per bulan)
+                        Estimasi Omset Selama Periode Pendanaan (Bulanan)
                       </Form.Label>
                       <Form.Control
                         id="omset-kerjasama"
@@ -412,15 +487,16 @@ const FormPendanaanSyariah = () => {
                         onChange={(e) =>
                           handleCurrencyChange("omsetKerjasama", e)
                         }
-                        placeholder="Contoh: Rp 5.000.000"
+                        placeholder="Cth: Rp 5.000.000"
+                        className="p-3 bg-light border-0"
                         disabled={loading}
                         inputMode="numeric"
                       />
                     </Col>
 
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold" htmlFor="bagi-hasil">
-                        Bagi Hasil (%)
+                    <Col md={6} className="mb-4">
+                      <Form.Label className="fw-semibold text-dark" htmlFor="bagi-hasil">
+                        Tawaran Bagi Hasil Investor (%)
                       </Form.Label>
                       <Form.Control
                         id="bagi-hasil"
@@ -429,6 +505,7 @@ const FormPendanaanSyariah = () => {
                         value={formData.bagiHasil}
                         onChange={handleChange}
                         placeholder="Contoh: 15"
+                        className="p-3 bg-light border-0 fw-bold text-success"
                         isInvalid={!!errors.bagiHasil}
                         disabled={loading}
                         min="1"
@@ -440,18 +517,18 @@ const FormPendanaanSyariah = () => {
                     </Col>
 
                     {/* Dokumen */}
-                    <Col md={12} className="mb-4 mt-4">
-                      <h6 className="fw-bold mb-3 pb-2 border-bottom">
-                        Dokumen Pendukung
-                      </h6>
+                    <Col md={12} className="mb-4 mt-5">
+                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
+                        3. Dokumen Legalitas & Pendukung
+                      </h5>
                     </Col>
 
-                    <Col md={6} className="mb-3">
+                    <Col md={6} className="mb-4">
                       <Form.Label
-                        className="fw-semibold"
+                        className="fw-semibold text-dark"
                         htmlFor="bukti-kepemilikan"
                       >
-                        Bukti Kepemilikan Usaha
+                        Bukti Kepemilikan Usaha (NIB/SIUP/SKDU) <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
                         id="bukti-kepemilikan"
@@ -459,91 +536,94 @@ const FormPendanaanSyariah = () => {
                         onChange={(e) =>
                           handleFileChange("buktiKepemilikan", e)
                         }
+                        className="p-3 bg-light border-0"
                         isInvalid={!!errors.buktiKepemilikan}
                         disabled={loading}
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.buktiKepemilikan}
                       </Form.Control.Feedback>
-                      <Form.Text className="text-muted">
-                        Format: PDF, JPG, PNG (Max 5MB)
+                      <Form.Text className="text-muted d-block mt-2">
+                        Format: PDF, JPG, PNG (Maks 5MB)
                       </Form.Text>
                     </Col>
 
-                    <Col md={6} className="mb-3">
+                    <Col md={6} className="mb-4">
                       <Form.Label
-                        className="fw-semibold"
+                        className="fw-semibold text-dark"
                         htmlFor="bukti-kerjasama"
                       >
-                        Bukti Kerjasama (opsional)
+                        Bukti Kerjasama / Kontrak (Opsional)
                       </Form.Label>
                       <Form.Control
                         id="bukti-kerjasama"
                         type="file"
+                        className="p-3 bg-light border-0"
                         onChange={(e) => handleFileChange("buktiKerjasama", e)}
                         disabled={loading}
                       />
-                      <Form.Text className="text-muted">
-                        Format: PDF, JPG, PNG (Max 5MB)
+                      <Form.Text className="text-muted d-block mt-2">
+                        Format: PDF, JPG, PNG (Maks 5MB)
                       </Form.Text>
                     </Col>
 
-                    <Col md={12} className="mb-3">
+                    <Col md={12} className="mb-4">
                       <Form.Label
-                        className="fw-semibold"
+                        className="fw-semibold text-dark"
                         htmlFor="file-pendukung"
                       >
-                        File Pendukung Lainnya (opsional)
+                        Dokumen Pendukung Tambahan (Opsional)
                       </Form.Label>
                       <Form.Control
                         id="file-pendukung"
                         type="file"
+                        className="p-3 bg-light border-0"
                         onChange={(e) => handleFileChange("filePendukung", e)}
                         disabled={loading}
                       />
-                      <Form.Text className="text-muted">
-                        Format: PDF, JPG, PNG (Max 5MB)
+                      <Form.Text className="text-muted d-block mt-2">
+                        Seperti proposal bisnis atau rekap laporan keuangan.
                       </Form.Text>
                     </Col>
 
                     {/* Akad */}
-                    <Col md={12} className="mb-4 mt-4">
-                      <Form.Check
-                        type="checkbox"
-                        id="akad-agreement"
-                        checked={formData.akadAgreed}
-                        onChange={handleAkadChange}
-                        isInvalid={!!errors.akadAgreed}
-                        disabled={loading}
-                        label={
-                          <span className="small">
-                            Saya menyetujui akad dan syarat ketentuan pendanaan
-                            syariah yang berlaku
-                          </span>
-                        }
-                      />
-                      {errors.akadAgreed && (
-                        <div className="text-danger small mt-1">
-                          {errors.akadAgreed}
-                        </div>
-                      )}
+                    <Col md={12} className="mb-4 mt-5">
+                      <div className="bg-light p-4 rounded-4 border">
+                        <Form.Check
+                          type="checkbox"
+                          id="akad-agreement"
+                          checked={formData.akadAgreed}
+                          onChange={handleAkadChange}
+                          isInvalid={!!errors.akadAgreed}
+                          disabled={loading}
+                          label={
+                            <span className="fw-semibold text-dark ms-2">
+                              Saya menyatakan bahwa seluruh data yang diberikan adalah benar, serta menyetujui seluruh ketentuan dan akad pembiayaan syariah yang berlaku di Koperasi.
+                            </span>
+                          }
+                        />
+                        {errors.akadAgreed && (
+                          <div className="text-danger small mt-2 ms-4 fw-bold">
+                            {errors.akadAgreed}
+                          </div>
+                        )}
+                      </div>
                     </Col>
                   </Row>
 
-                  <div className="d-flex justify-content-between mt-4 pt-3 border-top">
+                  <div className="d-flex flex-column flex-md-row justify-content-between mt-5 pt-4 border-top">
                     <Button
                       variant="light"
-                      className="px-4 py-2 fw-bold text-muted"
+                      className="px-5 py-3 fw-bold text-muted mb-3 mb-md-0 rounded-pill shadow-sm"
                       onClick={handleBack}
                       disabled={loading}
                     >
-                      <FaArrowLeft className="me-2" />
-                      Kembali
+                      Batal
                     </Button>
                     <Button
                       variant="primary"
                       type="submit"
-                      className="px-5 py-2 fw-bold shadow-sm"
+                      className="px-5 py-3 fw-bold shadow rounded-pill"
                       disabled={loading}
                     >
                       {loading ? (
@@ -553,12 +633,12 @@ const FormPendanaanSyariah = () => {
                             size="sm"
                             className="me-2"
                           />
-                          Memproses...
+                          Memproses Pengajuan...
                         </>
                       ) : (
                         <>
                           <FaUpload className="me-2" />
-                          Kirim Pengajuan
+                          Kirim Pengajuan Pendanaan
                         </>
                       )}
                     </Button>
@@ -569,7 +649,7 @@ const FormPendanaanSyariah = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 };
 

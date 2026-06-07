@@ -1,6 +1,7 @@
 // 📁 src/pages/global/BillingPage/hooks/useBillingData.js
 import { useState, useEffect, useMemo, useCallback } from "react";
 import UBilling from "../../../../utils/api/UBilling";
+import USimpanan from "../../../../utils/api/USimpanan";
 import useSocketListener from "../../../../utils/helper/SocketListener";
 
 export const useBillingData = (decodedToken) => {
@@ -20,9 +21,17 @@ export const useBillingData = (decodedToken) => {
         decodedToken?.registration_id || decodedToken?.registrationId || null,
       financingId:
         decodedToken?.financing_id || decodedToken?.financingId || null,
+      orderId:
+        decodedToken?.order_id || decodedToken?.orderId || null,
       categoryName: category,
-      displayName: decodedToken?.displayName || "Simpanan",
-      isSukarela: category?.toUpperCase().includes("SUKARELA"),
+      displayName: (() => {
+        const cat = (category || "").toUpperCase();
+        if (cat === "TABUNGAN_DEPOSIT" || ["HAJI", "UMRAH", "PENDIDIKAN", "QURBAN"].includes(cat)) {
+          return "Tabungan";
+        }
+        return decodedToken?.displayName || "Simpanan";
+      })(),
+      isSukarela: category?.toUpperCase().includes("SUKARELA") || category?.toUpperCase() === "TABUNGAN_DEPOSIT",
       filterParams: {
         ...(decodedToken?.filter || {}),
         category: category,
@@ -33,33 +42,50 @@ export const useBillingData = (decodedToken) => {
   // --- STATE MANAGEMENT ---
   const [bills, setBills] = useState([]);
   const [history, setHistory] = useState([]);
+  const [tabunganDetail, setTabunganDetail] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
 
   // --- FETCH DATA DENGAN SORTING ---
   const loadInitialData = useCallback(async () => {
     setLoadingData(true);
     try {
-      const [resPending, resHistory] = await Promise.all([
-        !isSukarela
-          ? UBilling.getPendingBills(filterParams)
+      const fetchFilter = categoryName === "TABUNGAN_DEPOSIT" 
+        ? { ...filterParams, category: undefined } 
+        : filterParams;
+
+      const tIdFetch = decodedToken?.tabungan_id || decodedToken?.tabunganId;
+
+      const [resPending, resHistory, resTabungan] = await Promise.all([
+        (!isSukarela || categoryName === "TABUNGAN_DEPOSIT")
+          ? UBilling.getPendingBills(fetchFilter)
           : Promise.resolve({ data: { status: true, data: [] } }),
-        UBilling.getBillingHistory(filterParams),
+        UBilling.getBillingHistory(fetchFilter),
+        (categoryName === "TABUNGAN_DEPOSIT" && tIdFetch)
+          ? USimpanan.getTabunganDetail(tIdFetch)
+          : Promise.resolve({ data: null })
       ]);
+      
+      if (resTabungan && resTabungan.data && resTabungan.data.data) {
+        setTabunganDetail(resTabungan.data.data);
+      } else {
+        setTabunganDetail(null);
+      }
 
-      if (resPending.data?.status) {
-        // Validasi Array: Mencegah TypeError jika API mengirim non-array
-        let rawData = resPending.data.data;
-        rawData = Array.isArray(rawData) ? rawData : [];
+      const filterContextBills = (data) => {
+        let rawData = Array.isArray(data) ? data : [];
+        
+        const hasCategory = (bill, checkFn) => {
+          if (bill.category_code) return checkFn(bill.category_code);
+          if (bill.items && Array.isArray(bill.items)) {
+            return bill.items.some(item => item.category_code && checkFn(item.category_code));
+          }
+          return false;
+        };
 
-        // Filter bills based on context
         if (financingId) {
-          // Filter for financing transactions
-          rawData = rawData.filter(
-            (bill) =>
-              bill.category_code === "TRANSACTION_DOWN_PAYMENT" ||
-              bill.category_code === "TRANSACTION_INSTALLMENT",
+          rawData = rawData.filter((bill) =>
+            hasCategory(bill, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "TRANSACTION_INSTALLMENT")
           );
-          
           if (decodedToken?.productName) {
             const prod = decodedToken.productName.toLowerCase();
             if (prod.includes("arisan")) {
@@ -71,19 +97,35 @@ export const useBillingData = (decodedToken) => {
             }
           }
         } else if (categoryName === "SAVINGS") {
-          // Filter for transaction bills when doing savings deposits
           rawData = rawData.filter((bill) =>
-            bill.category_code?.startsWith("TRANSACTION_"),
+            hasCategory(bill, (code) => code.startsWith("TRANSACTION_"))
           );
+        } else if (categoryName === "TABUNGAN_DEPOSIT") {
+          const tId = decodedToken?.tabungan_id || decodedToken?.tabunganId;
+          if (tId) {
+            rawData = rawData.filter((bill) => hasCategory(bill, (code) => code === `TAB_DEP_${tId}`));
+          } else {
+            rawData = rawData.filter((bill) => hasCategory(bill, (code) => code.startsWith("TAB_DEP_")));
+          }
         } else if (categoryName && ["haji", "umrah", "pendidikan", "qurban"].includes(categoryName.toLowerCase())) {
-          // Filter untuk produk tabungan (Haji, Umrah, dll)
           const lowerCat = categoryName.toLowerCase();
           rawData = rawData.filter((bill) => 
             bill.description?.toLowerCase().includes(lowerCat) || 
-            bill.category_code?.startsWith("TAB_DEP_")
+            hasCategory(bill, (code) => code.startsWith("TAB_DEP_"))
           );
+        } else if (categoryName === "SUKUK_INVESTMENT") {
+          const oId = decodedToken?.order_id || decodedToken?.orderId;
+          if (oId) {
+            rawData = rawData.filter((bill) => bill.description?.includes(`Order #${oId}`));
+          } else {
+            rawData = rawData.filter((bill) => hasCategory(bill, (code) => code === "SUKUK_INVESTMENT"));
+          }
         }
+        return rawData;
+      };
 
+      if (resPending.data?.status) {
+        let rawData = filterContextBills(resPending.data.data);
         const sorted = rawData.sort(
           (a, b) =>
             new Date(a.due_date || a.createdAt) -
@@ -95,9 +137,9 @@ export const useBillingData = (decodedToken) => {
       }
 
       if (resHistory.data?.status) {
-        setHistory(
-          Array.isArray(resHistory.data.data) ? resHistory.data.data : [],
-        );
+        setHistory(filterContextBills(resHistory.data.data));
+      } else {
+        setHistory([]);
       }
     } catch (err) {
       console.error("Gagal memuat data billing:", err);
@@ -125,6 +167,7 @@ export const useBillingData = (decodedToken) => {
   return {
     bills,
     history,
+    tabunganDetail,
     loadingData,
     loadInitialData,
     registrationId,

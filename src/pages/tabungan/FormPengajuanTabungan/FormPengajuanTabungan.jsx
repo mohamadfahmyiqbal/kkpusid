@@ -215,7 +215,7 @@ const FormPengajuanTabungan = () => {
 
       const response = await TabunganService.submitApplication(payload);
       const responseData = response?.data?.data || response?.data || {};
-      const applicationId = responseData.id || null;
+      const applicationId = responseData.member_saving_target_id || responseData.id || null;
 
       // Map savings response to TransactionDetailPage expected format
       const mappedData = {

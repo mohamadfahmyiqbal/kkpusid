@@ -8,6 +8,7 @@ import { jwtEncode } from "../../../../utils/helpers";
 const ActionButtons = ({
   isFinancing,
   isTabungan,
+  isSukukOrder,
   transactionId,
   onBack,
   approvalStatus,
@@ -19,14 +20,14 @@ const ActionButtons = ({
     const isDone = 
       approvalStatus?.pengawasDone &&
       approvalStatus?.ketuaDone &&
-      (isFinancing || isTabungan ? approvalStatus?.bendaharaDone : true) &&
+      (isFinancing || isTabungan || isSukukOrder ? approvalStatus?.bendaharaDone : true) &&
       !approvalStatus?.isRejected;
     
     return isDone || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
-  }, [isFinancing, isTabungan, approvalStatus]);
+  }, [isFinancing, isTabungan, isSukukOrder, approvalStatus]);
 
   const handlePay = () => {
-    const category = isFinancing ? "FINANCING" : isTabungan ? "TABUNGAN_DEPOSIT" : "WITHDRAWAL";
+    const category = isFinancing ? "FINANCING" : isTabungan ? "TABUNGAN_DEPOSIT" : isSukukOrder ? "SUKUK_INVESTMENT" : "WITHDRAWAL";
     const page = "billingPage";
     const params = {
       page,
@@ -38,6 +39,9 @@ const ActionButtons = ({
     else if (isTabungan) {
       params.tabungan_id = transactionId;
       params.displayName = "Setoran Tabungan";
+    } else if (isSukukOrder) {
+      params.order_id = transactionId;
+      params.displayName = "Pembelian Sukuk";
     }
     
     if (productName) params.productName = productName;
@@ -48,7 +52,7 @@ const ActionButtons = ({
   return (
     <section className="mt-5 d-print-none">
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-        {isApprovedAndReady && (isFinancing || isTabungan) && (
+        {isApprovedAndReady && (isFinancing || isTabungan || isSukukOrder) && (
           <Button
             variant="primary"
             size="lg"
@@ -57,16 +61,18 @@ const ActionButtons = ({
             style={{ 
               background: isFinancing 
                 ? 'linear-gradient(45deg, #0284c7, #0ea5e9)' 
-                : 'linear-gradient(45deg, #10b981, #059669)',
+                : isSukukOrder
+                  ? 'linear-gradient(45deg, #f59e0b, #d97706)'
+                  : 'linear-gradient(45deg, #10b981, #059669)',
               border: 'none'
             }}
           >
             <FaFileInvoiceDollar />
-            {isFinancing ? "BAYAR INVOICE SEKARANG" : "BAYAR SETORAN PERTAMA"}
+            {isFinancing ? "BAYAR INVOICE SEKARANG" : isSukukOrder ? "BAYAR PEMBELIAN SUKUK" : "BAYAR SETORAN PERTAMA"}
           </Button>
         )}
 
-        {isApprovedAndReady && !isFinancing && !isTabungan && (
+        {isApprovedAndReady && !isFinancing && !isTabungan && !isSukukOrder && (
           <Button
             variant="primary"
             size="lg"

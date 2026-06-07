@@ -1,0 +1,176 @@
+/* src/pages/investasi/InvestasiHalal/InvestasiHalal.css */
+
+.investasi-halal-container {
+  min-height: calc(100vh - 100px);
+  padding: 20px;
+  background-color: #f8fafc;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Banner */
+.investasi-halal-hero {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  border-radius: 20px;
+  padding: 35px 40px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+}
+
+.investasi-halal-hero::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+}
+
+.investasi-halal-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.investasi-halal-icon-wrap {
+  width: 70px;
+  height: 70px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.investasi-halal-title {
+  font-weight: 800;
+  font-size: 2rem;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.investasi-halal-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+  max-width: 600px;
+}
+
+/* Card Styling */
+.halal-card {
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 25px rgba(0,0,0,0.03);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Custom Tabs */
+.halal-tabs .nav-link {
+  color: #6b7280;
+  font-weight: 600;
+  border: none;
+  padding: 15px 25px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.halal-tabs .nav-link:hover {
+  color: #059669;
+  border-color: rgba(16,185,129,0.2);
+}
+
+.halal-tabs .nav-link.active {
+  color: #059669;
+  border-color: #059669;
+  background: transparent;
+}
+
+/* Table Enhancements */
+.halal-table {
+  margin-bottom: 0;
+}
+
+.halal-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.halal-table td {
+  padding: 16px;
+  vertical-align: middle;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.halal-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.halal-table tbody tr:hover {
+  background-color: #f0fdf4;
+}
+
+/* Badges */
+.badge-soft-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.btn-invest {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-invest:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+
+.btn-redeem {
+  border: 1.5px solid #059669;
+  color: #059669;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 7px 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-redeem:hover {
+  background-color: #059669;
+  color: white;
+}

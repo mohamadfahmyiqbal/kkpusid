@@ -7,7 +7,7 @@ import {
 } from "react-icons/fa";
 import { formatIDR, formatDate, getDaysUntilDue } from "./utils";
 
-function SummaryStats({ bills, history }) {
+function SummaryStats({ bills, history, categoryName, tabunganDetail }) {
   const safeBills = Array.isArray(bills) ? bills : [];
   const safeHistory = Array.isArray(history) ? history : [];
 
@@ -24,9 +24,9 @@ function SummaryStats({ bills, history }) {
     {
       icon: <FaFileInvoiceDollar size={16} />,
       iconBg: "rgba(239,68,68,0.25)",
-      label: "Total Belum Dibayar",
+      label: categoryName === "TABUNGAN_DEPOSIT" ? "Menunggu Pembayaran" : "Total Belum Dibayar",
       value: formatIDR(totalPending),
-      sub: `${safeBills.length} Tagihan`,
+      sub: `${safeBills.length} ${categoryName === "TABUNGAN_DEPOSIT" ? "Setoran" : "Tagihan"}`,
     },
     {
       icon: <FaCalendarAlt size={16} />,
@@ -45,9 +45,9 @@ function SummaryStats({ bills, history }) {
     {
       icon: <FaWallet size={16} />,
       iconBg: "rgba(99,102,241,0.25)",
-      label: "Total Tagihan",
+      label: categoryName === "TABUNGAN_DEPOSIT" ? "Total Setoran" : "Total Tagihan",
       value: formatIDR(totalAll),
-      sub: `${safeBills.length + safeHistory.length} Tagihan`,
+      sub: `${safeBills.length + safeHistory.length} ${categoryName === "TABUNGAN_DEPOSIT" ? "Setoran" : "Tagihan"}`,
     },
   ];
 
@@ -65,6 +65,29 @@ function SummaryStats({ bills, history }) {
           </div>
         </div>
       ))}
+      
+      {/* Target Progress Bar */}
+      {tabunganDetail && tabunganDetail.catalog && (
+        <div className="bp-stat-card" style={{ gridColumn: '1 / -1', flexDirection: 'column', alignItems: 'stretch' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span className="bp-stat-label">Target {tabunganDetail.catalog.target_name || categoryName.replace('TABUNGAN_', 'Tabungan ')}</span>
+            <span className="bp-stat-value" style={{ fontSize: '13px' }}>
+              {formatIDR(tabunganDetail.current_balance || 0)} / {formatIDR(tabunganDetail.catalog.target_amount)}
+            </span>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div 
+              style={{ 
+                height: '100%', 
+                background: 'var(--bp-success)', 
+                width: `${Math.min(100, (parseFloat(tabunganDetail.current_balance || 0) / parseFloat(tabunganDetail.catalog.target_amount || 1)) * 100)}%`,
+                borderRadius: '4px',
+                transition: 'width 0.5s ease-in-out'
+              }} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
