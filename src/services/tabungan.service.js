@@ -48,7 +48,7 @@ export const TabunganService = {
    */
   submitApplication: async (data) => {
     try {
-      const response = await apiClient.post("/simpanan/pengajuan", data);
+      const response = await apiClient.post("/tabungan/pengajuan", data);
       return response.data;
     } catch (error) {
       console.error("Error submitting savings application:", error);
@@ -62,7 +62,7 @@ export const TabunganService = {
    */
   checkAccountStatus: async (category) => {
     try {
-      const response = await apiClient.get(`/simpanan/pengajuan/check?category=${category}`);
+      const response = await apiClient.get(`/tabungan/pengajuan/check?category=${category}`);
       return response.data;
     } catch (error) {
       console.error(`Error checking account status for ${category}:`, error);
@@ -76,10 +76,24 @@ export const TabunganService = {
    */
   getTabunganBills: async (memberSavingTargetId) => {
     try {
-      const response = await apiClient.get(`/simpanan/pengajuan/${memberSavingTargetId}/tagihan`);
+      const response = await apiClient.get(`/tabungan/pengajuan/${memberSavingTargetId}/tagihan`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching bills for tabungan ${memberSavingTargetId}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Mengambil detail pengajuan target tabungan
+   * @param {string|number} tabunganId
+   */
+  getTabunganDetail: async (tabunganId) => {
+    try {
+      const response = await apiClient.get(`/tabungan/pengajuan/detail/${tabunganId}`);
+      return response;
+    } catch (error) {
+      console.error("Error fetching tabungan detail:", error);
       throw error;
     }
   },

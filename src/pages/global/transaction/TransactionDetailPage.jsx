@@ -7,8 +7,9 @@ import { FaHistory, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa
 import { jwtEncode } from "../../../utils/helpers";
 import USimpanan from "../../../utils/api/USimpanan";
 import { useSocket } from "../../../components/layout/contexts";
-import UTransaksi from "../../../utils/api/UTransaksi";
+import UJualBeli from "../../../utils/api/UJualBeli";
 import api from "../../../utils/api/common";
+import TabunganService from "../../../services/tabungan.service";
 
 
 import MemberInfoSection from "./components/MemberInfoSection";
@@ -63,8 +64,8 @@ const TransactionDetailPage = ({ decodedToken }) => {
       try {
         let res;
         if (isSukukOrder) res = await api.get(`/financing/sukuk/order/${transactionId}`);
-        else if (isFinancing) res = await UTransaksi.getFinancingDetail(transactionId);
-        else if (isTabungan) res = await USimpanan.getTabunganDetail(transactionId);
+        else if (isFinancing) res = await UJualBeli.getFinancingDetail(transactionId);
+        else if (isTabungan) res = await TabunganService.getTabunganDetail(transactionId);
         else res = await USimpanan.getWithdrawalDetail(transactionId);
         
         if (res.data?.status || res.data?.success) {
@@ -247,6 +248,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
                     onBack={handleBack}
                     approvalStatus={approvalStatus}
                     productName={detail?.category}
+                    detail={detail}
                   />
                 </div>
               </Card.Body>

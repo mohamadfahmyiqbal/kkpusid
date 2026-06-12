@@ -13,6 +13,7 @@ const ActionButtons = ({
   onBack,
   approvalStatus,
   productName,
+  detail,
 }) => {
   const navigate = useNavigate();
 
@@ -26,8 +27,16 @@ const ActionButtons = ({
     return isDone || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
   }, [isFinancing, isTabungan, isSukukOrder, approvalStatus]);
 
+  const isPinjamanProduct = isFinancing && 
+    !(productName?.toLowerCase().includes('arisan')) && 
+    (
+      (productName && !['Property', 'Kendaraan', 'Elektronik'].includes(productName)) ||
+      (detail?.purpose?.toLowerCase().includes('pinjaman')) ||
+      (!productName && detail?.purpose?.toLowerCase().includes('pinjaman'))
+    );
+
   const handlePay = () => {
-    if (isFinancing && productName === "Pendanaan Syariah UMKM") {
+    if (isPinjamanProduct) {
       navigate(`/${jwtEncode({ page: "pinjamanReceiptPage", financingId: transactionId })}`);
       return;
     }
@@ -55,8 +64,11 @@ const ActionButtons = ({
   };
 
   const getButtonText = () => {
-    if (isFinancing && productName === "Pendanaan Syariah UMKM") return "LIHAT RESI PENCAIRAN";
-    if (isFinancing) return "BAYAR INVOICE SEKARANG";
+    if (isPinjamanProduct) return "LIHAT RESI PENCAIRAN";
+    if (isFinancing) {
+      if (productName?.toLowerCase().includes('arisan')) return "BAYAR SETORAN ARISAN";
+      return "BAYAR INVOICE SEKARANG";
+    }
     if (isSukukOrder) return "BAYAR PEMBELIAN SUKUK";
     return "BAYAR SETORAN PERTAMA";
   };

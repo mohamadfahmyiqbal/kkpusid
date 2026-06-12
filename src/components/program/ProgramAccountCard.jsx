@@ -1,7 +1,7 @@
 // components/program/ProgramAccountCard.jsx
 
 import React from "react";
-import { Card, Row, Col } from "react-bootstrap";
+import { Card, Row, Col, Button } from "react-bootstrap";
 import { FaMoneyBillWave, FaFileAlt } from "react-icons/fa";
 
 const ProgramAccountCard = ({
@@ -9,7 +9,6 @@ const ProgramAccountCard = ({
   handleSetoran,
   handlePengajuan,
 }) => {
-  // Guard clause for null/undefined data
   if (!accountData) {
     return (
       <Card className="premium-card premium-card-active border-0 shadow-lg font-outfit text-white">
@@ -25,125 +24,75 @@ const ProgramAccountCard = ({
   }
 
   const isArisan = accountData?.akad?.toLowerCase().includes("peserta") || accountData?.produk?.toLowerCase().includes("arisan");
+  const isPending = !accountData?.isApproved;
 
   return (
-    <Card className="premium-card premium-card-active border-0 shadow-lg font-outfit text-white">
-      {/* Sheen reflection overlay */}
+    <Card className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg">
       <div className="glass-sheen" />
-      
-      <Card.Body className="p-4 relative z-2">
-        {/* Header: Title and Status Badge */}
-        <div className="d-flex justify-content-between align-items-start mb-4">
-          <div>
-            <span className="card-type-label text-uppercase text-white-50 fw-bold d-block mb-1" style={{ letterSpacing: "1.5px", fontSize: "9px" }}>
-              Digital Program Card
-            </span>
-            <h5 className="fw-bold mb-0 text-white font-outfit" style={{ letterSpacing: "0.5px" }}>KOPERASI KARYAWAN</h5>
-          </div>
-          {accountData?.statusLabel && (
-            <span className="premium-status-badge">
-              {accountData.statusLabel}
-            </span>
-          )}
-        </div>
-
-        {/* EMV Chip and contactless logo mockup */}
+      <Card.Body className="p-4 relative" style={{ zIndex: 2 }}>
+        {/* Card Top */}
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <div className="card-chip">
-            <div className="card-chip-line v1" />
-            <div className="card-chip-line v2" />
-            <div className="card-chip-line h" />
+          <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect">
+            <span className="fw-bold tracking-wider card-type-label">
+              {isArisan ? "INFORMASI ARISAN" : "INFORMASI PINJAMAN"}
+            </span>
           </div>
-          <div className="text-white-50 fw-bold" style={{ fontSize: "11px", letterSpacing: "1px" }}>
-            {isArisan ? "ARISAN PROGRAM" : "FINANCING ACCOUNT"}
-          </div>
-        </div>
-
-        {/* Account Number display */}
-        <div className="mb-4">
-          <span className="card-number-display">
-            {accountData?.financingId 
-              ? `**** **** **** ${String(accountData.financingId).slice(-4)}`
-              : isArisan && accountData?.akad?.includes("No. Peserta")
-                ? `PARTICIPANT ID: ${accountData.akad.split(": ")[1] || "••••"}`
-                : "•••• •••• •••• ••••"
-            }
+          <span className="premium-status-badge">
+            {accountData.statusLabel || "AKTIF"}
           </span>
         </div>
 
-        {/* Info Grid: Nama, Produk, Akad, Tanggal Buka */}
-        <Row className="mb-4 g-3">
-          <Col xs={6}>
-            <small className="d-block text-white-50 text-uppercase fw-bold" style={{ fontSize: "8px", letterSpacing: "1px" }}>Nama Anggota</small>
-            <h6 className="fw-bold text-truncate text-white mb-0" style={{ fontSize: "13px" }}>
-              {accountData?.nama ?? "-"}
-            </h6>
-          </Col>
-          <Col xs={6}>
-            <small className="d-block text-white-50 text-uppercase fw-bold" style={{ fontSize: "8px", letterSpacing: "1px" }}>Produk Program</small>
-            <h6 className="fw-bold text-truncate text-white mb-0" style={{ fontSize: "13px" }}>
-              {accountData?.produk ?? "-"}
-            </h6>
-          </Col>
-          <Col xs={6}>
-            <small className="d-block text-white-50 text-uppercase fw-bold" style={{ fontSize: "8px", letterSpacing: "1px" }}>Akad / Detail</small>
-            <h6 className="fw-bold text-truncate text-white mb-0" style={{ fontSize: "13px" }}>
-              {accountData?.akad ?? "-"}
-            </h6>
-          </Col>
-          <Col xs={6}>
-            <small className="d-block text-white-50 text-uppercase fw-bold" style={{ fontSize: "8px", letterSpacing: "1px" }}>Tanggal Buka</small>
-            <h6 className="fw-bold text-truncate text-white mb-0" style={{ fontSize: "13px" }}>
-              {accountData?.tanggalBuka ?? "-"}
-            </h6>
-          </Col>
-        </Row>
+        {/* Saldo Display */}
+        <div className="dc-saldo-display mb-4">
+          <div className="small opacity-75 mb-1 fw-medium">
+            {isArisan ? "Saldo Arisan" : "Total Pinjaman"}
+          </div>
+          <h2 className="fw-bold mb-0 text-white font-outfit card-amount-value" style={{ fontSize: '30px' }}>
+            {accountData?.saldoAkhir ?? "-"}
+          </h2>
+        </div>
 
-        {/* Balance Section */}
-        <div className="d-flex justify-content-between align-items-center border-top border-white border-opacity-10 pt-3">
-          <div>
-            <small className="d-block text-white-50 text-uppercase fw-bold" style={{ fontSize: "8px", letterSpacing: "1px" }}>
-              {isArisan ? "SALDO ARISAN" : "NOMINAL PINJAMAN"}
-            </small>
-            <h3 className="fw-bold text-white mb-0 mt-1 font-outfit" style={{ fontSize: "1.6rem" }}>
-              {accountData?.saldoAkhir ?? "-"}
-            </h3>
+        {/* Info Details */}
+        <div className="row g-3 mb-4 pt-3 border-top border-white border-opacity-10 text-start">
+          <div className="col-4">
+            <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">NAMA PRODUK</div>
+            <div className="fw-bold small text-white-90">{accountData?.produk ?? "-"}</div>
+          </div>
+          <div className="col-4">
+            <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">
+              {isArisan ? "STATUS/NO. PESERTA" : "NAMA ANGGOTA"}
+            </div>
+            <div className="fw-bold small text-white-90">{isArisan ? accountData?.akad : accountData?.nama}</div>
+          </div>
+          <div className="col-4">
+            <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">TANGGAL BUKA</div>
+            <div className="fw-bold small text-white-90">{accountData?.tanggalBuka ?? "-"}</div>
           </div>
         </div>
-      </Card.Body>
 
-      {/* Reworked transparent footer with premium action wrappers */}
-      <Card.Footer className="premium-actions-footer border-0 bg-transparent py-3">
-        <div className="d-flex justify-content-around align-items-center">
-          <div 
-            className="action-icon-wrapper" 
-            role="button" 
-            tabIndex={0} 
-            onClick={handleSetoran}
-            onKeyDown={(e) => e.key === "Enter" && handleSetoran?.()}
-          >
-            <div className="action-icon-circle">
-              <FaMoneyBillWave size={20} />
-            </div>
-            <span className="action-icon-text">Bayar Setoran</span>
-          </div>
-
-          {!accountData?.isApproved && (
-            <div 
-              className="action-icon-wrapper" 
-              role="button" 
-              tabIndex={0} 
-              onClick={handlePengajuan}
-              onKeyDown={(e) => e.key === "Enter" && handlePengajuan?.()}
+        {/* Action Buttons */}
+        <div className="d-flex gap-2">
+          {!isPending && (
+            <Button 
+              variant="light" 
+              className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+              onClick={handleSetoran}
             >
-              <div className="action-icon-circle">
-                <FaFileAlt size={18} />
-              </div>
-              <span className="action-icon-text">Lihat Pengajuan</span>
-            </div>
+              Bayar Setoran
+            </Button>
+          )}
+
+          {isPending && (
+            <Button 
+              variant="light" 
+              className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-warning d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+              onClick={handlePengajuan}
+            >
+              Lihat Pengajuan
+            </Button>
           )}
         </div>
-      </Card.Footer>
+      </Card.Body>
     </Card>
   );
 };

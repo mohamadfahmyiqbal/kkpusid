@@ -1,0 +1,1 @@
+import{n as e}from"./ProfileContext-DSOIulaa.js";var t=()=>{let{socket:t}=e();return{socket:t}};export{t};

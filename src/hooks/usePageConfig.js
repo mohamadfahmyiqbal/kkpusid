@@ -9,13 +9,13 @@ const PAGE_TITLES = {
   billingPage: "Setoran Simpanan",
   invoicePage: "Invoice",
   accountPage: "Profil Saya",
-  transactionDetailPage: "Detail Transaksi",
+  transactionDetailPage: "Detail Jual Beli",
   registrationPage: "Pendaftaran",
   registrationFormDetail: "Formulir Pendaftaran",
   simpananPage: "Simpanan",
   penarikanSimpananPage: "Penarikan Simpanan",
-  transaksiPage: "Transaksi",
-  formPengajuanTransaksi: "Pengajuan Transaksi",
+  jualBeliPage: "Jual Beli",
+  formPengajuanTransaksi: "Pengajuan Jual Beli",
   investasiPage: "Investasi",
   trainingPage: "Training",
   tabunganPage: "Tabungan",
@@ -43,7 +43,7 @@ export const usePageConfig = (propPageName, title) => {
   const pageConfig = useMemo(() => {
     const dashboardPath = `/${jwtEncode({ page: "dashboard" })}`;
     const registrationPagePath = `/${jwtEncode({ page: "registrationPage" })}`;
-    const transaksiPagePath = `/${jwtEncode({ page: "transaksiPage" })}`;
+    const jualBeliPagePath = `/${jwtEncode({ page: "jualBeliPage" })}`;
     const simpananPagePath = `/${jwtEncode({ page: "simpananPage" })}`;
     const programPagePath = `/${jwtEncode({ page: "programPage" })}`;
     const arisanPagePath = `/${jwtEncode({ page: "arisanPage" })}`;
@@ -55,7 +55,7 @@ export const usePageConfig = (propPageName, title) => {
     if (currentPage === "billingPage") {
       const returnPage = decodedToken?.return;
       if (returnPage === "simpananPage") baseTitle = "Setoran Simpanan";
-      else if (returnPage === "transaksiPage")
+      else if (returnPage === "jualBeliPage")
         baseTitle = "Setoran Transaksi";
       else if (!returnPage) baseTitle = "Daftar Tagihan";
     }
@@ -130,22 +130,22 @@ export const usePageConfig = (propPageName, title) => {
           { label: "Penarikan" },
         ],
       },
-      transaksiPage: {
-        title: "Transaksi",
+      jualBeliPage: {
+        title: "Jual Beli",
         subtitle: "Riwayat dan status transaksi keuangan Anda",
-        icon: "FaExchangeAlt",
+        icon: "MdShoppingCart",
         breadcrumbs: [
           { label: "Beranda", path: dashboardPath },
-          { label: "Transaksi" },
+          { label: "Jual Beli" },
         ],
       },
       formPengajuanTransaksi: {
-        title: "Pengajuan Transaksi",
+        title: "Pengajuan Jual Beli",
         subtitle: "Formulir pengajuan pembiayaan atau transaksi baru",
         icon: "FaFileSignature",
         breadcrumbs: [
           { label: "Beranda", path: dashboardPath },
-          { label: "Transaksi", path: transaksiPagePath },
+          { label: "Jual Beli", path: jualBeliPagePath },
           { label: "Pengajuan" },
         ],
       },
@@ -246,8 +246,8 @@ export const usePageConfig = (propPageName, title) => {
         breadcrumbs: [
           { label: "Beranda", path: dashboardPath },
           {
-            label: decodedToken?.financingId ? "Transaksi" : decodedToken?.tabunganId ? "Tabungan" : "Simpanan",
-            path: decodedToken?.financingId ? transaksiPagePath : decodedToken?.tabunganId ? tabunganPagePath : simpananPagePath,
+            label: decodedToken?.financingId ? "Jual Beli" : decodedToken?.tabunganId ? "Tabungan" : "Simpanan",
+            path: decodedToken?.financingId ? jualBeliPagePath : decodedToken?.tabunganId ? tabunganPagePath : simpananPagePath,
           },
           { label: decodedToken?.financingId ? "Detail Pembiayaan" : decodedToken?.tabunganId ? "Detail Tabungan" : "Detail Penarikan" },
         ],

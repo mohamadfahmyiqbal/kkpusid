@@ -81,7 +81,7 @@ const InvoicePage = () => {
     }
 
     if (isPaid && category === "FINANCING") {
-      navigate(`/${jwtEncode({ page: "transaksiPage" })}`);
+      navigate(`/${jwtEncode({ page: "billingPage", category: "FINANCING", return: "transaksiPage" })}`);
       return;
     }
 
@@ -255,7 +255,7 @@ const InvoicePage = () => {
   } else if (isSimpananFlow) {
     returnPageName = "Simpanan";
   } else if (isPaid && category === "FINANCING") {
-    returnPageName = "Transaksi";
+    returnPageName = "Billing";
   } else if (isPaid && category === "TABUNGAN_DEPOSIT") {
     returnPageName = "Tabungan";
   } else {

@@ -10,13 +10,13 @@ const useApprovalStatus = (
   return useMemo(() => {
     // Pengawas selesai jika sudah approve ATAU workflow sudah mencapai status akhir
     const pengawasDone =
-      is_approved_pengawas === true ||
+      is_approved_pengawas == true ||
       final_status === "APPROVED" ||
       final_status === "WAITING_PAYMENT";
 
     // Ketua selesai jika sudah approve ATAU workflow sudah mencapai status akhir
     const ketuaDone =
-      is_approved_ketua === true ||
+      is_approved_ketua == true ||
       final_status === "APPROVED" ||
       final_status === "WAITING_PAYMENT";
 

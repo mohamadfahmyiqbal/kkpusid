@@ -44,7 +44,7 @@ export default function FormPengajuanPinjaman() {
   const [formData, setFormData] = useState({
     nominalPinjaman: "3000000",
     termPembayaran: "3",
-    jenisPinjaman: "",
+    jenisPinjaman: "Darurat",
     metodePencairan: "Non Tunai",
     noRekening: "",
     bankTujuan: "Bank Syariah Indonesia",
@@ -103,7 +103,7 @@ export default function FormPengajuanPinjaman() {
           setFormData((prev) => ({
             ...prev,
             jenisPinjaman: first.name,
-            termPembayaran: (first.default_term || 12).toString(),
+            termPembayaran: Math.min(first.default_term || 3, 3).toString(),
           }));
         }
       }
@@ -134,6 +134,9 @@ export default function FormPengajuanPinjaman() {
     const newErrors = {};
     const nominal = parseInt(formData.nominalPinjaman) || 0;
     if (nominal < 1000000) newErrors.nominalPinjaman = "Minimal pinjaman Rp 1.000.000";
+    if (nominal > 3000000) newErrors.nominalPinjaman = "Maksimal pinjaman Rp 3.000.000";
+    if (parseInt(formData.termPembayaran) > 3) newErrors.termPembayaran = "Maksimal tenor 3 bulan";
+    
     if (formData.metodePencairan === "Non Tunai") {
       if (!formData.noRekening) newErrors.noRekening = "Nomor rekening wajib diisi";
       if (!formData.bankTujuan) newErrors.bankTujuan = "Pilih bank tujuan";
@@ -159,7 +162,7 @@ export default function FormPengajuanPinjaman() {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        termPembayaran: (product?.default_term || 12).toString(),
+        termPembayaran: Math.min(product?.default_term || 3, 3).toString(),
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -267,7 +270,7 @@ export default function FormPengajuanPinjaman() {
       });
       const financingId = result.data?.financing_id || result.data?.id;
       setTimeout(
-        () => navigate(`/${jwtEncode({ page: "pinjamanDetailPage", financingId })}`),
+        () => navigate(`/${jwtEncode({ page: "transactionDetailPage", financingId })}`),
         1500,
       );
     } catch (error) {

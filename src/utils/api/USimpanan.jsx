@@ -62,13 +62,6 @@ class USimpanan {
     return http.get(`/simpanan/penarikan/detail/${withdrawalId}`);
   }
 
-  /**
-   * Mengambil detail pengajuan target tabungan
-   * @param {string|number} tabunganId
-   */
-  getTabunganDetail(tabunganId) {
-    return http.get(`/simpanan/pengajuan/detail/${tabunganId}`);
-  }
 }
 
 const uSimpanan = new USimpanan();

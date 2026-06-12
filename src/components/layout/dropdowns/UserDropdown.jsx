@@ -501,7 +501,7 @@ UserDropdown.propTypes = {
     email: PropTypes.string,
     member_no: PropTypes.string,
     member_type: PropTypes.string,
-    status_id: PropTypes.number,
+    status_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }),
   logout: PropTypes.func.isRequired,
   loading: PropTypes.bool,

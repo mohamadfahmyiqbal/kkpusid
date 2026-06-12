@@ -9,12 +9,23 @@ import InformasiRekeningCard from "../components/InformasiRekeningCard";
  */
 const SimpananSkeleton = () => (
   <div className="animate-pulse">
-    <div className="d-flex flex-column flex-md-row gap-2 overflow-hidden mb-4 px-1">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-light rounded-pill simpanan-skeleton-tab" />
-      ))}
+    <div className="simpanan-tabs-container mb-4 px-2">
+      <div className="d-flex flex-column flex-md-row gap-2 overflow-hidden pb-2 simpanan-scroll-hide">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-light rounded-pill simpanan-skeleton-tab" style={{ border: '1px solid #f1f5f9' }} />
+        ))}
+      </div>
     </div>
-    <div className="bg-light rounded-4 w-100" style={{ height: '280px' }} />
+    <div className="px-2">
+      <div 
+        className="w-100 shadow-sm" 
+        style={{ 
+          height: '280px', 
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)' 
+        }} 
+      />
+    </div>
   </div>
 );
 
@@ -84,9 +95,7 @@ const SimpananPage = ({ decodedToken }) => {
       )}
 
       {loading ? (
-        <div className="px-2">
-          <SimpananSkeleton />
-        </div>
+        <SimpananSkeleton />
       ) : (
         <>
           {/* Tabs Navigation */}

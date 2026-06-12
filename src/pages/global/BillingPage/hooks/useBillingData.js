@@ -1,7 +1,7 @@
 // 📁 src/pages/global/BillingPage/hooks/useBillingData.js
 import { useState, useEffect, useMemo, useCallback } from "react";
 import UBilling from "../../../../utils/api/UBilling";
-import USimpanan from "../../../../utils/api/USimpanan";
+import TabunganService from "../../../../services/tabungan.service";
 import useSocketListener from "../../../../utils/helper/SocketListener";
 
 export const useBillingData = (decodedToken) => {
@@ -61,7 +61,7 @@ export const useBillingData = (decodedToken) => {
           : Promise.resolve({ data: { status: true, data: [] } }),
         UBilling.getBillingHistory(fetchFilter),
         (categoryName === "TABUNGAN_DEPOSIT" && tIdFetch)
-          ? USimpanan.getTabunganDetail(tIdFetch)
+          ? TabunganService.getTabunganDetail(tIdFetch)
           : Promise.resolve({ data: null })
       ]);
       

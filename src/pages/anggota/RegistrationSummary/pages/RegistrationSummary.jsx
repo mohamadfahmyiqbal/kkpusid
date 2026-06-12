@@ -84,7 +84,6 @@ export default function RegistrationSummary({
       billId: bill_id,
       category: "MEMBER_REGISTRATION",
       filter: {
-        bill_type_id: [4, 5],
         registration_id: registration_id,
       },
       displayName: "Pendaftaran Anggota",
@@ -97,7 +96,6 @@ export default function RegistrationSummary({
       billId: bill_id,
       category: "MEMBER_REGISTRATION",
       filter: {
-        bill_type_id: [4, 5],
         registration_id: registration_id,
       },
       displayName: "Pendaftaran Anggota",

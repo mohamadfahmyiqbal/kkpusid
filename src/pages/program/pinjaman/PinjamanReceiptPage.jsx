@@ -160,9 +160,9 @@ export default function PinjamanReceiptPage({ decodedToken }) {
   }
 
   return (
-    <Container className="mt-4">
-      <Row className="justify-content-center">
-        <Col lg={12}>
+    <div className="container-fluid px-0 mt-4 pb-5">
+      <Row className="justify-content-center mx-0">
+        <Col xs={12} md={12} lg={12} className="px-3 px-md-4">
           {/* Header Actions */}
           <div className="d-flex justify-content-end align-items-center mb-3 no-print">
             <div>
@@ -448,6 +448,6 @@ export default function PinjamanReceiptPage({ decodedToken }) {
           }
         }
       `}</style>
-    </Container>
+    </div>
   );
 }

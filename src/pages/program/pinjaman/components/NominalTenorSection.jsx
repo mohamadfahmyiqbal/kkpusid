@@ -5,14 +5,13 @@ import { motion } from "framer-motion";
 import FormInputField from "./FormInputField";
 
 const QUICK_NOMINALS = [
+  { label: "500 Rb", value: 500000 },
   { label: "1 Jt", value: 1000000 },
+  { label: "2 Jt", value: 2000000 },
   { label: "3 Jt", value: 3000000 },
-  { label: "5 Jt", value: 5000000 },
-  { label: "10 Jt", value: 10000000 },
-  { label: "20 Jt", value: 20000000 },
 ];
 
-const QUICK_TENORS = [3, 6, 12, 18, 24, 36];
+const QUICK_TENORS = [1, 2, 3];
 
 function angkaToTerbilang(num) {
   if (isNaN(num) || num <= 0) return "";
@@ -198,7 +197,7 @@ export default function NominalTenorSection({
         <div className="slider-container">
           <Form.Range
             min={1}
-            max={36}
+            max={3}
             step={1}
             value={formData.termPembayaran}
             name="termPembayaran"

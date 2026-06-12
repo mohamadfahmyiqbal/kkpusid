@@ -1,11 +1,11 @@
 // Role constants untuk koperasi
 export const ROLE_IDS = {
-  CALON_ANGGOTA: 1,
-  PENGAWAS: 2,
-  KETUA: 3,
-  BENDAHARA: 4,
-  ANGGOTA_PENUH: 5,
-  ANGGOTA_PENUH_ALB: 6,
+  CALON_ANGGOTA: '1',
+  PENGAWAS: '2',
+  KETUA: '3',
+  BENDAHARA: '4',
+  ANGGOTA_PENUH: '5',
+  ANGGOTA_PENUH_ALB: '6',
 };
 
 // Role names untuk display

@@ -13,15 +13,15 @@ import {
   MdSavings,
   MdAccountBalance,
   MdGroup,
-  MdAttachMoney,
   MdSchool,
   MdBarChart,
   MdPerson,
   MdStore,
-  MdDescription,
   MdSecurity,
   MdHistory,
+  MdShoppingCart,
 } from "react-icons/md";
+import { FaWallet } from "react-icons/fa";
 
 const SidebarMenuItem = memo(
   ({ item, currentPage, openKeys, onDropdownToggle, onCustomNavigate }) => {
@@ -126,12 +126,18 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
       {
         label: "Simpanan",
         href: "simpananPage",
-        icon: MdSavings,
+        icon: FaWallet,
         key: "simpanan",
       },
       {
-        label: "Transaksi",
-        href: "transaksiPage",
+        label: "Jual Beli",
+        href: "jualBeliPage",
+        icon: MdShoppingCart,
+        key: "jualBeli",
+      },
+      {
+        label: "Riwayat",
+        href: "billingPage",
         icon: MdHistory,
         key: "transaksi",
       },
@@ -144,7 +150,7 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
       {
         label: "Tabungan",
         href: "tabunganPage",
-        icon: MdAttachMoney,
+        icon: MdAccountBalance,
         key: "tabungan",
       },
       {

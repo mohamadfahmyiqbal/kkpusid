@@ -99,7 +99,7 @@ export const PAGE_TITLES = {
   },
   
   // Transaction pages
-  transaksiPage: {
+  jualBeliPage: {
     title: 'Transaksi',
     subtitle: 'Kelola semua transaksi Anda',
     breadcrumbs: [
@@ -112,7 +112,7 @@ export const PAGE_TITLES = {
     subtitle: 'Ajukan transaksi baru',
     breadcrumbs: [
       { label: 'Beranda', path: '/dashboard' },
-      { label: 'Transaksi', path: '/transaksiPage' },
+      { label: 'Transaksi', path: '/jualBeliPage' },
       { label: 'Pengajuan' }
     ]
   },

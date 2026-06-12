@@ -15,8 +15,7 @@ const manageCacheSize = () => {
 };
 
 const getRoleConfig = (statusId) => {
-  const parsedRoleId = Number.parseInt(statusId, 10);
-  const roleId = Number.isNaN(parsedRoleId) ? ROLE_IDS.CALON_ANGGOTA : parsedRoleId;
+  const roleId = String(statusId);
 
   return {
     roleId,

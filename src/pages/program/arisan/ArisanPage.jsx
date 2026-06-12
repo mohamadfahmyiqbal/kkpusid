@@ -40,31 +40,7 @@ const getApiUrl = (endpoint) => {
   return `${base}/${endpoint}`;
 };
 
-// Fallback mockup data if API is empty
-const MOCK_LIST_ARISAN = [
-  {
-    title: "Arisan Haji/Umroh Skema 1",
-    batch: "Batch 1",
-    kategori: "Arisan Haji/Umroh",
-    peserta: "6/6 Peserta",
-    target: "Rp. 50.400.000",
-    term: "36 Bulan",
-    setoran: "Rp. 1.400.000",
-    periode: "Jan 2025 - Des 2025",
-    status: "full",
-  },
-  {
-    title: "Arisan Haji/Umroh Skema 1",
-    batch: "Batch 2",
-    kategori: "Arisan Haji/Umroh",
-    peserta: "5/30 Peserta",
-    target: "Rp. 50.400.000",
-    term: "36 Bulan",
-    setoran: "Rp. 1.400.000",
-    periode: "Jan 2025 - Des 2025",
-    status: "available",
-  },
-];
+
 
 const PROGRAM_OPTIONS = [
   { label: "Pinjaman Lunak", key: "pinjaman", icon: MdAccountBalance },
@@ -76,7 +52,7 @@ export default function ArisanPage() {
   const { userData } = useProfile();
 
   // Role check: status_id 2 (Pengawas), 3 (Ketua), 4 (Bendahara) can create
-  const canCreate = !!userData && [2, 3, 4].includes(Number(userData.status_id));
+  const canCreate = !!userData && ['2', '3', '4'].includes(String(userData.status_id));
 
   const activeTab = "arisan";
 
@@ -132,8 +108,8 @@ export default function ArisanPage() {
     } catch (err) {
       console.error("Error fetching arisan details:", err);
       setError("Gagal memuat data dari server. Menampilkan mode preview.");
-      // Fallback to mockup list in case of network or server failure so the user isn't stuck with a broken screen
-      setAvailableArisans(MOCK_LIST_ARISAN);
+      // Do not use mockup list
+      setAvailableArisans([]);
     } finally {
       setIsLoading(false);
     }

@@ -39,37 +39,7 @@ const getApiUrl = (endpoint) => {
   return `${base}/${endpoint}`;
 };
 
-// --- Mock Data Fallback for Development ---
-const MOCK_ARISAN_DETAILS = {
-  "1": {
-    arisan_id: 1,
-    program_name: "Arisan Haji/Umroh Skema 1",
-    batch_name: "Batch 2",
-    category: "Arisan Haji/Umroh",
-    target_amount: 50400000,
-    monthly_contribution: 1400000,
-    participant_count: 5,
-    max_participants: 30,
-    cooperation_months: 36,
-    start_date: "2025-01-01",
-    end_date: "2028-01-01",
-    status: "available"
-  },
-  "0": {
-    arisan_id: 0,
-    program_name: "Arisan Haji/Umroh Skema 1",
-    batch_name: "Batch 1",
-    category: "Arisan Haji/Umroh",
-    target_amount: 50400000,
-    monthly_contribution: 1400000,
-    participant_count: 6,
-    max_participants: 6,
-    cooperation_months: 36,
-    start_date: "2025-01-01",
-    end_date: "2025-12-31",
-    status: "full"
-  }
-};
+
 
 // --- Form Input Field Sub-component ---
 const FormInputField = React.memo(
@@ -238,13 +208,6 @@ export default function FormPengajuanArisan({ decodedToken }) {
       const result = await response.json();
 
       if (!response.ok) {
-        // Fallback to mock data if 404 and it's a known mock ID
-        if (response.status === 404 && MOCK_ARISAN_DETAILS[arisanId]) {
-          console.warn("Using mock data for arisan ID:", arisanId);
-          setArisanData(MOCK_ARISAN_DETAILS[arisanId]);
-          updateFormData(MOCK_ARISAN_DETAILS[arisanId]);
-          return;
-        }
         throw new Error(result.message || "Gagal mengambil detail arisan");
       }
 
@@ -253,17 +216,10 @@ export default function FormPengajuanArisan({ decodedToken }) {
     } catch (error) {
       console.error("Error fetching arisan detail:", error);
       
-      // Secondary fallback attempt
-      if (MOCK_ARISAN_DETAILS[arisanId]) {
-        setArisanData(MOCK_ARISAN_DETAILS[arisanId]);
-        updateFormData(MOCK_ARISAN_DETAILS[arisanId]);
-        showNotification("warning", "Menampilkan data pratinjau (Offline Mode)");
-      } else {
-        showNotification(
-          "danger",
-          `Gagal memuat detail arisan: ${error.message}`
-        );
-      }
+      showNotification(
+        "danger",
+        `Gagal memuat detail arisan: ${error.message}`
+      );
     } finally {
       setIsLoadingProducts(false);
     }

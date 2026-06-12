@@ -32,7 +32,10 @@ export default function NotificationPrompt({ memberId }) {
     // Memicu prompt asli browser
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      // Kirim notifikasi test dulu untuk debug
+      // 1. Subscribe user first to ensure subscription exists in backend
+      await subscribeUser(memberId);
+
+      // 2. Send test notification
       try {
         await api.post("/push/test-push", {
           member_id: memberId,
@@ -47,8 +50,6 @@ export default function NotificationPrompt({ memberId }) {
           error,
         );
       }
-
-      await subscribeUser(memberId);
     }
   };
 

@@ -1,6 +1,6 @@
 import http from "./common";
 
-class UTransaksi {
+class UJualBeli {
   getGeneralTransactionHistory(params) {
     return http.get("/financial/history", { params });
   }
@@ -28,6 +28,6 @@ class UTransaksi {
   }
 }
 
-const uTransaksi = new UTransaksi();
+const uJualBeli = new UJualBeli();
 
-export default uTransaksi;
+export default uJualBeli;

@@ -18,6 +18,7 @@ import {
   FaClipboardList,
   FaCheckCircle,
 } from "react-icons/fa";
+import { MdShoppingCart } from "react-icons/md";
 
 /** Map of icon name strings → React components */
 const ICON_MAP = {
@@ -35,6 +36,7 @@ const ICON_MAP = {
   FaUsers,
   FaClipboardList,
   FaCheckCircle,
+  MdShoppingCart,
 };
 
 /**

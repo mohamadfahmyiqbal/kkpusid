@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import UBilling from "../../../../utils/api/UBilling";
-import UTransaksi from "../../../../utils/api/UTransaksi";
+import UJualBeli from "../../../../utils/api/UJualBeli";
 import { jwtDecodePage } from "../../../../utils/helpers";
 
 export const useInvoiceData = () => {
@@ -44,7 +44,7 @@ export const useInvoiceData = () => {
     async (isPolling = false) => {
       try {
         if (params.financingId) {
-          const res = await UTransaksi.getFinancingDetail(params.financingId);
+          const res = await UJualBeli.getFinancingDetail(params.financingId);
           if (res.data?.status) {
             const detail = res.data.data;
             const installmentAmount = detail.cooperation_months

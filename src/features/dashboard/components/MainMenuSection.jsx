@@ -2,13 +2,14 @@ import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import {
-  MdSavings,
   MdHistory,
   MdGroup,
-  MdAttachMoney,
+  MdAccountBalance,
   MdBarChart,
   MdSchool,
+  MdShoppingCart,
 } from "react-icons/md";
+import { FaWallet } from "react-icons/fa";
 
 /**
  * Konfigurasi item menu dengan warna dan gradasi yang unik
@@ -17,18 +18,10 @@ const MENU_ITEMS = [
   { 
     id: "simpanan", 
     label: "Simpanan", 
-    icon: MdSavings, 
+    icon: FaWallet, 
     pageKey: "simpananPage",
     gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)", // Emerald
     shadow: "rgba(16, 185, 129, 0.2)"
-  },
-  {
-    id: "transaksi",
-    label: "Riwayat",
-    icon: MdHistory,
-    pageKey: "transaksiPage",
-    gradient: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", // Blue
-    shadow: "rgba(59, 130, 246, 0.2)"
   },
   { 
     id: "program", 
@@ -41,7 +34,7 @@ const MENU_ITEMS = [
   {
     id: "tabungan",
     label: "Tabungan",
-    icon: MdAttachMoney,
+    icon: MdAccountBalance,
     pageKey: "tabunganPage",
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", // Amber
     shadow: "rgba(245, 158, 11, 0.2)"
@@ -61,6 +54,22 @@ const MENU_ITEMS = [
     pageKey: "trainingPage",
     gradient: "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)", // Cyan
     shadow: "rgba(6, 182, 212, 0.2)"
+  },
+  {
+    id: "jual-beli",
+    label: "Jual Beli",
+    icon: MdShoppingCart,
+    pageKey: "jualBeliPage",
+    gradient: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", // Orange
+    shadow: "rgba(249, 115, 22, 0.2)"
+  },
+  {
+    id: "transaksi",
+    label: "Riwayat",
+    icon: MdHistory,
+    pageKey: "billingPage",
+    gradient: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", // Blue
+    shadow: "rgba(59, 130, 246, 0.2)"
   },
 ];
 

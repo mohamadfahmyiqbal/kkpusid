@@ -54,7 +54,7 @@ const RegistrationCard = ({
   // Validasi Role ID 1 (Calon Anggota)
   const isCandidate = useMemo(() => {
     if (!user?.status_id) return true; // Default ke true jika data user belum lengkap/baru login
-    return parseInt(user.status_id, 10) === 1;
+    return String(user.status_id) === '1';
   }, [user?.status_id]);
 
   // Combine description with legal notice if enabled

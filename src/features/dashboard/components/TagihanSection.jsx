@@ -20,7 +20,7 @@ const BillingCard = React.memo(({ item, onPay }) => {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
-    }).format(item.amount || 0);
+    }).format(Number(item.amount) || 0);
   }, [item.amount]);
 
   return (
@@ -80,7 +80,7 @@ const TagihanSection = () => {
   );
 
   const totalAmount = useMemo(() => {
-    return bills?.reduce((acc, bill) => acc + (bill.amount || 0), 0) || 0;
+    return bills?.reduce((acc, bill) => acc + (Number(bill.amount) || 0), 0) || 0;
   }, [bills]);
 
   const formattedTotal = useMemo(() => {
