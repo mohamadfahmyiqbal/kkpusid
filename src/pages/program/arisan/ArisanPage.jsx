@@ -1,16 +1,14 @@
 // fe/src/pages/program/arisan/ArisanPage.jsx
 
 import React, { useState, useCallback, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Button,
-  Badge,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
+import Badge from "react-bootstrap/Badge";
+import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
 import { useNavigate } from "react-router-dom";
 import { FaPlusCircle, FaRedo } from "react-icons/fa";
 import {
@@ -125,7 +123,7 @@ export default function ArisanPage() {
       // Jika ada pengajuan pending, arahkan ke detail pengajuan
       if (activeArisan?.is_pending && activeArisan?.financing_id) {
         const token = jwtEncode({
-          page: "arisanDetailPage",
+          page: "transactionDetailPage",
           financingId: activeArisan.financing_id,
         });
         navigate(`/${token}`);
@@ -145,7 +143,7 @@ export default function ArisanPage() {
   const handleSetoran = useCallback(() => {
     const token = jwtEncode({ page: "billingPage", action: "setoranArisan" });
     navigate(`/${token}`);
-    console.log("Navigasi ke halaman Setoran Arisan.");
+
   }, [navigate]);
 
   // Handle saat tab berubah (kembali ke ProgramPage)

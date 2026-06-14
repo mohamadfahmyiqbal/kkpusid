@@ -19,6 +19,10 @@ const trainingRoutes = {
     component: lazy(() => import("../../pages/training/Ranking/Ranking")),
     isProtected: true,
   },
+  bacaMateri: {
+    component: lazy(() => import("../../pages/training/BacaMateri/BacaMateri")),
+    isProtected: true,
+  },
 };
 
 export default trainingRoutes;

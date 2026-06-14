@@ -76,7 +76,7 @@ const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
         <div className="d-flex justify-content-between align-items-start mb-4">
           <div>
             <h4 className="fw-bold mb-1" style={{ fontSize: '1.25rem' }}>Rekening Aktif</h4>
-            <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>Tabungan {accountData.target_name || productName}</p>
+            <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>{accountData.target_name || `Tabungan ${productName}`}</p>
           </div>
           <button 
             className="btn btn-light fw-bold rounded-pill px-4" 

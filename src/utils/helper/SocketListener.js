@@ -16,9 +16,9 @@ const useSocketListener = (callback) => {
       // 2. Listen untuk update status persetujuan (Dinamis sesuai backend)
       // Menangani: member_registration:update, financing_applications:update, dll.
       const handleUpdate = (data) => {
-        console.log("⚡ Real-time Update Received:", data);
-        console.log("⚡ Socket ID:", socket.id);
-        console.log("⚡ Connected:", socket.connected);
+
+
+
 
         const statusMap = {
           APPROVED: "disetujui sepenuhnya",
@@ -34,22 +34,22 @@ const useSocketListener = (callback) => {
 
         // Panggil callback untuk update state komponen
         if (callback && typeof callback === 'function') {
-          console.log("⚡ Calling callback with data:", data);
+
           callback(data);
         } else {
-          console.log("⚡ No callback provided or invalid");
+
         }
 
         // Opsional: Memicu reload global atau update state di sini jika diperlukan
         if (data.trigger) {
-          console.log("⚡ Trigger detected, potential reload needed");
+
           // window.location.reload(); // Atau panggil fungsi refresh data
         }
       };
 
       // 3. Listen untuk notifikasi baru dari backend
       socket.on("new_notification", (data) => {
-        console.log("🔔 New Notification Received:", data);
+
         
         // Tampilkan toast notifikasi
         toast.success(data.title || "Notifikasi Baru", {
@@ -58,7 +58,7 @@ const useSocketListener = (callback) => {
 
         // Handle khusus untuk PAYMENT_SUCCESS
         if (data.type === "PAYMENT_SUCCESS") {
-          console.log("💰 Payment success detected, closing Snap and updating UI");
+
           
           // Trigger event untuk menutup Snap popup
           window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));

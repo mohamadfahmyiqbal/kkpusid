@@ -20,12 +20,13 @@ export const useInvoiceData = () => {
         payload.financing_id || payload.category === "FINANCING"
           ? "FINANCING"
           : payload.category || "GENERAL",
-      financingId: payload.financing_id,
+      financingId: payload.financingId || payload.financing_id,
       registrationId: payload.registrationId,
       categoryName: payload.categoryName,
       originalReturn: payload.originalReturn,
       status: payload.status || null,
       product: payload.product || null,
+      productName: payload.productName || null,
     };
   }, [token]);
 
@@ -40,10 +41,51 @@ export const useInvoiceData = () => {
     }
   }, []);
 
+  const [dynamicBillId, setDynamicBillIdState] = useState(params.billId);
+  const dynamicBillIdRef = useRef(dynamicBillId);
+  const [dynamicOrderId, setDynamicOrderId] = useState(null);
+
+  const setDynamicBillId = useCallback((id) => {
+    dynamicBillIdRef.current = id;
+    setDynamicBillIdState(id);
+  }, []);
+
   const fetchBillDetail = useCallback(
     async (isPolling = false) => {
       try {
-        if (params.financingId) {
+        const currentBillId = dynamicBillIdRef.current;
+        if (currentBillId) {
+          const response = await UBilling.getInvoiceDetail(null, currentBillId);
+          if (response.data?.status) {
+            const newData = response.data.data;
+            setBillData(newData);
+
+            if (newData.status === "PAID") {
+              stopPolling();
+              if (isPolling) {
+                window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
+                window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
+              }
+            }
+          }
+        } else if (params.billItemIds.length > 0) {
+          const response = await UBilling.getInvoiceDetail(
+            params.billItemIds,
+            null
+          );
+          if (response.data?.status) {
+            const newData = response.data.data;
+            setBillData(newData);
+
+            if (newData.status === "PAID") {
+              stopPolling();
+              if (isPolling) {
+                window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
+                window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
+              }
+            }
+          }
+        } else if (params.financingId) {
           const res = await UJualBeli.getFinancingDetail(params.financingId);
           if (res.data?.status) {
             const detail = res.data.data;
@@ -59,11 +101,11 @@ export const useInvoiceData = () => {
             const mappedData = {
               full_name: detail?.member?.full_name || "Anggota",
               member_no: detail?.member?.member_code || "ID Registrasi",
-              invoice_no: `FIN/${detail.id}/${new Date().getFullYear()}`,
-              createdAt: detail.created_at || new Date().toISOString(),
+              invoice_no: `FIN/${detail.financing_id?.substring(0, 8) || "000"}/${new Date().getFullYear()}`,
+              createdAt: detail.createdAt || detail.created_at || new Date().toISOString(),
               details: [
                 {
-                  description: "Cicilan Pembiayaan Bulan Pertama",
+                  description: "Down Payment / Cicilan Pembiayaan",
                   amount: finalAmount,
                 },
               ],
@@ -75,23 +117,6 @@ export const useInvoiceData = () => {
             setBillData(mappedData);
 
             if (detail.status === "PAID") {
-              stopPolling();
-              if (isPolling) {
-                window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
-                window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
-              }
-            }
-          }
-        } else if (params.billItemIds.length > 0 || params.billId) {
-          const response = await UBilling.getInvoiceDetail(
-            params.billItemIds.length > 0 ? params.billItemIds : null,
-            params.billId
-          );
-          if (response.data?.status) {
-            const newData = response.data.data;
-            setBillData(newData);
-
-            if (newData.status === "PAID") {
               stopPolling();
               if (isPolling) {
                 window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
@@ -112,7 +137,9 @@ export const useInvoiceData = () => {
 
   const startPolling = useCallback(() => {
     if (pollingRef.current) return;
-    pollingRef.current = setInterval(() => fetchBillDetail(true), 5000);
+    // Panggil fetchBillDetail sekali sebelum interval
+    fetchBillDetail(true);
+    pollingRef.current = setInterval(() => fetchBillDetail(true), 3000);
   }, [fetchBillDetail]);
 
   useEffect(() => {
@@ -138,5 +165,6 @@ export const useInvoiceData = () => {
     startPolling,
     stopPolling,
     refreshData: fetchBillDetail,
+    setDynamicBillId,
   };
 };

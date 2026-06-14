@@ -41,7 +41,7 @@ const App = () => {
 
         // Event listeners untuk update real-time
         socket.on('notifications:update', (data) => {
-          console.log('📬 Notifikasi socket:', data);
+
           toast.info(data.title || 'Notifikasi baru', {
             position: "top-right",
             autoClose: 5000,
@@ -49,29 +49,29 @@ const App = () => {
         });
 
         socket.on('profile:update', (data) => {
-          console.log('👤 Profile update:', data);
+
           toast.success('Profil diperbarui');
           // TODO: Update ProfileProvider jika diperlukan
         });
 
         socket.on('withdrawals:update', (data) => {
-          console.log('💰 Withdrawals update:', data);
+
           toast.info('Data penarikan diperbarui');
         });
 
         socket.on('savings:update', (data) => {
-          console.log('🏦 Savings update:', data);
+
           toast.info('Data tabungan diperbarui');
         });
 
         socket.on('financing_applications:update', (data) => {
-          console.log('💼 Financing update:', data);
+
           toast.info('Status pengajuan pembiayaan diperbarui');
         });
 
         // Listener untuk notifikasi baru dari backend
         socket.on('new_notification', (data) => {
-          console.log('🔔 New notification received:', data);
+
           
           // Tampilkan toast notifikasi
           toast.success(data.title || 'Notifikasi Baru', {
@@ -82,7 +82,7 @@ const App = () => {
 
           // Handle khusus untuk PAYMENT_SUCCESS
           if (data.type === "PAYMENT_SUCCESS") {
-            console.log('💰 Payment success detected, triggering events...');
+
             
             // Trigger event untuk menutup Snap popup
             window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));

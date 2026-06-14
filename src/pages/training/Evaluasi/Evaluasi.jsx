@@ -13,8 +13,9 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
-import { FaCheckCircle, FaArrowLeft, FaTrophy } from "react-icons/fa";
+import TrainingService from "../../../services/training.service";
+import { FaCheckCircle, FaArrowLeft, FaTrophy, FaChevronRight, FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
+import "./Evaluasi.css";
 
 const Evaluasi = () => {
   const navigate = useNavigate();
@@ -30,89 +31,45 @@ const Evaluasi = () => {
   const [passed, setPassed] = useState(false);
 
   useEffect(() => {
-    // Get kurikulumId from URL
     const pathParts = window.location.pathname.split("/");
     const lastPart = pathParts[pathParts.length - 1];
     try {
       const decoded = jwtDecodePage(lastPart);
       const kurikulumId = decoded?.kurikulumId;
+      const modulId = decoded?.modulId;
       const type = decoded?.type;
 
-      // TODO: Fetch questions from API
-      // fetchQuestions(kurikulumId, type);
+      const fetchQuestions = async () => {
+        try {
+          setLoading(true);
+          const response = await TrainingService.getMaterialDetail(modulId);
+          if (response.status) {
+            const material = response.data;
+            setMateriData({
+              id: material.material_id,
+              title: material.material_title,
+              type: type || "WAJIB",
+            });
 
-      // Mock data
-      setTimeout(() => {
-        setMateriData({
-          id: kurikulumId || 1,
-          title: "Pengenalan Koperasi",
-          type: type || "wajib",
-        });
+            if (material.quiz_questions && Array.isArray(material.quiz_questions)) {
+              setQuestions(material.quiz_questions);
+            } else {
+              setError("Materi ini belum memiliki soal kuis.");
+            }
+          }
+        } catch (err) {
+          setError("Gagal memuat soal kuis.");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-        setQuestions([
-          {
-            id: 1,
-            question: "Apa tujuan utama didirikannya koperasi?",
-            options: [
-              "Mencari keuntungan semata-mata",
-              "Meningkatkan kesejahteraan anggota",
-              "Dominasi pasar",
-              "Ekspansi bisnis",
-            ],
-            correctAnswer: 1,
-          },
-          {
-            id: 2,
-            question:
-              "Prinsip koperasi yang menekankan keanggotaan terbuka disebut?",
-            options: [
-              "Keanggotaan terbuka",
-              "Pengendalian demokratis",
-              "Partisipasi ekonomi anggota",
-              "Otonomi dan kemandirian",
-            ],
-            correctAnswer: 0,
-          },
-          {
-            id: 3,
-            question: "Badan hukum koperasi diatur dalam UU nomor berapa?",
-            options: [
-              "UU No 17 Tahun 2012",
-              "UU No 25 Tahun 1992",
-              "UU No 4 Tahun 2023",
-              "UU No 1 Tahun 2013",
-            ],
-            correctAnswer: 1,
-          },
-          {
-            id: 4,
-            question: "Simpanan wajib dalam koperasi bersifat?",
-            options: [
-              "Opsional",
-              "Wajib untuk semua anggota",
-              "Hanya untuk pengurus",
-              "Sementara waktu",
-            ],
-            correctAnswer: 1,
-          },
-          {
-            id: 5,
-            question: "SHU (Sisa Hasil Usaha) dibagikan berdasarkan?",
-            options: [
-              "Modal yang disetor",
-              "Jasa usaha dan modal",
-              "Lama keanggotaan",
-              "Status sosial",
-            ],
-            correctAnswer: 1,
-          },
-        ]);
-
-        setLoading(false);
-      }, 1000);
+      if (modulId) {
+        fetchQuestions();
+      }
     } catch (e) {
       console.error("Error decoding URL:", e);
-      setError("Invalid URL");
+      setError("URL tidak valid");
       setLoading(false);
     }
   }, []);
@@ -122,6 +79,7 @@ const Evaluasi = () => {
       ...prev,
       [questionId]: answerIndex,
     }));
+    setError(null);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -137,11 +95,10 @@ const Evaluasi = () => {
   }, [currentQuestion]);
 
   const handleSubmit = async () => {
-    // Check if all questions are answered
     const answeredCount = Object.keys(answers).length;
     if (answeredCount < questions.length) {
       setError(
-        `Harap jawab semua pertanyaan (${answeredCount}/${questions.length} terjawab)`,
+        `Belum selesai! Harap jawab semua pertanyaan (${answeredCount}/${questions.length} terjawab).`,
       );
       return;
     }
@@ -150,27 +107,23 @@ const Evaluasi = () => {
     setError(null);
 
     try {
-      // Calculate score
-      let correctCount = 0;
-      questions.forEach((q) => {
-        if (answers[q.id] === q.correctAnswer) {
-          correctCount++;
-        }
-      });
+      // Map answers to the format expected by backend
+      const formattedAnswers = questions.map(q => ({
+        question_id: q.id,
+        selected_option: answers[q.id],
+        is_correct: answers[q.id] === q.correctAnswer
+      }));
 
-      const finalScore = Math.round((correctCount / questions.length) * 100);
-      setScore(finalScore);
-      setPassed(finalScore >= 70);
+      const response = await TrainingService.submitEvaluation(materiData.id, formattedAnswers);
 
-      // TODO: Call API to submit evaluation
-      // await TrainingService.submitEvaluation(materiData.id, answers, finalScore);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setShowResult(true);
+      if (response.status) {
+        setScore(response.data.score);
+        setPassed(response.data.passed);
+        setShowResult(true);
+        window.scrollTo(0, 0);
+      }
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal mengirim evaluasi");
+      setError("Gagal mengirim jawaban. Silakan coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -190,7 +143,7 @@ const Evaluasi = () => {
     navigate(`/${token}`);
   }, [navigate]);
 
-  const handleBack = useCallback(() => {
+  const handleBackToDetail = useCallback(() => {
     const token = jwtEncode({
       page: "detailMateri",
       kurikulumId: materiData?.id,
@@ -201,73 +154,67 @@ const Evaluasi = () => {
 
   if (loading) {
     return (
-      <LayoutGlobal title="Evaluasi">
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Memuat soal evaluasi...</p>
-        </div>
-      </LayoutGlobal>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-white">
+        <Spinner animation="border" variant="primary" size="lg" />
+        <p className="mt-3 text-muted fw-medium">Menyiapkan kuis evaluasi...</p>
+      </div>
     );
   }
 
   if (showResult) {
     return (
-      <LayoutGlobal title="Hasil Evaluasi">
-        <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-          <div className="col-12 align-self-center">
-            <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-              <FaTrophy className="me-2" />
-              Hasil Evaluasi
-            </h3>
-          </div>
-        </div>
-
-        <Container className="mt-4">
-          <Row className="justify-content-center">
-            <Col lg={6} md={8}>
-              <Card className="shadow-lg border-0 text-center">
-                <Card.Body className="p-5">
-                  <div
-                    className={`mb-4 ${passed ? "text-success" : "text-danger"}`}
-                    style={{ fontSize: "80px" }}
-                  >
-                    {passed ? <FaTrophy /> : <span>×</span>}
-                  </div>
-                  <h4
-                    className={`fw-bold mb-3 ${passed ? "text-success" : "text-danger"}`}
-                  >
-                    {passed ? "Selamat! Anda Lulus" : "Maaf, Anda Belum Lulus"}
-                  </h4>
+      <div className="evaluasi-container pb-5">
+        <Container fluid className="mt-4 px-0">
+          <Row className="justify-content-center mx-0">
+            <Col lg={8} xl={7}>
+              <Card className="result-card shadow-lg border-0 text-center">
+                <header className={`result-premium-header ${passed ? "result-header-success" : "result-header-fail"}`}>
+                   <div className="quiz-glass-sheen" />
+                   <div className="quiz-decor-circle c1" />
+                   <div className="quiz-decor-circle c2" />
+                   
+                   <div style={{ position: 'relative', zIndex: 2 }}>
+                     <div className="mb-3">
+                        {passed ? <FaTrophy size={64} /> : <FaExclamationTriangle size={64} />}
+                     </div>
+                     <h2 className="fw-black mb-0 text-white">
+                       {passed ? "SELAMAT! ANDA LULUS" : "MAAF, BELUM LULUS"}
+                     </h2>
+                     <p className="opacity-75 mt-2 mb-0">Evaluasi: {materiData?.title}</p>
+                   </div>
+                </header>
+                <Card.Body className="p-4 p-md-5 pt-0">
                   <div className="mb-4">
-                    <h2 className="fw-bold mb-2">{score}%</h2>
-                    <p className="text-muted">
+                    <div className="score-circle">
+                      <span className="score-val" style={{ color: passed ? '#059669' : '#dc2626' }}>{score}</span>
+                      <span className="score-label">Skor Akhir</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-5 px-md-5">
+                    <p className="text-muted mb-0 lead-sm">
                       {passed
-                        ? "Anda telah menyelesaikan materi ini dengan baik"
-                        : "Nilai minimum untuk lulus adalah 70%"}
+                        ? `Luar biasa! Anda telah menyelesaikan seluruh materi dan evaluasi ini dengan hasil yang sangat memuaskan.`
+                        : `Jangan patah semangat! Nilai minimum untuk lulus adalah 70%. Silakan tinjau kembali materi pembelajaran dan coba lagi saat Anda sudah siap.`}
                     </p>
                   </div>
-                  <ProgressBar
-                    now={score}
-                    variant={passed ? "success" : "danger"}
-                    className="mb-4"
-                    style={{ height: "20px" }}
-                  />
-                  <div className="d-flex gap-2 justify-content-center">
+
+                  <div className="d-flex flex-column flex-md-row gap-3 justify-content-center px-md-5">
                     {!passed && (
                       <Button
-                        variant="outline-primary"
-                        className="px-4 py-2"
+                        variant="primary"
+                        className="py-3 px-5 fw-bold rounded-pill shadow-sm flex-grow-1"
                         onClick={handleRetry}
                       >
-                        Ulangi Evaluasi
+                        Ulangi Kuis
                       </Button>
                     )}
                     <Button
-                      variant="primary"
-                      className="px-4 py-2"
+                      variant={passed ? "primary" : "outline-secondary"}
+                      className="py-3 px-5 fw-bold rounded-pill flex-grow-1"
                       onClick={handleBackToDashboard}
                     >
-                      Kembali ke Dashboard
+                      Dashboard Training
                     </Button>
                   </div>
                 </Card.Body>
@@ -275,138 +222,129 @@ const Evaluasi = () => {
             </Col>
           </Row>
         </Container>
-      </LayoutGlobal>
+      </div>
     );
   }
 
-  return (
-    <LayoutGlobal title="Evaluasi">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            Evaluasi: {materiData?.title}
-          </h3>
-        </div>
-      </div>
+  const progress = Math.round(((currentQuestion + 1) / questions.length) * 100);
 
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={8} md={10}>
+  return (
+    <div className="evaluasi-container pb-5">
+      <Container fluid className="mt-4 px-0">
+        <Row className="mx-0">
+          <Col xs={12}>
             {error && (
-              <Alert variant="danger" className="mb-4">
-                {error}
+              <Alert variant="warning" className="mb-4 border-0 shadow-sm rounded-4 d-flex align-items-center gap-3">
+                <FaExclamationTriangle className="text-warning" size={20} />
+                <span className="fw-bold">{error}</span>
               </Alert>
             )}
 
-            <Card className="shadow-lg border-0">
+            <Card className="quiz-card border-0">
+              <div className="quiz-premium-header">
+                 <div className="quiz-glass-sheen" />
+                 <div className="quiz-decor-circle c1" />
+                 
+                 <div style={{ position: 'relative', zIndex: 2 }}>
+                   <div className="d-flex justify-content-between align-items-end mb-2">
+                      <div>
+                         <span className="text-info fw-bold small text-uppercase ls-1 opacity-75">
+                           Pertanyaan {currentQuestion + 1} dari {questions.length}
+                         </span>
+                         <h4 className="fw-black text-white mb-0 mt-1">{materiData?.title}</h4>
+                      </div>
+                      <div className="text-end">
+                         <span className="fw-black text-white h3 mb-0">{progress}%</span>
+                      </div>
+                   </div>
+                   <ProgressBar
+                      now={progress}
+                      variant="info"
+                      style={{ height: "8px", background: 'rgba(255,255,255,0.1)' }}
+                      className="rounded-pill border-0"
+                    />
+                 </div>
+              </div>
+
               <Card.Body className="p-4 p-md-5">
-                {/* Progress */}
-                <div className="mb-4">
-                  <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small">
-                      Pertanyaan {currentQuestion + 1} dari {questions.length}
-                    </span>
-                    <span className="small fw-bold">
-                      {Math.round(
-                        ((currentQuestion + 1) / questions.length) * 100,
-                      )}
-                      %
-                    </span>
-                  </div>
-                  <ProgressBar
-                    now={((currentQuestion + 1) / questions.length) * 100}
-                    variant="primary"
-                    style={{ height: "8px" }}
-                  />
-                </div>
-
-                {/* Question */}
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-4">
+                <div className="mb-5">
+                  <h4 className="question-text fw-bold mb-4">
                     {questions[currentQuestion]?.question}
-                  </h5>
-                  <div className="d-grid gap-3">
-                    {questions[currentQuestion]?.options.map(
-                      (option, index) => (
-                        <Form.Check
+                  </h4>
+                  <div className="quiz-options-list">
+                    {questions[currentQuestion]?.options.map((option, index) => {
+                      const isSelected = answers[questions[currentQuestion].id] === index;
+                      return (
+                        <div 
                           key={index}
-                          type="radio"
-                          id={`option-${index}`}
-                          name={`question-${questions[currentQuestion].id}`}
-                          label={option}
-                          checked={
-                            answers[questions[currentQuestion].id] === index
-                          }
-                          onChange={() =>
-                            handleAnswerChange(
-                              questions[currentQuestion].id,
-                              index,
-                            )
-                          }
-                          className="p-3 border rounded hover-bg-light cursor-pointer"
-                          style={{ cursor: "pointer" }}
-                        />
-                      ),
-                    )}
+                          className={`quiz-option-item ${isSelected ? 'selected' : ''}`}
+                          onClick={() => handleAnswerChange(questions[currentQuestion].id, index)}
+                        >
+                          <input
+                            type="radio"
+                            id={`option-${index}`}
+                            name={`question-${questions[currentQuestion].id}`}
+                            checked={isSelected}
+                            readOnly
+                          />
+                          <label className="quiz-option-label" htmlFor={`option-${index}`}>
+                            {option}
+                          </label>
+                          {isSelected && <FaCheckCircle className="text-primary ms-auto" />}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Navigation */}
-                <div className="d-flex justify-content-between mt-4 pt-3 border-top">
+                <div className="d-flex justify-content-between align-items-center gap-3 mt-4 pt-4 border-top">
                   <Button
-                    variant="light"
-                    className="px-4 py-2 fw-bold text-muted"
-                    onClick={
-                      currentQuestion === 0 ? handleBack : handlePrevious
-                    }
+                    variant="link"
+                    className="text-decoration-none text-muted fw-bold d-flex align-items-center gap-2 p-0"
+                    onClick={currentQuestion === 0 ? handleBackToDetail : handlePrevious}
                     disabled={submitting}
                   >
-                    {currentQuestion === 0 ? (
-                      <>
-                        <FaArrowLeft className="me-2" />
-                        Kembali
-                      </>
-                    ) : (
-                      "Sebelumnya"
-                    )}
+                    {currentQuestion === 0 ? <FaArrowLeft /> : <FaChevronLeft />}
+                    {currentQuestion === 0 ? "Batal" : "Sebelumnya"}
                   </Button>
-                  {currentQuestion === questions.length - 1 ? (
-                    <Button
-                      variant="primary"
-                      className="px-5 py-2 fw-bold shadow-sm"
-                      onClick={handleSubmit}
-                      disabled={submitting}
-                    >
-                      {submitting ? (
-                        <>
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            className="me-2"
-                          />
-                          Mengirim...
-                        </>
-                      ) : (
-                        "Kirim Jawaban"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      className="px-5 py-2 fw-bold shadow-sm"
-                      onClick={handleNext}
-                      disabled={submitting}
-                    >
-                      Selanjutnya
-                    </Button>
-                  )}
+
+                  <div className="d-flex gap-2">
+                    {currentQuestion === questions.length - 1 ? (
+                      <Button
+                        variant="success"
+                        className="px-5 py-2 fw-black rounded-pill shadow-md border-0"
+                        style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                      >
+                        {submitting ? (
+                          <>
+                            <Spinner animation="border" size="sm" className="me-2" />
+                            Mengirim...
+                          </>
+                        ) : (
+                          "SELESAIKAN KUIS"
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        className="px-4 py-2 fw-bold rounded-pill d-flex align-items-center gap-2 shadow-sm"
+                        onClick={handleNext}
+                        disabled={submitting}
+                      >
+                        <span>Selanjutnya</span>
+                        <FaChevronRight size={14} />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 };
 

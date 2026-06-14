@@ -26,11 +26,11 @@ export const initSocket = (token) => {
   });
 
   socket.on('connect', () => {
-    console.log('✅ Terhubung ke socket server');
+
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('❌ Terputus dari socket server:', reason);
+
   });
 
   socket.on('connect_error', (error) => {
@@ -63,7 +63,7 @@ export const disconnectSocket = () => {
 export const registerMember = (memberId) => {
   if (socket && memberId) {
     socket.emit('register', memberId);
-    console.log('👤 Member registered:', memberId);
+
   }
 };
 

@@ -11,18 +11,8 @@ const programRoutes = {
     ),
     isProtected: true,
   },
-  pinjamanDetailPage: {
-    component: lazy(
-      () => import("../../pages/program/pinjaman/PinjamanDetailPage"),
-    ),
-    isProtected: true,
-  },
-  pinjamanReceiptPage: {
-    component: lazy(
-      () => import("../../pages/program/pinjaman/PinjamanReceiptPage"),
-    ),
-    isProtected: true,
-  },
+
+
   arisanPage: {
     component: lazy(() => import("../../pages/program/arisan/ArisanPage")),
     isProtected: true,
@@ -40,12 +30,6 @@ const programRoutes = {
   formPengajuanArisan: {
     component: lazy(
       () => import("../../pages/program/arisan/FormPengajuanArisan"),
-    ),
-    isProtected: true,
-  },
-  arisanDetailPage: {
-    component: lazy(
-      () => import("../../pages/program/arisan/ArisanDetailPage"),
     ),
     isProtected: true,
   },

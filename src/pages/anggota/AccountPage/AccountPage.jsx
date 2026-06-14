@@ -142,7 +142,7 @@ export default function AccountPage() {
     const socket = getSocket();
     if (socket) {
       const handleProfileUpdate = (data) => {
-        console.log("👤 Profile update received via Socket:", data);
+
         const updatedProfile = profileService.mapBackendToFrontend(data);
         setUserProfile(updatedProfile);
         setFormData({

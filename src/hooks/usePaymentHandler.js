@@ -14,7 +14,7 @@ export const usePaymentHandler = () => {
   useEffect(() => {
     // Handle tutup Snap popup
     const handleCloseSnap = () => {
-      console.log('🔄 Closing Snap popup...');
+
       // Coba tutup Snap popup jika ada
       if (window.snap) {
         window.snap.hide();
@@ -31,7 +31,7 @@ export const usePaymentHandler = () => {
 
     // Handle payment success event
     const handlePaymentSuccessful = (event) => {
-      console.log('💰 Payment successful event received:', event.detail);
+
       setPaymentSuccess(true);
       setPaymentData(event.detail);
       

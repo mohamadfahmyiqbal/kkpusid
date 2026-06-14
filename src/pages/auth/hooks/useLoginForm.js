@@ -27,7 +27,7 @@ export const useLoginForm = () => {
       // Simpan token dan data pengguna
       localStorage.setItem("token", response.data.data.token);
       localStorage.setItem("userData", JSON.stringify(response.data.data.user));
-      console.log("Login success:", response);
+
       setSuccess("Login berhasil! Mengalihkan ke dashboard...");
       // Trigger event untuk sync ProfileContext
       window.dispatchEvent(new Event("storage_sync"));

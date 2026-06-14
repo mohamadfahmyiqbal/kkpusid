@@ -13,7 +13,7 @@ export default function useRegistrationStatus() {
 
       const response = await UAnggota.getRegistrationStatus();
       const result = response.data;
-      console.log(result);
+
 
       // Validasi berdasarkan flag pendaftaran selesai dari API
       if (

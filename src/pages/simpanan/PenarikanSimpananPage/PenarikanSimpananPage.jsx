@@ -30,9 +30,9 @@ const PenarikanSimpananPage = ({ decodedToken }) => {
     );
   };
 
-  console.log("User Data for Withdrawal:", userData);
-  console.log("Balance:", balance);
-  console.log("Category:", effectiveCategory);
+
+
+
 
   return (
     <Container fluid className="p-0 bg-light min-vh-100">

@@ -1,11 +1,11 @@
 // 📁 src/pages/global/BillingPage/components/BillList.jsx
-import React, { useCallback, useMemo } from "react";
-import { Card, ListGroup, Form, Button, Spinner } from "react-bootstrap";
+import React, { useCallback, useMemo, useState } from "react";
+import { Card, ListGroup, Form, Button, Spinner, Pagination } from "react-bootstrap";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
 
 const BillList = ({
   bills,
-  selectedBills,
+  selectedBills = [],
   setSelectedBills,
   totalAmount,
   handleNavigateToInvoice,
@@ -17,7 +17,21 @@ const BillList = ({
     () => (Array.isArray(bills) ? bills : []),
     [bills],
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(safeBills.length / itemsPerPage);
+
+  const currentBills = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return safeBills.slice(startIndex, startIndex + itemsPerPage);
+  }, [safeBills, currentPage]);
+
   const allSelected = safeBills.length > 0 && selectedBills.length === safeBills.length;
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const handleToggleBill = useCallback(
     (billId) => {
@@ -75,9 +89,9 @@ const BillList = ({
       <Card.Body className="p-0">
         {safeBills.length > 0 ? (
           <>
-            <div className="bp-bill-scroll">
+            <div className="bp-bill-scroll" style={{ maxHeight: "350px", overflowY: "auto" }}>
               <ListGroup variant="flush">
-                {safeBills.map((bill) => {
+                {currentBills.map((bill) => {
                   const isDisabled = disabledBills.includes(bill.bill_item_id);
                   const isChecked = selectedBills.includes(bill.bill_item_id);
                   return (
@@ -131,6 +145,30 @@ const BillList = ({
               </ListGroup>
             </div>
 
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-3 mb-2">
+                <Pagination size="sm" className="mb-0">
+                  <Pagination.Prev
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  />
+                  {[...Array(totalPages)].map((_, idx) => (
+                    <Pagination.Item
+                      key={idx + 1}
+                      active={idx + 1 === currentPage}
+                      onClick={() => handlePageChange(idx + 1)}
+                    >
+                      {idx + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  />
+                </Pagination>
+              </div>
+            )}
+
             {/* Footer Total + Bayar */}
             <div className="p-4 bg-white border-top shadow-sm">
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -138,7 +176,7 @@ const BillList = ({
                   Total Terpilih ({selectedBills.length}):
                 </span>
                 <span className="fw-bold text-primary" style={{ fontSize: "18px" }}>
-                  Rp {totalAmount.toLocaleString("id-ID")}
+                  Rp {(totalAmount || 0).toLocaleString("id-ID")}
                 </span>
               </div>
               <Button

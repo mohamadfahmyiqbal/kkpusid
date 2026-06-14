@@ -1,8 +1,8 @@
 // components/program/ProgramAccountCard.jsx
 
 import React from "react";
-import { Card, Row, Col, Button } from "react-bootstrap";
-import { FaMoneyBillWave, FaFileAlt } from "react-icons/fa";
+import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
 
 const ProgramAccountCard = ({
   accountData,
@@ -14,10 +14,10 @@ const ProgramAccountCard = ({
       <Card className="premium-card premium-card-active border-0 shadow-lg font-outfit text-white">
         <div className="glass-sheen" />
         <Card.Body className="p-5 text-center relative z-2">
-          <div className="spinner-border text-teal mb-3" role="status">
+          <div className="spinner-border text-teal mb-3" role="status"> 
             <span className="visually-hidden">Memuat...</span>
           </div>
-          <p className="mb-0 text-white-50">Memuat data rekening...</p>
+          <p className="mb-0 text-white-50">Memuat data rekening...</p> 
         </Card.Body>
       </Card>
     );
@@ -29,12 +29,12 @@ const ProgramAccountCard = ({
   return (
     <Card className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg">
       <div className="glass-sheen" />
-      <Card.Body className="p-4 relative" style={{ zIndex: 2 }}>
+      <Card.Body className="p-4 relative" style={{ zIndex: 2 }}>        
         {/* Card Top */}
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect">
-            <span className="fw-bold tracking-wider card-type-label">
-              {isArisan ? "INFORMASI ARISAN" : "INFORMASI PINJAMAN"}
+            <span className="fw-bold tracking-wider card-type-label">   
+              {isArisan ? "INFORMASI ARISAN" : "INFORMASI PINJAMAN"}    
             </span>
           </div>
           <span className="premium-status-badge">
@@ -60,7 +60,7 @@ const ProgramAccountCard = ({
           </div>
           <div className="col-4">
             <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">
-              {isArisan ? "STATUS/NO. PESERTA" : "NAMA ANGGOTA"}
+              {isArisan ? "STATUS/NO. PESERTA" : "NAMA ANGGOTA"}        
             </div>
             <div className="fw-bold small text-white-90">{isArisan ? accountData?.akad : accountData?.nama}</div>
           </div>
@@ -73,8 +73,8 @@ const ProgramAccountCard = ({
         {/* Action Buttons */}
         <div className="d-flex gap-2">
           {!isPending && (
-            <Button 
-              variant="light" 
+            <Button
+              variant="light"
               className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
               onClick={handleSetoran}
             >
@@ -83,8 +83,8 @@ const ProgramAccountCard = ({
           )}
 
           {isPending && (
-            <Button 
-              variant="light" 
+            <Button
+              variant="light"
               className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-warning d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
               onClick={handlePengajuan}
             >
@@ -94,6 +94,7 @@ const ProgramAccountCard = ({
         </div>
       </Card.Body>
     </Card>
+
   );
 };
 

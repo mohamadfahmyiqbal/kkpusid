@@ -41,18 +41,22 @@ function RingkasanTab({ bills, history, onGoToPending }) {
       </div>
 
       {/* Recent history preview */}
-      {safeHistory.slice(0, 3).map((item, idx) => (
-        <div className="bp-ringkasan-history-item" key={item.id || idx}>
-          <div className="bp-ringkasan-history-icon">
-            <FaCheckCircle color="#10b981" size={14} />
+      {safeHistory.slice(0, 3).map((item, idx) => {
+        const dateObj = item.bill?.updatedAt || item.bill?.updated_at || item.updated_at || item.updatedAt || item.created_at || item.createdAt;
+        const description = item.description || item.type?.type_name || "Transaksi";
+        return (
+          <div className="bp-ringkasan-history-item" key={item.bill_item_id || item.id || idx}>
+            <div className="bp-ringkasan-history-icon">
+              <FaCheckCircle color="#10b981" size={14} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="bp-ringkasan-history-desc">{description}</div>
+              <div className="bp-ringkasan-history-date">{formatDate(dateObj)}</div>
+            </div>
+            <div className="bp-ringkasan-history-amount">{formatIDR(item.amount)}</div>
           </div>
-          <div style={{ flex: 1 }}>
-            <div className="bp-ringkasan-history-desc">{item.description || "Transaksi"}</div>
-            <div className="bp-ringkasan-history-date">{formatDate(item.createdAt)}</div>
-          </div>
-          <div className="bp-ringkasan-history-amount">{formatIDR(item.amount)}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

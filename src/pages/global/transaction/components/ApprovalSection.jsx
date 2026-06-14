@@ -32,19 +32,19 @@ const ApprovalSection = ({ approvalStatus }) => {
           <ApprovalPlaceholder
             role="Pengawas"
             isApproved={approvalStatus.isApproved || approvalStatus.pengawasDone}
-            isRejected={approvalStatus.isRejected}
+            isRejected={approvalStatus.pengawasRejected || (approvalStatus.isRejected && !approvalStatus.pengawasDone && !approvalStatus.ketuaDone && !approvalStatus.bendaharaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
           />
           <ApprovalPlaceholder
             role="Ketua"
             isApproved={approvalStatus.isApproved || approvalStatus.ketuaDone}
-            isRejected={approvalStatus.isRejected}
+            isRejected={approvalStatus.ketuaRejected || (approvalStatus.isRejected && approvalStatus.pengawasDone && !approvalStatus.ketuaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
           />
           <ApprovalPlaceholder
             role="Bendahara"
             isApproved={approvalStatus.isApproved || approvalStatus.bendaharaDone}
-            isRejected={approvalStatus.isRejected}
+            isRejected={approvalStatus.bendaharaRejected || (approvalStatus.isRejected && approvalStatus.pengawasDone && approvalStatus.ketuaDone && !approvalStatus.bendaharaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
           />
         </div>

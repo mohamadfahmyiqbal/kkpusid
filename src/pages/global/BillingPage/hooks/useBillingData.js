@@ -13,6 +13,7 @@ export const useBillingData = (decodedToken) => {
     isSukarela,
     displayName,
     financingId,
+    downPayment,
   } = useMemo(() => {
     const category =
       decodedToken?.category || decodedToken?.setoranType || decodedToken?.product || null;
@@ -21,6 +22,7 @@ export const useBillingData = (decodedToken) => {
         decodedToken?.registration_id || decodedToken?.registrationId || null,
       financingId:
         decodedToken?.financing_id || decodedToken?.financingId || null,
+      downPayment: Number(decodedToken?.downPayment) || 0,
       orderId:
         decodedToken?.order_id || decodedToken?.orderId || null,
       categoryName: category,
@@ -45,11 +47,20 @@ export const useBillingData = (decodedToken) => {
   const [tabunganDetail, setTabunganDetail] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
 
+  // --- HELPER FUNCTION ---
+  const hasCategory = useCallback((bill, checkFn) => {
+    if (bill.category_code) return checkFn(bill.category_code);
+    if (bill.items && Array.isArray(bill.items)) {
+      return bill.items.some(item => item.category_code && checkFn(item.category_code));
+    }
+    return false;
+  }, []);
+
   // --- FETCH DATA DENGAN SORTING ---
   const loadInitialData = useCallback(async () => {
     setLoadingData(true);
     try {
-      const fetchFilter = categoryName === "TABUNGAN_DEPOSIT" 
+      const fetchFilter = (categoryName === "TABUNGAN_DEPOSIT" || categoryName === "FINANCING")
         ? { ...filterParams, category: undefined } 
         : filterParams;
 
@@ -73,16 +84,8 @@ export const useBillingData = (decodedToken) => {
 
       const filterContextBills = (data) => {
         let rawData = Array.isArray(data) ? data : [];
-        
-        const hasCategory = (bill, checkFn) => {
-          if (bill.category_code) return checkFn(bill.category_code);
-          if (bill.items && Array.isArray(bill.items)) {
-            return bill.items.some(item => item.category_code && checkFn(item.category_code));
-          }
-          return false;
-        };
 
-        if (financingId) {
+        if (financingId || categoryName === "FINANCING") {
           rawData = rawData.filter((bill) =>
             hasCategory(bill, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "TRANSACTION_INSTALLMENT")
           );
@@ -137,9 +140,37 @@ export const useBillingData = (decodedToken) => {
       }
 
       if (resHistory.data?.status) {
-        setHistory(filterContextBills(resHistory.data.data));
+        const filteredHistory = filterContextBills(resHistory.data.data);
+        
+        // Inject Down Payment into history if not already present
+        if (downPayment > 0) {
+          const hasDP = filteredHistory.some(h => hasCategory(h, code => code === "TRANSACTION_DOWN_PAYMENT" || code === "DP_PEMBIAYAAN"));
+          if (!hasDP) {
+            filteredHistory.unshift({
+              id: "dp-" + (financingId || Date.now()),
+              description: "Uang Muka / Down Payment",
+              amount: downPayment,
+              status: "PAID",
+              category_code: "TRANSACTION_DOWN_PAYMENT",
+              updated_at: new Date().toISOString()
+            });
+          }
+        }
+        
+        setHistory(filteredHistory);
       } else {
-        setHistory([]);
+        const fallbackHistory = [];
+        if (downPayment > 0) {
+          fallbackHistory.push({
+            id: "dp-" + (financingId || Date.now()),
+            description: "Uang Muka / Down Payment",
+            amount: downPayment,
+            status: "PAID",
+            category_code: "TRANSACTION_DOWN_PAYMENT",
+            updated_at: new Date().toISOString()
+          });
+        }
+        setHistory(fallbackHistory);
       }
     } catch (err) {
       console.error("Gagal memuat data billing:", err);
@@ -148,7 +179,18 @@ export const useBillingData = (decodedToken) => {
     } finally {
       setLoadingData(false);
     }
-  }, [filterParams, isSukarela, categoryName, financingId]);
+  }, [
+    filterParams, 
+    isSukarela, 
+    categoryName, 
+    financingId, 
+    decodedToken?.productName,
+    decodedToken?.tabungan_id,
+    decodedToken?.tabunganId,
+    decodedToken?.order_id,
+    decodedToken?.orderId,
+    hasCategory
+  ]);
 
   useEffect(() => {
     loadInitialData();

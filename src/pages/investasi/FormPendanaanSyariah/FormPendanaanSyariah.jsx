@@ -148,14 +148,18 @@ const FormPendanaanSyariah = () => {
     setSubmitError(null);
 
     try {
+      const targetDanaNum = parseInt(String(formData.targetDana).replace(/\D/g, ""), 10);
+      const tenureNum = parseInt(formData.periodeModal, 10);
+      const monthlyInstallment = Math.round(targetDanaNum / tenureNum);
+
       const payload = {
         category: "Pendanaan Syariah UMKM",
         item_name: formData.tujuanPendanaan,
-        amount_requested: parseInt(String(formData.targetDana).replace(/\D/g, "")),
+        amount_requested: targetDanaNum,
         down_payment: 0,
-        principal_amount: parseInt(String(formData.targetDana).replace(/\D/g, "")),
-        tenure: formData.periodeModal,
-        monthly_installment: 0,
+        principal_amount: targetDanaNum,
+        tenure: tenureNum,
+        monthly_installment: monthlyInstallment,
         metode_pencairan: "Non Tunai",
         nama_nasabah: formData.pemilikUsaha,
         no_rekening: "0000000000",
@@ -170,7 +174,7 @@ const FormPendanaanSyariah = () => {
           id: financingId,
           amount: payload.principal_amount,
           item_price: payload.amount_requested,
-          monthly_installment: 0,
+          monthly_installment: monthlyInstallment,
           cooperation_months: payload.tenure,
           purpose: payload.item_name,
           item_name: payload.item_name,
@@ -244,37 +248,36 @@ const FormPendanaanSyariah = () => {
   }, [formData]);
 
   return (
-    <div className="investasi-wrapper pb-5 bg-light min-vh-100">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0 bg-white">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaFileAlt className="me-2 text-primary" />
-            Form Pengajuan Pendanaan
-          </h3>
-          <p className="text-muted mt-2 mb-0">Isi data usaha Anda secara lengkap untuk proses verifikasi pendanaan UMKM.</p>
-        </div>
-      </div>
-
-      <Container fluid className="px-4">
+    <div className="pb-5">
+      <Container fluid className="px-3 px-md-4 mt-4">
         <Row className="justify-content-center">
-          <Col lg={12}>
+          <Col xl={10} className="mx-auto">
             {/* Progress Bar */}
-            <Card className="shadow-sm border-0 mb-4 rounded-4">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="text-muted fw-semibold">Kelengkapan Formulir</span>
-                  <span className="fw-bold text-primary px-3 py-1 bg-light rounded-pill">{formProgress}%</span>
+            <Card className="shadow-sm border-0 mb-4 rounded-4" style={{ position: 'sticky', top: '80px', zIndex: 10 }}>
+              <Card.Body className="px-4 py-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Kelengkapan Formulir</span>
+                  <span className={`fw-bold px-3 py-1 rounded-pill small ${formProgress === 100 ? 'bg-success text-white' : 'bg-primary bg-opacity-10 text-primary'}`}>
+                    {formProgress}%
+                  </span>
                 </div>
                 <ProgressBar
                   now={formProgress}
                   variant={formProgress === 100 ? "success" : "primary"}
-                  style={{ height: "10px", borderRadius: "10px" }}
-                  className="bg-light"
+                  style={{ height: "8px", borderRadius: "10px" }}
+                  className="bg-light shadow-sm"
                 />
               </Card.Body>
             </Card>
 
             <Card className="shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+              {/* Decorative Header */}
+              <div 
+                style={{ 
+                  height: '8px', 
+                  background: 'linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)' 
+                }} 
+              />
               <Card.Body className="p-4 p-md-5">
                 {submitError && (
                   <Alert variant="danger" className="mb-4 border-0 shadow-sm rounded-3">
@@ -285,9 +288,10 @@ const FormPendanaanSyariah = () => {
                 <Form onSubmit={handleSubmit} noValidate>
                   <Row>
                     <Col md={12} className="mb-4">
-                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
-                        1. Informasi Usaha
-                      </h5>
+                      <div className="d-flex align-items-center mb-4">
+                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3 shadow-sm" style={{ width: '36px', height: '36px' }}>1</div>
+                        <h4 className="fw-bold mb-0 text-dark">Informasi Usaha</h4>
+                      </div>
                     </Col>
 
                     <Col md={12} className="mb-4">
@@ -399,9 +403,11 @@ const FormPendanaanSyariah = () => {
 
                     {/* Informasi Pendanaan */}
                     <Col md={12} className="mb-4 mt-5">
-                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
-                        2. Rencana Pendanaan
-                      </h5>
+                      <hr className="my-5 opacity-10" />
+                      <div className="d-flex align-items-center mb-4">
+                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3 shadow-sm" style={{ width: '36px', height: '36px' }}>2</div>
+                        <h4 className="fw-bold mb-0 text-dark">Rencana Pendanaan</h4>
+                      </div>
                     </Col>
 
                     <Col md={12} className="mb-4">
@@ -518,9 +524,11 @@ const FormPendanaanSyariah = () => {
 
                     {/* Dokumen */}
                     <Col md={12} className="mb-4 mt-5">
-                      <h5 className="fw-bold mb-3 pb-2 border-bottom text-dark">
-                        3. Dokumen Legalitas & Pendukung
-                      </h5>
+                      <hr className="my-5 opacity-10" />
+                      <div className="d-flex align-items-center mb-4">
+                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3 shadow-sm" style={{ width: '36px', height: '36px' }}>3</div>
+                        <h4 className="fw-bold mb-0 text-dark">Dokumen Legalitas & Pendukung</h4>
+                      </div>
                     </Col>
 
                     <Col md={6} className="mb-4">
@@ -614,7 +622,7 @@ const FormPendanaanSyariah = () => {
                   <div className="d-flex flex-column flex-md-row justify-content-between mt-5 pt-4 border-top">
                     <Button
                       variant="light"
-                      className="px-5 py-3 fw-bold text-muted mb-3 mb-md-0 rounded-pill shadow-sm"
+                      className="px-5 py-3 fw-bold text-muted mb-3 mb-md-0 rounded-pill shadow-sm transition-transform hover-scale"
                       onClick={handleBack}
                       disabled={loading}
                     >
@@ -623,8 +631,9 @@ const FormPendanaanSyariah = () => {
                     <Button
                       variant="primary"
                       type="submit"
-                      className="px-5 py-3 fw-bold shadow rounded-pill"
+                      className="px-5 py-3 fw-bold shadow-lg rounded-pill transition-transform hover-scale d-flex align-items-center justify-content-center"
                       disabled={loading}
+                      style={{ background: 'linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)', border: 'none' }}
                     >
                       {loading ? (
                         <>
@@ -637,7 +646,7 @@ const FormPendanaanSyariah = () => {
                         </>
                       ) : (
                         <>
-                          <FaUpload className="me-2" />
+                          <FaUpload className="me-2 mb-1" />
                           Kirim Pengajuan Pendanaan
                         </>
                       )}

@@ -17,7 +17,7 @@ const iconMap = {
 const ServicesSection = ({ services = [] }) => {
   const handleServiceClick = (serviceTitle) => {
     // Navigate to service detail page or show modal
-    console.log(`Service clicked: ${serviceTitle}`);
+
     // For now, scroll to contact section
     const contactSection = document.getElementById("kontak");
     if (contactSection) {

@@ -1,7 +1,8 @@
 // components/program/ProgramStatusCard.jsx
 
 import React from "react";
-import { Card, Button } from "react-bootstrap";
+import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
 import { FaFileAlt, FaCheckCircle, FaShieldAlt, FaPercent } from "react-icons/fa";
 import { 
   MdCached,
@@ -37,7 +38,7 @@ const ProgramStatusCard = ({
         <Card.Body className="relative" style={{ zIndex: 2 }}>
           {/* Pulsing Radar Container */}
           <div className="program-radar-pulse mb-4">
-            <div className="bg-warning bg-opacity-15 p-4 rounded-circle text-warning mx-auto" style={{ width: "max-content" }}>
+            <div className="bg-warning bg-opacity-15 p-4 rounded-circle text-white mx-auto" style={{ width: "max-content" }}>
               <MdCached size={48} className="animate-spin-slow" />
             </div>
           </div>

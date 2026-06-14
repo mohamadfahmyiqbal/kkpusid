@@ -81,8 +81,8 @@ const TransactionDetailPage = ({ decodedToken }) => {
   );
 
   useEffect(() => {
-    console.log('[TxDetail] decodedToken:', decodedToken);
-    console.log('[TxDetail] isSukukOrder:', isSukukOrder, '| transactionId:', transactionId);
+
+
     if (decodedToken?.data) {
       setDetail(decodedToken.data);
       setLoading(false);
@@ -96,6 +96,20 @@ const TransactionDetailPage = ({ decodedToken }) => {
   }, [fetchDetail, decodedToken, transactionId]);
 
   const handleBack = () => {
+    const isWithdrawal = !isFinancing && !isTabungan && !isSukukOrder;
+
+    if (isFinancing && approvalStatus?.bendaharaDone && !approvalStatus?.isRejected) {
+      const receiptToken = jwtEncode({ page: "receiptPage", financingId: transactionId });
+      navigate(`/${receiptToken}`);
+      return;
+    }
+
+    if (isWithdrawal && approvalStatus?.bendaharaDone && !approvalStatus?.isRejected) {
+      const receiptToken = jwtEncode({ page: "receiptPage", withdrawalId: transactionId });
+      navigate(`/${receiptToken}`);
+      return;
+    }
+
     const backToken = jwtEncode({ page: returnPage });
     navigate(`/${backToken}`);
   };
@@ -106,7 +120,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
     const handleUpdate = (data) => {
       const incomingId = data.entityId || data.financing_id || data.withdrawal_id || data.id;
       if (String(incomingId) === String(transactionId)) {
-        console.log("⚡ Refreshing detail due to socket update");
+
         fetchDetail(false);
       }
     };
@@ -131,9 +145,9 @@ const TransactionDetailPage = ({ decodedToken }) => {
     
     // Status normalization
     const status = detail.status?.toUpperCase();
-    const isApproved = status === "APPROVED" || status === "SUCCESS" || status === "PAID" || status === "COMPLETED";
+    const isApproved = status === "APPROVED" || status === "SUCCESS" || status === "PAID" || status === "COMPLETED" || status === "DISETUJUI";
     const isReadyToPay = status === "READY_TO_PAY" || status === "WAITING_PAYMENT";
-    const isRejected = status === "REJECTED" || detail.is_rejected;
+    const isRejected = status === "REJECTED" || status === "DITOLAK" || detail.is_rejected;
 
     // Support for both flat detail and nested approval_status
     const flags = detail.approval_status || detail;
@@ -144,10 +158,28 @@ const TransactionDetailPage = ({ decodedToken }) => {
     // Logic: If all 3 steps are done, it's effectively approved even if status hasn't transitioned yet
     const allStepsDone = pengawasDone && ketuaDone && bendaharaDone && !isRejected;
 
+    // If rejected, figure out who rejected it
+    let pengawasRejected = false;
+    let ketuaRejected = false;
+    let bendaharaRejected = false;
+
+    if (isRejected) {
+      if (!pengawasDone) {
+        pengawasRejected = true;
+      } else if (!ketuaDone) {
+        ketuaRejected = true;
+      } else {
+        bendaharaRejected = true;
+      }
+    }
+
     return {
       pengawasDone,
       ketuaDone,
       bendaharaDone,
+      pengawasRejected,
+      ketuaRejected,
+      bendaharaRejected,
       isRejected,
       isReadyToPay: isReadyToPay || (allStepsDone && !isApproved && !isTabungan && !isFinancing), // Only auto-ready for non-fin/tab (like withdrawal)
       isApproved: isApproved || (allStepsDone && (isTabungan || isFinancing)),

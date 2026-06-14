@@ -33,6 +33,10 @@ const globalRoutes = {
     component: lazy(() => import("../../pages/global/transaction/TransactionDetailPage")),
     isProtected: true,
   },
+  receiptPage: {
+    component: lazy(() => import("../../pages/global/ReceiptPage/ReceiptPage")),
+    isProtected: true,
+  },
 };
 
 export default globalRoutes;

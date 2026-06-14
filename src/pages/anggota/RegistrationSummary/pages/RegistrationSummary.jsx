@@ -78,17 +78,7 @@ export default function RegistrationSummary({
 
   const handleNavigateToInvoice = useCallback(() => {
     // Menghapus pengecekan ketat bill_id karena sistem menggunakan BillItems
-    console.log({
-      page: "billingPage",
-      registration_id: registration_id,
-      billId: bill_id,
-      category: "MEMBER_REGISTRATION",
-      filter: {
-        registration_id: registration_id,
-      },
-      displayName: "Pendaftaran Anggota",
-      return: "registrationPage",
-    });
+    
 
     const token = jwtEncode({
       page: "billingPage",
@@ -255,12 +245,14 @@ export default function RegistrationSummary({
               <ApprovalPlaceholder
                 role="Pengawas"
                 isApproved={approvalStatus.pengawasDone}
+                isRejected={approvalStatus.pengawasRejected}
               />
             </Col>
             <Col xs={5} md={4} className="text-center">
               <ApprovalPlaceholder
                 role="Ketua"
                 isApproved={approvalStatus.ketuaDone}
+                isRejected={approvalStatus.ketuaRejected}
               />
             </Col>
           </Row>
@@ -271,15 +263,17 @@ export default function RegistrationSummary({
           <div className="p-2 rounded-pill bg-light d-inline-block px-4 border border-light shadow-sm">
             <span className="small fw-bold text-muted">POSISI BERKAS: </span>
             <span className="small fw-bold text-primary">
-              {final_status === "APPROVED"
+              {final_status === "APPROVED" || final_status === "DISETUJUI"
                 ? bill_id
                   ? "MENUNGGU PEMBAYARAN"
                   : "APPROVED"
-                : approvalStatus.pengawasDone && !approvalStatus.ketuaDone
-                  ? "DI APPROVAL KETUA"
-                  : !approvalStatus.pengawasDone
-                    ? "DI VERIFIKASI PENGAWAS"
-                    : final_status?.toUpperCase() || "MENUNGGU ANTRIAN"}
+                : approvalStatus.isRejected
+                  ? "DITOLAK"
+                  : approvalStatus.pengawasDone && !approvalStatus.ketuaDone
+                    ? "DI APPROVAL KETUA"
+                    : !approvalStatus.pengawasDone
+                      ? "DI VERIFIKASI PENGAWAS"
+                      : final_status?.toUpperCase() || "MENUNGGU ANTRIAN"}
             </span>
           </div>
         </div>

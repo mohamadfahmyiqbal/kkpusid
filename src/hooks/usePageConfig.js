@@ -252,6 +252,46 @@ export const usePageConfig = (propPageName, title) => {
           { label: decodedToken?.financingId ? "Detail Pembiayaan" : decodedToken?.tabunganId ? "Detail Tabungan" : "Detail Penarikan" },
         ],
       },
+      detailMateri: {
+        title: "Detail Materi Training",
+        subtitle: "Pelajari modul dan kerjakan kuis untuk meningkatkan progress Anda",
+        icon: "FaGraduationCap",
+        breadcrumbs: [
+          { label: "Beranda", path: dashboardPath },
+          { label: "Training", path: `/${jwtEncode({ page: "trainingPage" })}` },
+          { label: "Detail Materi" },
+        ],
+      },
+      bacaMateri: {
+        title: "Baca Materi",
+        subtitle: "Fokus pada materi pembelajaran untuk persiapan kuis",
+        icon: "FaBookOpen",
+        breadcrumbs: [
+          { label: "Beranda", path: dashboardPath },
+          { label: "Training", path: `/${jwtEncode({ page: "trainingPage" })}` },
+          { label: "Baca Materi" },
+        ],
+      },
+      evaluasi: {
+        title: "Evaluasi Training",
+        subtitle: "Uji pemahaman Anda terhadap materi yang telah dipelajari",
+        icon: "FaTrophy",
+        breadcrumbs: [
+          { label: "Beranda", path: dashboardPath },
+          { label: "Training", path: `/${jwtEncode({ page: "trainingPage" })}` },
+          { label: "Evaluasi" },
+        ],
+      },
+      ranking: {
+        title: "Papan Peringkat",
+        subtitle: "Lihat prestasi Anda dibandingkan dengan peserta lainnya",
+        icon: "FaTrophy",
+        breadcrumbs: [
+          { label: "Beranda", path: dashboardPath },
+          { label: "Training", path: `/${jwtEncode({ page: "trainingPage" })}` },
+          { label: "Papan Peringkat" },
+        ],
+      },
     };
 
     return (

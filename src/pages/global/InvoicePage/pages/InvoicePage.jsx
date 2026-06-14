@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Container, Spinner, Alert, Button } from "react-bootstrap";
+import { Container, Spinner, Alert, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaExclamationTriangle, FaArrowLeft } from "react-icons/fa";
 
@@ -37,13 +37,15 @@ const InvoicePage = () => {
     refreshData,
     status,
     product,
+    productName,
     id,
+    setDynamicBillId,
   } = useInvoiceData();
 
   // Listener untuk menutup Snap popup dari socket notification
   useEffect(() => {
     const handlePaymentComplete = () => {
-      console.log("🔔 InvoicePage: Payment completion event received");
+
       
       // Beri sedikit jeda agar backend selesai memproses ledger
       setTimeout(async () => {
@@ -81,7 +83,7 @@ const InvoicePage = () => {
     }
 
     if (isPaid && category === "FINANCING") {
-      navigate(`/${jwtEncode({ page: "billingPage", category: "FINANCING", return: "transaksiPage" })}`);
+      navigate(`/${jwtEncode({ page: "billingPage", category: "FINANCING", financingId: financingId, productName: productName || product, return: "transaksiPage" })}`);
       return;
     }
 
@@ -95,6 +97,8 @@ const InvoicePage = () => {
         page: "billingPage",
         registrationId: registrationId,
         category: categoryName,
+        financingId: financingId,
+        productName: productName || product,
         return: originalReturn || "dashboard",
       });
       navigate(`/${billingToken}`);
@@ -161,12 +165,17 @@ const InvoicePage = () => {
 
       if (response.data?.status) {
         clearTimeout(safetyTimeout); // Batalkan safety timeout karena transaksi berhasil dibuat
+        
+        if (response.data.data.billId) {
+          setDynamicBillId(response.data.data.billId);
+        }
+        
         startPolling();
 
         window.snap.pay(response.data.data.snapToken, {
           onSuccess: async (result) => {
             clearTimeout(safetyTimeout);
-            console.log("💰 Midtrans onSuccess:", result);
+
             setIsLocalPaid(true); // Set local paid status immediately for instant success UI
             
             // Lakukan sinkronisasi manual ke backend karena webhook mungkin gagal (terutama di localhost)
@@ -189,14 +198,14 @@ const InvoicePage = () => {
           },
           onPending: (result) => {
             clearTimeout(safetyTimeout);
-            console.log("⏳ Midtrans onPending:", result);
+
             startPolling(); // Start polling to watch for status changes
             refreshData();
             setIsProcessing(false);
           },
           onClose: () => {
             clearTimeout(safetyTimeout);
-            console.log("🚪 Midtrans onClose");
+
             setIsProcessing(false);
             refreshData();
           },
@@ -267,9 +276,20 @@ const InvoicePage = () => {
   }
 
   return (
-    <Container className="py-4 py-md-5" style={{ maxWidth: "800px" }}>
+    <Container fluid className="py-3 px-0">
       <InvoiceHeader onBack={handleNavigateBack} onPrint={() => window.print()} />
       
+      <div className="d-flex justify-content-end mb-3 px-3 d-print-none">
+        <h6 className="mb-0 fw-bold me-2 align-self-center">Status:</h6>
+        <Badge 
+          bg={isPaid ? "success" : "warning"} 
+          text={isPaid ? "white" : "dark"}
+          className="px-3 py-2 fs-6 rounded-pill shadow-sm"
+        >
+          {isPaid ? "LUNAS / PAID" : "BELUM DIBAYAR"}
+        </Badge>
+      </div>
+
       <InvoiceCard 
         billData={billData} 
         totalAmount={totalAmount} 

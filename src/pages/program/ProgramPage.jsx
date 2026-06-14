@@ -7,7 +7,8 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Alert, Button } from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
 import { useNavigate } from "react-router-dom";
 import { 
   MdAccountBalance, 
@@ -192,7 +193,7 @@ export default function ProgramPage() {
 
   const handlePengajuan = useCallback(() => {
     if (activeData?.isPending && activeData?.financingId) {
-      const detailPage = activeTab === "arisan" ? "arisanDetailPage" : "pinjamanDetailPage";
+      const detailPage = "transactionDetailPage";
       navigate(`/${jwtEncode({ page: detailPage, financingId: activeData.financingId })}`);
       return;
     }
@@ -202,7 +203,7 @@ export default function ProgramPage() {
 
   const handleSetoran = useCallback(() => {
     if (activeTab === "pinjaman" && activeData?.isPending && activeData?.financingId) {
-      navigate(`/${jwtEncode({ page: "pinjamanDetailPage", financingId: activeData.financingId })}`);
+      navigate(`/${jwtEncode({ page: "transactionDetailPage", financingId: activeData.financingId })}`);
       return;
     }
     if (activeTab === "pinjaman" && activeData?.isApproved && activeData?.financingId) {

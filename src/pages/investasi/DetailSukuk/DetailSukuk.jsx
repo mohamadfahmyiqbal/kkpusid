@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import { FaCertificate, FaArrowLeft, FaShieldAlt, FaChartLine } from "react-icons/fa";
 import { useDetailSukuk } from "./hooks/useDetailSukuk";
+import { motion, AnimatePresence } from "framer-motion";
 import "./DetailSukuk.css";
 
 const DetailSukuk = () => {
@@ -134,7 +135,7 @@ const DetailSukuk = () => {
 
   if (fetchError && !sukukData) {
     return (
-      <Container fluid className="mt-4">
+      <Container fluid className="px-0 mt-4">
         <Alert variant="danger">{fetchError}</Alert>
         <Button variant="outline-secondary" onClick={handleBack}>Kembali</Button>
       </Container>
@@ -142,178 +143,167 @@ const DetailSukuk = () => {
   }
 
   return (
-    <div className="sukuk-detail-wrapper">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0 bg-white">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaCertificate className="me-2 text-primary" />
-            Detail Sukuk
-          </h3>
-        </div>
-      </div>
-
-      <Container fluid className="px-4">
-        <Row className="justify-content-center">
-          <Col lg={10} xl={8}>
-            <Card className="sukuk-detail-card mb-4">
-              <Card.Body className="p-4 p-md-5">
-                <div className="d-flex flex-wrap justify-content-between align-items-start mb-4">
-                  <div className="mb-3 mb-md-0">
-                    <h3 className="fw-bold mb-2 text-dark">{sukukData?.name}</h3>
-                    <p className="text-muted mb-0 d-flex align-items-center">
-                      <FaShieldAlt className="me-2 text-success" />
-                      Diterbitkan oleh: <strong>{sukukData?.issuer}</strong>
-                    </p>
+    <div className="sukuk-detail-wrapper pb-5 px-0">
+      <Container fluid className="px-0 mt-4 font-outfit">
+        <Row className="g-4">
+          <Col lg={7} xl={8}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="sukuk-detail-card border-0 p-3 p-md-4 mb-4 shadow-sm">
+                <Card.Body>
+                  <div className="d-flex flex-wrap justify-content-between align-items-start mb-4 pb-3 border-bottom">
+                    <div className="d-flex align-items-center mb-3 mb-md-0">
+                      <div className="p-3 rounded-circle bg-primary bg-opacity-10 text-primary me-3">
+                        <FaCertificate size={24} />
+                      </div>
+                      <div>
+                        <h4 className="fw-bold mb-1 text-dark">{sukukData?.name}</h4>
+                        <p className="text-muted small mb-0 d-flex align-items-center">
+                          <FaShieldAlt className="me-1 text-success" />
+                          Diterbitkan oleh: <strong className="ms-1">{sukukData?.issuer}</strong>
+                        </p>
+                      </div>
+                    </div>
+                    <Badge bg={sukukData?.status === "OPEN" ? "success" : "secondary"} className="px-4 py-2 rounded-pill fs-6">
+                      {sukukData?.status === "OPEN" ? "Masa Penawaran" : "Ditutup"}
+                    </Badge>
                   </div>
-                  <Badge bg={sukukData?.status === "OPEN" ? "success" : "secondary"} className="px-4 py-2 rounded-pill fs-6">
-                    {sukukData?.status === "OPEN" ? "Masa Penawaran" : "Ditutup"}
-                  </Badge>
+
+                  <div className="mb-4">
+                    <h6 className="fw-bold mb-3">Informasi Pendanaan</h6>
+                    <ul className="list-unstyled mb-0 border rounded-3 overflow-hidden">
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+                        <span className="text-muted small">Kategori</span>
+                        <span className="fw-bold text-dark">{sukukData?.type}</span>
+                      </li>
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-white border-bottom">
+                        <span className="text-muted small">Akad Sukuk</span>
+                        <span className="fw-bold text-primary">{sukukData?.type === 'Sukuk Ritel' ? 'Ijarah' : 'Mudharabah'}</span>
+                      </li>
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+                        <span className="text-muted small">Nilai Pendanaan</span>
+                        <span className="fw-bold text-dark">Rp {formatCurrency(sukukData?.totalAmount || 0)}</span>
+                      </li>
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-white border-bottom">
+                        <span className="text-muted small">Imbal Hasil / Kupon</span>
+                        <span className="fw-bold text-success d-flex align-items-center">
+                          <FaChartLine className="me-2" />
+                          {sukukData?.coupon} p.a.
+                        </span>
+                      </li>
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+                        <span className="text-muted small">Tenor</span>
+                        <span className="fw-bold text-dark">{calculateTenor(sukukData?.startDate, sukukData?.maturity)}</span>
+                      </li>
+                      <li className="d-flex justify-content-between align-items-center p-3 bg-white">
+                        <span className="text-muted small">Minimum Investasi</span>
+                        <span className="fw-bold text-dark">Rp {formatCurrency(sukukData?.minInvestment || 0)}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h6 className="fw-bold mb-3 border-bottom pb-2">Deskripsi Produk</h6>
+                    <p className="text-muted lh-lg small">{sukukData?.description || "Deskripsi produk belum tersedia."}</p>
+                  </div>
+                </Card.Body>
+              </Card>
+            </motion.div>
+          </Col>
+
+          <Col lg={5} xl={4} className="sticky-summary-column">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="d-flex flex-column gap-4"
+            >
+              <Card className="sukuk-detail-card border-0 p-4 shadow-sm">
+                <div className="form-section-header mb-3">
+                  <h5 className="fw-bold font-outfit mb-0 text-dark">
+                    Formulir Investasi
+                  </h5>
                 </div>
-
-                <Row className="g-4 mb-5">
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Kategori</p>
-                      <p className="info-value">{sukukData?.type}</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Akad Sukuk</p>
-                      <p className="info-value text-primary">{sukukData?.type === 'Sukuk Ritel' ? 'Ijarah' : 'Mudharabah'}</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Nilai Pendanaan</p>
-                      <p className="info-value">Rp {formatCurrency(sukukData?.totalAmount || 0)}</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Imbal Hasil / Kupon</p>
-                      <p className="info-value text-success d-flex align-items-center">
-                        <FaChartLine className="me-2" />
-                        {sukukData?.coupon} p.a.
-                      </p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Tenor</p>
-                      <p className="info-value fw-bold">{calculateTenor(sukukData?.startDate, sukukData?.maturity)}</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Minimum Investasi</p>
-                      <p className="info-value">Rp {formatCurrency(sukukData?.minInvestment || 0)}</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Jenis Bisnis</p>
-                      <p className="info-value">Infrastruktur</p>
-                    </div>
-                  </Col>
-                  <Col md={3} sm={6}>
-                    <div className="info-box">
-                      <p className="info-label">Status Bisnis</p>
-                      <p className="info-value text-success">Berjalan</p>
-                    </div>
-                  </Col>
-                </Row>
-
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3 border-bottom pb-2">Deskripsi Produk</h5>
-                  <p className="text-muted lh-lg">{sukukData?.description}</p>
-                </div>
-              </Card.Body>
-            </Card>
-
-            <Card className="sukuk-detail-card mb-5">
-              <Card.Body className="p-4 p-md-5">
-                <h4 className="fw-bold mb-4 text-dark">Formulir Investasi</h4>
 
                 {(submitError || fetchError) && (
-                  <Alert variant="danger" className="mb-4 rounded-3">
+                  <Alert variant="danger" className="mb-4 rounded-3 text-sm">
                     {submitError || fetchError}
                   </Alert>
                 )}
 
                 <Form onSubmit={handleSubmit} noValidate>
                   <Form.Group className="mb-4">
-                    <Form.Label className="fw-semibold text-dark fs-5" htmlFor="nominal">
+                    <Form.Label className="fw-semibold text-dark small" htmlFor="nominal">
                       Nominal Pembelian
-                      <span className="text-muted ms-2 fs-6 fw-normal">
-                        (Minimal: Rp {formatCurrency(sukukData?.minInvestment)})
-                      </span>
+                      <span className="text-danger ms-1">*</span>
                     </Form.Label>
                     <Form.Control
                       id="nominal"
-                      className="nominal-input"
+                      className={`nominal-input bg-light border-0 ${errors.nominal ? "border-danger" : ""}`}
                       type="text"
                       value={formData.nominal ? `Rp ${formatCurrency(formData.nominal)}` : ""}
                       onChange={handleNominalChange}
-                      placeholder="Contoh: Rp 1.000.000"
+                      placeholder={`Min: Rp ${formatCurrency(sukukData?.minInvestment)}`}
                       isInvalid={!!errors.nominal}
                       disabled={submitting || sukukData?.status !== "OPEN"}
                       inputMode="numeric"
                     />
-                    <Form.Control.Feedback type="invalid" className="fs-6 mt-2">
-                      {errors.nominal}
-                    </Form.Control.Feedback>
+                    <AnimatePresence>
+                      {errors.nominal && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                          <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                            <small className="text-danger fw-bold">{errors.nominal}</small>
+                          </Form.Control.Feedback>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </Form.Group>
 
                   {formData.nominal && !errors.nominal && (
-                    <div className="summary-card p-4 mb-4">
+                    <div className="summary-card p-3 mb-4 rounded-3 border-0 bg-success bg-opacity-10">
                       <h6 className="fw-bold mb-3 text-success">Estimasi Ringkasan Investasi</h6>
-                      <Row className="g-3">
-                        <Col sm={6}>
-                          <p className="text-muted mb-1">Estimasi Imbal Hasil per Tahun</p>
-                          <p className="fs-5 fw-bold text-success mb-0">
-                            Rp {formatCurrency(estimatedReturn)}
-                          </p>
-                        </Col>
-                        <Col sm={6}>
-                          <p className="text-muted mb-1">Total Unit yang Didapat</p>
-                          <p className="fs-5 fw-bold mb-0 text-dark">
-                            ~{estimatedUnits} unit
-                          </p>
-                        </Col>
-                      </Row>
+                      <div className="d-flex justify-content-between mb-2">
+                        <span className="text-muted small">Imbal Hasil Tahunan</span>
+                        <span className="fw-bold text-success">Rp {formatCurrency(estimatedReturn)}</span>
+                      </div>
+                      <div className="d-flex justify-content-between border-top pt-2 mt-2">
+                        <span className="text-muted small">Total Unit Didapat</span>
+                        <span className="fw-bold text-dark">~{estimatedUnits} unit</span>
+                      </div>
                     </div>
                   )}
 
-                  <div className="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
-                    <Button
-                      variant="light"
-                      className="px-4 py-2 fw-bold text-secondary rounded-pill"
-                      onClick={handleBack}
-                      disabled={submitting}
-                    >
-                      <FaArrowLeft className="me-2" />
-                      Kembali
-                    </Button>
+                  <div className="d-grid gap-2 mt-4 pt-2 border-top">
                     <Button
                       variant="primary"
                       type="submit"
-                      className="btn-invest rounded-pill"
+                      className="btn-invest w-100 py-3 shadow-md border-0 d-flex align-items-center justify-content-center"
                       disabled={submitting || sukukData?.status !== "OPEN" || !!errors.nominal || !formData.nominal}
                     >
                       {submitting ? (
                         <>
                           <Spinner animation="border" size="sm" className="me-2" />
-                          Memproses...
+                          <span className="fw-bold">Memproses...</span>
                         </>
                       ) : (
-                        "Proses Pembelian"
+                        <span className="fw-bold">Proses Pembelian</span>
                       )}
+                    </Button>
+                    <Button
+                      variant="light"
+                      className="w-100 py-2 fw-bold text-muted border-0 shadow-sm mt-2"
+                      onClick={handleBack}
+                      disabled={submitting}
+                    >
+                      Batal & Kembali
                     </Button>
                   </div>
                 </Form>
-              </Card.Body>
-            </Card>
+              </Card>
+            </motion.div>
           </Col>
         </Row>
       </Container>
@@ -322,3 +312,4 @@ const DetailSukuk = () => {
 };
 
 export default DetailSukuk;
+

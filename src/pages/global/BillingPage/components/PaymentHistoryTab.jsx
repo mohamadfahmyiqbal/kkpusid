@@ -48,46 +48,53 @@ function PaymentHistoryTab({ history }) {
             </tr>
           </thead>
           <tbody>
-            {pageItems.map((item, idx) => (
-              <tr key={item.id || idx}>
-                <td>
-                  <div className="bp-inv-number">
-                    {item.id ? formatInvoiceNumber(item.id, item.createdAt) : "-"}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#6b7280" }}>
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB"
-                      : ""}
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div className="bp-type-icon" style={{ background: "#f0fdf4" }}>
-                      <FaCheckCircle size={13} color="#10b981" />
+            {pageItems.map((item, idx) => {
+              const billId = item.bill_item_id || item.id;
+              const dateObj = item.bill?.updatedAt || item.bill?.updated_at || item.updated_at || item.updatedAt || item.created_at || item.createdAt;
+              const title = item.type?.type_name || "Tagihan";
+              const subTitle = item.category_code?.replace(/_/g, " ") || "Pembayaran";
+
+              return (
+                <tr key={billId || idx}>
+                  <td>
+                    <div className="bp-inv-number">
+                      {billId ? formatInvoiceNumber(billId, dateObj) : "-"}
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 12 }}>
-                        {item.description?.includes("Angsuran") ? "Angsuran" : "Administrasi"}
+                    <div style={{ fontSize: 10, color: "#6b7280" }}>
+                      {dateObj
+                        ? new Date(dateObj).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB"
+                        : ""}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div className="bp-type-icon" style={{ background: "#f0fdf4" }}>
+                        <FaCheckCircle size={13} color="#10b981" />
                       </div>
-                      <div style={{ fontSize: 10, color: "#6b7280" }}>
-                        {item.description?.includes("Angsuran") ? "Pembiayaan Usaha" : "Biaya Layanan"}
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 12 }}>
+                          {title}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#6b7280" }}>
+                          {item.description || subTitle}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ fontSize: 12 }}>{formatDate(item.createdAt)}</td>
-                <td style={{ fontWeight: 700, fontSize: 13 }}>{formatIDR(item.amount)}</td>
-                <td>
-                  <span className="bp-badge bp-badge-paid">Lunas</span>
-                </td>
-                <td>
-                  <button className="bp-btn-download">
-                    <FaDownload size={10} />
-                    Unduh
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td style={{ fontSize: 12 }}>{formatDate(dateObj)}</td>
+                  <td style={{ fontWeight: 700, fontSize: 13 }}>{formatIDR(item.amount)}</td>
+                  <td>
+                    <span className="bp-badge bp-badge-paid">Lunas</span>
+                  </td>
+                  <td>
+                    <button className="bp-btn-download">
+                      <FaDownload size={10} />
+                      Unduh
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

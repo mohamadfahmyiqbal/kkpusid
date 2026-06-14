@@ -23,7 +23,7 @@ export const subscribeUser = async (memberId) => {
     const existingSubscription =
       await registration.pushManager.getSubscription();
     if (existingSubscription) {
-      console.log("Already subscribed to push notifications");
+
       return;
     }
 

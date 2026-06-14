@@ -222,7 +222,7 @@ export default function NotificationPage() {
     const socket = getSocket();
     if (socket) {
       const handleNewNotification = (notification) => {
-        console.log("🔔 Real-time notification in page:", notification);
+
         // Sesuaikan format jika backend mengirim data mentah (misal dari sendGlobalNotification)
         const formattedNotif = {
           id: notification.notification_id || notification.id,

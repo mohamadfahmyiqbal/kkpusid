@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import UBilling from "../../../../utils/api/UBilling";
 import { jwtEncode } from "../../../../utils/helpers";
 import { useBillingData } from "../hooks/useBillingData";
+import { useProfile } from "../../../../components/layout/contexts";
 import { FaFileInvoiceDollar, FaExclamationCircle, FaPlus, FaHistory, FaWallet, FaInfoCircle, FaClock, FaShieldAlt } from "react-icons/fa";
 
 import SummaryStats from "../components/SummaryStats";
@@ -26,7 +27,9 @@ const BillingPage = ({ decodedToken }) => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
-  const { bills, history, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, bankInfo, displayName } = useBillingData(decodedToken);
+  const { bills, history, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, displayName } = useBillingData(decodedToken);
+  const { userData } = useProfile();
+  const bankInfo = userData?.bank_info || null;
 
   const safeBills = Array.isArray(bills) ? bills : [];
   const pendingCount = safeBills.length;
@@ -42,7 +45,6 @@ const BillingPage = ({ decodedToken }) => {
         badgeKey: !(isSukarela && pendingCount === 0) ? "pendingCount" : null,
       },
       { key: "history", label: "Riwayat Pembayaran", icon: <FaHistory size={12} />, badgeKey: "historyCount" },
-      { key: "metode", label: "Metode Pembayaran", icon: <FaWallet size={12} /> },
     ],
     [isSukarela, categoryName, pendingCount],
   );
@@ -126,7 +128,15 @@ const BillingPage = ({ decodedToken }) => {
           const resp = await UBilling.createVoluntaryBill(payload);
           if (resp.data?.status) {
             const ids = resp.data.data.bill_item_ids;
-            navigate(`/${jwtEncode({ page: "invoicePage", billItemIds: Array.isArray(ids) ? ids : [ids], return: "billingPage", originalReturn: decodedToken?.return, category: categoryName })}`);
+            navigate(`/${jwtEncode({ 
+              page: "invoicePage", 
+              billItemIds: Array.isArray(ids) ? ids : [ids], 
+              return: "billingPage", 
+              originalReturn: decodedToken?.return, 
+              category: categoryName,
+              financingId: decodedToken?.financingId || decodedToken?.financing_id,
+              productName: decodedToken?.productName 
+            })}`);
             return;
           } else {
             setError(resp.data?.message || "Gagal membuat tagihan sukarela.");
@@ -137,7 +147,16 @@ const BillingPage = ({ decodedToken }) => {
             setError("Pilih minimal satu tagihan.");
             return;
           }
-          navigate(`/${jwtEncode({ page: "invoicePage", billItemIds: billsToUse, registrationId, return: "billingPage", originalReturn: decodedToken?.return, category: categoryName })}`);
+          navigate(`/${jwtEncode({ 
+            page: "invoicePage", 
+            billItemIds: billsToUse, 
+            registrationId, 
+            return: "billingPage", 
+            originalReturn: decodedToken?.return, 
+            category: categoryName,
+            financingId: decodedToken?.financingId || decodedToken?.financing_id,
+            productName: decodedToken?.productName
+          })}`);
           return;
         }
       } catch (err) {
@@ -257,46 +276,6 @@ const BillingPage = ({ decodedToken }) => {
                   <PaymentHistoryTab history={history} />
                 </div>
               )}
-
-              {activeTab === "metode" && (
-                <div className="bp-card">
-                  <div className="bp-card-header">
-                    <div>
-                      <div className="bp-card-title">Metode Pembayaran</div>
-                      <div className="bp-card-sub">Kelola metode pembayaran Anda untuk kemudahan transaksi.</div>
-                    </div>
-                  </div>
-                  <div style={{ padding: "32px 24px", textAlign: "center", color: "#6b7280" }}>
-                    <FaWallet size={36} style={{ opacity: 0.3, marginBottom: 12 }} />
-                    <p className="mb-0 small">Fitur ini akan segera hadir.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Auto Debit Banner */}
-              <div className="bp-banner">
-                <div>
-                  <div className="bp-banner-title">Aktifkan Auto Debit</div>
-                  <p className="bp-banner-desc">
-                    Aktifkan fitur auto debit untuk pembayaran otomatis dan tepat waktu setiap bulan.
-                  </p>
-                  <div className="bp-banner-coming-soon">
-                    <FaClock size={13} />
-                    Segera Hadir
-                  </div>
-                </div>
-                <div className="bp-banner-illustration">
-                  <div style={{
-                    width: 110, height: 90, borderRadius: 16,
-                    background: "rgba(255,255,255,0.12)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexDirection: "column", gap: 8,
-                  }}>
-                    <FaShieldAlt size={32} color="rgba(255,255,255,0.8)" />
-                    <FaExclamationCircle size={20} color="#10b981" />
-                  </div>
-                </div>
-              </div>
             </>
           )}
         </div>

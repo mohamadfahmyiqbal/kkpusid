@@ -12,8 +12,9 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
-import { FaTrophy, FaMedal, FaArrowLeft, FaUser } from "react-icons/fa";
+import TrainingService from "../../../services/training.service";
+import { FaTrophy, FaMedal, FaArrowLeft, FaUser, FaStar } from "react-icons/fa";
+import "./Ranking.css";
 
 const Ranking = () => {
   const navigate = useNavigate();
@@ -23,105 +24,44 @@ const Ranking = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // TODO: Fetch ranking data from API
-    // fetchRankingData();
+    const fetchRankingData = async () => {
+      try {
+        setLoading(true);
+        const [resRankings, resMyRank] = await Promise.all([
+          TrainingService.getRankings(),
+          TrainingService.getMyRanking()
+        ]);
 
-    // Mock data
-    setTimeout(() => {
-      setRankingList([
-        {
-          rank: 1,
-          name: "Ahmad Fauzi",
-          score: 98,
-          completedModules: 25,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 2,
-          name: "Siti Rahayu",
-          score: 95,
-          completedModules: 24,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 3,
-          name: "Budi Santoso",
-          score: 92,
-          completedModules: 23,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 4,
-          name: "Dewi Lestari",
-          score: 88,
-          completedModules: 22,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 5,
-          name: "Eko Prasetyo",
-          score: 85,
-          completedModules: 21,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 6,
-          name: "Fitri Handayani",
-          score: 82,
-          completedModules: 20,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 7,
-          name: "Gunawan Wijaya",
-          score: 80,
-          completedModules: 19,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 8,
-          name: "Hesti Utami",
-          score: 78,
-          completedModules: 18,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 9,
-          name: "Indra Wijaya",
-          score: 75,
-          completedModules: 17,
-          totalModules: 30,
-          avatar: null,
-        },
-        {
-          rank: 10,
-          name: "Joko Susilo",
-          score: 72,
-          completedModules: 16,
-          totalModules: 30,
-          avatar: null,
-        },
-      ]);
+        if (resRankings.status) {
+          setRankingList(resRankings.data.map(r => ({
+            rank: r.rank_position,
+            name: r.member?.full_name || "Peserta",
+            score: r.total_score,
+            completedModules: r.completed_materials,
+            totalModules: 30, // Fallback
+            avatar: null,
+          })));
+        }
 
-      setMyRanking({
-        rank: 12,
-        name: "Anda",
-        score: 68,
-        completedModules: 15,
-        totalModules: 30,
-        avatar: null,
-      });
+        if (resMyRank.status && resMyRank.data) {
+          const r = resMyRank.data;
+          setMyRanking({
+            rank: r.rank_position,
+            name: r.member?.full_name || "Anda",
+            score: r.total_score,
+            completedModules: r.completed_materials,
+            totalModules: 30, // Fallback
+            avatar: null,
+          });
+        }
+      } catch (err) {
+        setError("Gagal memuat data peringkat");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setLoading(false);
-    }, 1000);
+    fetchRankingData();
   }, []);
 
   const getRankIcon = (rank) => {
@@ -171,47 +111,36 @@ const Ranking = () => {
 
   if (loading) {
     return (
-      <LayoutGlobal title="Peringkat">
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Memuat peringkat...</p>
-        </div>
-      </LayoutGlobal>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-white">
+        <Spinner animation="border" variant="primary" size="lg" />
+        <p className="mt-3 text-muted fw-medium">Memuat papan peringkat...</p>
+      </div>
     );
   }
 
   return (
-    <LayoutGlobal title="Peringkat">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaTrophy className="me-2" />
-            Peringkat Peserta
-          </h3>
-        </div>
-      </div>
-
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} md={12}>
+    <div className="ranking-page-container pb-5">
+      <Container fluid className="mt-4 px-0">
+        <Row className="mx-0">
+          <Col xs={12}>
             {error && (
-              <Alert variant="danger" className="mb-4">
+              <Alert variant="danger" className="mb-4 rounded-4 shadow-sm border-0">
                 {error}
               </Alert>
             )}
 
             {/* My Ranking Card */}
             {myRanking && (
-              <Card className="shadow-lg border-0 mb-4 bg-primary text-white">
-                <Card.Body className="p-4">
+              <Card className="shadow-lg border-0 mb-4 rounded-4 overflow-hidden" style={{ background: 'linear-gradient(135deg, #02113d 0%, #05246f 100%)' }}>
+                <Card.Body className="p-4 text-white">
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <div className="me-3">
                         <div
-                          className="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center"
+                          className="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                           style={{
-                            width: "60px",
-                            height: "60px",
+                            width: "64px",
+                            height: "64px",
                             fontSize: "24px",
                           }}
                         >
@@ -219,107 +148,98 @@ const Ranking = () => {
                         </div>
                       </div>
                       <div>
-                        <h5 className="fw-bold mb-1">{myRanking.name}</h5>
-                        <p className="mb-0 opacity-75">
-                          Peringkat #{myRanking.rank} dari{" "}
-                          {rankingList.length + 5} peserta
+                        <h5 className="fw-black mb-1">{myRanking.name}</h5>
+                        <p className="mb-0 opacity-75 small">
+                          Peringkat ke-#{myRanking.rank} dari{" "}
+                          {rankingList.length > 10 ? rankingList.length : rankingList.length + 5} peserta
                         </p>
                       </div>
                     </div>
                     <div className="text-end">
-                      <h3 className="fw-bold mb-0">{myRanking.score} poin</h3>
-                      <small className="opacity-75">
-                        {myRanking.completedModules}/{myRanking.totalModules}{" "}
-                        modul
+                      <div className="fw-black h2 mb-0">{myRanking.score}</div>
+                      <small className="opacity-75 text-uppercase ls-1 fw-bold" style={{ fontSize: '10px' }}>
+                        Poin Akumulasi
                       </small>
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             )}
-
             {/* Top 3 Podium */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-4">
-                <h6 className="fw-bold mb-4">Top 3 Peserta</h6>
-                <Row className="g-3">
-                  {rankingList.slice(0, 3).map((item, index) => (
-                    <Col md={4} key={item.rank}>
-                      <Card
-                        className={`h-100 border-0 ${
-                          index === 0
-                            ? "bg-warning bg-opacity-10"
-                            : index === 1
-                              ? "bg-secondary bg-opacity-10"
-                              : "bg-warning bg-opacity-10"
-                        }`}
-                        style={{
-                          backgroundColor: index === 2 ? "#fff8e1" : "",
-                        }}
-                      >
-                        <Card.Body className="p-4 text-center">
-                          <div className="mb-3">{getRankIcon(item.rank)}</div>
-                          <h5 className="fw-bold mb-2">{item.name}</h5>
-                          <h3 className="fw-bold text-primary mb-2">
-                            {item.score} poin
-                          </h3>
-                          <p className="text-muted small mb-0">
-                            {item.completedModules}/{item.totalModules} modul
-                            selesai
-                          </p>
-                          {getRankBadge(item.rank)}
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  ))}
-                </Row>
-              </Card.Body>
-            </Card>
+            <Row className="mb-5 g-4 justify-content-center align-items-end">
+              {rankingList.length > 0 && [1, 0, 2].map((idx) => {
+                const item = rankingList[idx];
+                if (!item) return null;
+                const isFirst = idx === 0;
+                return (
+                  <Col md={idx === 0 ? 5 : idx === 1 ? 4 : 3} key={item.rank} className={`${idx === 1 ? 'order-1' : idx === 0 ? 'order-2' : 'order-3'}`}>
+                    <Card className={`podium-card border-0 text-center ${isFirst ? 'shadow-lg py-5' : 'shadow-sm py-4'}`} 
+                          style={{ background: isFirst ? 'linear-gradient(135deg, #02113d 0%, #05246f 100%)' : 'white' }}>
+                      <Card.Body>
+                        <div className="podium-avatar">
+                           {getRankIcon(item.rank)}
+                        </div>
+                        <h5 className={`fw-black mb-1 ${isFirst ? 'text-white' : 'text-dark-blue'}`}>{item.name}</h5>
+                        <div className={`fw-bold mb-3 ${isFirst ? 'text-info' : 'text-primary'}`}>
+                           <FaStar className="me-1" /> {item.score} Poin
+                        </div>
+                        <Badge bg={isFirst ? "info" : "light"} className={`${isFirst ? '' : 'text-muted border'} rounded-pill px-3 py-2`}>
+                           {item.completedModules} Modul Selesai
+                        </Badge>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
 
             {/* Full Ranking Table */}
-            <Card className="shadow-sm border-0">
-              <Card.Body className="p-4">
-                <h6 className="fw-bold mb-3">Peringkat Lengkap</h6>
+            <Card className="rank-table-card border-0 mb-4">
+              <Card.Body className="p-0">
+                <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
+                   <h6 className="fw-black text-dark-blue mb-0 text-uppercase ls-1">Papan Peringkat Lengkap</h6>
+                   <Badge bg="primary" className="rounded-pill px-3">{rankingList.length} Peserta Aktif</Badge>
+                </div>
                 <div className="table-responsive">
-                  <Table hover className="align-middle">
+                  <Table hover className="rank-table align-middle mb-0">
                     <thead>
                       <tr>
-                        <th>Peringkat</th>
-                        <th>Nama</th>
-                        <th className="text-end">Skor</th>
-                        <th className="text-end">Modul Selesai</th>
-                        <th className="text-end">Progress</th>
+                        <th className="ps-4">Rank</th>
+                        <th>Nama Peserta</th>
+                        <th className="text-center">Skor</th>
+                        <th className="text-center">Progress</th>
+                        <th className="text-end pe-4">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rankingList.map((item) => (
-                        <tr key={item.rank}>
-                          <td className="fw-bold">{getRankIcon(item.rank)}</td>
-                          <td>{item.name}</td>
-                          <td className="text-end fw-bold">{item.score}</td>
-                          <td className="text-end">
-                            {item.completedModules}/{item.totalModules}
+                        <tr key={item.rank} className={item.name === "Anda" ? 'bg-info bg-opacity-10' : ''}>
+                          <td className="ps-4">
+                             <div className="rank-number-badge">{item.rank}</div>
                           </td>
-                          <td className="text-end">
+                          <td>
+                             <div className="d-flex align-items-center gap-3">
+                                <div className="rounded-circle bg-light d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
+                                   <FaUser className="text-muted" />
+                                </div>
+                                <span className="rank-user-name">{item.name}</span>
+                             </div>
+                          </td>
+                          <td className="text-center">
+                             <span className="fw-black text-primary">{item.score}</span>
+                          </td>
+                          <td className="text-center">
+                             <small className="text-muted fw-bold">{item.completedModules} Modul</small>
+                          </td>
+                          <td className="text-end pe-4">
                             <Badge
                               bg={
-                                (item.completedModules / item.totalModules) *
-                                  100 >=
-                                80
-                                  ? "success"
-                                  : (item.completedModules /
-                                        item.totalModules) *
-                                        100 >=
-                                      50
-                                    ? "warning"
-                                    : "secondary"
+                                (item.completedModules / 30) * 100 >= 80 ? "success" : 
+                                (item.completedModules / 30) * 100 >= 50 ? "warning" : "secondary"
                               }
+                              className="rounded-pill px-3"
                             >
-                              {Math.round(
-                                (item.completedModules / item.totalModules) *
-                                  100,
-                              )}
-                              %
+                              {Math.round((item.completedModules / 30) * 100)}%
                             </Badge>
                           </td>
                         </tr>
@@ -329,11 +249,10 @@ const Ranking = () => {
                 </div>
               </Card.Body>
             </Card>
-
             <div className="mt-4">
               <Button
                 variant="light"
-                className="px-4 py-2 fw-bold text-muted"
+                className="px-4 py-2 fw-bold text-muted rounded-pill border"
                 onClick={handleBack}
               >
                 <FaArrowLeft className="me-2" />
@@ -343,7 +262,7 @@ const Ranking = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 };
 

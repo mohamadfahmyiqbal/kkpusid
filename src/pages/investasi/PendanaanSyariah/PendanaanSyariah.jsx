@@ -49,6 +49,18 @@ const PendanaanSyariah = () => {
     // TODO: Navigate to portofolio page
   }, []);
 
+  const handleSetoran = useCallback(() => {
+    if (!pengajuanData?.financing_id) return;
+    const token = jwtEncode({ 
+      page: "billingPage", 
+      return: "investasiPage", 
+      category: "FINANCING",
+      financingId: pengajuanData.financing_id,
+      productName: pengajuanData.category || "Pembiayaan"
+    });
+    navigate(`/${token}`);
+  }, [navigate, pengajuanData]);
+
   const handleBack = useCallback(() => {
     const token = jwtEncode({ page: "investasiPage" });
     navigate(`/${token}`);
@@ -65,21 +77,10 @@ const PendanaanSyariah = () => {
 
   return (
     <div className="investasi-wrapper pb-5 bg-light min-vh-100">
-      <div className="row page-titles pt-4 pb-4 border-bottom mb-4 mx-0 bg-white shadow-sm">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold d-flex align-items-center">
-            <div className="bg-primary bg-opacity-10 text-primary p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
-              <FaStore size={24} />
-            </div>
-            Pendanaan Syariah UMKM
-          </h3>
-          <p className="text-muted mt-2 mb-0 ms-5 ps-2">Dukung pertumbuhan UMKM melalui pendanaan berbasis syariah</p>
-        </div>
-      </div>
-
-      <Container fluid className="px-4">
-        <Row className="justify-content-center">
-          <Col lg={10} xl={8}>
+     
+      <Container fluid className="px-0 mt-4 font-outfit">
+        <Row>
+          <Col lg={12}>
             {error && (
               <Alert variant="danger" className="mb-4 shadow-sm border-0 rounded-4 d-flex align-items-center justify-content-between p-4">
                 <div className="d-flex align-items-center">
@@ -94,20 +95,32 @@ const PendanaanSyariah = () => {
 
             {!hasPengajuan ? (
               // Status: Belum memiliki pengajuan
-              <Card className="shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
-                <Card.Body className="p-5 text-center position-relative">
-                  <div className="position-absolute top-0 start-50 translate-middle-x bg-primary bg-opacity-10 w-100" style={{ height: '120px', borderRadius: '0 0 50% 50%' }}></div>
-                  <div className="text-primary mb-4 position-relative z-1 mt-4" style={{ fontSize: "72px" }}>
-                    <FaStore className="drop-shadow" />
+              <Card
+                className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card mb-4"
+                style={{ 
+                  background: "linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)", 
+                  boxShadow: "0 20px 40px -10px rgba(7, 89, 133, 0.3)",
+                  borderRadius: "16px"
+                }}
+              >
+                <div className="glass-sheen" />
+                <Card.Body className="p-4 p-md-5 relative card-body-front text-center">
+                  <div className="d-flex justify-content-center mb-4">
+                    <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect bg-white bg-opacity-10 border border-white border-opacity-25">
+                      <FaStore size={14} className="text-light" />
+                      <span className="fw-bold tracking-wider card-type-label" style={{ letterSpacing: '1px', fontSize: '11px' }}>PENGAJUAN BARU</span>
+                    </div>
                   </div>
-                  <h3 className="fw-bold mb-3 text-dark mt-4">Mulai Ajukan Pendanaan</h3>
-                  <p className="text-muted mb-4 mx-auto fs-5" style={{ maxWidth: '600px' }}>
-                    Anda belum memiliki pengajuan pendanaan aktif. Ajukan pendanaan baru
-                    untuk usaha Anda dan dapatkan bantuan permodalan dengan prinsip syariah.
+                  <div className="text-white mb-3" style={{ fontSize: "60px" }}>
+                    <FaStore className="opacity-75" />
+                  </div>
+                  <h3 className="fw-bold mb-3 text-white">Mulai Ajukan Pendanaan</h3>
+                  <p className="text-white opacity-75 mb-4 mx-auto" style={{ maxWidth: '600px' }}>
+                    Anda belum memiliki pengajuan pendanaan aktif. Ajukan pendanaan baru untuk usaha Anda dan dapatkan bantuan permodalan dengan prinsip syariah yang adil dan menentramkan.
                   </p>
                   <Button
-                    variant="primary"
-                    className="px-5 py-3 fs-5 fw-bold rounded-pill shadow-lg mt-2 transition-all"
+                    variant="light"
+                    className="px-4 py-2 fw-bold rounded-pill text-primary shadow-sm transition-transform hover-scale mt-2"
                     onClick={handlePengajuanBaru}
                   >
                     <FaPlus className="me-2 mb-1" />
@@ -117,55 +130,61 @@ const PendanaanSyariah = () => {
               </Card>
             ) : pengajuanData?.status === 'PENDING' || pengajuanData?.status === 'REVIEW' ? (
               // Status: Menunggu Approval
-              <Card className="shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
-                <Card.Header className="bg-warning bg-gradient text-white p-4 border-bottom-0">
-                  <h4 className="mb-0 fw-bold d-flex align-items-center">
-                    <FaClock className="me-3 fs-3" /> Pengajuan Dalam Proses
-                  </h4>
-                </Card.Header>
-                <Card.Body className="p-5">
+              <Card
+                className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card mb-4"
+                style={{ 
+                  background: "linear-gradient(135deg, #92400e 0%, #d97706 40%, #f59e0b 100%)", 
+                  boxShadow: "0 20px 40px -10px rgba(217, 119, 6, 0.3)",
+                  borderRadius: "16px"
+                }}
+              >
+                <div className="glass-sheen" />
+                <Card.Body className="p-4 p-md-5 relative card-body-front">
+                   <div className="d-flex justify-content-center mb-4">
+                    <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect bg-white bg-opacity-10 border border-white border-opacity-25">
+                      <FaHistory size={14} className="text-light" />
+                      <span className="fw-bold tracking-wider card-type-label" style={{ letterSpacing: '1px', fontSize: '11px' }}>STATUS PENGAJUAN</span>
+                    </div>
+                  </div>
                   <div className="text-center mb-5">
-                    <Spinner animation="grow" variant="warning" className="mb-4 shadow-sm" style={{ width: '5rem', height: '5rem' }} />
-                    <h3 className="fw-bold mb-3 text-dark">Pengajuan Anda Sedang Dievaluasi</h3>
-                    <p className="text-muted mx-auto fs-5" style={{ maxWidth: '600px' }}>
-                      Mohon bersabar, pengajuan pendanaan Anda saat ini berada pada tahap:<br/>
-                      <Badge bg="warning" text="dark" className="fs-6 mt-3 px-4 py-2 rounded-pill shadow-sm">
-                        {pengajuanData?.currentStep?.step_name || 'Menunggu Reviewer'}
-                      </Badge>
+                    <h3 className="fw-bold mb-3 text-white">Pengajuan Dalam Proses</h3>
+                    <p className="text-white opacity-75 mx-auto" style={{ maxWidth: '650px' }}>
+                      Pengajuan <strong>{pengajuanData.category || "Pembiayaan"}</strong> Anda sedang dalam tahap tinjauan pengurus. 
+                      Berikut adalah detail status persetujuan saat ini:
                     </p>
                   </div>
 
                   {pengajuanData?.approvalChain && pengajuanData.approvalChain.length > 0 && (
-                    <div className="mt-5 mx-auto" style={{ maxWidth: '600px' }}>
-                      <h5 className="fw-bold mb-4 text-dark d-flex align-items-center">
-                        <FaCheckCircle className="text-success me-2" /> Riwayat Persetujuan
+                    <div className="mx-auto" style={{ maxWidth: '800px' }}>
+                      <h5 className="fw-bold mb-4 text-white d-flex align-items-center">
+                        <FaCheckCircle className="text-white opacity-75 me-2" /> Riwayat Persetujuan
                       </h5>
-                      <div className="bg-white border rounded-4 p-4 shadow-sm">
+                      <div className="bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 p-4 shadow-sm text-start">
                         {pengajuanData.approvalChain.map((step, idx) => (
                           <div key={idx} className={`d-flex align-items-start ${idx !== pengajuanData.approvalChain.length - 1 ? 'mb-4 position-relative' : ''}`}>
                             {idx !== pengajuanData.approvalChain.length - 1 && (
-                              <div className="position-absolute bg-light" style={{ width: '2px', height: '100%', left: '15px', top: '30px', zIndex: 0 }}></div>
+                              <div className="position-absolute bg-white bg-opacity-25" style={{ width: '2px', height: '100%', left: '15px', top: '30px', zIndex: 0 }}></div>
                             )}
-                            <div className="position-relative z-1 bg-white" style={{ paddingRight: '15px' }}>
+                            <div className="position-relative z-1" style={{ paddingRight: '15px' }}>
                               {step.decision === 'APPROVED' ? (
-                                <FaCheckCircle className="text-success fs-4" />
+                                <div className="bg-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}><FaCheckCircle className="text-white" /></div>
                               ) : step.decision === 'REJECTED' ? (
-                                <FaTimesCircle className="text-danger fs-4" />
+                                <div className="bg-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}><FaTimesCircle className="text-white" /></div>
                               ) : (
-                                <FaClock className="text-warning fs-4" />
+                                <div className="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}><FaClock className="text-white" /></div>
                               )}
                             </div>
                             <div className="flex-grow-1">
                               <div className="d-flex justify-content-between align-items-center mb-1">
-                                <span className="fw-bold text-dark">{step.role || step.stepName}</span>
-                                <Badge bg={step.decision === 'APPROVED' ? 'success' : step.decision === 'REJECTED' ? 'danger' : 'warning'} className="rounded-pill">
+                                <span className="fw-bold text-white fs-5">{step.role || step.stepName}</span>
+                                <Badge bg={step.decision === 'APPROVED' ? 'success' : step.decision === 'REJECTED' ? 'danger' : 'light'} className={step.decision === 'PENDING' || !step.decision ? 'text-dark rounded-pill px-3 py-2' : 'rounded-pill px-3 py-2'}>
                                   {step.decision || 'PENDING'}
                                 </Badge>
                               </div>
                               {step.approverName ? (
-                                <p className="text-muted small mb-0">Ditinjau oleh: {step.approverName}</p>
+                                <p className="text-white opacity-75 mb-0">Ditinjau oleh: <strong>{step.approverName}</strong></p>
                               ) : (
-                                <p className="text-muted small mb-0 fst-italic">Menunggu tinjauan</p>
+                                <p className="text-white opacity-50 mb-0 fst-italic">Menunggu tinjauan</p>
                               )}
                             </div>
                           </div>
@@ -177,68 +196,71 @@ const PendanaanSyariah = () => {
               </Card>
             ) : (
               // Status: Memiliki pendanaan aktif (Approved / Active)
-              <Card className="shadow-lg border-0 mb-4 rounded-4 overflow-hidden">
-                <Card.Header className="bg-primary bg-gradient text-white p-4 border-bottom-0">
-                  <div className="d-flex align-items-center justify-content-between">
-                    <h4 className="mb-0 fw-bold d-flex align-items-center">
-                      <FaWallet className="me-3 fs-3" /> Informasi Rekening Pendanaan
-                    </h4>
-                    <Badge bg="light" text="primary" className="px-3 py-2 rounded-pill fw-bold fs-6 shadow-sm">
-                      Aktif
-                    </Badge>
+              <Card
+                className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card mb-4"
+                style={{ 
+                  background: "linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)", 
+                  boxShadow: "0 20px 40px -10px rgba(7, 89, 133, 0.3)",
+                  borderRadius: "16px"
+                }}
+              >
+                <div className="glass-sheen" />
+                <Card.Body className="p-4 p-md-5 relative card-body-front">
+                  {/* Card Top */}
+                  <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect bg-white bg-opacity-10 border border-white border-opacity-25 mb-2 mb-md-0">
+                      <FaWallet size={14} className="text-light" />
+                      <span className="fw-bold tracking-wider card-type-label" style={{ letterSpacing: '1px', fontSize: '11px' }}>REKENING PENDANAAN</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                      <Badge bg="light" text="primary" className="px-3 py-1 rounded-pill fw-bold" style={{ fontSize: '12px' }}>
+                        AKTIF
+                      </Badge>
+                    </div>
                   </div>
-                </Card.Header>
-                <Card.Body className="p-4 p-md-5 bg-light">
-                  <Row className="gy-4 mb-5">
-                    <Col md={6}>
-                      <div className="p-4 bg-white border rounded-4 h-100 shadow-sm transition-hover">
-                        <span className="text-muted d-block mb-2 small fw-semibold text-uppercase tracking-wider">Nama Anggota</span>
-                        <span className="fw-bold fs-4 text-dark">{pengajuanData?.member?.full_name || pengajuanData?.nama_nasabah || "-"}</span>
+
+                  {/* Saldo Display */}
+                  <div className="dc-saldo-display mb-4">
+                    <div className="small text-white-50 mb-1 fw-medium">Nilai Pembiayaan</div>
+                    <h1 className="fw-bold mb-0 text-white font-outfit" style={{ fontSize: '3rem' }}>
+                      Rp {formatCurrency(pengajuanData?.amount_requested || pengajuanData?.nominal_kredit || 0)}
+                    </h1>
+                  </div>
+
+                  {/* Info Details */}
+                  <div className="row g-4 mb-5 pt-4 border-top border-white border-opacity-25 text-start">
+                    <div className="col-sm-6 col-md-4">
+                      <div className="text-uppercase text-white-50 fw-bold mb-1" style={{ fontSize: '10px', letterSpacing: '1px' }}>NAMA ANGGOTA</div>
+                      <div className="fw-bold text-white fs-5">{pengajuanData?.member?.full_name || pengajuanData?.nama_nasabah || "-"}</div>
+                    </div>
+                    <div className="col-sm-6 col-md-4">
+                      <div className="text-uppercase text-white-50 fw-bold mb-1" style={{ fontSize: '10px', letterSpacing: '1px' }}>AKAD</div>
+                      <div className="fw-bold text-white fs-5">{pengajuanData?.akad_type || "Mudharabah"}</div>
+                    </div>
+                    <div className="col-sm-6 col-md-4">
+                      <div className="text-uppercase text-white-50 fw-bold mb-1" style={{ fontSize: '10px', letterSpacing: '1px' }}>TANGGAL BUKA</div>
+                      <div className="fw-bold text-white fs-5">
+                        {pengajuanData?.createdAt ? new Date(pengajuanData.createdAt).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : pengajuanData?.created_at ? new Date(pengajuanData.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
                       </div>
-                    </Col>
-                    <Col md={6}>
-                      <div className="p-4 bg-white border rounded-4 h-100 shadow-sm transition-hover">
-                        <span className="text-muted d-block mb-2 small fw-semibold text-uppercase tracking-wider">Akad</span>
-                        <span className="fw-bold fs-4 text-dark">{pengajuanData?.akad_type || "Mudharabah"}</span>
-                      </div>
-                    </Col>
-                    <Col md={6}>
-                      <div className="p-4 bg-white border rounded-4 h-100 shadow-sm transition-hover">
-                        <span className="text-muted d-block mb-2 small fw-semibold text-uppercase tracking-wider">Tanggal Buka</span>
-                        <span className="fw-bold fs-4 text-dark">
-                          {pengajuanData?.createdAt ? new Date(pengajuanData.createdAt).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : pengajuanData?.created_at ? new Date(pengajuanData.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
-                        </span>
-                      </div>
-                    </Col>
-                    <Col md={6}>
-                      <div className="p-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-4 h-100 shadow-sm transition-hover">
-                        <span className="text-primary d-block mb-2 small fw-bold text-uppercase tracking-wider">Saldo Akhir (Pembiayaan)</span>
-                        <span className="fw-bold fs-3 text-primary">
-                          Rp {formatCurrency(pengajuanData?.amount_requested || pengajuanData?.nominal_kredit || 0)}
-                        </span>
-                      </div>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                   
-                  <div className="d-flex flex-column flex-md-row gap-3 pt-2">
-                    <Button variant="success" className="px-4 py-3 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center fs-5 transition-transform hover-scale">
+                  <div className="d-flex flex-wrap gap-2 pt-4 border-top border-white border-opacity-25 justify-content-start">
+                    <Button variant="light" className="px-4 py-2 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center text-primary transition-transform hover-scale" onClick={handleSetoran}>
                       <FaMoneyBillWave className="me-2" /> Setoran
                     </Button>
-                    <Button variant="primary" className="px-4 py-3 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center fs-5 transition-transform hover-scale" onClick={handleViewPortofolio}>
+                    <Button variant="outline-light" className="px-4 py-2 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center transition-transform hover-scale" onClick={handleViewPortofolio}>
                       <FaBriefcase className="me-2" /> Portofolio
-                    </Button>
-                    <Button variant="outline-primary" className="px-4 py-3 fw-bold rounded-pill shadow-sm flex-grow-1 d-flex align-items-center justify-content-center fs-5 transition-transform hover-scale bg-white" onClick={handlePengajuanBaru}>
-                      <FaFileSignature className="me-2" /> Pengajuan Baru
                     </Button>
                   </div>
                 </Card.Body>
               </Card>
             )}
 
-            <div className="text-center mt-5">
+            <div className="text-center mt-5 mb-3">
               <Button
-                variant="outline-secondary"
-                className="px-5 py-2 fw-medium rounded-pill shadow-sm"
+                variant="light"
+                className="px-5 py-3 fw-bold text-secondary rounded-pill shadow-sm bg-white hover-scale border"
                 onClick={handleBack}
               >
                 Kembali ke Pusat Investasi

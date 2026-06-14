@@ -22,7 +22,7 @@ const InvestasiHalal = () => {
   const { sukukList, portofolioList, loading, error } = useInvestasiData();
 
   const activePortofolio = React.useMemo(() => {
-    return portofolioList.filter(item => ['paid', 'approved', 'completed'].includes(item.status));
+    return portofolioList.filter(item => ['pending', 'ready_to_pay', 'paid', 'approved', 'completed'].includes(item.status));
   }, [portofolioList]);
 
   const formatCurrency = useCallback((value) => {

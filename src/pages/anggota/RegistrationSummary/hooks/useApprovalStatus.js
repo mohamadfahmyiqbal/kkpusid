@@ -8,35 +8,39 @@ const useApprovalStatus = (
   final_status,
 ) => {
   return useMemo(() => {
+    const status = final_status?.toUpperCase() || "";
+    const isRejected = status === "REJECTED" || status === "DITOLAK";
+
     // Pengawas selesai jika sudah approve ATAU workflow sudah mencapai status akhir
     const pengawasDone =
       is_approved_pengawas == true ||
-      final_status === "APPROVED" ||
-      final_status === "WAITING_PAYMENT";
+      status === "APPROVED" ||
+      status === "WAITING_PAYMENT";
 
     // Ketua selesai jika sudah approve ATAU workflow sudah mencapai status akhir
     const ketuaDone =
       is_approved_ketua == true ||
-      final_status === "APPROVED" ||
-      final_status === "WAITING_PAYMENT";
-
-    // Debug logging
-    console.log("🔍 Approval Status Debug:", {
-      current_step_id,
-      is_approved_pengawas,
-      is_approved_ketua,
-      final_status,
-      pengawasDone,
-      ketuaDone,
-    });
+      status === "APPROVED" ||
+      status === "WAITING_PAYMENT";
 
     // Siap bayar jika kedua pihak setuju ATAU status sudah masuk fase bayar
     const readyForInvoice =
-      (pengawasDone && ketuaDone) ||
-      final_status === "APPROVED" ||
-      final_status === "WAITING_PAYMENT";
+      (pengawasDone && ketuaDone && !isRejected) ||
+      status === "APPROVED" ||
+      status === "WAITING_PAYMENT";
 
-    return { pengawasDone, ketuaDone, readyForInvoice };
+    let pengawasRejected = false;
+    let ketuaRejected = false;
+
+    if (isRejected) {
+      if (!pengawasDone) {
+        pengawasRejected = true;
+      } else {
+        ketuaRejected = true;
+      }
+    }
+
+    return { pengawasDone, ketuaDone, pengawasRejected, ketuaRejected, isRejected, readyForInvoice };
   }, [is_approved_pengawas, is_approved_ketua, current_step_id, final_status]);
 };
 

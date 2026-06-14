@@ -1,12 +1,12 @@
 import React from "react";
 import api from "../../../../utils/api/common";
 
-console.log("DEBUG: useLandingData.js loaded. React:", React);
+
 
 const useLandingData = () => {
-  console.log("DEBUG: useLandingData called. React:", React);
+
   if (React) {
-    console.log("DEBUG: React.useState type:", typeof React.useState);
+
   }
   
   const [services, setServices] = React.useState([]);

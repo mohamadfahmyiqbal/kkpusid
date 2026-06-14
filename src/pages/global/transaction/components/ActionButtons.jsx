@@ -37,7 +37,7 @@ const ActionButtons = ({
 
   const handlePay = () => {
     if (isPinjamanProduct) {
-      navigate(`/${jwtEncode({ page: "pinjamanReceiptPage", financingId: transactionId })}`);
+      navigate(`/${jwtEncode({ page: "receiptPage", financingId: transactionId })}`);
       return;
     }
 
@@ -101,14 +101,14 @@ const ActionButtons = ({
             variant="primary"
             size="lg"
             className="rounded-pill px-5 py-3 fw-bold shadow d-flex align-items-center justify-content-center gap-2"
-            onClick={() => navigate(`/${jwtEncode({ page: 'simpananPage' })}`)}
+            onClick={() => navigate(`/${jwtEncode({ page: 'receiptPage', withdrawalId: transactionId })}`)}
             style={{ 
               background: 'linear-gradient(45deg, #10b981, #059669)',
               border: 'none'
             }}
           >
-            <FaWallet />
-            KEMBALI KE SIMPANAN
+            <FaFileInvoiceDollar />
+            LIHAT RESI PENCAIRAN
           </Button>
         )}
         

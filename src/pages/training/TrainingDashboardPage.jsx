@@ -13,13 +13,14 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../utils/helpers";
-import LayoutGlobal from "../../components/layout/components/LayoutGlobal";
+import TrainingService from "../../services/training.service";
 import {
   FaChalkboardTeacher,
   FaBook,
   FaTrophy,
   FaHeadphones,
 } from "react-icons/fa";
+import "./TrainingDashboardPage.css";
 
 const TrainingDashboardPage = () => {
   const navigate = useNavigate();
@@ -30,65 +31,38 @@ const TrainingDashboardPage = () => {
   const [kurikulumReguler, setKurikulumReguler] = useState([]);
 
   useEffect(() => {
-    // TODO: Fetch data from API
-    // fetchKurikulumWajib();
-    // fetchKurikulumReguler();
+    const fetchCurriculums = async () => {
+      try {
+        setLoading(true);
+        const [resWajib, resReguler] = await Promise.all([
+          TrainingService.getCurriculums("WAJIB"),
+          TrainingService.getCurriculums("REGULER")
+        ]);
 
-    // Mock data
-    setTimeout(() => {
-      setKurikulumWajib([
-        {
-          id: 1,
-          title: "Pengenalan Koperasi",
-          description: "Dasar-dasar pemahaman tentang koperasi",
-          duration: "2 jam",
-          modules: 5,
-          completed: true,
-          progress: 100,
-        },
-        {
-          id: 2,
-          title: "Manajemen Keuangan Koperasi",
-          description: "Prinsip dan praktik manajemen keuangan",
-          duration: "3 jam",
-          modules: 8,
-          completed: false,
-          progress: 60,
-        },
-        {
-          id: 3,
-          title: "Etika Bisnis Syariah",
-          description: "Penerapan prinsip syariah dalam bisnis",
-          duration: "2.5 jam",
-          modules: 6,
-          completed: false,
-          progress: 0,
-        },
-      ]);
+        const mapData = (item) => ({
+          id: item.curriculum_id,
+          title: item.curriculum_name,
+          description: item.description,
+          duration: "-", // Belum ada di API
+          modules: item.materials_count || 0, // Fallback ke 0
+          completed: item.progress === 100,
+          progress: item.progress || 0,
+        });
 
-      setKurikulumReguler([
-        {
-          id: 4,
-          title: "Leadership Koperasi",
-          description: "Pengembangan kepemimpinan untuk pengurus",
-          duration: "4 jam",
-          modules: 10,
-          completed: false,
-          progress: 30,
-        },
-        {
-          id: 5,
-          title: "Digital Marketing Koperasi",
-          description: "Strategi pemasaran digital untuk koperasi",
-          duration: "3 jam",
-          modules: 7,
-          completed: false,
-          progress: 0,
-        },
-      ]);
+        if (resWajib.status) {
+          setKurikulumWajib(resWajib.data.map(mapData));
+        }
+        if (resReguler.status) {
+          setKurikulumReguler(resReguler.data.map(mapData));
+        }
+      } catch (err) {
+        setError("Gagal memuat daftar kurikulum");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setLoading(false);
-    }, 1000);
+    fetchCurriculums();
   }, []);
 
   const handleViewMateri = useCallback(
@@ -123,62 +97,69 @@ const TrainingDashboardPage = () => {
   const renderKurikulumCard = (item, type) => (
     <Card
       key={item.id}
-      className="h-100 border-0 shadow-sm hover-shadow transition-all"
+      className={`training-card h-100 border-0 shadow-sm transition-all ${item.completed ? 'training-card-completed' : ''}`}
     >
-      <Card.Body className="p-4">
-        <div className="d-flex justify-content-between align-items-start mb-3">
-          <div className="flex-grow-1">
-            <h6 className="fw-bold mb-2">{item.title}</h6>
-            <p className="text-muted small mb-2">{item.description}</p>
-            <div className="d-flex gap-3 small text-muted">
-              <span>
-                <FaBook className="me-1" />
-                {item.modules} Modul
-              </span>
-              <span>
-                <FaHeadphones className="me-1" />
-                {item.duration}
-              </span>
-            </div>
-          </div>
+      <div className="training-card-header-icon p-3">
+         <div className="icon-wrapper bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
+            <FaChalkboardTeacher size={24} />
+         </div>
+      </div>
+      <Card.Body className="p-4 pt-0">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <h5 className="fw-bold text-dark-blue line-clamp-2">{item.title}</h5>
           {item.completed && (
-            <Badge bg="success" className="ms-2">
+            <Badge bg="success" className="rounded-pill px-3 py-1">
               Selesai
             </Badge>
           )}
         </div>
+        
+        <p className="text-muted small mb-3 line-clamp-2" style={{ minHeight: '3em' }}>
+          {item.description}
+        </p>
 
-        {item.progress > 0 && !item.completed && (
-          <div className="mb-3">
-            <div className="d-flex justify-content-between mb-1">
-              <span className="small text-muted">Progress</span>
-              <span className="small fw-bold">{item.progress}%</span>
-            </div>
-            <div className="progress" style={{ height: "6px" }}>
-              <div
-                className="progress-bar bg-primary"
-                style={{ width: `${item.progress}%` }}
-              />
-            </div>
+        <div className="d-flex flex-wrap gap-2 mb-4">
+          <div className="d-flex align-items-center gap-1 small text-muted bg-light px-3 py-1 rounded-pill">
+            <FaBook className="text-primary" />
+            <span>{item.modules} Modul</span>
           </div>
-        )}
+          {item.duration !== "-" && (
+             <div className="d-flex align-items-center gap-1 small text-muted bg-light px-3 py-1 rounded-pill">
+               <FaHeadphones className="text-primary" />
+               <span>{item.duration}</span>
+             </div>
+          )}
+        </div>
 
-        <div className="d-flex gap-2">
+        <div className="training-progress-section mb-4">
+          <div className="d-flex justify-content-between mb-1 align-items-end">
+            <span className="small text-muted fw-bold">Progress Belajar</span>
+            <span className="small fw-black text-primary">{item.progress}%</span>
+          </div>
+          <div className="progress rounded-pill overflow-hidden" style={{ height: "8px", background: '#f1f5f9' }}>
+            <div
+              className={`progress-bar transition-all ${item.progress === 100 ? 'bg-success' : 'bg-primary'}`}
+              style={{ width: `${item.progress}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="d-flex gap-2 mt-auto">
           <Button
-            variant="primary"
-            size="sm"
-            className="flex-grow-1"
+            variant={item.progress > 0 ? "primary" : "outline-primary"}
+            className="flex-grow-1 fw-bold rounded-3 py-2 btn-training-action"
             onClick={() => handleViewMateri(item.id, type)}
           >
-            {item.progress > 0 ? "Lanjutkan" : "Mulai"}
+            {item.progress === 100 ? "Review Materi" : (item.progress > 0 ? "Lanjutkan" : "Mulai Belajar")}
           </Button>
           {item.progress >= 80 && !item.completed && (
             <Button
-              variant="outline-success"
-              size="sm"
+              variant="success"
+              className="fw-bold rounded-3 py-2 btn-training-evaluasi px-4"
               onClick={() => handleStartEvaluasi(item.id, type)}
+              title="Evaluasi"
             >
-              Evaluasi
+              <FaTrophy />
             </Button>
           )}
         </div>
@@ -188,92 +169,92 @@ const TrainingDashboardPage = () => {
 
   if (loading) {
     return (
-      <LayoutGlobal title="Training">
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Memuat kurikulum training...</p>
-        </div>
-      </LayoutGlobal>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-3 text-muted fw-medium">Memuat kurikulum training...</p>
+      </div>
     );
   }
 
   return (
-    <LayoutGlobal title="Training">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaChalkboardTeacher className="me-2" />
-            E-Training & Sertifikasi
-          </h3>
-        </div>
-      </div>
-
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} md={12}>
+    <Container fluid className="px-2 px-md-3 py-3 fade-in">
+      <Row>
+        <Col xs={12}>
             {error && (
               <Alert variant="danger" className="mb-4">
                 {error}
               </Alert>
             )}
 
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-4">
+            <Card className="shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+              <Card.Body className="p-0">
                 <Tabs
                   activeKey={activeTab}
                   onSelect={(k) => setActiveTab(k)}
-                  className="mb-4"
+                  className="mb-4 custom-training-tabs gap-2 pt-4 px-4"
+                  variant="pills"
                 >
-                  <Tab eventKey="kurikulum" title="Kurikulum">
-                    <Tabs
-                      defaultActiveKey="wajib"
-                      id="kurikulum-sub-tabs"
-                      className="mb-4"
-                    >
-                      <Tab eventKey="wajib" title="Kurikulum Wajib">
-                        <h6 className="fw-bold mb-3">Materi Wajib</h6>
-                        <Row className="g-3">
-                          {kurikulumWajib.map((item) => (
-                            <Col md={6} key={item.id}>
-                              {renderKurikulumCard(item, "wajib")}
-                            </Col>
-                          ))}
-                        </Row>
-                        {kurikulumWajib.length === 0 && (
-                          <div className="text-center py-4 text-muted">
-                            Tidak ada kurikulum wajib saat ini
-                          </div>
-                        )}
-                      </Tab>
+                  <Tab
+                    eventKey="kurikulum" 
+                    title={
+                      <div className="d-flex align-items-center gap-2">
+                        <FaBook /> 
+                        <span>Kurikulum</span>
+                      </div>
+                    }
+                  >
+                    <div className="px-4 pb-4">
+                      <Tabs
+                        defaultActiveKey="wajib"
+                        id="kurikulum-sub-tabs"
+                        className="mb-4 custom-training-pills gap-2"
+                        variant="pills"
+                      >
+                        <Tab eventKey="wajib" title="Kurikulum Wajib">
+                          <Row className="g-4 mt-2">
+                            {kurikulumWajib.map((item) => (
+                              <Col lg={4} md={6} key={item.id}>
+                                {renderKurikulumCard(item, "wajib")}
+                              </Col>
+                            ))}
+                          </Row>
+                          {kurikulumWajib.length === 0 && (
+                            <div className="text-center py-5 bg-light rounded-4 text-muted mt-4">
+                              <FaBook className="fs-1 mb-3 text-secondary opacity-50" />
+                              <p className="mb-0">Tidak ada kurikulum wajib saat ini</p>
+                            </div>
+                          )}
+                        </Tab>
 
-                      <Tab eventKey="reguler" title="Kurikulum Reguler">
-                        <h6 className="fw-bold mb-3">Materi Reguler</h6>
-                        <Row className="g-3">
-                          {kurikulumReguler.map((item) => (
-                            <Col md={6} key={item.id}>
-                              {renderKurikulumCard(item, "reguler")}
-                            </Col>
-                          ))}
-                        </Row>
-                        {kurikulumReguler.length === 0 && (
-                          <div className="text-center py-4 text-muted">
-                            Tidak ada kurikulum reguler saat ini
-                          </div>
-                        )}
-                      </Tab>
-                    </Tabs>
+                        <Tab eventKey="reguler" title="Kurikulum Reguler">
+                          <Row className="g-4 mt-2">
+                            {kurikulumReguler.map((item) => (
+                              <Col lg={4} md={6} key={item.id}>
+                                {renderKurikulumCard(item, "reguler")}
+                              </Col>
+                            ))}
+                          </Row>
+                          {kurikulumReguler.length === 0 && (
+                            <div className="text-center py-5 bg-light rounded-4 text-muted mt-4">
+                              <FaBook className="fs-1 mb-3 text-secondary opacity-50" />
+                              <p className="mb-0">Tidak ada kurikulum reguler saat ini</p>
+                            </div>
+                          )}
+                        </Tab>
+                      </Tabs>
+                    </div>
                   </Tab>
 
                   <Tab
                     eventKey="ranking"
                     title={
-                      <>
-                        <FaTrophy className="me-2" />
-                        Peringkat
-                      </>
+                      <div className="d-flex align-items-center gap-2">
+                        <FaTrophy /> 
+                        <span>Peringkat</span>
+                      </div>
                     }
                   >
-                    <div className="text-center py-5">
+                    <div className="text-center py-5 px-4">
                       <div
                         className="text-muted mb-3"
                         style={{ fontSize: "64px" }}
@@ -286,7 +267,7 @@ const TrainingDashboardPage = () => {
                       </p>
                       <Button
                         variant="primary"
-                        className="px-5 py-2 fw-bold shadow-sm"
+                        className="px-5 py-2 fw-bold shadow-sm rounded-pill"
                         onClick={handleViewRanking}
                       >
                         Lihat Peringkat
@@ -298,9 +279,9 @@ const TrainingDashboardPage = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
-    </LayoutGlobal>
+    </Container>
   );
 };
+
 
 export default TrainingDashboardPage;

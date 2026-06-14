@@ -30,7 +30,7 @@ export const useWithdrawalData = (categoryCode) => {
   useEffect(() => {
     if (socket) {
       const handleWithdrawalsUpdate = (data) => {
-        console.log("Update penarikan:", data);
+
         if (data.category === categoryCode) {
           setHistory(data.withdrawals || []);
           setBalance(data.balance || 0);

@@ -37,5 +37,5 @@ const PAGES_TO_UPDATE = [
   'src/pages/training/TrainingPage.jsx'
 ];
 
-console.log('Pages to update with PageTitle:', PAGES_TO_UPDATE);
+
 export default PAGES_TO_UPDATE;

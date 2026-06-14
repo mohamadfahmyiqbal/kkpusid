@@ -15,6 +15,7 @@ import { getSocket } from "../../../../utils/socket";
 import { useProfile } from "../../../../components/layout/contexts";
 import { toast } from "react-toastify";
 import "../../../jualbeli/JualBeliDashboardPage.css";
+import "./InformasiRekeningCard.css";
 
 /**
  * Komponen kartu informasi rekening dengan desain premium & modern
@@ -135,8 +136,8 @@ const InformasiRekeningCard = memo(
     if (loading)
       return (
         <Card
-          className="border-0 shadow-sm text-center py-5 text-white"
-          style={{ background: activeTheme.gradient, borderRadius: "24px", minHeight: '200px' }}
+          className="border-0 shadow-sm text-center py-5 text-white loading-card"
+          style={{ background: activeTheme.gradient }}
         >
           <div className="d-flex flex-column align-items-center justify-content-center h-100">
             <Spinner animation="border" variant="light" size="sm" />
@@ -159,15 +160,14 @@ const InformasiRekeningCard = memo(
 
     return (
       <Card
-        className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in"
+        className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card"
         style={{ 
           background: activeTheme.gradient, 
-          borderRadius: "24px",
           boxShadow: `0 20px 40px -10px ${activeTheme.shadow}`
         }}
       >
         <div className="glass-sheen" />
-        <Card.Body className="p-4 relative" style={{ zIndex: 2 }}>
+        <Card.Body className="p-4 relative card-body-front">
           {/* Card Top */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect">
@@ -189,7 +189,7 @@ const InformasiRekeningCard = memo(
           {/* Saldo Display */}
           <div className="dc-saldo-display mb-4">
             <div className="small opacity-75 mb-1 fw-medium">Saldo {details?.produk}</div>
-            <h2 className="fw-bold mb-0 text-white font-outfit card-amount-value" style={{ fontSize: '30px' }}>
+            <h2 className="fw-bold mb-0 text-white font-outfit card-amount-value saldo-text">
               Rp {details?.saldo?.toLocaleString("id-ID")}
             </h2>
           </div>
@@ -238,9 +238,8 @@ const InformasiRekeningCard = memo(
               {activeType.includes("SUKARELA") && details?.saldo > 0 && (
                 <Button
                   variant="outline-light"
-                  className="flex-fill shadow-sm rounded-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+                  className="flex-fill shadow-sm rounded-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text btn-pencairan"
                   onClick={() => handleAction("WITHDRAW")}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
                 >
                   <MdAccountBalanceWallet size={18} /> Pencairan
                 </Button>
@@ -248,33 +247,6 @@ const InformasiRekeningCard = memo(
             </div>
           )}
         </Card.Body>
-
-        <style>{`
-          .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          .fa-spin {
-            animation: spin 1s linear infinite;
-          }
-          .transition-all {
-            transition: all 0.2s ease-in-out;
-          }
-          .hover-opacity-100:hover {
-            opacity: 1 !important;
-            transform: scale(1.1);
-          }
-          .text-white-90 {
-            color: rgba(255, 255, 255, 0.9);
-          }
-        `}</style>
       </Card>
     );
   },

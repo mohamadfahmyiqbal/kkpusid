@@ -45,7 +45,9 @@ const JualBeliDashboardPage = () => {
   }, [fetchTransactionData]);
 
   const handleGoToSetoran = () => {
-    navigate(`/${jwtEncode({ page: "billingPage", category: "SAVINGS", return: "jualBeliPage" })}`);
+    const fid = approvedFinancing?.financing_id || approvedFinancing?.id;
+    const dp = approvedFinancing?.down_payment || 0;
+    navigate(`/${jwtEncode({ page: "billingPage", category: "FINANCING", financingId: fid, productName: "pembiayaan", downPayment: dp, return: "jualBeliPage" })}`);
   };
 
   const handleGoToFormPembelian = () => {

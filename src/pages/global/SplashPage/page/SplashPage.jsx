@@ -32,6 +32,28 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
     setMosqueError(true);
   }, []);
 
+  useEffect(() => {
+    const checkCacheVersion = async () => {
+      const currentVersion = (import.meta && import.meta.env && import.meta.env.VITE_APP_VERSION) || process.env.REACT_APP_APP_VERSION || '1.0.0';
+      const storedVersion = localStorage.getItem('app_version');
+
+      if (storedVersion !== currentVersion) {
+        localStorage.clear();
+        sessionStorage.clear();
+        if ('caches' in window) {
+          try {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+          } catch (e) {
+            console.error('Error clearing caches:', e);
+          }
+        }
+        localStorage.setItem('app_version', currentVersion);
+      }
+    };
+    checkCacheVersion();
+  }, []);
+
   // Efek untuk merotasi pesan loading
   useEffect(() => {
     const interval = setInterval(() => {

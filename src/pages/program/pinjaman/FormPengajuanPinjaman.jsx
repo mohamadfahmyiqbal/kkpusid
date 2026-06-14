@@ -120,7 +120,7 @@ export default function FormPengajuanPinjaman() {
 
   useSocketListener((payload) => {
     if (payload?.entityRef === "financing_applications") {
-      console.log("🔄 Financing application updated via socket");
+
       fetchLoanProducts();
     }
   });

@@ -12,31 +12,35 @@ import {
   Tab,
   Form,
   ListGroup,
+  ProgressBar,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import LayoutGlobal from "../../../components/layout/components/LayoutGlobal";
+import TrainingService from "../../../services/training.service";
 import {
   FaBook,
-  FaHeadphones,
   FaEdit,
   FaDownload,
   FaFileAlt,
   FaArrowLeft,
   FaCheckCircle,
+  FaBookOpen,
+  FaRegFilePdf,
+  FaQuestionCircle,
+  FaClock,
 } from "react-icons/fa";
+import "./DetailMateri.css";
 
 const DetailMateri = () => {
   const navigate = useNavigate();
   const [materiData, setMateriData] = useState(null);
-  const [activeTab, setActiveTab] = useState("audio");
+  const [activeTab, setActiveTab] = useState("materi");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
-    // Get kurikulumId from URL
     const pathParts = window.location.pathname.split("/");
     const lastPart = pathParts[pathParts.length - 1];
     try {
@@ -44,82 +48,71 @@ const DetailMateri = () => {
       const kurikulumId = decoded?.kurikulumId;
       const type = decoded?.type;
 
-      // TODO: Fetch materi data from API
-      // fetchMateriData(kurikulumId, type);
+      const fetchMateriData = async () => {
+        try {
+          setLoading(true);
+          const response = await TrainingService.getMaterials(kurikulumId);
+          
+          if (response.status) {
+            // Transform data if needed, or set directly
+            const materials = response.data;
+            
+            // Assume the first material represents the curriculum info for now
+            // or fetch curriculum detail separately if needed
+            setMateriData({
+              id: kurikulumId,
+              title: materials[0]?.curriculum?.curriculum_name || "Materi Training",
+              type: type || "WAJIB",
+              description: materials[0]?.curriculum?.description || "Pelajari materi ini untuk meningkatkan pengetahuan Anda.",
+              duration: "-", // Or calculate from materials
+              modules: materials.map(m => ({
+                id: m.material_id,
+                title: m.material_title,
+                duration: m.duration || "15 menit",
+                documentUrl: m.content_url,
+                completed: m.evaluations?.length > 0 && m.evaluations[0].passed,
+                quizCompleted: m.evaluations?.length > 0 && m.evaluations[0].passed,
+              })),
+              progress: 0, // Calculate progress
+            });
+            
+            // Calculate progress based on passed evaluations
+            const passedCount = materials.filter(m => m.evaluations?.length > 0 && m.evaluations[0].passed).length;
+            const progress = materials.length > 0 ? Math.round((passedCount / materials.length) * 100) : 0;
+            
+            setMateriData(prev => ({ ...prev, progress }));
+            
+            // Notes handling
+            if (materials.length > 0 && materials[0].notes?.length > 0) {
+              setNotes(materials[0].notes[0].note_content);
+            }
+          }
+        } catch (err) {
+          setError("Gagal memuat detail materi");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-      // Mock data
-      setTimeout(() => {
-        setMateriData({
-          id: kurikulumId || 1,
-          title: "Pengenalan Koperasi",
-          type: type || "wajib",
-          description: "Dasar-dasar pemahaman tentang koperasi",
-          duration: "2 jam",
-          modules: [
-            {
-              id: 1,
-              title: "Modul 1: Sejarah Koperasi",
-              duration: "15 menit",
-              audioUrl: "/audio/modul1.mp3",
-              documentUrl: "/docs/modul1.pdf",
-              completed: true,
-            },
-            {
-              id: 2,
-              title: "Modul 2: Prinsip Koperasi",
-              duration: "20 menit",
-              audioUrl: "/audio/modul2.mp3",
-              documentUrl: "/docs/modul2.pdf",
-              completed: true,
-            },
-            {
-              id: 3,
-              title: "Modul 3: Jenis-Jenis Koperasi",
-              duration: "25 menit",
-              audioUrl: "/audio/modul3.mp3",
-              documentUrl: "/docs/modul3.pdf",
-              completed: false,
-            },
-            {
-              id: 4,
-              title: "Modul 4: Struktur Organisasi",
-              duration: "30 menit",
-              audioUrl: "/audio/modul4.mp3",
-              documentUrl: "/docs/modul4.pdf",
-              completed: false,
-            },
-            {
-              id: 5,
-              title: "Modul 5: Hak dan Kewajiban Anggota",
-              duration: "30 menit",
-              audioUrl: "/audio/modul5.mp3",
-              documentUrl: "/docs/modul5.pdf",
-              completed: false,
-            },
-          ],
-          progress: 40,
-          savedNotes: "Catatan penting tentang prinsip koperasi...",
-        });
-        setNotes("Catatan penting tentang prinsip koperasi...");
-        setLoading(false);
-      }, 1000);
+      fetchMateriData();
     } catch (e) {
       console.error("Error decoding URL:", e);
-      setError("Invalid URL");
+      setError("URL tidak valid");
       setLoading(false);
     }
   }, []);
 
   const handleSaveNotes = async () => {
+    if (!notes.trim() || !materiData) return;
+    
     setSavingNotes(true);
     try {
-      // TODO: Call API to save notes
-      // await TrainingService.saveNotes(materiData.id, notes);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setMateriData((prev) => ({ ...prev, savedNotes: notes }));
+      const materialId = materiData.modules?.[0]?.id;
+      if (materialId) {
+        await TrainingService.saveNote(materialId, notes);
+        setMateriData((prev) => ({ ...prev, savedNotes: notes }));
+        // Could add a toast here for success
+      }
     } catch (err) {
       setError("Gagal menyimpan catatan");
     } finally {
@@ -128,8 +121,22 @@ const DetailMateri = () => {
   };
 
   const handleDownload = useCallback((url, filename) => {
-    // TODO: Implement download
-    console.log(`Downloading ${filename} from ${url}`);
+    // Implement download logic here
+  }, []);
+
+  const handleReadMateri = useCallback((modulId) => {
+    const token = jwtEncode({
+      page: "bacaMateri",
+      kurikulumId: materiData?.id,
+      modulId: modulId,
+      type: materiData?.type,
+    });
+    navigate(`/${token}`);
+  }, [navigate, materiData]);
+
+  const handleStartQuizMateri = useCallback((modulId) => {
+    // Navigate to specific module quiz
+    console.log("Start quiz for module:", modulId);
   }, []);
 
   const handleStartEvaluasi = useCallback(() => {
@@ -148,231 +155,199 @@ const DetailMateri = () => {
 
   if (loading) {
     return (
-      <LayoutGlobal title="Detail Materi">
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Memuat materi...</p>
-        </div>
-      </LayoutGlobal>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-white">
+        <Spinner animation="border" variant="primary" size="lg" />
+        <p className="mt-3 text-muted fw-medium">Menyiapkan materi belajar...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <LayoutGlobal title="Detail Materi">
-        <Container className="mt-4">
-          <Alert variant="danger">{error}</Alert>
-          <Button onClick={handleBack}>Kembali</Button>
-        </Container>
-      </LayoutGlobal>
+      <Container className="mt-5 text-center">
+        <Alert variant="danger" className="rounded-4 shadow-sm border-0 py-4">
+           <h5 className="fw-bold mb-3">{error}</h5>
+           <Button variant="danger" className="rounded-pill px-4" onClick={handleBack}>Kembali ke Dashboard</Button>
+        </Alert>
+      </Container>
     );
   }
 
   return (
-    <LayoutGlobal title="Detail Materi">
-      <div className="row page-titles pt-3 border-bottom mb-4 mx-0">
-        <div className="col-12 align-self-center">
-          <h3 className="text-themecolor mb-0 mt-0 fw-bold">
-            <FaBook className="me-2" />
-            Detail Materi
-          </h3>
-        </div>
-      </div>
-
-      <Container className="mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} md={12}>
-            {/* Materi Info Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <h5 className="fw-bold mb-2">{materiData.title}</h5>
-                    <p className="text-muted mb-0">{materiData.description}</p>
-                  </div>
-                  <Badge
-                    bg={materiData.type === "wajib" ? "primary" : "secondary"}
-                  >
-                    {materiData.type === "wajib" ? "Wajib" : "Reguler"}
-                  </Badge>
-                </div>
-                <div className="d-flex gap-3 small text-muted">
-                  <span>
-                    <FaHeadphones className="me-1" />
-                    {materiData.duration}
-                  </span>
-                  <span>
-                    <FaBook className="me-1" />
-                    {materiData.modules.length} Modul
-                  </span>
-                  <span>Progress: {materiData.progress}%</span>
-                </div>
-              </Card.Body>
-            </Card>
-
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Body className="p-4">
+    <div className="detail-materi-container pb-5">
+      <Container fluid className="mt-4 px-0">
+        <Row className="mx-0">
+          <Col xs={12}>
+            {/* Learning Content Section */}
+            <Card className="shadow-sm border-0 rounded-4 overflow-hidden">
+              <Card.Body className="p-0">
                 <Tabs
                   activeKey={activeTab}
                   onSelect={(k) => setActiveTab(k)}
-                  className="mb-4"
+                  className="custom-detail-tabs nav-pills p-4 bg-light bg-opacity-50 border-bottom"
                 >
                   <Tab
-                    eventKey="audio"
+                    eventKey="materi"
                     title={
-                      <>
-                        <FaHeadphones className="me-2" />
-                        Audio Materi
-                      </>
+                      <div className="d-flex align-items-center gap-2">
+                        <FaBookOpen />
+                        <span>Materi Belajar</span>
+                      </div>
                     }
                   >
-                    <h6 className="fw-bold mb-3">Daftar Modul Audio</h6>
-                    <ListGroup>
-                      {materiData.modules.map((modul) => (
-                        <ListGroup.Item
-                          key={modul.id}
-                          className="d-flex justify-content-between align-items-center"
-                        >
-                          <div className="flex-grow-1">
-                            <div className="d-flex align-items-center">
-                              {modul.completed && (
-                                <FaCheckCircle className="text-success me-2" />
-                              )}
-                              <span
-                                className={
-                                  modul.completed
-                                    ? "text-decoration-line-through text-muted"
-                                    : ""
-                                }
-                              >
-                                {modul.title}
-                              </span>
+                    <div className="p-4 p-md-5">
+                      <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h5 className="fw-bold mb-0">Modul Pembelajaran</h5>
+                        <Badge bg="info" className="bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                          {materiData.modules.length} Modul Tersedia
+                        </Badge>
+                      </div>
+                      <ListGroup variant="flush" className="border-0">
+                        {materiData.modules.map((modul) => (
+                          <ListGroup.Item
+                            key={modul.id}
+                            className={`module-list-item d-flex align-items-center gap-3 ${modul.completed ? 'completed' : ''}`}
+                          >
+                            <div className={`module-icon-box ${modul.completed ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'}`}>
+                              {modul.completed ? <FaCheckCircle size={20} /> : <FaBookOpen size={20} />}
                             </div>
-                            <small className="text-muted">
-                              {modul.duration}
-                            </small>
-                          </div>
-                          <div className="d-flex gap-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={() =>
-                                console.log("Play audio:", modul.audioUrl)
-                              }
-                            >
-                              <FaHeadphones className="me-1" />
-                              Putar
-                            </Button>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              onClick={() =>
-                                handleDownload(modul.documentUrl, modul.title)
-                              }
-                            >
-                              <FaDownload className="me-1" />
-                              Download
-                            </Button>
-                          </div>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </Tab>
-
-                  <Tab
-                    eventKey="catatan"
-                    title={
-                      <>
-                        <FaEdit className="me-2" />
-                        Catatan
-                      </>
-                    }
-                  >
-                    <h6 className="fw-bold mb-3">Catatan Pribadi</h6>
-                    <Form.Group className="mb-3">
-                      <Form.Control
-                        as="textarea"
-                        rows={8}
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Tulis catatan Anda di sini..."
-                      />
-                    </Form.Group>
-                    <Button
-                      variant="primary"
-                      onClick={handleSaveNotes}
-                      disabled={savingNotes}
-                    >
-                      {savingNotes ? (
-                        <>
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            className="me-2"
-                          />
-                          Menyimpan...
-                        </>
-                      ) : (
-                        <>
-                          <FaEdit className="me-2" />
-                          Simpan Catatan
-                        </>
-                      )}
-                    </Button>
+                            <div className="flex-grow-1">
+                              <h6 className={`fw-bold mb-1 ${modul.completed ? 'text-success' : 'text-dark'}`}>
+                                {modul.title}
+                              </h6>
+                              <small className="text-muted d-flex align-items-center gap-2">
+                                <FaClock size={12} /> {modul.duration}
+                              </small>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <Button
+                                variant={modul.completed ? "outline-success" : "primary"}
+                                size="sm"
+                                className="rounded-pill px-4 fw-bold"
+                                onClick={() => handleReadMateri(modul.id)}
+                              >
+                                {modul.completed ? "Baca Lagi" : "Baca Materi"}
+                              </Button>
+                              <Button
+                                variant={modul.quizCompleted ? "success" : "outline-warning"}
+                                size="sm"
+                                className="rounded-pill px-3 fw-bold d-flex align-items-center gap-2"
+                                onClick={() => handleStartQuizMateri(modul.id)}
+                                disabled={!modul.completed && !modul.quizCompleted}
+                              >
+                                <FaQuestionCircle />
+                                <span>Quiz</span>
+                                {modul.quizCompleted && <FaCheckCircle size={12} />}
+                              </Button>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </div>
                   </Tab>
 
                   <Tab
                     eventKey="dokumen"
                     title={
-                      <>
-                        <FaFileAlt className="me-2" />
-                        Dokumen
-                      </>
+                      <div className="d-flex align-items-center gap-2">
+                        <FaFileAlt />
+                        <span>Dokumen Materi</span>
+                      </div>
                     }
                   >
-                    <h6 className="fw-bold mb-3">Dokumen Materi</h6>
-                    <ListGroup>
-                      {materiData.modules.map((modul) => (
-                        <ListGroup.Item
-                          key={modul.id}
-                          className="d-flex justify-content-between align-items-center"
-                        >
-                          <div className="d-flex align-items-center">
-                            <FaFileAlt className="text-primary me-2" />
-                            <span>{modul.title}.pdf</span>
-                          </div>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() =>
-                              handleDownload(modul.documentUrl, modul.title)
-                            }
+                    <div className="p-4 p-md-5">
+                       <h5 className="fw-bold mb-4">Materi Pendukung (.PDF)</h5>
+                       <ListGroup variant="flush">
+                        {materiData.modules.map((modul) => (
+                          <ListGroup.Item
+                            key={modul.id}
+                            className="module-list-item d-flex align-items-center gap-3"
                           >
-                            <FaDownload className="me-1" />
-                            Download
-                          </Button>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
+                            <div className="module-icon-box bg-danger bg-opacity-10 text-danger">
+                              <FaRegFilePdf size={22} />
+                            </div>
+                            <div className="flex-grow-1">
+                              <h6 className="fw-bold mb-0">{modul.title}</h6>
+                              <small className="text-muted">PDF Document</small>
+                            </div>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              className="rounded-pill px-3"
+                              onClick={() => handleDownload(modul.documentUrl, modul.title)}
+                            >
+                              <FaDownload size={14} className="me-1" /> Download
+                            </Button>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </div>
+                  </Tab>
+
+                  <Tab
+                    eventKey="catatan"
+                    title={
+                      <div className="d-flex align-items-center gap-2">
+                        <FaEdit />
+                        <span>Catatan Saya</span>
+                      </div>
+                    }
+                  >
+                    <div className="p-4 p-md-5">
+                      <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h5 className="fw-bold mb-0">Catatan Pembelajaran</h5>
+                        <small className="text-muted">Otomatis tersimpan sebagai draft</small>
+                      </div>
+                      <Form.Group className="mb-4">
+                        <Form.Control
+                          as="textarea"
+                          className="notes-textarea"
+                          rows={8}
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Tulis hal-hal penting yang Anda pelajari hari ini..."
+                        />
+                      </Form.Group>
+                      <div className="text-end">
+                        <Button
+                          variant="primary"
+                          className="px-5 py-2 fw-bold rounded-pill shadow-sm"
+                          onClick={handleSaveNotes}
+                          disabled={savingNotes}
+                        >
+                          {savingNotes ? (
+                            <>
+                              <Spinner animation="border" size="sm" className="me-2" />
+                              Menyimpan...
+                            </>
+                          ) : (
+                            <>Simpan Catatan</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </Tab>
                 </Tabs>
 
-                <div className="d-flex justify-content-between mt-4 pt-3 border-top">
+                {/* Footer Actions */}
+                <div className="p-4 bg-light border-top d-flex flex-column flex-md-row justify-content-between gap-3">
                   <Button
-                    variant="light"
-                    className="px-4 py-2 fw-bold text-muted"
+                    variant="link"
+                    className="btn-back-elegant text-decoration-none d-flex align-items-center justify-content-center gap-2"
                     onClick={handleBack}
                   >
-                    <FaArrowLeft className="me-2" />
-                    Kembali
+                    <FaArrowLeft />
+                    <span>Kembali ke Dashboard</span>
                   </Button>
+                  
                   {materiData.progress >= 80 && (
                     <Button
                       variant="success"
-                      className="px-5 py-2 fw-bold shadow-sm"
+                      className="px-5 py-2 fw-black rounded-pill shadow-md border-0"
                       onClick={handleStartEvaluasi}
+                      style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
                     >
-                      Mulai Evaluasi
+                      AMBIL EVALUASI SEKARANG
                     </Button>
                   )}
                 </div>
@@ -381,7 +356,7 @@ const DetailMateri = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutGlobal>
+    </div>
   );
 };
 

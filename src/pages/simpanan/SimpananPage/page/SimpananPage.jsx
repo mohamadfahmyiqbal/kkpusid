@@ -120,11 +120,13 @@ const SimpananPage = ({ decodedToken }) => {
           {/* Active Content */}
           <div className="px-2 animate-fade-in">
             {activeTab.code ? (
-              <InformasiRekeningCard
-                activeType={activeTab.code}
-                displayName={activeTab.name}
-                fromPage="simpananPage"
-              />
+              <>
+                <InformasiRekeningCard
+                  activeType={activeTab.code}
+                  displayName={activeTab.name}
+                  fromPage="simpananPage"
+                />
+              </>
             ) : (
               <div className="text-center py-5 bg-light rounded-4 text-muted">
                 <MdSavings size={48} className="opacity-20 mb-3" />

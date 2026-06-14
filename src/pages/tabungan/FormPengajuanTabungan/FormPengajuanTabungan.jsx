@@ -13,11 +13,16 @@ import {
   Alert,
   ProgressBar,
   Badge,
+  Row,
+  Col,
+  Container,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import { FaKaaba, FaGraduationCap, FaUtensils } from "react-icons/fa";
+import { FaKaaba, FaGraduationCap, FaUtensils, FaInfoCircle, FaCheck, FaExclamationTriangle } from "react-icons/fa";
 import { TabunganService } from "../../../services/tabungan.service";
+import { motion, AnimatePresence } from "framer-motion";
+import { useProfile } from "../../../components/layout/contexts";
 import "./FormPengajuanTabungan.css";
 
 // Product configurations
@@ -79,9 +84,60 @@ const PRODUCT_ICONS = {
   qurban: FaUtensils,
 };
 
+// --- Form Input Field Sub-component ---
+const FormInputField = React.memo(
+  ({
+    label,
+    value,
+    name,
+    type = "text",
+    readOnly = false,
+    onChange,
+    placeholder = "",
+    error = "",
+    required = false,
+    icon: Icon,
+    helperText,
+  }) => (
+    <Form.Group className="mb-4 custom-input-group">
+      <Form.Label className="form-label d-flex align-items-center fw-semibold">
+        {Icon && <Icon className="me-2 text-teal opacity-75" size={14} />}
+        {label}
+        {required && <span className="text-danger ms-1">*</span>}
+        {helperText && <span className="text-muted ms-2 small fw-normal">{helperText}</span>}
+      </Form.Label>
+      <Form.Control
+        type={type}
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        onChange={onChange}
+        className={`custom-flat-input ${error ? "border-danger error-shake" : ""}`}
+        isInvalid={!!error}
+        inputMode={type === "text" ? "numeric" : undefined}
+      />
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Form.Control.Feedback type="invalid" className="d-block mt-1">
+              <small className="text-danger fw-bold">{error}</small>
+            </Form.Control.Feedback>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Form.Group>
+  )
+);
+
 const FormPengajuanTabungan = () => {
   const navigate = useNavigate();
   const firstInputRef = useRef(null);
+  const { userData } = useProfile();
 
   const [productType, setProductType] = useState("haji");
   const [formData, setFormData] = useState({
@@ -134,7 +190,7 @@ const FormPengajuanTabungan = () => {
       }));
       setErrors((prev) => ({ ...prev, nominalTarget: "" }));
     },
-    [parseCurrency],
+    [parseCurrency]
   );
 
   const handleSetoranChange = useCallback(
@@ -146,7 +202,7 @@ const FormPengajuanTabungan = () => {
       }));
       setErrors((prev) => ({ ...prev, setoranAwal: "" }));
     },
-    [parseCurrency],
+    [parseCurrency]
   );
 
   const handleTenorChange = useCallback((e) => {
@@ -217,7 +273,6 @@ const FormPengajuanTabungan = () => {
       const responseData = response?.data?.data || response?.data || {};
       const applicationId = responseData.member_saving_target_id || responseData.id || null;
 
-      // Map savings response to TransactionDetailPage expected format
       const mappedData = {
         id: applicationId,
         amount: payload.nominalTarget,
@@ -236,7 +291,7 @@ const FormPengajuanTabungan = () => {
         is_approved_bendahara: false,
         is_rejected: false,
         member: {
-          full_name: responseData?.member?.full_name || responseData?.member_name || "-",
+          full_name: responseData?.member?.full_name || responseData?.member_name || userData?.name || "-",
           member_code: responseData?.member?.member_code || responseData?.member_no || "-",
           member_type: "Reguler",
         },
@@ -262,7 +317,7 @@ const FormPengajuanTabungan = () => {
       navigate(`/${token}`);
     } catch (err) {
       setSubmitError(
-        err?.response?.data?.message || "Gagal mengirim pengajuan",
+        err?.response?.data?.message || "Gagal mengirim pengajuan"
       );
     } finally {
       setLoading(false);
@@ -275,194 +330,242 @@ const FormPengajuanTabungan = () => {
   }, [navigate]);
 
   return (
-    <div className="form-pengajuan-page pb-5">
-      <div className="px-3 mt-4">
-        <div className="form-pengajuan-max-width mx-auto">
-          
-
-          {/* Form Card */}
-          <Card className="shadow-lg border-0 form-pengajuan-form-card">
-            <Card.Body className="p-4 p-md-5">
-              {submitError && (
-                <Alert variant="danger" className="mb-4" dismissible onClose={() => setSubmitError(null)}>
-                  {submitError}
-                </Alert>
-              )}
-
-              <Form onSubmit={handleSubmit} noValidate>
-                <div className="mb-4">
-                  <Form.Label className="fw-semibold" htmlFor="nominal-target">
-                    Nominal Target
-                    <span className="text-muted ms-2 small">
-                      (Min: Rp {formatCurrency(productConfig.minTarget)})
-                    </span>
-                  </Form.Label>
-                  <Form.Control
-                    id="nominal-target"
-                    ref={firstInputRef}
-                    type="text"
-                    value={
-                      formData.nominalTarget
-                        ? `Rp ${formatCurrency(formData.nominalTarget)}`
-                        : ""
-                    }
-                    onChange={handleNominalChange}
-                    placeholder="Contoh: Rp 25.000.000"
-                    isInvalid={!!errors.nominalTarget}
-                    disabled={loading}
-                    inputMode="numeric"
-                    className="form-pengajuan-input"
-                    aria-describedby="nominal-target-error"
-                  />
-                  <Form.Control.Feedback
-                    id="nominal-target-error"
-                    type="invalid"
-                  >
-                    {errors.nominalTarget}
-                  </Form.Control.Feedback>
-                </div>
-
-                <div className="row">
-                  <div className="col-md-6 mb-4">
-                    <Form.Label className="fw-semibold" htmlFor="tenor">
-                      Tenor / Periode
-                    </Form.Label>
-                    <Form.Select
-                      id="tenor"
-                      value={formData.tenor}
-                      onChange={handleTenorChange}
-                      disabled={loading}
-                      className="form-pengajuan-input"
-                      aria-describedby="tenor-help"
-                    >
-                      {TENOR_OPTIONS.filter(
-                        (opt) => opt.value <= productConfig.maxTenor,
-                      ).map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    <Form.Text id="tenor-help" className="text-muted">
-                      Maksimal: {productConfig.maxTenor} bulan
-                    </Form.Text>
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-                    <Form.Label className="fw-semibold" htmlFor="setoran-awal">
-                      Setoran Awal
-                      <span className="text-muted ms-2 small">
-                        (Min: Rp {formatCurrency(productConfig.minSetoran)})
-                      </span>
-                    </Form.Label>
-                    <Form.Control
-                      id="setoran-awal"
-                      type="text"
-                      value={
-                        formData.setoranAwal
-                          ? `Rp ${formatCurrency(formData.setoranAwal)}`
-                          : ""
-                      }
-                      onChange={handleSetoranChange}
-                      placeholder="Contoh: Rp 500.000"
-                      isInvalid={!!errors.setoranAwal}
-                      disabled={loading}
-                      inputMode="numeric"
-                      className="form-pengajuan-input"
-                      aria-describedby="setoran-awal-error"
-                    />
-                    <Form.Control.Feedback
-                      id="setoran-awal-error"
-                      type="invalid"
-                    >
-                      {errors.setoranAwal}
-                    </Form.Control.Feedback>
-                  </div>
-                </div>
-
-                {/* Summary Card */}
-                <div className="mb-4">
-                  <Card className="bg-light border-0 form-pengajuan-summary">
-                    <Card.Body className="p-3">
-                      <h6 className="fw-bold mb-3">
-                        Estimasi Setoran Bulanan
-                      </h6>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span className="text-muted">
-                          Perkiraan setoran per bulan:
-                        </span>
-                        <Badge bg="primary" className="fs-6 px-3 py-2">
-                          Rp {formatCurrency(estimatedMonthly)}
-                        </Badge>
+    <div className="form-pengajuan-page pb-5 px-0">
+      <Container fluid className="px-0 mt-4 font-outfit">
+        <Form onSubmit={handleSubmit} noValidate>
+          <Row className="g-4">
+            {/* LEFT COLUMN: Input Fields */}
+            <Col lg={7} xl={8}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Card className="premium-form-card border-0 p-3 p-md-4 mb-4 shadow-sm">
+                  <Card.Body>
+                    <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className={`p-3 rounded-circle bg-${productConfig.color} bg-opacity-10 text-${productConfig.color} me-3`}>
+                        <ProductIcon size={24} />
                       </div>
-                      {estimatedMonthly > 0 && (
-                        <ProgressBar
-                          now={100}
-                          variant="success"
-                          className="mt-2 form-pengajuan-progress"
-                        />
-                      )}
-                    </Card.Body>
-                  </Card>
-                </div>
-
-                <div className="mb-4">
-                  <Form.Check
-                    type="checkbox"
-                    id="akad-agreement"
-                    checked={formData.akadAgreed}
-                    onChange={handleAkadChange}
-                    isInvalid={!!errors.akadAgreed}
-                    disabled={loading}
-                    label={
-                      <span className="small">
-                        Saya menyetujui akad dan syarat ketentuan yang
-                        berlaku untuk {productConfig.label}
-                      </span>
-                    }
-                    aria-describedby="akad-error"
-                  />
-                  {errors.akadAgreed && (
-                    <div id="akad-error" className="text-danger small mt-1">
-                      {errors.akadAgreed}
+                      <div>
+                        <h5 className="fw-bold mb-1 text-dark">{productConfig.label}</h5>
+                        <p className="text-muted small mb-0">{productConfig.description}</p>
+                      </div>
                     </div>
-                  )}
+
+                    {submitError && (
+                      <Alert variant="danger" className="mb-4 d-flex align-items-center" dismissible onClose={() => setSubmitError(null)}>
+                        <FaExclamationTriangle className="me-2" />
+                        {submitError}
+                      </Alert>
+                    )}
+
+                    <div className="form-section-header mb-4">
+                      <h6 className="fw-bold font-outfit mb-0 text-dark">
+                        Detail Target Simpanan
+                      </h6>
+                    </div>
+
+                    <Form.Group className="mb-4 custom-input-group">
+                      <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                        <FaInfoCircle className="me-2 text-teal opacity-75" size={14} />
+                        Nominal Target
+                        <span className="text-danger ms-1">*</span>
+                        <span className="text-muted ms-2 small fw-normal">
+                          (Min: Rp {formatCurrency(productConfig.minTarget)})
+                        </span>
+                      </Form.Label>
+                      <Form.Control
+                        ref={firstInputRef}
+                        type="text"
+                        name="nominalTarget"
+                        value={formData.nominalTarget ? `Rp ${formatCurrency(formData.nominalTarget)}` : ""}
+                        onChange={handleNominalChange}
+                        placeholder="Contoh: Rp 25.000.000"
+                        className={`custom-flat-input ${errors.nominalTarget ? "border-danger error-shake" : ""}`}
+                        isInvalid={!!errors.nominalTarget}
+                        disabled={loading}
+                        inputMode="numeric"
+                      />
+                      <AnimatePresence>
+                        {errors.nominalTarget && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                            <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                              <small className="text-danger fw-bold">{errors.nominalTarget}</small>
+                            </Form.Control.Feedback>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Form.Group>
+
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-4 custom-input-group">
+                          <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                            Tenor / Periode
+                          </Form.Label>
+                          <Form.Select
+                            value={formData.tenor}
+                            onChange={handleTenorChange}
+                            disabled={loading}
+                            className="custom-flat-input"
+                          >
+                            {TENOR_OPTIONS.filter((opt) => opt.value <= productConfig.maxTenor).map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </Form.Select>
+                          <small className="text-muted mt-1 d-block">
+                            Maksimal: {productConfig.maxTenor} bulan
+                          </small>
+                        </Form.Group>
+                      </Col>
+
+                      <Col md={6}>
+                        <Form.Group className="mb-4 custom-input-group">
+                          <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                            Setoran Awal
+                            <span className="text-danger ms-1">*</span>
+                            <span className="text-muted ms-2 small fw-normal">
+                              (Min: Rp {formatCurrency(productConfig.minSetoran)})
+                            </span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="setoranAwal"
+                            value={formData.setoranAwal ? `Rp ${formatCurrency(formData.setoranAwal)}` : ""}
+                            onChange={handleSetoranChange}
+                            placeholder="Contoh: Rp 500.000"
+                            className={`custom-flat-input ${errors.setoranAwal ? "border-danger error-shake" : ""}`}
+                            isInvalid={!!errors.setoranAwal}
+                            disabled={loading}
+                            inputMode="numeric"
+                          />
+                          <AnimatePresence>
+                            {errors.setoranAwal && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                                <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                                  <small className="text-danger fw-bold">{errors.setoranAwal}</small>
+                                </Form.Control.Feedback>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+
+                {/* Akad details card */}
+                <Card className="premium-form-card border-0 p-3 p-md-4 shadow-sm">
+                  <Card.Body>
+                    <div className="form-section-header">
+                      <h6 className="fw-bold font-outfit mb-0 text-dark">
+                        Akad Perjanjian (Wadiah)
+                      </h6>
+                    </div>
+                    <p className="small text-muted mb-0 mt-3 leading-relaxed font-plus-jakarta">
+                      Dengan menyetujui, Anda menyatakan sepakat untuk membuka simpanan <strong>{productConfig.label}</strong> dengan sistem titipan murni (Wadiah Yad Dhamanah). Dana dapat diambil kembali sesuai dengan ketentuan periode dan target yang disepakati.
+                    </p>
+                  </Card.Body>
+                </Card>
+              </motion.div>
+            </Col>
+
+            {/* RIGHT COLUMN: Sticky Summary & Agreements */}
+            <Col lg={5} xl={4} className="sticky-summary-column">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="d-flex flex-column gap-4"
+              >
+                {/* Summary Info */}
+                <div className="summary-gradient-card">
+                  <div className="summary-accent-header d-flex justify-content-between align-items-center">
+                    <h5 className="fw-bold mb-0 font-outfit text-dark">Ringkasan Tabungan</h5>
+                    <div className="summary-badge-premium text-white">Estimasi</div>
+                  </div>
+                  <div className="p-4 bg-white rounded-bottom-4 shadow-sm">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <span className="text-muted small fw-bold">Setoran Bulanan</span>
+                      <span className="fw-bold fs-5 text-primary">Rp {formatCurrency(estimatedMonthly)}</span>
+                    </div>
+                    {estimatedMonthly > 0 && (
+                      <ProgressBar
+                        now={100}
+                        variant={productConfig.color || "primary"}
+                        className="form-pengajuan-progress mb-2"
+                        style={{ height: '6px' }}
+                      />
+                    )}
+                    <div className="d-flex justify-content-between mt-3 pt-3 border-top">
+                      <span className="text-muted small">Target Terkumpul</span>
+                      <span className="fw-bold">Rp {formatCurrency(formData.nominalTarget)}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="d-flex justify-content-between mt-4 pt-3 border-top">
+                {/* Agreement Checkboxes */}
+                <Card className="premium-form-card border-0 p-4 shadow-sm">
+                  <div className="form-section-header mb-3">
+                    <h6 className="fw-bold font-outfit mb-0 text-dark">
+                      Pernyataan Persetujuan
+                    </h6>
+                  </div>
+
+                  <div className="custom-checkbox-premium">
+                    <input
+                      type="checkbox"
+                      id="akadAgreed"
+                      checked={formData.akadAgreed}
+                      onChange={handleAkadChange}
+                      className={`form-check-input ${errors.akadAgreed ? 'is-invalid' : ''}`}
+                      disabled={loading}
+                    />
+                    <label htmlFor="akadAgreed" className="form-check-label small ms-2">
+                      Saya menyetujui akad Wadiah dan syarat ketentuan yang berlaku untuk {productConfig.label}.
+                    </label>
+                  </div>
+                  {errors.akadAgreed && <div className="text-danger small mt-1 fw-bold">{errors.akadAgreed}</div>}
+                </Card>
+
+                {/* Action Button */}
+                <div className="d-grid gap-2">
+                  <Button
+                    type="submit"
+                    disabled={loading || !formData.akadAgreed}
+                    className="btn-submit-premium w-100 d-flex flex-column align-items-center justify-content-center py-3 shadow-md border-0"
+                    style={{ background: 'var(--primary-color, #0d6efd)' }}
+                  >
+                    {loading ? (
+                      <div className="d-flex align-items-center gap-2">
+                        <Spinner animation="border" size="sm" variant="light" />
+                        <span className="fw-bold">Memproses Pengajuan...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="fw-bold" style={{ fontSize: "16px" }}>Ajukan Sekarang</span>
+                        <small className="opacity-75" style={{ fontSize: "11px" }}>Konfirmasi Pembukaan Rekening</small>
+                      </>
+                    )}
+                  </Button>
+
                   <Button
                     variant="light"
-                    className="px-4 py-2 fw-bold text-muted"
+                    className="w-100 py-2 fw-bold text-muted border-0 shadow-sm"
                     onClick={handleBack}
                     disabled={loading}
                   >
-                    Kembali
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    className="px-5 py-2 fw-bold shadow-sm form-pengajuan-submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner
-                          animation="border"
-                          size="sm"
-                          className="me-2"
-                        />
-                        Memproses...
-                      </>
-                    ) : (
-                      "Ajukan Sekarang"
-                    )}
+                    Batal & Kembali
                   </Button>
                 </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </div>
-      </div>
+              </motion.div>
+            </Col>
+          </Row>
+        </Form>
+      </Container>
     </div>
   );
 };

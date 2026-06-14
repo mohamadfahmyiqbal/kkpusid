@@ -19,7 +19,7 @@ const SOCKET_URL =
   process.env.REACT_APP_API_ORIGIN ||
   "https://localhost:3445";
 
-console.log("🔌 SOCKET_URL configured in ProfileContext:", SOCKET_URL);
+
 
 /**
  * Normalize notification status from DB string to numeric.
@@ -203,7 +203,7 @@ export const ProfileProvider = ({ children }) => {
     };
 
     const handleProfileRefresh = () => {
-      console.log("🔄 ProfileContext: Refreshing user profile and bills...");
+
       setLoading(true); // <-- Pause UI rendering to wait for new profile
       if (socketRef.current?.connected) {
         socketRef.current.emit("profile:request");
