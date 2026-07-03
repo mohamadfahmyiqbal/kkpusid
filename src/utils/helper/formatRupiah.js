@@ -5,8 +5,12 @@
  */
 export const formatRupiah = (value) => {
   if (value == null || value === undefined || value === "") return "";
+  
+  // Ambil bagian sebelum desimal (mengabaikan .00)
+  const stringValue = typeof value === 'number' ? Math.floor(value).toString() : value.toString().split('.')[0];
+  
   // Pastikan input adalah string dan ambil hanya angka
-  const numberString = value.toString().replace(/[^,\d]/g, "");
+  const numberString = stringValue.replace(/[^,\d]/g, "");
   const split = numberString.split(",");
   const sisa = split[0].length % 3;
   let rupiah = split[0].substr(0, sisa);

@@ -89,6 +89,9 @@ export const useBillingData = (decodedToken) => {
           rawData = rawData.filter((bill) =>
             hasCategory(bill, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "TRANSACTION_INSTALLMENT")
           );
+          if (financingId) {
+            rawData = rawData.filter(b => String(b.financing_application_id) === String(financingId));
+          }
           if (decodedToken?.productName) {
             const prod = decodedToken.productName.toLowerCase();
             if (prod.includes("arisan")) {

@@ -14,23 +14,15 @@ export const useForgotPassword = () => {
   const navigate = useNavigate();
 
   /**
-   * Validasi format email/phone
+   * Validasi format email
    */
-  const validateEmailPhone = (value) => {
+  const validateEmail = (value) => {
     if (!value || value.trim() === "") return false;
 
     const trimmedValue = value.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\d{10,13}$/;
 
-    // Check if it's an email
-    if (trimmedValue.includes("@")) {
-      return emailRegex.test(trimmedValue);
-    }
-
-    // Check if it's a phone number (remove non-digits first)
-    const cleanPhone = trimmedValue.replace(/\D/g, "");
-    return phoneRegex.test(cleanPhone);
+    return emailRegex.test(trimmedValue);
   };
 
   /**
@@ -58,7 +50,7 @@ export const useForgotPassword = () => {
         case 400:
           return message || "Data yang dimasukkan tidak valid.";
         case 404:
-          return "Email/Nomor HP tidak terdaftar dalam sistem.";
+          return "Email tidak terdaftar dalam sistem.";
         case 429:
           return "Terlalu banyak percobaan. Silakan tunggu beberapa saat.";
         case 500:
@@ -91,14 +83,14 @@ export const useForgotPassword = () => {
     const normalizedEmailHp = emailHp.trim();
 
     if (!normalizedEmailHp) {
-      setError(AUTH_CONSTANTS.ERROR_MESSAGES.EMAIL_OR_PHONE_REQUIRED);
+      setError("Email wajib diisi.");
       setLoading(false);
       return;
     }
 
-    // Validasi format email/phone
-    if (!validateEmailPhone(normalizedEmailHp)) {
-      setError(AUTH_CONSTANTS.ERROR_MESSAGES.EMAIL_OR_PHONE_INVALID);
+    // Validasi format email
+    if (!validateEmail(normalizedEmailHp)) {
+      setError("Format email tidak valid.");
       setLoading(false);
       return;
     }
@@ -143,6 +135,6 @@ export const useForgotPassword = () => {
     setEmailHp,
     handleSendOtp,
     resetForm,
-    validateEmailPhone,
+    validateEmail,
   };
 };

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, memo, useCallback, useRef } from "react";
-import { Card, CardBody, Container, Row, Col, Alert, Button } from "react-bootstrap";
+import { Card, CardBody, Container, Row, Col,  Button } from "react-bootstrap";
 import UGlobal from "../../../../utils/api/UGlobal";
 import ArticleSkeleton from "./ArticleSkeleton";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const ArticleSection = () => {
   const [articles, setArticles] = useState([]);

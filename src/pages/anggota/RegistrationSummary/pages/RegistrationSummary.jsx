@@ -246,6 +246,8 @@ export default function RegistrationSummary({
                 role="Pengawas"
                 isApproved={approvalStatus.pengawasDone}
                 isRejected={approvalStatus.pengawasRejected}
+                note={data?.approvals?.find(a => a.step?.verifierRole?.role_name === "Pengawas" || a.step?.step_order === 1)?.note || 
+                       data?.approvals?.find(a => data?.flow?.steps?.find(s => s.approval_step_id === a.approval_step_id && s.step_order === 1))?.note}
               />
             </Col>
             <Col xs={5} md={4} className="text-center">
@@ -253,6 +255,8 @@ export default function RegistrationSummary({
                 role="Ketua"
                 isApproved={approvalStatus.ketuaDone}
                 isRejected={approvalStatus.ketuaRejected}
+                note={data?.approvals?.find(a => a.step?.verifierRole?.role_name === "Ketua" || a.step?.step_order === 2)?.note || 
+                       data?.approvals?.find(a => data?.flow?.steps?.find(s => s.approval_step_id === a.approval_step_id && s.step_order === 2))?.note}
               />
             </Col>
           </Row>

@@ -5,16 +5,17 @@ import {
   Col,
   Card,
   Spinner,
-  Alert,
+  
   Table,
   Tabs,
-  Tab,
-} from "react-bootstrap";
+  Tab} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import { FaCertificate, FaWallet } from "react-icons/fa";
 import { useInvestasiData } from "./hooks/useInvestasiData";
 import "./InvestasiHalal.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const InvestasiHalal = () => {
   const navigate = useNavigate();

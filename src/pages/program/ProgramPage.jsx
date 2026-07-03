@@ -109,12 +109,12 @@ export default function ProgramPage() {
           raw.status === "PENDING" ||
           raw.status === "WAITING_APPROVAL" ||
           raw.current_step_id != null,
-        isApproved: raw.is_approved || raw.status === "APPROVED",
+        isApproved: raw.is_approved || raw.status?.toUpperCase() === "APPROVED" || ["LUNAS", "COMPLETED", "PAID_OFF", "PAID", "SETTLED", "SUCCESS"].includes(raw.status?.toUpperCase()),
+        isLunas: ["LUNAS", "COMPLETED", "PAID_OFF", "PAID", "SETTLED", "SUCCESS"].includes(raw.status?.toUpperCase()),
         statusLabel:
-          raw.status_label ||
-          (raw.status === "APPROVED"
-            ? "Aktif (Disetujui)"
-            : "Menunggu Approval"),
+          ["LUNAS", "COMPLETED", "PAID_OFF", "PAID", "SETTLED", "SUCCESS"].includes(raw.status?.toUpperCase())
+            ? "Lunas"
+            : (raw.status_label || (raw.status?.toUpperCase() === "APPROVED" ? "Aktif (Disetujui)" : "Menunggu Approval")),
       };
     }
 
@@ -213,6 +213,12 @@ export default function ProgramPage() {
     navigate(`/${jwtEncode({ page: "billingPage" })}`);
   }, [activeTab, navigate, activeData]);
 
+  const handleDetail = useCallback(() => {
+    if (activeData?.financingId) {
+      navigate(`/${jwtEncode({ page: "transactionDetailPage", financingId: activeData.financingId })}`);
+    }
+  }, [navigate, activeData]);
+
   const renderContent = () => {
     if (loading) return <ProgramSkeleton />;
 
@@ -245,6 +251,20 @@ export default function ProgramPage() {
       );
     }
 
+    if (activeData?.isLunas) {
+      return (
+        <div className="animate-fade-in">
+          <ProgramStatusCard
+            title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman"}`}
+            message={`Selamat! Transaksi ${activeTab} Anda sebelumnya telah lunas. Anda dapat mengajukan yang baru sekarang.`}
+            buttonText={activeTab === "arisan" ? "Daftar Arisan Baru" : "Pengajuan Pinjaman Baru"}
+            onButtonClick={handlePengajuan}
+            variant="empty"
+          />
+        </div>
+      );
+    }
+
     if (activeData) {
       return (
         <div className="animate-fade-in">
@@ -252,6 +272,7 @@ export default function ProgramPage() {
             accountData={activeData}
             handleSetoran={handleSetoran}
             handlePengajuan={handlePengajuan}
+            handleDetail={handleDetail}
           />
         </div>
       );

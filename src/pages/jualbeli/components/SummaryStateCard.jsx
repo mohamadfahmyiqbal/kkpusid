@@ -14,6 +14,7 @@ const SummaryStateCard = ({
   hasPending,
   transactions,
   handleGoToSetoran,
+  handleGoToPelunasan,
   handleGoToFormPembelian,
   handleGoToDetail
 }) => {
@@ -46,25 +47,60 @@ const SummaryStateCard = ({
               <div className="fw-bold small text-white-90">{approvedFinancing?.description || 'Item'}</div>
             </div>
             <div className="col-4">
-              <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">HARGA POKOK</div>
-              <div className="fw-bold small text-white-90">Rp {(Number(approvedFinancing?.total_tagihan) || Number(approvedFinancing?.nominal_kredit) || 0).toLocaleString("id-ID")}</div>
+              <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">CICILAN / BULAN</div>
+              <div className="fw-bold small text-white-90">
+                Rp {(() => {
+                  const dp = Number(approvedFinancing?.down_payment || 0);
+                  const total = Number(approvedFinancing?.item_price || approvedFinancing?.amount_requested || 0) + Number(approvedFinancing?.operational_cost || 0) + Number(approvedFinancing?.margin_amount || 0);
+                  const tenure = parseInt(approvedFinancing?.tenure || approvedFinancing?.term_months || approvedFinancing?.cooperation_months || 1);
+                  return Math.ceil((total - dp) / tenure);
+                })().toLocaleString("id-ID")}
+              </div>
             </div>
             <div className="col-4">
               <div className="text-uppercase opacity-50 fw-bold mb-1 card-grid-label">SISA TAGIHAN</div>
               <div className="fw-bold small text-white-90">
-                Rp {Math.max(0, (Number(approvedFinancing?.total_tagihan) || Number(approvedFinancing?.nominal_kredit) || 0) - Number(approvedFinancing?.paid_amount || 0)).toLocaleString("id-ID")}
+                Rp {(() => {
+                  const dp = Number(approvedFinancing?.down_payment || 0);
+                  const total = Number(approvedFinancing?.item_price || approvedFinancing?.amount_requested || 0) + Number(approvedFinancing?.operational_cost || 0) + Number(approvedFinancing?.margin_amount || 0);
+                  const tenure = parseInt(approvedFinancing?.tenure || approvedFinancing?.term_months || approvedFinancing?.cooperation_months || 1);
+                  const cicilanPerBulan = Math.ceil((total - dp) / tenure);
+                  const cicilanTerbayar = approvedFinancing?.paid_installment_amount !== undefined
+                    ? Number(approvedFinancing.paid_installment_amount)
+                    : Math.max(0, Number(approvedFinancing?.paid_amount || 0) - dp);
+                  return approvedFinancing?.unpaid_amount !== undefined 
+                    ? Number(approvedFinancing.unpaid_amount) 
+                    : Math.max(0, (total - dp) - cicilanTerbayar);
+                })().toLocaleString("id-ID")}
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="d-flex">
+          <div className="d-flex gap-2 mb-2">
             <Button 
               variant="light" 
               className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
               onClick={handleGoToSetoran}
             >
               <MdAddCircleOutline size={20} /> Bayar Setoran
+            </Button>
+            <Button 
+              variant="outline-light" 
+              className="w-100 border shadow-sm rounded-3 py-2.5 fw-bold text-white d-flex align-items-center justify-content-center gap-2 premium-btn-hover btn-pelunasan"
+              onClick={handleGoToPelunasan}
+            >
+              <MdAccountBalance size={20} /> Pelunasan
+            </Button>
+          </div>
+          <div className="d-flex">
+            <Button
+              variant="link"
+              className="w-100 border-0 rounded-3 py-2 fw-semibold text-white-50 d-flex align-items-center justify-content-center gap-2 text-decoration-none"
+              style={{ fontSize: '0.8rem' }}
+              onClick={() => handleGoToDetail(approvedFinancing?.financing_id || approvedFinancing?.financingId || approvedFinancing?.id)}
+            >
+              Lihat Detail Pengajuan
             </Button>
           </div>
         </Card.Body>
@@ -74,7 +110,7 @@ const SummaryStateCard = ({
 
   if (hasPending) {
     const pendingTx = transactions.find(t => t.status === "PENDING");
-    const pendingId = pendingTx?.id;
+    const pendingId = pendingTx?.financing_id || pendingTx?.financingId || pendingTx?.id;
     const pendingDesc = pendingTx?.description || "Pengajuan Pembiayaan Murabahah";
     const pendingAmount = pendingTx?.nominal_kredit || pendingTx?.nominal_debet || 0;
 

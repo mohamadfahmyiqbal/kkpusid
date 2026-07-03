@@ -6,16 +6,17 @@ import {
   Card,
   Button,
   Spinner,
-  Alert,
+  
   Badge,
   Form,
-  ProgressBar,
-} from "react-bootstrap";
+  ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
 import { FaCheckCircle, FaArrowLeft, FaTrophy, FaChevronRight, FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
 import "./Evaluasi.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const Evaluasi = () => {
   const navigate = useNavigate();

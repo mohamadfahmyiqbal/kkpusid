@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Form, Button, ProgressBar } from "react-bootstrap";
 import { FaUpload, FaCheck, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 export default function FileUploadField({
   onFileChange,
@@ -15,7 +16,7 @@ export default function FileUploadField({
 
   const handleFileSelect = (file) => {
     if (file.size > 5 * 1024 * 1024) {
-      alert("File terlalu besar. Maksimal 5MB.");
+      Swal.fire({ title: 'Perhatian', text: "File terlalu besar. Maksimal 5MB.", icon: 'warning' });
       return;
     }
     setFileInfo({

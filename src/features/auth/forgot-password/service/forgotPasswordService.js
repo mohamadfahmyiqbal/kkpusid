@@ -1,3 +1,5 @@
+import { apiClient } from "../../../../utils/api";
+
 class ForgotPasswordService {
   /**
    * Kirim OTP untuk forgot password
@@ -5,29 +7,12 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async sendOtp(data) {
-    // TODO: Implement API call untuk kirim OTP
-    // return await http.post("/auth/forgot-password/send-otp", data);
-
-    // Temporary simulation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (data.emailHp.toLowerCase() === "error@test.com") {
-          resolve({
-            success: false,
-            message: "Akun tidak ditemukan.",
-          });
-        } else {
-          resolve({
-            success: true,
-            message: "OTP berhasil dikirim.",
-            data: {
-              sessionId: "session-token-123",
-              expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-            },
-          });
-        }
-      }, 2000);
-    });
+    try {
+      const response = await apiClient.post("/auth/forgot-password/send-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -36,29 +21,12 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async verifyOtp(data) {
-    // TODO: Implement API call untuk verifikasi OTP
-    // return await http.post("/auth/forgot-password/verify-otp", data);
-
-    // Temporary simulation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (data.otpCode === "123456") {
-          resolve({
-            success: true,
-            message: "OTP berhasil diverifikasi.",
-            data: {
-              resetToken: "reset-token-456",
-              expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-            },
-          });
-        } else {
-          resolve({
-            success: false,
-            message: "Kode OTP tidak valid atau sudah kadaluarsa.",
-          });
-        }
-      }, 2000);
-    });
+    try {
+      const response = await apiClient.post("/auth/forgot-password/verify-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -67,18 +35,12 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async resetPassword(data) {
-    // TODO: Implement API call untuk reset password
-    // return await http.post("/auth/forgot-password/reset", data);
-
-    // Temporary simulation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message: "Password berhasil direset.",
-        });
-      }, 2000);
-    });
+    try {
+      const response = await apiClient.post("/auth/forgot-password/reset", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -87,18 +49,12 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async resendOtp(data) {
-    // TODO: Implement API call untuk resend OTP
-    // return await http.post("/auth/forgot-password/resend-otp", data);
-
-    // Temporary simulation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message: "OTP berhasil dikirim ulang.",
-        });
-      }, 1500);
-    });
+    try {
+      const response = await apiClient.post("/auth/forgot-password/resend-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

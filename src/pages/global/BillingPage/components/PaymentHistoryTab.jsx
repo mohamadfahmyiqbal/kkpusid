@@ -5,10 +5,11 @@ import {
   FaDownload,
   FaChevronLeft,
   FaChevronRight,
+  FaEye,
 } from "react-icons/fa";
 import { formatIDR, formatDate, formatInvoiceNumber, ITEMS_PER_PAGE } from "./utils";
 
-function PaymentHistoryTab({ history }) {
+function PaymentHistoryTab({ history, onViewInvoice }) {
   const safeHistory = useMemo(() => (Array.isArray(history) ? history : []), [history]);
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(safeHistory.length / ITEMS_PER_PAGE));
@@ -87,10 +88,20 @@ function PaymentHistoryTab({ history }) {
                     <span className="bp-badge bp-badge-paid">Lunas</span>
                   </td>
                   <td>
-                    <button className="bp-btn-download">
-                      <FaDownload size={10} />
-                      Unduh
-                    </button>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      <button className="bp-btn-download">
+                        <FaDownload size={10} />
+                        Unduh
+                      </button>
+                      {onViewInvoice && (
+                        <button
+                          className="bp-btn-invoice"
+                          onClick={() => onViewInvoice(billId)}
+                        >
+                          <FaEye size={10} /> Invoice
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

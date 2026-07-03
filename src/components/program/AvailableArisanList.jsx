@@ -62,6 +62,7 @@ export default function AvailableArisanList({ availableArisan = [], onJoinClick 
           const participantsDisplay = arisan.peserta || `${currentPeserta}/${maxPeserta} Peserta`;
           const displayTarget = typeof targetValue === "string" ? targetValue : formatCurrency(targetValue);
           const displayContribution = typeof contributionValue === "string" ? contributionValue : `${formatCurrency(contributionValue)}/bln`;
+          const displayTerm = arisan.cooperation_months ? `${arisan.cooperation_months} Bulan` : "-";
 
           return (
             <Col md={6} lg={6} xl={4} key={arisan.arisan_id || arisan.id || idx}>
@@ -106,6 +107,13 @@ export default function AvailableArisanList({ availableArisan = [], onJoinClick 
                         <div>
                           <small>Setoran</small>
                           <strong>{displayContribution}</strong>
+                        </div>
+                      </div>
+                      <div className="dc-arisan-info-item">
+                        <MdEvent size={18} />
+                        <div>
+                          <small>Durasi</small>
+                          <strong>{displayTerm}</strong>
                         </div>
                       </div>
                       <div className="dc-arisan-info-item">

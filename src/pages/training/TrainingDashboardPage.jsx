@@ -6,11 +6,10 @@ import {
   Card,
   Button,
   Spinner,
-  Alert,
+  
   Badge,
   Tabs,
-  Tab,
-} from "react-bootstrap";
+  Tab} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../utils/helpers";
 import TrainingService from "../../services/training.service";
@@ -21,6 +20,8 @@ import {
   FaHeadphones,
 } from "react-icons/fa";
 import "./TrainingDashboardPage.css";
+import Alert from "../../components/ui/SwalAlert";
+
 
 const TrainingDashboardPage = () => {
   const navigate = useNavigate();

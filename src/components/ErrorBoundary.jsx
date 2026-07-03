@@ -1,5 +1,7 @@
 import React from "react";
-import { Container, Alert, Button } from "react-bootstrap";
+import { Container,  Button } from "react-bootstrap";
+import Alert from "./ui/SwalAlert";
+
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

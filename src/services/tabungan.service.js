@@ -42,6 +42,18 @@ apiClient.interceptors.response.use(
 
 export const TabunganService = {
   /**
+   * Mengambil daftar master program tabungan yang aktif
+   */
+  getAvailablePrograms: async () => {
+    try {
+      const response = await apiClient.get("/tabungan/programs");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+      throw error;
+    }
+  },
+  /**
    * Apply for a new savings target (Tabungan Haji, Umrah, dll)
    * @param {Object} data - Payload containing productType, nominalTarget, tenor, setoranAwal
    * @returns {Promise} Promise resolving to the created target and initial deposit transaction
@@ -57,15 +69,15 @@ export const TabunganService = {
   },
 
   /**
-   * Check if the member has an active or pending saving target for a specific category
-   * @param {string} category - Category code (e.g., 'haji', 'umrah')
+   * Check if the member has an active or pending saving target for a specific master program
+   * @param {string|number} savingTargetId - ID of the master program
    */
-  checkAccountStatus: async (category) => {
+  checkAccountStatus: async (savingTargetId) => {
     try {
-      const response = await apiClient.get(`/tabungan/pengajuan/check?category=${category}`);
+      const response = await apiClient.get(`/tabungan/pengajuan/check?saving_target_id=${savingTargetId}`);
       return response.data;
     } catch (error) {
-      console.error(`Error checking account status for ${category}:`, error);
+      console.error(`Error checking account status for ${savingTargetId}:`, error);
       throw error;
     }
   },

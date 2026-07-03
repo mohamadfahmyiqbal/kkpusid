@@ -2,10 +2,9 @@ import React, { useCallback } from "react";
 import {
   Button,
   Spinner,
-  Alert,
+  
   Row,
-  Col,
-} from "react-bootstrap";
+  Col} from "react-bootstrap";
 import {
   FaArrowLeft,
   FaDownload,
@@ -18,6 +17,8 @@ import SummaryCard from "../component/SummaryCard";
 import FilterControls from "../component/FilterControls";
 import TransactionTable from "../component/TransactionTable";
 import ActionButtons from "../component/ActionButtons";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const DetailSaldoPage = ({ decodedToken }) => {
   const navigate = useNavigate();

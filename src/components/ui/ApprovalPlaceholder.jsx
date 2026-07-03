@@ -12,6 +12,8 @@ export default function ApprovalPlaceholder({
   isApproved,
   isRejected,
   isReadyToPay,
+  note,
+  approverName,
 }) {
   const IconRole =
     role === "PENGAWAS" || role === "Pengawas" ? FaUserShield : FaUserTie;
@@ -99,6 +101,13 @@ export default function ApprovalPlaceholder({
           </span>
         )}
       </small>
+
+      {note && (
+        <div className="mt-2 text-muted" style={{ fontSize: "10px", maxWidth: "120px", margin: "0 auto", wordWrap: "break-word" }}>
+          {approverName && <span className="d-block fw-bold text-dark mb-1" style={{ fontSize: "9px" }}>{approverName}</span>}
+          <span className="fst-italic">"{note}"</span>
+        </div>
+      )}
     </div>
   );
 }

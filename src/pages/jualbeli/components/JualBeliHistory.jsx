@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import { MdHistory, MdSearch, MdReceiptLong } from "react-icons/md";
 import JualBeliItem from "./JualBeliItem";
 
-const JualBeliHistory = ({
+const JualBeliHistory = React.memo(({
   filteredTransactions,
   transactions,
   handleResetFilters,
@@ -25,7 +25,7 @@ const JualBeliHistory = ({
         <div className="dc-trans-list shadow-sm rounded-4 bg-white overflow-hidden border-light-1">
           {filteredTransactions.map((t, idx) => (
             <JualBeliItem 
-              key={t.id || idx} 
+              key={t.financing_id || t.id || idx} 
               item={t} 
               onClick={handleGoToDetail} 
             />
@@ -55,6 +55,6 @@ const JualBeliHistory = ({
       )}
     </>
   );
-};
+});
 
 export default JualBeliHistory;

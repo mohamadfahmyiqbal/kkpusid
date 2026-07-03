@@ -7,15 +7,16 @@ import {
   Form,
   Button,
   Spinner,
-  Alert,
-  Badge,
-} from "react-bootstrap";
+  
+  Badge} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import { FaCertificate, FaArrowLeft, FaShieldAlt, FaChartLine } from "react-icons/fa";
 import { useDetailSukuk } from "./hooks/useDetailSukuk";
 import { motion, AnimatePresence } from "framer-motion";
 import "./DetailSukuk.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const DetailSukuk = () => {
   const navigate = useNavigate();

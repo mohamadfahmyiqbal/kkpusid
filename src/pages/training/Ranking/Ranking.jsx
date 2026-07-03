@@ -6,15 +6,16 @@ import {
   Card,
   Button,
   Spinner,
-  Alert,
+  
   Badge,
-  Table,
-} from "react-bootstrap";
+  Table} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
 import { FaTrophy, FaMedal, FaArrowLeft, FaUser, FaStar } from "react-icons/fa";
 import "./Ranking.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const Ranking = () => {
   const navigate = useNavigate();

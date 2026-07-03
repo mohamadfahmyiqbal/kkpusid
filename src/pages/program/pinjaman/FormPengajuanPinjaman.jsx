@@ -1,7 +1,7 @@
 // pages/program/pinjaman/FormPengajuanPinjaman.jsx
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Row, Col, Card, Form, Alert } from "react-bootstrap";
+import { Row, Col, Card, Form} from "react-bootstrap";
 import { FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,8 @@ import FileUploadField from "./components/FileUploadField";
 import SimulationSummary from "./components/SimulationSummary";
 
 import "./FormPengajuanPinjaman.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -210,17 +212,17 @@ export default function FormPengajuanPinjaman() {
     setIsLoading(true);
 
     try {
-      const nominal = parseInt(formData.nominalPinjaman);
-      const tenure = parseInt(formData.termPembayaran);
+      const nominal = parseInt(formData.nominalPinjaman) || 0;
+      const tenure = parseInt(formData.termPembayaran) || 1;
+      const principal = nominal;
 
       const payload = {
         category: formData.jenisPinjaman,
         item_name: `Pinjaman ${formData.jenisPinjaman}`,
         amount_requested: nominal,
-        down_payment: 0,
-        principal_amount: nominal,
+        principal_amount: principal,
         tenure: tenure,
-        monthly_installment: Math.ceil(nominal / tenure),
+        monthly_installment: Math.ceil(principal / tenure),
         metode_pencairan: formData.metodePencairan,
         nama_nasabah: formData.namaNasabah,
         akad_type: selectedProduct?.akad_type || "Murabahah",
@@ -283,7 +285,8 @@ export default function FormPengajuanPinjaman() {
 
   const nominal = parseInt(formData.nominalPinjaman) || 0;
   const tenor = parseInt(formData.termPembayaran) || 1;
-  const estimasiAngsuran = Math.ceil(nominal / tenor);
+  const principal = nominal;
+  const estimasiAngsuran = Math.ceil(principal / tenor);
 
   return (
     <div className="form-page-container px-3 pb-5">
@@ -363,6 +366,7 @@ export default function FormPengajuanPinjaman() {
                 selectedProduct={selectedProduct}
                 formatCurrency={formatCurrency}
                 nominal={nominal}
+                principal={principal}
                 tenor={tenor}
                 estimasiAngsuran={estimasiAngsuran}
                 isLoading={isLoading}

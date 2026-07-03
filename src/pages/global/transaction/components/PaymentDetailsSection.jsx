@@ -41,6 +41,13 @@ const PaymentDetailsSection = ({ detail, isFinancing, isTabungan }) => {
           isTotal={true}
           isPrimary={true}
         />
+        {isFinancing && detail?.operational_cost && parseFloat(detail.operational_cost) !== 0 ? (
+          <InfoRow 
+            icon={<FaFileInvoiceDollar size={12} />} 
+            label="Biaya Operasional" 
+            value={`Rp ${parseFloat(Math.abs(detail.operational_cost)).toLocaleString("id-ID")} ${parseFloat(detail.operational_cost) < 0 ? '(Dikurangi)' : ''}`}
+          />
+        ) : null}
         {isTabungan && detail?.catalog?.min_monthly_deposit && (
           <InfoRow 
             icon={<FaFileInvoiceDollar size={12} />} 

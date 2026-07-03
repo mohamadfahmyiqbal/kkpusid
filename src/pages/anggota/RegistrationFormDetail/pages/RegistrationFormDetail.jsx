@@ -7,10 +7,9 @@ import {
   Col,
   Row,
   ProgressBar,
-  Alert,
+  
   Badge,
-  Spinner,
-} from "react-bootstrap";
+  Spinner} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaArrowRight, FaSave, FaArrowLeft, FaCheck, FaFileSignature } from "react-icons/fa";
 import AnggotaService from "../services/AnggotaService";
@@ -27,6 +26,8 @@ import Step5Employment from "../components/steps/Step5Employment";
 import Step6EmergencyContact from "../components/steps/Step6EmergencyContact";
 import Step7BankData from "../components/steps/Step7BankData";
 import Step8Summary from "../components/steps/Step8Summary";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const totalSteps = 8;
 

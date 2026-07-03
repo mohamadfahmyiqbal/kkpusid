@@ -2,8 +2,19 @@
 import React from "react";
 import ApprovalPlaceholder from "../../../../components/ui/ApprovalPlaceholder";
 
-const ApprovalSection = ({ approvalStatus }) => {
+const ApprovalSection = ({ approvalStatus, detail }) => {
   if (!approvalStatus) return null;
+
+  const getApprovalData = (roleName) => {
+    if (!detail?.approvalChain) return null;
+    return detail.approvalChain.find(
+      (a) => a.role?.toUpperCase() === roleName.toUpperCase()
+    );
+  };
+
+  const pengawasData = getApprovalData("PENGAWAS");
+  const ketuaData = getApprovalData("KETUA");
+  const bendaharaData = getApprovalData("BENDAHARA");
 
   return (
     <section className="mt-5 p-4 rounded-4 bg-light bg-opacity-50 border border-light-subtle shadow-sm">
@@ -34,18 +45,24 @@ const ApprovalSection = ({ approvalStatus }) => {
             isApproved={approvalStatus.isApproved || approvalStatus.pengawasDone}
             isRejected={approvalStatus.pengawasRejected || (approvalStatus.isRejected && !approvalStatus.pengawasDone && !approvalStatus.ketuaDone && !approvalStatus.bendaharaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
+            note={pengawasData?.note}
+            approverName={pengawasData?.approverName}
           />
           <ApprovalPlaceholder
             role="Ketua"
             isApproved={approvalStatus.isApproved || approvalStatus.ketuaDone}
             isRejected={approvalStatus.ketuaRejected || (approvalStatus.isRejected && approvalStatus.pengawasDone && !approvalStatus.ketuaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
+            note={ketuaData?.note}
+            approverName={ketuaData?.approverName}
           />
           <ApprovalPlaceholder
             role="Bendahara"
             isApproved={approvalStatus.isApproved || approvalStatus.bendaharaDone}
             isRejected={approvalStatus.bendaharaRejected || (approvalStatus.isRejected && approvalStatus.pengawasDone && approvalStatus.ketuaDone && !approvalStatus.bendaharaDone)}
             isReadyToPay={approvalStatus.isReadyToPay}
+            note={bendaharaData?.note}
+            approverName={bendaharaData?.approverName}
           />
         </div>
       </div>

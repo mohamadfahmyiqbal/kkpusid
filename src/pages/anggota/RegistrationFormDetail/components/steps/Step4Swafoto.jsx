@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Form, Row, Col, Alert } from "react-bootstrap";
+import { Form, Row, Col} from "react-bootstrap";
 import {
   FaUserShield,
   FaCamera,
@@ -8,6 +8,8 @@ import {
   FaLightbulb,
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
+import Alert from "../../../../../components/ui/SwalAlert";
+
 
 /**
  * Komponen untuk mengambil Swafoto dengan KTP (Langkah 4).

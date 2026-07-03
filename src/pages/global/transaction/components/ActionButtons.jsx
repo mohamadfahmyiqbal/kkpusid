@@ -29,15 +29,29 @@ const ActionButtons = ({
 
   const isPinjamanProduct = isFinancing && 
     !(productName?.toLowerCase().includes('arisan')) && 
+    !(productName?.toLowerCase().includes('pelunasan')) &&
     (
       (productName && !['Property', 'Kendaraan', 'Elektronik'].includes(productName)) ||
       (detail?.purpose?.toLowerCase().includes('pinjaman')) ||
       (!productName && detail?.purpose?.toLowerCase().includes('pinjaman'))
     );
 
+  const isPelunasan = productName?.toLowerCase().includes('pelunasan') || detail?.category?.toLowerCase().includes('pelunasan');
+
   const handlePay = () => {
     if (isPinjamanProduct) {
       navigate(`/${jwtEncode({ page: "receiptPage", financingId: transactionId })}`);
+      return;
+    }
+
+    if (isPelunasan) {
+      navigate(`/${jwtEncode({ 
+        page: "invoicePage", 
+        financingId: transactionId,
+        product: productName || detail?.category || "Pelunasan Jual Beli",
+        amount: detail?.total_tagihan || detail?.amount_requested,
+        return: "transactionDetailPage"
+      })}`);
       return;
     }
 
@@ -65,6 +79,7 @@ const ActionButtons = ({
 
   const getButtonText = () => {
     if (isPinjamanProduct) return "LIHAT RESI PENCAIRAN";
+    if (isPelunasan) return "LIHAT INVOICE";
     if (isFinancing) {
       if (productName?.toLowerCase().includes('arisan')) return "BAYAR SETORAN ARISAN";
       return "BAYAR INVOICE SEKARANG";

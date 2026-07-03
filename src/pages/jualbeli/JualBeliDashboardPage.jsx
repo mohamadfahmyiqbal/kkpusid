@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Button, Alert } from "react-bootstrap";
+import { Button} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { MdInfoOutline } from "react-icons/md";
 import { jwtEncode } from "../../utils/helpers";
@@ -13,6 +13,8 @@ import SearchFilter from "./components/SearchFilter";
 import JualBeliHistory from "./components/JualBeliHistory";
 
 import "./JualBeliDashboardPage.css";
+import Alert from "../../components/ui/SwalAlert";
+
 
 const JualBeliDashboardPage = () => {
   const navigate = useNavigate();
@@ -50,6 +52,11 @@ const JualBeliDashboardPage = () => {
     navigate(`/${jwtEncode({ page: "billingPage", category: "FINANCING", financingId: fid, productName: "pembiayaan", downPayment: dp, return: "jualBeliPage" })}`);
   };
 
+  const handleGoToPelunasan = () => {
+    const fid = approvedFinancing?.financing_id || approvedFinancing?.id;
+    navigate(`/${jwtEncode({ page: "pelunasanPage", financingId: fid, return: "jualBeliPage" })}`);
+  };
+
   const handleGoToFormPembelian = () => {
     navigate(`/${jwtEncode({ page: "formPengajuanTransaksi", return: "jualBeliPage" })}`);
   };
@@ -59,45 +66,34 @@ const JualBeliDashboardPage = () => {
     navigate(`/${jwtEncode({ page: "transactionDetailPage", financingId: id, return: "jualBeliPage" })}`);
   };
 
-  const approvedFinancing = useMemo(() => transactions.find(t => t.status === "APPROVED"), [transactions]);
+  const approvedFinancing = useMemo(() => transactions.find(t => 
+    t.status === "APPROVED" && 
+    !t.category?.toLowerCase().includes('pelunasan') &&
+    !t.keterangan?.startsWith('PELUNASAN_REF:')
+  ), [transactions]);
   const isApproved = !!approvedFinancing;
-  const hasPending = transactions.some((t) => t.status === "PENDING") && !isApproved;
-
-  // Compute Dashboard Statistics
-  const stats = useMemo(() => {
-    let creditSum = 0;
-    let debitSum = 0;
-    transactions.forEach(t => {
-      if (t.nominal_kredit) creditSum += Number(t.nominal_kredit);
-      if (t.nominal_debet) debitSum += Number(t.nominal_debet);
-    });
-    return {
-      credit: creditSum,
-      debit: debitSum,
-      totalCount: transactions.length
-    };
-  }, [transactions]);
+  const hasPending = transactions.some((t) => t.status === "PENDING" && !t.category?.toLowerCase().includes('pelunasan')) && !isApproved;
 
   // Tab count indicators
   const tabCounts = useMemo(() => {
     return {
       all: transactions.length,
-      credit: transactions.filter(t => t.nominal_kredit).length,
-      debit: transactions.filter(t => t.nominal_debet).length
+      active: transactions.filter(t => t.status === 'APPROVED' || t.status === 'PENDING').length,
+      completed: transactions.filter(t => t.status === 'COMPLETED' || t.status === 'PAID').length
     };
   }, [transactions]);
 
   // Filtering Logic
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-      const title = (t.description || t.tx_type || 'Transaksi').toLowerCase();
+      const title = (t.purpose || t.category || t.item_name || 'Pembiayaan').toLowerCase();
       const matchesSearch = title.includes(searchQuery.toLowerCase());
       
       let matchesTab = true;
-      if (activeTab === "credit") {
-        matchesTab = !!t.nominal_kredit;
-      } else if (activeTab === "debit") {
-        matchesTab = !!t.nominal_debet;
+      if (activeTab === "active") {
+        matchesTab = (t.status === 'APPROVED' || t.status === 'PENDING');
+      } else if (activeTab === "completed") {
+        matchesTab = (t.status === 'COMPLETED' || t.status === 'PAID');
       }
       
       return matchesSearch && matchesTab;
@@ -130,6 +126,7 @@ const JualBeliDashboardPage = () => {
           hasPending={hasPending}
           transactions={transactions}
           handleGoToSetoran={handleGoToSetoran}
+          handleGoToPelunasan={handleGoToPelunasan}
           handleGoToFormPembelian={handleGoToFormPembelian}
           handleGoToDetail={handleGoToDetail}
         />

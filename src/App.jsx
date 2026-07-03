@@ -6,9 +6,7 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import routerConfig from "./routes/RouterConfig";
 
-// Notifikasi Toast
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
 
 // ✅ IMPOR PROVIDER YANG DIBUTUHKAN
 import { ProfileProvider } from "./components/layout/contexts";
@@ -18,7 +16,7 @@ import EnhancedErrorBoundary from "./components/ui/EnhancedErrorBoundary";
 // Socket.io
 import { initSocket, registerMember, disconnectSocket } from "./utils/socket";
 import { jwtDecode } from "jwt-decode";
-import { toast } from "react-toastify";
+
 
 /**
  * Komponen Utama Aplikasi
@@ -42,31 +40,35 @@ const App = () => {
         // Event listeners untuk update real-time
         socket.on('notifications:update', (data) => {
 
-          toast.info(data.title || 'Notifikasi baru', {
-            position: "top-right",
-            autoClose: 5000,
+          Swal.fire({
+            title: data.title || 'Notifikasi baru',
+            icon: 'info',
+            position: "top-end",
+            toast: true,
+            timer: 5000,
+            showConfirmButton: false,
           });
         });
 
         socket.on('profile:update', (data) => {
 
-          toast.success('Profil diperbarui');
+          Swal.fire({ title: 'Profil diperbarui', icon: 'success', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
           // TODO: Update ProfileProvider jika diperlukan
         });
 
         socket.on('withdrawals:update', (data) => {
 
-          toast.info('Data penarikan diperbarui');
+          Swal.fire({ title: 'Data penarikan diperbarui', icon: 'info', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
         });
 
         socket.on('savings:update', (data) => {
 
-          toast.info('Data tabungan diperbarui');
+          Swal.fire({ title: 'Data tabungan diperbarui', icon: 'info', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
         });
 
         socket.on('financing_applications:update', (data) => {
 
-          toast.info('Status pengajuan pembiayaan diperbarui');
+          Swal.fire({ title: 'Status pengajuan pembiayaan diperbarui', icon: 'info', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
         });
 
         // Listener untuk notifikasi baru dari backend
@@ -74,10 +76,14 @@ const App = () => {
 
           
           // Tampilkan toast notifikasi
-          toast.success(data.title || 'Notifikasi Baru', {
-            description: data.content || '',
-            position: "top-center",
-            autoClose: 5000,
+          Swal.fire({
+            title: data.title || 'Notifikasi Baru',
+            text: data.content || '',
+            icon: 'success',
+            position: "top",
+            toast: true,
+            timer: 5000,
+            showConfirmButton: false,
           });
 
           // Handle khusus untuk PAYMENT_SUCCESS
@@ -107,18 +113,7 @@ const App = () => {
     <EnhancedErrorBoundary>
       <ThemeProvider>
         <ProfileProvider>
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={true}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="colored"
-          />
+
 
           <RouterProvider
             router={routerConfig}

@@ -4,12 +4,11 @@ import {
   Button,
   Form,
   Spinner,
-  Alert,
-  Toast,
+  
   Modal,
   Row,
-  Col,
-} from "react-bootstrap";
+  Col} from "react-bootstrap";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import {
@@ -36,6 +35,8 @@ import {
 import { profileService } from "../../../services/profileService";
 import { getSocket } from "../../../utils/socket";
 import "./AccountPage.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 // Helper untuk format tanggal Indonesia
 const formatDate = (dateStr) => {
@@ -117,10 +118,7 @@ export default function AccountPage() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Toast notifications
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastVariant, setToastVariant] = useState("success");
+
 
   // Modal ubah password
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -157,9 +155,15 @@ export default function AccountPage() {
   }, []);
 
   const showNotification = useCallback((message, variant = "success") => {
-    setToastMessage(message);
-    setToastVariant(variant);
-    setShowToast(true);
+    const iconMap = { success: 'success', danger: 'error', warning: 'warning', info: 'info' };
+    Swal.fire({
+      title: message,
+      icon: iconMap[variant] || 'info',
+      toast: true,
+      position: 'top-end',
+      timer: 3000,
+      showConfirmButton: false
+    });
   }, []);
 
   const loadProfileData = async () => {
@@ -292,11 +296,16 @@ export default function AccountPage() {
     }
   };
 
-  const handleTerminateKeanggotaan = () => {
-    const confirm = window.confirm(
-      "Apakah Anda yakin ingin mengajukan penghentian keanggotaan? Tindakan ini bersifat permanen dan tidak dapat dibatalkan."
-    );
-    if (confirm) {
+  const handleTerminateKeanggotaan = async () => {
+    const result = await Swal.fire({
+      title: "Konfirmasi",
+      text: "Apakah Anda yakin ingin mengajukan penghentian keanggotaan? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Hentikan",
+      cancelButtonText: "Batal"
+    });
+    if (result.isConfirmed) {
       showNotification(
         "Pengajuan penghentian keanggotaan berhasil diajukan ke pengurus.",
         "warning"
@@ -981,26 +990,7 @@ export default function AccountPage() {
         </Modal.Body>
       </Modal>
 
-      {/* Toast Notification */}
-      <Toast
-        show={showToast}
-        onClose={() => setShowToast(false)}
-        delay={3000}
-        autohide
-        className="position-fixed top-0 end-0 m-3"
-        style={{ zIndex: 9999 }}
-        bg={toastVariant}
-      >
-        <Toast.Header className={`bg-${toastVariant} text-white justify-content-between`}>
-          <div className="d-flex align-items-center">
-            <FaCheckCircle className="me-2" />
-            <strong className="me-auto">Notifikasi</strong>
-          </div>
-        </Toast.Header>
-        <Toast.Body className={toastVariant === "light" ? "text-dark" : "text-white"}>
-          {toastMessage}
-        </Toast.Body>
-      </Toast>
+
     </div>
   );
 }

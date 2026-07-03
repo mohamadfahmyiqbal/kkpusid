@@ -1,6 +1,6 @@
 // 📁 src/pages/global/BillingPage/pages/BillingPage.jsx
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Alert, Spinner } from "react-bootstrap";
+import {  Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import UBilling from "../../../../utils/api/UBilling";
 import { jwtEncode } from "../../../../utils/helpers";
@@ -16,6 +16,8 @@ import BillingSidebar from "../components/BillingSidebar";
 import SukarelaForm from "../components/SukarelaForm";
 
 import "./BillingPage.css";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 /* ─── Main Component ───────────────────────────────────────── */
 const BillingPage = ({ decodedToken }) => {
@@ -106,6 +108,20 @@ const BillingPage = ({ decodedToken }) => {
     if (error) setError("");
   }, [selectedBills, customAmount]);
 
+  /* handle view invoice — navigate to invoice page for a specific bill item */
+  const handleViewInvoice = useCallback((billItemId) => {
+    if (!billItemId) return;
+    navigate(`/${jwtEncode({
+      page: "invoicePage",
+      billItemIds: [billItemId],
+      return: "billingPage",
+      originalReturn: decodedToken?.return,
+      category: categoryName,
+      financingId: decodedToken?.financingId || decodedToken?.financing_id,
+      productName: decodedToken?.productName,
+    })}`);
+  }, [navigate, decodedToken, categoryName]);
+
   /* pay handler — always resets isSubmitting */
   const handlePay = useCallback(
     async (overrideBills) => {
@@ -167,8 +183,6 @@ const BillingPage = ({ decodedToken }) => {
     },
     [isSukarela, pendingCount, customAmount, categoryName, selectedBills, registrationId, navigate, decodedToken],
   );
-
-  // Safe counts mapped earlier
 
   /* ─ Render ─ */
   return (
@@ -266,6 +280,7 @@ const BillingPage = ({ decodedToken }) => {
                       disabledBills={mandatoryBills.map((b) => b.bill_item_id)}
                       handlePay={handlePay}
                       isSubmitting={isSubmitting}
+                      onViewInvoice={handleViewInvoice}
                     />
                   )}
                 </div>
@@ -273,7 +288,7 @@ const BillingPage = ({ decodedToken }) => {
 
               {activeTab === "history" && (
                 <div className="bp-card">
-                  <PaymentHistoryTab history={history} />
+                  <PaymentHistoryTab history={history} onViewInvoice={handleViewInvoice} />
                 </div>
               )}
             </>

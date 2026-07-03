@@ -8,6 +8,7 @@ const ProgramAccountCard = ({
   accountData,
   handleSetoran,
   handlePengajuan,
+  handleDetail,
 }) => {
   if (!accountData) {
     return (
@@ -24,7 +25,7 @@ const ProgramAccountCard = ({
   }
 
   const isArisan = accountData?.akad?.toLowerCase().includes("peserta") || accountData?.produk?.toLowerCase().includes("arisan");
-  const isPending = !accountData?.isApproved;
+  const isPending = accountData?.isPending ?? !accountData?.isApproved;
 
   return (
     <Card className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg">
@@ -73,13 +74,35 @@ const ProgramAccountCard = ({
         {/* Action Buttons */}
         <div className="d-flex gap-2">
           {!isPending && (
-            <Button
-              variant="light"
-              className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
-              onClick={handleSetoran}
-            >
-              Bayar Setoran
-            </Button>
+            <>
+              {!accountData?.isLunas && (
+                <Button
+                  variant="light"
+                  className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+                  onClick={handleSetoran}
+                >
+                  Bayar Setoran
+                </Button>
+              )}
+              {accountData?.isLunas && (
+                <Button
+                  variant="light"
+                  className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+                  onClick={handlePengajuan}
+                >
+                  {isArisan ? "Daftar Arisan Baru" : "Pengajuan Pinjaman Baru"}
+                </Button>
+              )}
+              {!isArisan && handleDetail && (
+                <Button
+                  variant="outline-light"
+                  className="w-100 border border-white border-opacity-25 shadow-sm rounded-3 py-2.5 fw-bold text-white d-flex align-items-center justify-content-center gap-2 premium-btn-hover"
+                  onClick={handleDetail}
+                >
+                  Detail Pengajuan
+                </Button>
+              )}
+            </>
           )}
 
           {isPending && (

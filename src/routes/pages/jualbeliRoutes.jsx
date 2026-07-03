@@ -9,6 +9,10 @@ const jualbeliRoutes = {
     component: lazy(() => import("../../pages/jualbeli/FormPengajuanJualBeli")),
     isProtected: true,
   },
+  pelunasanPage: {
+    component: lazy(() => import("../../pages/jualbeli/PelunasanPage")),
+    isProtected: true,
+  },
 };
 
 export default jualbeliRoutes;

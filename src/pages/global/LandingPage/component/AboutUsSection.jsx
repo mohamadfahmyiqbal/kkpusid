@@ -1,14 +1,15 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { FaEye, FaBullseye } from "react-icons/fa";
 
 const AboutUsSection = ({ about = null }) => {
-  const handleScrollToContact = () => {
+  const handleScrollToContact = useCallback((e) => {
+    e.preventDefault();
     const contactSection = document.getElementById("kontak");
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, []);
 
   if (!about) return null;
 
@@ -19,20 +20,17 @@ const AboutUsSection = ({ about = null }) => {
           <Col xs={12} lg={6}>
             <span className="pbs-badge">Tentang Kami</span>
 
-            <h2 className="pbs-title-section mt-3">{about.title}</h2>
+            <h2 className="pbs-title-section mt-3">{about?.title || "Membangun Ekonomi Umat"}</h2>
 
             <p className="pbs-subtitle-section text-start m-0 mt-3 mb-4">
-              {about.description}
+              {about?.description || "Paguyuban Usaha Sukses hadir sebagai wadah koperasi modern yang berfokus pada pemberdayaan ekonomi umat."}
             </p>
 
             <div className="mt-4 pt-2">
               <a
                 href="#kontak"
                 className="pbs-btn-primary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleScrollToContact();
-                }}
+                onClick={handleScrollToContact}
               >
                 Hubungi Kami
               </a>
@@ -48,7 +46,7 @@ const AboutUsSection = ({ about = null }) => {
                   </div>
                   <div>
                     <h5 className="fw-bold text-white mb-2">Visi</h5>
-                    <p className="mb-0 text-white-50 lh-base">{about.vision}</p>
+                    <p className="mb-0 text-white-50 lh-base">{about?.vision || "Menjadi koperasi syariah terpercaya dalam membangun kemandirian ekonomi umat."}</p>
                   </div>
                 </div>
 
@@ -58,7 +56,7 @@ const AboutUsSection = ({ about = null }) => {
                   </div>
                   <div>
                     <h5 className="fw-bold text-white mb-2">Misi</h5>
-                    <p className="mb-0 text-white-50 lh-base">{about.mission}</p>
+                    <p className="mb-0 text-white-50 lh-base">{about?.mission || "Memberikan layanan pembiayaan syariah yang adil dan memberdayakan usaha anggota."}</p>
                   </div>
                 </div>
               </div>
@@ -70,4 +68,4 @@ const AboutUsSection = ({ about = null }) => {
   );
 };
 
-export default AboutUsSection;
+export default memo(AboutUsSection);

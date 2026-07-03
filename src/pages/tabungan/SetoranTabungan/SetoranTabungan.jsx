@@ -7,9 +7,8 @@ import {
   Form,
   Button,
   Spinner,
-  Alert,
-  Badge,
-} from "react-bootstrap";
+  
+  Badge} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
@@ -28,6 +27,8 @@ import { MdOutlineDateRange } from "react-icons/md";
 import SetoranAccountSummary from "./components/SetoranAccountSummary";
 import SetoranTagihanList from "./components/SetoranTagihanList";
 import SetoranPaymentSummary from "./components/SetoranPaymentSummary";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 // Product configurations
 const TABUNGAN_CONFIG = {

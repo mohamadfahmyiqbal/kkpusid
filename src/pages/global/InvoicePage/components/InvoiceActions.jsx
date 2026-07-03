@@ -1,7 +1,9 @@
 import React from "react";
-import { Button, Spinner, Alert } from "react-bootstrap";
+import { Button, Spinner} from "react-bootstrap";
 import { FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock } from "react-icons/fa";
 import { motion } from "framer-motion";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const InvoiceActions = ({ isPaid, isProcessing, onPay, onBack, returnPageName }) => {
   return (

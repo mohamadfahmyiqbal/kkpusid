@@ -3,7 +3,6 @@ import React from "react";
 import { Container } from "react-bootstrap";
 import { useSplashRedirect } from "../hooks/useSplashRedirect";
 import { DEFAULT_SPLASH_DELAY } from "../service/splashService";
-import masjidImage from "../../../../assets/images/masjid.png";
 import "../styles/SplashPage.css";
 
 const LOADING_MESSAGES = [
@@ -18,7 +17,6 @@ const LOADING_MESSAGES = [
  */
 function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
   const [logoError, setLogoError] = useState(false);
-  const [mosqueError, setMosqueError] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
 
   // Hook untuk mengalihkan ke halaman landing setelah delay tertentu
@@ -26,10 +24,6 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
 
   const handleLogoError = useCallback(() => {
     setLogoError(true);
-  }, []);
-
-  const handleMosqueError = useCallback(() => {
-    setMosqueError(true);
   }, []);
 
   useEffect(() => {
@@ -78,6 +72,15 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
       <Container className="splashx-wrap">
         <section className="splashx-content text-center">
           
+          <h1 className="splashx-title">
+            <span className="splashx-title-white d-block">Paguyuban Usaha</span>
+            <span className="splashx-title-green d-block">Sukses</span>
+          </h1>
+          
+          <p className="splashx-subtitle">
+            Koperasi & Layanan Pembiayaan<br />Usaha Syariah
+          </p>
+
           {/* PUS Logo */}
           <div className="splashx-logo-container">
             {logoError ? (
@@ -92,33 +95,6 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
                 loading="eager"
                 fetchpriority="high"
                 onError={handleLogoError}
-              />
-            )}
-          </div>
-
-          <h1 className="splashx-title">
-            <span className="splashx-title-white d-block">Paguyuban Usaha</span>
-            <span className="splashx-title-green d-block">Sukses</span>
-          </h1>
-          
-          <p className="splashx-subtitle">
-            Koperasi & Layanan Pembiayaan<br />Usaha Syariah
-          </p>
-
-          {/* Mosque Illustration */}
-          <div className="splashx-mosque-illustration">
-            {mosqueError ? (
-              <div className="splashx-mosque-fallback" aria-hidden="true">
-                <span className="splashx-mosque-icon">🕌</span>
-              </div>
-            ) : (
-              <img
-                src={masjidImage}
-                alt="Ilustrasi Masjid"
-                className="splashx-mosque-image"
-                loading="eager"
-                fetchpriority="high"
-                onError={handleMosqueError}
               />
             )}
           </div>

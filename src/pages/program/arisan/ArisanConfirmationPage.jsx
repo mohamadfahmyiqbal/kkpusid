@@ -1,11 +1,14 @@
 // pages/program/arisan/ArisanConfirmationPage.jsx (Dioptimasi)
 
 import React, { useCallback, useMemo } from "react";
-import { Card, Button, Container, Row, Col, Alert } from "react-bootstrap";
+import { Card, Button, Container, Row, Col} from "react-bootstrap";
 import { FaCheckCircle } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import { jwtEncode } from "../../../utils/helpers";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 // --- FUNGSI LOKAL UNTUK DEKODE PAYLOAD TOKEN ---
 // Fungsi ini digunakan untuk mengambil data 'arisan' dari payload token URL.
@@ -41,10 +44,12 @@ export default function ArisanConfirmationPage() {
     navigate(`/${backToken}`);
   }, [navigate]);
 
-  const handleConfirm = useCallback(() => {
-    alert(
-      `Konfirmasi gabung Grup Arisan ${arisanData.batch} berhasil! Menunggu persetujuan.`,
-    );
+  const handleConfirm = useCallback(async () => {
+    await Swal.fire({
+      title: 'Berhasil',
+      text: `Konfirmasi gabung Grup Arisan ${arisanData.batch} berhasil! Menunggu persetujuan.`,
+      icon: 'success'
+    });
 
     // Navigasi ke halaman detail transaksi/pengajuan Arisan yang baru
     const detailToken = jwtEncode({

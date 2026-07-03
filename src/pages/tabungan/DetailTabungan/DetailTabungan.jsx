@@ -4,10 +4,9 @@ import {
   Col,
   Card,
   Button,
-  Alert,
+  
   Badge,
-  Table,
-} from "react-bootstrap";
+  Table} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import {
@@ -19,6 +18,8 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import "./DetailTabungan.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 // Product configurations
 const TABUNGAN_CONFIG = {

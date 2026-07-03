@@ -27,6 +27,7 @@ export const useInvoiceData = () => {
       status: payload.status || null,
       product: payload.product || null,
       productName: payload.productName || null,
+      amount: payload.amount || null,
     };
   }, [token]);
 
@@ -96,7 +97,8 @@ export const useInvoiceData = () => {
                 )
               : detail.amount || 0;
 
-            const finalAmount = installmentAmount > 0 ? installmentAmount : 0.01;
+            const isPelunasan = detail?.category?.toLowerCase().includes('pelunasan') || detail?.item_name?.toLowerCase().includes('pelunasan');
+            const finalAmount = isPelunasan ? (params.amount || detail.total_tagihan) : (installmentAmount > 0 ? installmentAmount : 0.01);
 
             const mappedData = {
               full_name: detail?.member?.full_name || "Anggota",
@@ -105,18 +107,18 @@ export const useInvoiceData = () => {
               createdAt: detail.createdAt || detail.created_at || new Date().toISOString(),
               details: [
                 {
-                  description: "Down Payment / Cicilan Pembiayaan",
+                  description: isPelunasan ? "Pembayaran Pelunasan Jual Beli" : "Down Payment / Cicilan Pembiayaan",
                   amount: finalAmount,
                 },
               ],
-              status: detail.status === "PAID" ? "PAID" : "UNPAID",
+              status: (detail.status === "PAID" || detail.status === "COMPLETED" || detail.settlement_time) ? "PAID" : "UNPAID",
               member_id: detail?.member?.id,
-              payment_type: detail.transactions?.[0]?.payment_type,
-              settlement_time: detail.transactions?.[0]?.settlement_time
+              payment_type: detail.transactions?.[0]?.payment_type || detail.payment_type,
+              settlement_time: detail.transactions?.[0]?.settlement_time || detail.settlement_time
             };
             setBillData(mappedData);
 
-            if (detail.status === "PAID") {
+            if (detail.status === "PAID" || detail.status === "COMPLETED" || detail.settlement_time) {
               stopPolling();
               if (isPolling) {
                 window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));

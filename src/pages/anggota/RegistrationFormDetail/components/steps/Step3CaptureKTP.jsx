@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Form, Row, Col, Alert } from "react-bootstrap";
+import { Form, Row, Col} from "react-bootstrap";
 import {
   FaCamera,
   FaIdCard,
@@ -8,6 +8,8 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
+import Alert from "../../../../../components/ui/SwalAlert";
+
 
 /**
  * Komponen untuk mengambil foto KTP (Langkah 3).

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import LandingHeader from "./component/LandingHeader";
 import HeroSection from "./component/HeroSection";
-import ServicesSection from "./component/ServicesSection";
-import StatsSection from "./component/StatsSection";
-import AboutUsSection from "./component/AboutUsSection";
-import HowItWorksSection from "./component/HowItWorksSection";
-import ArticleSection from "./component/ArticleSection";
-import CallToActionSection from "./component/CallToActionSection";
-import LandingFooter from "./component/LandingFooter";
 import api from "../../../utils/api/common";
 import "./LandingPage.css";
+
+const ServicesSection = lazy(() => import("./component/ServicesSection"));
+const StatsSection = lazy(() => import("./component/StatsSection"));
+const AboutUsSection = lazy(() => import("./component/AboutUsSection"));
+const HowItWorksSection = lazy(() => import("./component/HowItWorksSection"));
+const ArticleSection = lazy(() => import("./component/ArticleSection"));
+const CallToActionSection = lazy(() => import("./component/CallToActionSection"));
+const LandingFooter = lazy(() => import("./component/LandingFooter"));
 
 export default function LandingPage() {
   const [services, setServices] = useState([]);
@@ -18,16 +18,17 @@ export default function LandingPage() {
   const [about, setAbout] = useState(null);
   const [contact, setContact] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchLandingData = async () => {
       try {
         const [servicesRes, statsRes, aboutRes, contactRes] = await Promise.all([
-          api.get("/landing/services"),
-          api.get("/landing/stats"),
-          api.get("/landing/about"),
-          api.get("/landing/contact"),
+          api.get("/landing/services", { signal: controller.signal }),
+          api.get("/landing/stats", { signal: controller.signal }),
+          api.get("/landing/about", { signal: controller.signal }),
+          api.get("/landing/contact", { signal: controller.signal }),
         ]);
 
         setServices(servicesRes.data.data);
@@ -35,8 +36,9 @@ export default function LandingPage() {
         setAbout(aboutRes.data.data);
         setContact(contactRes.data.data);
       } catch (err) {
+        if (err.name === "CanceledError" || err.name === "AbortError") return;
+
         console.error("Error fetching landing data:", err);
-        setError(err.message);
         // Fallback data
         setServices([
           { id: 1, title: "Pinjaman Lunak", description: "Pembiayaan sesuai syariah.", icon: "FaHandHoldingUsd", color: "#2F80ED" },
@@ -56,6 +58,8 @@ export default function LandingPage() {
     };
 
     fetchLandingData();
+    
+    return () => controller.abort();
   }, []);
 
   if (loading) {
@@ -72,13 +76,15 @@ export default function LandingPage() {
     <div className="pbs-page">
       <LandingHeader />
       <HeroSection />
-      <ServicesSection services={services} />
-      <StatsSection stats={stats} />
-      <AboutUsSection about={about} />
-      <HowItWorksSection />
-      <ArticleSection />
-      <CallToActionSection />
-      <LandingFooter contact={contact} />
+      <Suspense fallback={<div className="text-center py-5 text-muted">Memuat bagian...</div>}>
+        <ServicesSection services={services} />
+        <StatsSection stats={stats} />
+        <AboutUsSection about={about} />
+        <HowItWorksSection />
+        <ArticleSection />
+        <CallToActionSection />
+        <LandingFooter contact={contact} />
+      </Suspense>
     </div>
   );
 }

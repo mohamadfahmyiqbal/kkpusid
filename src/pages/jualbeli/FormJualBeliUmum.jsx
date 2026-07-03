@@ -6,13 +6,13 @@ import {
   Row,
   Col,
   Container,
-  InputGroup,
-  Alert,
-} from "react-bootstrap";
+  InputGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../utils/helpers";
 import UTransaction from "../../utils/api/UJualBeli";
 import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
+import Alert from "../../components/ui/SwalAlert";
+
 
 const TRANSACTION_TYPES = [
   { value: 'PEMBELIAN', label: 'Pembelian' },

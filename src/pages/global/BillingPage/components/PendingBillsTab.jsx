@@ -7,10 +7,11 @@ import {
   FaDownload,
   FaChevronLeft,
   FaChevronRight,
+  FaEye,
 } from "react-icons/fa";
 import { formatIDR, formatDate, getDaysUntilDue, formatInvoiceNumber, ITEMS_PER_PAGE } from "./utils";
 
-function PendingBillsTab({ title, bills, selectedBills, setSelectedBills, disabledBills, handlePay, isSubmitting }) {
+function PendingBillsTab({ title, bills, selectedBills, setSelectedBills, disabledBills, handlePay, isSubmitting, onViewInvoice }) {
   const safeBills = useMemo(() => (Array.isArray(bills) ? bills : []), [bills]);
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(safeBills.length / ITEMS_PER_PAGE));
@@ -135,16 +136,26 @@ function PendingBillsTab({ title, bills, selectedBills, setSelectedBills, disabl
                     </span>
                   </td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className="bp-btn-pay"
-                      onClick={() => {
-                        setSelectedBills([bill.bill_item_id]);
-                        handlePay([bill.bill_item_id]);
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Bayar
-                    </button>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      <button
+                        className="bp-btn-pay"
+                        onClick={() => {
+                          setSelectedBills([bill.bill_item_id]);
+                          handlePay([bill.bill_item_id]);
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Bayar
+                      </button>
+                      {onViewInvoice && (
+                        <button
+                          className="bp-btn-invoice"
+                          onClick={() => onViewInvoice(bill.bill_item_id)}
+                        >
+                          <FaEye size={10} /> Invoice
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

@@ -10,6 +10,7 @@ export const useFinancialSummary = (userData) => {
     jualBeliBalance: 0,
     jualBeliSisaCicilan: 0,
     jualBeliBelumDibayar: 0,
+    jualBeliTerbayar: 0,
     pinjamanTagihan: 0,
     pinjamanSisaCicilan: 0,
     pinjamanNominal: 0,
@@ -23,6 +24,10 @@ export const useFinancialSummary = (userData) => {
     arisanDiikutiCount: 0,
     arisanSisaCicilan: 0,
     arisanTerbayar: 0,
+    totalInvestasi: 0,
+    totalPendanaanSyariah: 0,
+    tabunganBalance: 0,
+    tabunganSubItemsData: { haji: 0, umroh: 0, pendidikan: 0, qurban: 0 },
     details: []
   });
   
@@ -46,9 +51,22 @@ export const useFinancialSummary = (userData) => {
 
         const totalSimpanan = pokok + wajib + sukarela + deposit;
         
+        // Pre-calculate tabungan metrics
+        const tabunganBalance = tDetails.reduce((acc, curr) => acc + (curr.balance || 0), 0);
+        const getSum = (keyword) => tDetails
+          .filter(d => d.name?.toLowerCase().includes(keyword))
+          .reduce((acc, curr) => acc + (curr.balance || 0), 0);
+
         setData({
           balance: totalSimpanan,
           tabunganDetails: tDetails,
+          tabunganBalance,
+          tabunganSubItemsData: {
+            haji: getSum("haji"),
+            umroh: getSum("umroh"),
+            pendidikan: getSum("pendidikan"),
+            qurban: getSum("qurban"),
+          },
           simpananPokok: pokok,
           simpananWajib: wajib,
           simpananSukarela: sukarela,
@@ -57,6 +75,7 @@ export const useFinancialSummary = (userData) => {
           jualBeliBalance: res.data.data.totalJualBeli || 0,
           jualBeliSisaCicilan: res.data.data.sisaCicilanJualBeli || 0,
           jualBeliBelumDibayar: res.data.data.jumlahCicilanBelumDibayar || 0,
+          jualBeliTerbayar: res.data.data.terbayarJualBeli || 0,
           pinjamanTagihan: res.data.data.totalLoanDebt || 0,
           pinjamanSisaCicilan: res.data.data.sisaCicilanPinjaman || 0,
           pinjamanNominal: res.data.data.totalNominalPinjaman || 0,
@@ -66,6 +85,8 @@ export const useFinancialSummary = (userData) => {
           arisanDiikutiCount: res.data.data.arisanDiikutiCount || 0,
           arisanSisaCicilan: res.data.data.sisaCicilanArisan || 0,
           arisanTerbayar: res.data.data.terbayarArisan || 0,
+          totalInvestasi: res.data.data.totalInvestasi || 0,
+          totalPendanaanSyariah: res.data.data.totalPendanaanSyariah || 0,
         });
       }
     } catch (err) {

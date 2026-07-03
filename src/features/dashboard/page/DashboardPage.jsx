@@ -129,12 +129,13 @@ export default function DashboardPage() {
 
   // Unified navigation handler
   const navigateToPage = useCallback(
-    (pageKey) => {
-      if (!pageKey) return;
+    (pageData) => {
+      if (!pageData) return;
+      const payload = typeof pageData === "string" ? { page: pageData } : pageData;
       try {
-        navigate(`/${jwtEncode({ page: pageKey })}`);
+        navigate(`/${jwtEncode(payload)}`);
       } catch {
-        navigate(`/${pageKey}`);
+        navigate(`/${payload.page}`);
       }
     },
     [navigate],
@@ -158,29 +159,13 @@ export default function DashboardPage() {
   );
 
   const handleViewMateri = useCallback(
-    (kurikulumId, type) => {
-      try {
-        navigate(
-          `/${jwtEncode({ page: "detailMateri", kurikulumId, type })}`,
-        );
-      } catch {
-        navigate("/detailMateri");
-      }
-    },
-    [navigate],
+    (kurikulumId, type) => navigateToPage({ page: "detailMateri", kurikulumId, type }),
+    [navigateToPage],
   );
 
   const handleStartEvaluasi = useCallback(
-    (kurikulumId, type) => {
-      try {
-        navigate(
-          `/${jwtEncode({ page: "evaluasi", kurikulumId, type })}`,
-        );
-      } catch {
-        navigate("/evaluasi");
-      }
-    },
-    [navigate],
+    (kurikulumId, type) => navigateToPage({ page: "evaluasi", kurikulumId, type }),
+    [navigateToPage],
   );
 
   // Loading state

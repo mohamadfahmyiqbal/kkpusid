@@ -355,6 +355,12 @@ export const useOtpVerification = () => {
         trackOtpAttempt({ success: false, errorType: "resend_failed" });
       }
     } catch (err) {
+      if (err.response?.status === 404) {
+        localStorage.removeItem("forgotPasswordSession");
+        navigate(LOGIN_PATH, { replace: true });
+        return;
+      }
+      
       const errorMessage =
         err.response?.data?.message ||
         AUTH_CONSTANTS.ERROR_MESSAGES.SERVER_ERROR;

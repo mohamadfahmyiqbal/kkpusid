@@ -1,12 +1,15 @@
 import React from "react";
-import { Card, Alert, Button, Spinner } from "react-bootstrap";
+import { Card,  Button, Spinner } from "react-bootstrap";
 import { FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 export default function SimulationSummary({
   formData,
   selectedProduct,
   formatCurrency,
   nominal,
+  principal,
   tenor,
   estimasiAngsuran,
   isLoading,
@@ -37,6 +40,7 @@ export default function SimulationSummary({
               <span className="text-muted small">Total Pinjaman</span>
               <strong className="text-dark font-outfit">{formatCurrency(nominal)}</strong>
             </div>
+
             <div className="summary-item">
               <span className="text-muted small">Tenor</span>
               <strong className="text-dark font-outfit">{tenor} Bulan</strong>

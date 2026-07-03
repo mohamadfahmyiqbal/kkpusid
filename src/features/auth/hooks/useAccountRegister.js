@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import { jwtEncode } from "../../../utils/helpers";
 import authService from "../service/authService";
 import useNotificationPermission from "./useNotificationPermission";
@@ -132,7 +132,14 @@ const useAccountRegister = () => {
     const { isValid, errors: valErrors } = validateForm();
     if (!isValid) {
       const firstError = Object.values(valErrors).find(Boolean);
-      toast.error(firstError || "Silakan lengkapi semua data dengan benar.");
+      Swal.fire({
+        title: firstError || "Silakan lengkapi semua data dengan benar.",
+        icon: "error",
+        toast: true,
+        position: "top-end",
+        timer: 3000,
+        showConfirmButton: false
+      });
       return;
     }
 
@@ -147,13 +154,27 @@ const useAccountRegister = () => {
       });
 
       if (res.data?.success) {
-        toast.success(SUCCESS_MESSAGES.REGISTER || "Registrasi berhasil!");
+        Swal.fire({
+          title: SUCCESS_MESSAGES.REGISTER || "Registrasi berhasil!",
+          icon: "success",
+          toast: true,
+          position: "top-end",
+          timer: 3000,
+          showConfirmButton: false
+        });
         resetForm();
         setTimeout(() => navigate(LOGIN_PATH), REDIRECT_DELAY_MS);
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Registrasi gagal, silakan coba lagi.";
-      toast.error(msg);
+      Swal.fire({
+        title: msg,
+        icon: "error",
+        toast: true,
+        position: "top-end",
+        timer: 3000,
+        showConfirmButton: false
+      });
     } finally {
       setLoading(false);
     }

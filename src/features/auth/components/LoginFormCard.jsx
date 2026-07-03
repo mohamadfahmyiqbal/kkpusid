@@ -3,10 +3,9 @@ import {
   Card,
   Form,
   Button,
-  Alert,
+  
   Spinner,
-  InputGroup,
-} from "react-bootstrap";
+  InputGroup} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
   IoMailOutline,
@@ -17,6 +16,8 @@ import {
   IoPhonePortraitOutline,
 } from "react-icons/io5";
 import { AUTH_CONSTANTS } from "../constants/authConstants";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const LoginFormCard = ({
   emailHp,

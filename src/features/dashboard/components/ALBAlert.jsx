@@ -1,6 +1,8 @@
 import React from "react";
-import { Alert, Badge } from "react-bootstrap";
+import {  Badge } from "react-bootstrap";
 import { FaInfoCircle, FaTimes } from "react-icons/fa";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 // Configuration constants
 const ALB_CONFIG = {

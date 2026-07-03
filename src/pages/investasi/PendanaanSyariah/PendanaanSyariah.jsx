@@ -6,7 +6,7 @@ import {
   Card,
   Button,
   Spinner,
-  Alert,
+  
   Badge
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -22,9 +22,12 @@ import {
   FaClock,
   FaCheckCircle,
   FaTimesCircle,
-  FaInfoCircle
+  FaInfoCircle,
+  FaHistory
 } from "react-icons/fa";
 import { usePendanaanData } from "./hooks/usePendanaanData";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const PendanaanSyariah = () => {
   const navigate = useNavigate();

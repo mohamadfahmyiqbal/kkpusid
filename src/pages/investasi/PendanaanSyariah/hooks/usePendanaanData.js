@@ -19,7 +19,7 @@ export const usePendanaanData = () => {
       if (history.length > 0) {
         setHasPengajuan(true);
         // Ambil detail pengajuan terbaru
-        const latestId = history[0].id;
+        const latestId = history[0].financing_id || history[0].id;
         const detailResponse = await api.get(`/financing/detail/${latestId}`);
         
         if (detailResponse.data.status) {

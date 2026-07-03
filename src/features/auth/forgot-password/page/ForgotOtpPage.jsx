@@ -7,10 +7,9 @@ import {
   Button,
   Row,
   Col,
-  Alert,
+  
   Spinner,
-  Badge,
-} from "react-bootstrap";
+  Badge} from "react-bootstrap";
 import {
   FaShieldAlt,
   FaClock,
@@ -23,6 +22,8 @@ import {
 import { jwtEncode } from "../../../../utils/helpers";
 import { useOtpVerification } from "../hooks/useOtpVerification";
 import { AUTH_CONSTANTS } from "../../constants/authConstants";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const LOGIN_PATH = `/${jwtEncode({ page: "authLogin" })}`;
 
@@ -156,7 +157,7 @@ export default function ForgotOtpPage() {
 
                 <p>
                   Masukkan kode 6 digit yang telah dikirim ke{" "}
-                  {sessionData?.emailHp || "email/WhatsApp Anda"} untuk
+                  {sessionData?.emailHp || "email Anda"} untuk
                   melanjutkan proses reset password.
                 </p>
 
@@ -223,7 +224,7 @@ export default function ForgotOtpPage() {
                     <h2>Verifikasi OTP</h2>
                     <p>
                       Kode dikirim ke{" "}
-                      {sessionData?.emailHp || "email/WhatsApp Anda"}
+                      {sessionData?.emailHp || "email Anda"}
                     </p>
 
                     {timeLeft > 0 && !isSuccess && (

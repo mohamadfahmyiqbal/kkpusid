@@ -4,6 +4,7 @@ import React, { useCallback } from "react";
 import { Card, Button, Container, Row, Col } from "react-bootstrap";
 import { FaUsers, FaFileSignature } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import { jwtEncode } from "../../../utils/helpers";
 
@@ -125,7 +126,7 @@ export default function ArisanJoinPage() {
   );
 
   const handleWaitlist = useCallback((arisan) => {
-    alert(`Anda masuk daftar tunggu untuk Grup Arisan ${arisan.batch}.`);
+    Swal.fire({ title: 'Perhatian', text: `Anda masuk daftar tunggu untuk Grup Arisan ${arisan.batch}.`, icon: 'info' });
   }, []);
 
   return (

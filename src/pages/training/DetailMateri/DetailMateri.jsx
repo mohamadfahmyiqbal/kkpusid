@@ -6,14 +6,13 @@ import {
   Card,
   Button,
   Spinner,
-  Alert,
+  
   Badge,
   Tabs,
   Tab,
   Form,
   ListGroup,
-  ProgressBar,
-} from "react-bootstrap";
+  ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
@@ -30,6 +29,8 @@ import {
   FaClock,
 } from "react-icons/fa";
 import "./DetailMateri.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const DetailMateri = () => {
   const navigate = useNavigate();

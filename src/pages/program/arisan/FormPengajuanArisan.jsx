@@ -8,9 +8,8 @@ import {
   Card,
   Form,
   Button,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
+  
+  Spinner} from "react-bootstrap";
 import {
   FaCheck,
   FaExclamationTriangle,
@@ -26,6 +25,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { jwtEncode } from "../../../utils/helpers";
 import { useProfile } from "../../../components/layout/contexts";
 import "./FormPengajuanArisan.css";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||

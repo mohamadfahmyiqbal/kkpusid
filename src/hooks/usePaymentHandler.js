@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 /**
  * Hook untuk menangani event pembayaran berhasil dari socket
@@ -39,9 +39,13 @@ export const usePaymentHandler = () => {
       handleCloseSnap();
       
       // Tampilkan konfirmasi sukses
-      toast.success('Pembayaran berhasil! Keanggotaan Anda sedang diaktifkan...', {
-        position: 'top-center',
-        autoClose: 5000,
+      Swal.fire({
+        title: 'Pembayaran berhasil! Keanggotaan Anda sedang diaktifkan...',
+        icon: 'success',
+        toast: true,
+        position: 'top',
+        timer: 5000,
+        showConfirmButton: false
       });
     };
 

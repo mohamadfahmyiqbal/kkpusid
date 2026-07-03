@@ -16,10 +16,12 @@ const FinancialSection = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const {
-    balance, tabunganDetails, jualBeliBalance, jualBeliSisaCicilan, jualBeliBelumDibayar,
-    pinjamanNominal, pinjamanNominalCicilan, pinjamanTerbayar,
+    balance, tabunganDetails, tabunganBalance, tabunganSubItemsData,
+    jualBeliBalance, jualBeliSisaCicilan, jualBeliBelumDibayar, jualBeliTerbayar,
+    pinjamanNominal, pinjamanNominalCicilan, pinjamanTerbayar, pinjamanTagihan, pinjamanSisaCicilan,
     simpananPokok, simpananWajib, simpananSukarela, simpananDeposit,
     arisanTagihan, arisanDiikutiCount, arisanSisaCicilan, arisanTerbayar,
+    totalInvestasi, totalPendanaanSyariah,
     details, loading, isRefreshing, refresh
   } = useFinancialSummary(userData);
 
@@ -37,33 +39,26 @@ const FinancialSection = () => {
   const formattedSukarela = useMemo(() => formatCurrency(simpananSukarela), [simpananSukarela]);
   const formattedDeposit = useMemo(() => formatCurrency(simpananDeposit), [simpananDeposit]);
 
-  const tabunganBalance = useMemo(() => tabunganDetails.reduce((acc, curr) => acc + (curr.balance || 0), 0), [tabunganDetails]);
   const formattedTabungan = useMemo(() => formatCurrency(tabunganBalance), [tabunganBalance]);
   
-  const tabunganSubItems = useMemo(() => {
-    const sumBalance = (keyword) => tabunganDetails
-      .filter(d => d.name?.toLowerCase().includes(keyword))
-      .reduce((acc, curr) => acc + (curr.balance || 0), 0);
-
-    return [
-      { label: 'Haji', formattedAmount: formatCurrency(sumBalance("haji")), icon: FaUniversity },
-      { label: 'Umroh', formattedAmount: formatCurrency(sumBalance("umroh")), icon: FaUniversity },
-      { label: 'Pendidikan', formattedAmount: formatCurrency(sumBalance("pendidikan")), icon: FaUniversity },
-      { label: 'Qurban', formattedAmount: formatCurrency(sumBalance("qurban")), icon: FaUniversity },
-    ];
-  }, [tabunganDetails]);
+  const tabunganSubItems = useMemo(() => [
+    { label: 'Haji', formattedAmount: formatCurrency(tabunganSubItemsData.haji), icon: FaUniversity },
+    { label: 'Umroh', formattedAmount: formatCurrency(tabunganSubItemsData.umroh), icon: FaUniversity },
+    { label: 'Pendidikan', formattedAmount: formatCurrency(tabunganSubItemsData.pendidikan), icon: FaUniversity },
+    { label: 'Qurban', formattedAmount: formatCurrency(tabunganSubItemsData.qurban), icon: FaUniversity },
+  ], [tabunganSubItemsData]);
 
   const jualBeliSubItems = useMemo(() => [
     { label: 'Sisa Cicilan', formattedAmount: formatCurrency(jualBeliSisaCicilan), icon: FaShoppingCart },
-    { label: 'Total Pengajuan', formattedAmount: formatCurrency(jualBeliBalance), icon: FaShoppingCart },
+    { label: 'Sudah Dibayar', formattedAmount: formatCurrency(jualBeliTerbayar), icon: FaShoppingCart },
     { label: 'Belum Dibayar', formattedAmount: `${jualBeliBelumDibayar} Cicilan`, icon: FaShoppingCart },
-  ], [jualBeliSisaCicilan, jualBeliBalance, jualBeliBelumDibayar]);
+  ], [jualBeliSisaCicilan, jualBeliTerbayar, jualBeliBelumDibayar]);
 
   const pinjamanSubItems = useMemo(() => [
-    { label: 'Nominal Pinjaman', formattedAmount: formatCurrency(pinjamanNominal), icon: FaLayerGroup },
+    { label: 'Sisa Cicilan', formattedAmount: formatCurrency(pinjamanSisaCicilan), icon: FaLayerGroup },
     { label: 'Nominal Cicilan', formattedAmount: formatCurrency(pinjamanNominalCicilan), icon: FaLayerGroup },
     { label: 'Sudah Dibayar', formattedAmount: formatCurrency(pinjamanTerbayar), icon: FaLayerGroup },
-  ], [pinjamanNominalCicilan, pinjamanTerbayar, pinjamanNominal]);
+  ], [pinjamanSisaCicilan, pinjamanNominalCicilan, pinjamanTerbayar]);
 
   const arisanSubItems = useMemo(() => [
     { label: 'Total Arisan Diikuti', formattedAmount: `${arisanDiikutiCount} Program`, icon: FaLayerGroup },
@@ -114,7 +109,7 @@ const FinancialSection = () => {
 
 
           <FinancialCard 
-            title="TOTAL PINJAMAN" icon={FaLayerGroup} formattedAmount={formatCurrency(pinjamanNominal)}
+            title="TOTAL PINJAMAN" icon={FaLayerGroup} formattedAmount={formatCurrency(pinjamanTagihan)}
             showBalance={showBalance} onToggleBalance={() => setShowBalance(!showBalance)} 
             isRefreshing={isRefreshing} onRefresh={refresh} subItems={pinjamanSubItems}
             variant="pinjaman" 
@@ -138,7 +133,14 @@ const FinancialSection = () => {
           />
 
           <FinancialCard 
-            title="TOTAL INVESTASI" icon={FaChartLine} formattedAmount={formatCurrency(0)}
+            title="TOTAL PENDANAAN SYARIAH" icon={FaHandHoldingUsd} formattedAmount={formatCurrency(totalPendanaanSyariah)}
+            showBalance={showBalance} onToggleBalance={() => setShowBalance(!showBalance)} 
+            isRefreshing={isRefreshing} onRefresh={refresh}
+            variant="investasi" 
+          />
+
+          <FinancialCard 
+            title="TOTAL INVESTASI" icon={FaChartLine} formattedAmount={formatCurrency(totalInvestasi)}
             showBalance={showBalance} onToggleBalance={() => setShowBalance(!showBalance)} 
             isRefreshing={isRefreshing} onRefresh={refresh}
             variant="investasi" 

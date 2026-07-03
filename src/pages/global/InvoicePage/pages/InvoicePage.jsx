@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Container, Spinner, Alert, Button, Badge } from "react-bootstrap";
+import { Container, Spinner,  Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaExclamationTriangle, FaArrowLeft } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 // Components
 import InvoiceHeader from "../components/InvoiceHeader";
@@ -14,6 +15,8 @@ import { useInvoiceData } from "../hooks/useInvoiceData";
 // Utils
 import UBilling from "../../../../utils/api/UBilling";
 import { jwtEncode } from "../../../../utils/helpers";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const InvoicePage = () => {
   const navigate = useNavigate();
@@ -69,6 +72,7 @@ const InvoicePage = () => {
   const isPaid = billData?.status === "PAID" || status === "success" || isLocalPaid;
   const isRegistrationFlow = returnPage === "registrationPage" || (returnPage === "billingPage" && registrationId);
   const isSimpananFlow = isPaid && originalReturn === "simpananPage";
+  const isPelunasan = (productName || product || categoryName || category)?.toLowerCase().includes("pelunasan");
 
   const handleNavigateBack = useCallback(() => {
     // Redirect to dashboard if paid and part of registration flow
@@ -79,6 +83,11 @@ const InvoicePage = () => {
 
     if (isSimpananFlow) {
       navigate(`/${jwtEncode({ page: "simpananPage", activeTab: categoryName })}`);
+      return;
+    }
+
+    if (isPelunasan) {
+      navigate(`/${jwtEncode({ page: "jualBeliPage" })}`);
       return;
     }
 
@@ -126,15 +135,17 @@ const InvoicePage = () => {
     }
 
     navigate(`/${returnPage}`);
-  }, [navigate, returnPage, registrationId, categoryName, product, id, isPaid, isRegistrationFlow, isSimpananFlow, originalReturn, category]);
+  }, [navigate, returnPage, registrationId, categoryName, product, id, isPaid, isRegistrationFlow, isSimpananFlow, isPelunasan, originalReturn, category, financingId, productName]);
 
   const handlePay = async () => {
     if (!window.snap) {
-      return alert("Sistem pembayaran belum siap. Mohon refresh halaman.");
+      Swal.fire({ title: 'Perhatian', text: "Sistem pembayaran belum siap. Mohon refresh halaman.", icon: 'warning' });
+      return;
     }
 
     if (totalAmount <= 0.01) {
-      return alert("Terjadi kesalahan: Jumlah pembayaran tidak valid.");
+      Swal.fire({ title: 'Perhatian', text: "Terjadi kesalahan: Jumlah pembayaran tidak valid.", icon: 'warning' });
+      return;
     }
 
     setIsProcessing(true);
@@ -149,6 +160,7 @@ const InvoicePage = () => {
       const response = await UBilling.createMidtransTransaction({
         bill_item_ids: billItemIds,
         amount: totalAmount,
+        financing_id: financingId, // Tambahkan financingId agar backend bisa melakukan mapping pelunasan
         tx_category:
           category === "SUKARELA"
             ? "SAVINGS_DEPOSIT"
@@ -178,11 +190,24 @@ const InvoicePage = () => {
 
             setIsLocalPaid(true); // Set local paid status immediately for instant success UI
             
+            // Tutup popup snap secepatnya agar pengguna tidak menunggu sync selesai
+            if (window.snap && window.snap.hide) {
+              window.snap.hide();
+            } else {
+              const snapEl = document.getElementById('snap-midtrans');
+              if (snapEl) {
+                snapEl.style.display = 'none'; // Sembunyikan saja dulu untuk menghindari error postMessage
+                setTimeout(() => snapEl.remove(), 2000); // Hapus setelah aman
+              }
+            }
+            
             // Lakukan sinkronisasi manual ke backend karena webhook mungkin gagal (terutama di localhost)
             try {
               if (result.order_id) {
                 await UBilling.syncMidtransStatus(result.order_id);
               }
+              // ✅ Tambahkan pemicu sinkronisasi laporan untuk summary & jual beli
+              await UBilling.manualSyncSummary();
             } catch (syncErr) {
               console.error("Gagal melakukan sinkronisasi status transaksi:", syncErr);
             }
@@ -192,9 +217,6 @@ const InvoicePage = () => {
             setIsProcessing(false);
             window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
             window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
-            setTimeout(() => {
-              if (window.snap && window.snap.hide) window.snap.hide();
-            }, 1000);
           },
           onPending: (result) => {
             clearTimeout(safetyTimeout);
@@ -259,7 +281,9 @@ const InvoicePage = () => {
   }
 
   let returnPageName = "Kembali";
-  if (isPaid && isRegistrationFlow) {
+  if (isPelunasan) {
+    returnPageName = "Jual Beli";
+  } else if (isPaid && isRegistrationFlow) {
     returnPageName = "Dashboard";
   } else if (isSimpananFlow) {
     returnPageName = "Simpanan";

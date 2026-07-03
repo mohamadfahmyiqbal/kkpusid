@@ -6,13 +6,13 @@ import {
   Row,
   Col,
   Container,
-  InputGroup,
-  Alert,
-} from "react-bootstrap";
+  InputGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../utils/helpers";
 import USavings from "../../utils/api/USavings";
 import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
+import Alert from "../../components/ui/SwalAlert";
+
 
 const SAVINGS_TYPES = [
   { value: 'SUKARELA', label: 'Simpanan Sukarela' },

@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
-import { Button, Spinner, Alert, Row, Col } from "react-bootstrap";
+import { Button, Spinner,  Row, Col } from "react-bootstrap";
 import { FaArrowLeft, FaDownload } from "react-icons/fa";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../../utils/helpers";
 import InformasiRekeningCard from "../../SimpananPage/components/InformasiRekeningCard";
@@ -9,6 +10,8 @@ import SummaryCard from "../component/SummaryCard";
 import FilterControls from "../component/FilterControls";
 import TransactionTable from "../component/TransactionTable";
 import ActionButtons from "../component/ActionButtons";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 const DetailSaldoPage = ({ decodedToken }) => {
   const navigate = useNavigate();
@@ -52,7 +55,7 @@ const DetailSaldoPage = ({ decodedToken }) => {
   }, [returnPage, navigate]);
 
   const handleExport = useCallback(() => {
-    alert("Fitur export akan segera tersedia");
+    Swal.fire({ title: 'Perhatian', text: "Fitur export akan segera tersedia", icon: 'info' });
   }, []);
 
   const handleTransactionClick = useCallback(
@@ -67,7 +70,7 @@ const DetailSaldoPage = ({ decodedToken }) => {
         navigate(`/${token}`);
       } catch (error) {
         console.error("Transaction detail navigation error:", error);
-        alert("Tidak dapat membuka detail transaksi. Silakan coba lagi.");
+        Swal.fire({ title: 'Perhatian', text: "Tidak dapat membuka detail transaksi. Silakan coba lagi.", icon: 'error' });
       }
     },
     [categoryCode, navigate],
@@ -84,7 +87,7 @@ const DetailSaldoPage = ({ decodedToken }) => {
       navigate(`/${token}`);
     } catch (error) {
       console.error("Penarikan navigation error:", error);
-      alert("Tidak dapat membuka halaman penarikan.");
+      Swal.fire({ title: 'Perhatian', text: "Tidak dapat membuka halaman penarikan.", icon: 'error' });
     }
   }, [categoryCode, displayName, navigate]);
 
@@ -99,7 +102,7 @@ const DetailSaldoPage = ({ decodedToken }) => {
       navigate(`/${token}`);
     } catch (error) {
       console.error("Setoran navigation error:", error);
-      alert("Tidak dapat membuka halaman setoran.");
+      Swal.fire({ title: 'Perhatian', text: "Tidak dapat membuka halaman setoran.", icon: 'error' });
     }
   }, [categoryCode, displayName, navigate]);
 

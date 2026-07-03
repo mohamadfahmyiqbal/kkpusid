@@ -1,7 +1,7 @@
 // pages/tabungan/TabunganPage.jsx
 
 import React, { useState, useCallback, useEffect } from "react";
-import { Alert } from "react-bootstrap";
+;
 import { useNavigate } from "react-router-dom";
 import { MdSavings, MdAccountBalanceWallet, MdSchool, MdPets } from "react-icons/md";
 import { FaShieldAlt } from "react-icons/fa";
@@ -10,24 +10,23 @@ import TabunganService from "../../services/tabungan.service";
 import ProgramStatusCard from "../../components/program/ProgramStatusCard";
 import { jwtEncode } from "../../utils/helpers";
 import "./TabunganPage.css";
+import Alert from "../../components/ui/SwalAlert";
 
-// ── DATA MENU TABUNGAN ──
-const TABUNGAN_OPTIONS = [
-  { label: "Tabungan Haji", key: "haji", icon: MdSavings },
-  { label: "Tabungan Umrah", key: "umrah", icon: MdAccountBalanceWallet },
-  { label: "Tabungan Pendidikan", key: "pendidikan", icon: MdSchool },
-  { label: "Tabungan Qurban", key: "qurban", icon: MdPets },
-];
 
 // ── HELPERS ──
 
-/** Format product key into display name (e.g. "haji" → "Haji") */
-const formatProductName = (product) =>
-  product.charAt(0).toUpperCase() + product.slice(1);
+const getIconForCategory = (category) => {
+  const cat = category?.toLowerCase() || '';
+  if (cat.includes('haji')) return MdSavings;
+  if (cat.includes('umrah')) return MdAccountBalanceWallet;
+  if (cat.includes('pendidikan')) return MdSchool;
+  if (cat.includes('qurban')) return MdPets;
+  return MdSavings; // default
+};
 
 /** Build JWT token & navigate to an encrypted route */
-const navigateTo = (navigate, page, product) => {
-  const token = jwtEncode({ page, product });
+const navigateTo = (navigate, page, program) => {
+  const token = jwtEncode({ page, program });
   navigate(`/${token}`);
 };
 
@@ -50,7 +49,7 @@ const EmptyState = ({ onPengajuan }) => (
   <div className="animate-fade-in" key="empty">
     <ProgramStatusCard
       title="Informasi Rekening"
-      message="Anda belum memiliki rekening tabungan ini"
+      message="Anda belum memiliki rekening tabungan untuk program ini"
       buttonText="Pengajuan"
       onButtonClick={onPengajuan}
       status="NG"
@@ -76,7 +75,7 @@ const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
         <div className="d-flex justify-content-between align-items-start mb-4">
           <div>
             <h4 className="fw-bold mb-1" style={{ fontSize: '1.25rem' }}>Rekening Aktif</h4>
-            <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>{accountData.target_name || `Tabungan ${productName}`}</p>
+            <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>{accountData.target_name || productName}</p>
           </div>
           <button 
             className="btn btn-light fw-bold rounded-pill px-4" 
@@ -126,21 +125,48 @@ const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
 export default function TabunganPage() {
   const navigate = useNavigate();
 
-  const [activeProduct, setActiveProduct] = useState("haji");
+  const [programs, setPrograms] = useState([]);
+  const [activeProgramId, setActiveProgramId] = useState(null);
+  
   const [accountStatus, setAccountStatus] = useState({ state: "EMPTY", data: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check account status for each product
+  // Load available programs
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPrograms = async () => {
+      setLoading(true);
+      try {
+        const res = await TabunganService.getAvailablePrograms();
+        if (!cancelled && res.success && res.data) {
+          setPrograms(res.data);
+          if (res.data.length > 0) {
+            setActiveProgramId(res.data[0].saving_target_id);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) setError("Gagal memuat daftar program tabungan");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchPrograms();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Check account status when active program changes
   useEffect(() => {
     let cancelled = false;
 
     const checkAccountStatus = async () => {
+      if (!activeProgramId) return;
+      
       setLoading(true);
       setError(null);
 
       try {
-        const response = await TabunganService.checkAccountStatus(activeProduct);
+        const response = await TabunganService.checkAccountStatus(activeProgramId);
         
         if (cancelled) return;
 
@@ -170,31 +196,37 @@ export default function TabunganPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeProduct]);
+  }, [activeProgramId]);
 
   // ── Handlers ──
 
   const handlePengajuan = useCallback(() => {
-    navigateTo(navigate, "formPengajuanTabungan", activeProduct);
-  }, [navigate, activeProduct]);
+    const selectedProgram = programs.find(p => p.saving_target_id === activeProgramId);
+    if (selectedProgram) {
+      navigateTo(navigate, "formPengajuanTabungan", selectedProgram);
+    }
+  }, [navigate, activeProgramId, programs]);
 
   const handleSetoran = useCallback(() => {
+    const selectedProgram = programs.find(p => p.saving_target_id === activeProgramId);
     const token = jwtEncode({
       page: "billingPage",
       category: "TABUNGAN_DEPOSIT",
       tabungan_id: accountStatus.data?.member_saving_target_id,
-      productName: activeProduct,
+      productName: selectedProgram?.target_name || 'Tabungan',
       displayName: "Setoran Tabungan",
       return: "tabunganPage",
     });
     navigate(`/${token}`);
-  }, [navigate, activeProduct, accountStatus]);
+  }, [navigate, activeProgramId, accountStatus, programs]);
 
-  const handleProductChange = useCallback((key) => {
-    setActiveProduct(key);
+  const handleProductChange = useCallback((id) => {
+    setActiveProgramId(id);
   }, []);
 
   // ── Render ──
+  
+  const activeProgramData = programs.find(p => p.saving_target_id === activeProgramId) || {};
 
   return (
     <div className="tabungan-page-container pb-5">
@@ -211,74 +243,89 @@ export default function TabunganPage() {
       )}
 
       {/* Loading */}
-      {loading ? (
+      {loading && programs.length === 0 ? (
         <div className="px-2">
           <TabunganSkeleton />
         </div>
       ) : (
         <>
           {/* Tabs Navigation */}
-          <div className="tabungan-tabs-container mb-4 px-2">
-            <div className="d-flex flex-column flex-md-row gap-2 overflow-auto pb-2 tabungan-scroll-hide">
-              {TABUNGAN_OPTIONS.map((opt) => {
-                const isActive = activeProduct === opt.key;
-                const Icon = opt.icon;
-                return (
-                  <button
-                    key={opt.key}
-                    onClick={() => handleProductChange(opt.key)}
-                    className={`tabungan-tab-btn ${isActive ? "active" : ""}`}
-                  >
-                    <Icon size={18} />
-                    <span>{opt.label}</span>
-                  </button>
-                );
-              })}
+          {programs.length > 0 ? (
+            <div className="tabungan-tabs-container mb-4 px-2">
+              <div className="d-flex flex-column flex-md-row gap-2 overflow-auto pb-2 tabungan-scroll-hide">
+                {programs.map((opt) => {
+                  const isActive = activeProgramId === opt.saving_target_id;
+                  const Icon = getIconForCategory(opt.category);
+                  return (
+                    <button
+                      key={opt.saving_target_id}
+                      onClick={() => handleProductChange(opt.saving_target_id)}
+                      className={`tabungan-tab-btn ${isActive ? "active" : ""}`}
+                    >
+                      <Icon size={18} />
+                      <span>{opt.target_name}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="px-2 text-center text-muted mt-5">
+              <MdSavings size={48} className="opacity-50 mb-3" />
+              <p>Belum ada program tabungan yang tersedia.</p>
+            </div>
+          )}
 
           {/* Content */}
-          <div className="px-2 animate-fade-in" key={activeProduct}>
-            {accountStatus.state === "EMPTY" && (
-              <EmptyState onPengajuan={handlePengajuan} />
-            )}
+          {programs.length > 0 && (
+            <div className="px-2 animate-fade-in" key={activeProgramId}>
+              {loading ? (
+                 <TabunganSkeleton />
+              ) : (
+                <>
+                  {accountStatus.state === "EMPTY" && (
+                    <EmptyState onPengajuan={handlePengajuan} />
+                  )}
 
-            {(accountStatus.state === "PENDING" || accountStatus.state === "IN_PROGRESS" || accountStatus.state === "WAITING_APPROVAL") && (
-              <ProgramStatusCard
-                title="Menunggu Persetujuan"
-                message={`Pengajuan Tabungan ${formatProductName(activeProduct)} sedang direview oleh pengurus`}
-                buttonText="Lihat Detail"
-                onButtonClick={() => {
-                   const token = jwtEncode({
-                      page: "transactionDetailPage",
-                      tabunganId: accountStatus.data.member_saving_target_id,
-                      return: "tabunganPage",
-                      product: activeProduct,
-                   });
-                   navigate(`/${token}`);
-                }}
-                variant="pending"
-              />
-            )}
+                  {(accountStatus.state === "PENDING" || accountStatus.state === "IN_PROGRESS" || accountStatus.state === "WAITING_APPROVAL") && (
+                    <ProgramStatusCard
+                      title="Menunggu Persetujuan"
+                      message={`Pengajuan ${activeProgramData.target_name} sedang direview oleh pengurus`}
+                      buttonText="Lihat Detail"
+                      onButtonClick={() => {
+                        const token = jwtEncode({
+                            page: "transactionDetailPage",
+                            tabunganId: accountStatus.data.member_saving_target_id,
+                            return: "tabunganPage",
+                            product: activeProgramData.target_name,
+                        });
+                        navigate(`/${token}`);
+                      }}
+                      variant="pending"
+                    />
+                  )}
 
-            {(accountStatus.state === "APPROVED" || accountStatus.state === "OK") && (
-              <ActiveTabunganCard 
-                accountData={accountStatus.data} 
-                onSetoran={handleSetoran}
-                productName={formatProductName(activeProduct)}
-              />
-            )}
-            
-            {accountStatus.state === "REJECTED" && (
-              <ProgramStatusCard
-                title="Pengajuan Ditolak"
-                message={`Pengajuan Tabungan ${formatProductName(activeProduct)} Anda tidak disetujui`}
-                buttonText="Ajukan Ulang"
-                onButtonClick={handlePengajuan}
-                status="NG"
-              />
-            )}
-          </div>
+                  {(accountStatus.state === "APPROVED" || accountStatus.state === "OK") && (
+                    <ActiveTabunganCard 
+                      accountData={accountStatus.data} 
+                      onSetoran={handleSetoran}
+                      productName={activeProgramData.target_name}
+                    />
+                  )}
+                  
+                  {accountStatus.state === "REJECTED" && (
+                    <ProgramStatusCard
+                      title="Pengajuan Ditolak"
+                      message={`Pengajuan ${activeProgramData.target_name} Anda tidak disetujui`}
+                      buttonText="Ajukan Ulang"
+                      onButtonClick={handlePengajuan}
+                      status="NG"
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
 

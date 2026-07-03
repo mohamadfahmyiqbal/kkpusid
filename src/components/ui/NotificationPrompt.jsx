@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Alert, Button } from "react-bootstrap";
+import {  Button } from "react-bootstrap";
 import { FaBell, FaTimes } from "react-icons/fa";
 import { subscribeUser } from "../../utils/helper/pushHelper";
 import api from "../../utils/api/common";
+import Alert from "./SwalAlert";
+
 
 export default function NotificationPrompt({ memberId }) {
   const [showPrompt, setShowPrompt] = useState(false);

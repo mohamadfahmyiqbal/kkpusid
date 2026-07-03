@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL ||
   process.env.REACT_APP_SOCKET_URL ||
-  'https://localhost:3445';
+  'http://localhost:3445';
 
 let socket = null;
 

@@ -1,7 +1,7 @@
 // src/utils/helper/SocketListener.js
 import { useEffect } from "react";
 import { useSocket } from "../../components/layout/contexts/SocketContext";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const useSocketListener = (callback) => {
   const { socket } = useSocket();
@@ -10,7 +10,14 @@ const useSocketListener = (callback) => {
     if (socket) {
       // 1. Listen untuk notifikasi umum (jika masih ada)
       socket.on("notification", (data) => {
-        toast.info(data.message || "Ada notifikasi baru");
+        Swal.fire({
+          title: data.message || "Ada notifikasi baru",
+          icon: "info",
+          toast: true,
+          position: "top-end",
+          timer: 3000,
+          showConfirmButton: false
+        });
       });
 
       // 2. Listen untuk update status persetujuan (Dinamis sesuai backend)
@@ -26,11 +33,16 @@ const useSocketListener = (callback) => {
           IN_PROGRESS: "diproses ke tahap berikutnya",
         };
 
-        toast.success(
-          `Update ${data.entityRef}: Permohonan ${
+        Swal.fire({
+          title: `Update ${data.entityRef}: Permohonan ${
             statusMap[data.status] || data.status
-          }`
-        );
+          }`,
+          icon: "success",
+          toast: true,
+          position: "top-end",
+          timer: 3000,
+          showConfirmButton: false
+        });
 
         // Panggil callback untuk update state komponen
         if (callback && typeof callback === 'function') {
@@ -52,8 +64,14 @@ const useSocketListener = (callback) => {
 
         
         // Tampilkan toast notifikasi
-        toast.success(data.title || "Notifikasi Baru", {
-          description: data.content || "",
+        Swal.fire({
+          title: data.title || "Notifikasi Baru",
+          text: data.content || "",
+          icon: "success",
+          toast: true,
+          position: "top-end",
+          timer: 3000,
+          showConfirmButton: false
         });
 
         // Handle khusus untuk PAYMENT_SUCCESS

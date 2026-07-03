@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo, useMemo, useCallback } from "react";
-import { Card, Spinner, Alert, Button } from "react-bootstrap";
+import { Card, Spinner,  Button } from "react-bootstrap";
 import { 
   MdInfoOutline, 
   MdAddCircleOutline, 
@@ -13,9 +13,11 @@ import USimpanan from "../../../../utils/api/USimpanan";
 import { jwtEncode } from "../../../../utils/helpers";
 import { getSocket } from "../../../../utils/socket";
 import { useProfile } from "../../../../components/layout/contexts";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import "../../../jualbeli/JualBeliDashboardPage.css";
 import "./InformasiRekeningCard.css";
+import Alert from "../../../../components/ui/SwalAlert";
+
 
 /**
  * Komponen kartu informasi rekening dengan desain premium & modern
@@ -96,10 +98,14 @@ const InformasiRekeningCard = memo(
         socket.on("savings:balance:update", (data) => {
           if (data.category === activeType && isMounted) {
             setDetails((prev) => ({ ...prev, saldo: data.balance }));
-            toast.info(
-              `Saldo ${displayName} diperbarui: Rp ${data.balance.toLocaleString("id-ID")}`,
-              { position: "bottom-center", autoClose: 3000 }
-            );
+            Swal.fire({
+              title: `Saldo ${displayName} diperbarui: Rp ${data.balance.toLocaleString("id-ID")}`,
+              icon: "info",
+              toast: true,
+              position: "bottom",
+              timer: 3000,
+              showConfirmButton: false
+            });
           }
         });
       }

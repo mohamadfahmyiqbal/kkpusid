@@ -1,6 +1,8 @@
 import React from "react";
-import { Card, Form, Button, Alert, InputGroup } from "react-bootstrap";
+import { Card, Form, Button,  InputGroup } from "react-bootstrap";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const LoginFormCard = ({
   emailHp,

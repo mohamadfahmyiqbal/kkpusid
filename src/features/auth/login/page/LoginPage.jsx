@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="pbs-login-v2">
       {/* Header Topbar */}
-      <header className="pbs-login-topbar">
+      <header className="pbs-login-topbar" id="header-topbar" name="header-topbar">
         <Container fluid="lg">
           <div className="pbs-topbar-wrap py-3 d-flex justify-content-between align-items-center">
             <div className="pbs-topbar-brand">
@@ -72,12 +72,12 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="pbs-login-content py-5">
+      <main className="pbs-login-content py-5" id="main-content-area" name="main-content-area">
         <Container fluid="lg">
-          <Row className="g-5 align-items-center justify-content-center">
+          <Row className="g-5 align-items-stretch justify-content-center">
             
             {/* LEFT SIDE - Info & Benefits */}
-            <Col lg={5} className="d-none d-lg-block">
+            <Col lg={6} className="d-none d-lg-block" id="left-side-info-benefits" name="left-side-info-benefits">
               <section className="pbs-login-left-v2">
                 <div className="mosque-overlay"></div>
                 <div className="pbs-login-info-wrap">
@@ -128,8 +128,8 @@ export default function LoginPage() {
                       <FaHeadset className="pbs-support-icon" />
                     </div>
                     <div>
-                      <small className="d-block text-white-50">Butuh bantuan?</small>
-                      <span className="text-white fw-bold small">
+                      <small className="d-block text-muted">Butuh bantuan?</small>
+                      <span className="text-dark fw-bold small">
                         Hubungi kami di 0812-3456-7890
                       </span>
                     </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
             </Col>
 
             {/* RIGHT SIDE - Login Form */}
-            <Col lg={6} md={10} xs={12}>
+            <Col lg={6} md={10} xs={12} id="right-side-login-form" name="right-side-login-form">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

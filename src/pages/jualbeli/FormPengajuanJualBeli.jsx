@@ -6,9 +6,7 @@ import {
   Row,
   Col,
   Container,
-  InputGroup,
-  Alert,
-} from "react-bootstrap";
+  InputGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import {
   MdArrowBack,
@@ -31,6 +29,8 @@ import { jwtEncode } from "../../utils/helpers";
 import { useProfile } from "../../components/layout/contexts";
 import UJualBeli from "../../utils/api/UJualBeli";
 import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
+import Alert from "../../components/ui/SwalAlert";
+
 
 const formatCurrency = (amount) =>
   amount.toLocaleString("id-ID", {
@@ -178,10 +178,10 @@ function FormPengajuanJualBeli() {
       return "Harga barang tidak boleh kurang dari 0.";
     }
     if (nominalDP !== "" && Number(nominalDP) < 0) {
-      return "Uang muka (DP) tidak boleh kurang dari 0.";
+      return "Uang tanda keseriusan tidak boleh kurang dari 0.";
     }
     if (nominalHarga !== "" && nominalDP !== "" && Number(nominalDP) > Number(nominalHarga)) {
-      return "Uang muka (DP) tidak boleh melebihi harga barang.";
+      return "Uang tanda keseriusan tidak boleh melebihi harga barang.";
     }
     return null;
   }, [
@@ -210,7 +210,7 @@ function FormPengajuanJualBeli() {
         return;
       }
       if (Number(nominalDP) > amountReq) {
-        setValidationError("Uang muka tidak boleh melebihi harga barang.");
+        setValidationError("Uang tanda keseriusan tidak boleh melebihi harga barang.");
         return;
       }
       // Disbursement validation removed
@@ -351,7 +351,7 @@ function FormPengajuanJualBeli() {
                     {/* DP (Down Payment) */}
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-bold mb-1.5 d-flex align-items-center gap-1.5 small text-muted">
-                        <MdPayment size={16} /> Uang Muka (DP)
+                        <MdPayment size={16} /> Uang Tanda Keseriusan
                       </Form.Label>
                       <InputGroup className="custom-input-group shadow-sm">
                         <InputGroup.Text className="fw-bold">
@@ -382,7 +382,7 @@ function FormPengajuanJualBeli() {
                                 onClick={() => setNominalDP(calculatedDP)}
                                 className={`btn-quick-dp ${isActive ? "active" : ""}`}
                               >
-                                {pct}% ({pct === 0 ? "Tanpa DP" : `Rp ${formatRupiah(calculatedDP)}`})
+                                {pct}% ({pct === 0 ? "Tanpa Uang Keseriusan" : `Rp ${formatRupiah(calculatedDP)}`})
                               </button>
                             );
                           })}
@@ -446,7 +446,7 @@ function FormPengajuanJualBeli() {
                         <span className="sim-detail-val">{formatCurrency(Number(nominalHarga || 0))}</span>
                       </div>
                       <div className="sim-detail-row">
-                        <span className="sim-detail-label">Uang Muka (DP)</span>
+                        <span className="sim-detail-label">Uang Tanda Keseriusan</span>
                         <span className="sim-detail-val">{formatCurrency(Number(nominalDP || 0))}</span>
                       </div>
                       <div className="sim-detail-row">

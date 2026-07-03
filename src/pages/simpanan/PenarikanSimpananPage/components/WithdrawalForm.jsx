@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { Form, Button, Spinner } from "react-bootstrap";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../../utils/helpers";
 import USimpanan from "../../../../utils/api/USimpanan";
@@ -59,7 +60,7 @@ const WithdrawalForm = ({
     });
 
     if (error) {
-      alert(error);
+      Swal.fire({ title: 'Perhatian', text: error, icon: 'warning' });
       return;
     }
 
@@ -70,7 +71,7 @@ const WithdrawalForm = ({
         formData.method === "TRANSFER" &&
         !userData?.bank_info?.bank_account_no
       ) {
-        alert("Data rekening bank belum diatur. Silahkan hubungi admin.");
+        Swal.fire({ title: 'Perhatian', text: "Data rekening bank belum diatur. Silahkan hubungi admin.", icon: 'warning' });
         setLoading(false);
         return;
       }
@@ -128,7 +129,7 @@ const WithdrawalForm = ({
       const errorMessage =
         err.response?.data?.message ||
         "Gagal memproses penarikan. Silahkan cek koneksi.";
-      alert(errorMessage);
+      Swal.fire({ title: 'Perhatian', text: errorMessage, icon: 'warning' });
       console.error("Submit Error Context:", err.response?.data);
     } finally {
       setLoading(false);

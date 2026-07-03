@@ -8,6 +8,44 @@ import Swal from "sweetalert2";
 import { jwtEncode } from "../../../utils/helpers";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaRegFileAlt, FaFileInvoiceDollar, FaPrint, FaDownload, FaArrowLeft } from "react-icons/fa";
+import api from "../../../utils/api/common";
+
+const ProtectedFileViewer = ({ url, title }) => {
+  const [blobUrl, setBlobUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let objectUrl = null;
+    const fetchFile = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(url, { responseType: 'blob' });
+        objectUrl = URL.createObjectURL(response.data);
+        setBlobUrl(objectUrl);
+      } catch (err) {
+        console.error("Failed to load protected file:", err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (url && url !== '#') {
+      fetchFile();
+    } else {
+      setLoading(false);
+    }
+    
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [url]);
+
+  if (loading) return <div className="d-flex align-items-center justify-content-center w-100 h-100 bg-light text-secondary"><Spinner size="sm" animation="border" className="me-2"/> Memuat...</div>;
+  if (error || !url || url === '#') return <div className="d-flex align-items-center justify-content-center w-100 h-100 bg-light text-danger small">Gagal memuat dokumen</div>;
+
+  return <iframe src={blobUrl} title={title} style={{ width: '100%', height: '100%', border: 'none' }} />;
+};
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -149,6 +187,17 @@ export default function ReceiptPage({ decodedToken }) {
 
   const approvalFlags = receiptData.approval_status || receiptData || {};
   const isPaid = true; // Always true since this page is only for approved receipts
+  const isPendanaanSyariah = receiptData?.category === 'Pendanaan Syariah UMKM' || receiptData?.category === 'Pendanaan Syariah';
+
+  const getFileUrl = (transaction, type) => {
+    const txId = transaction?.id || transaction?.financing_id;
+    if (!txId) return '#';
+    let url = `${api.defaults.baseURL}/financing/evidence/${txId}/download`;
+    if (type) {
+      url += `?type=${type}`;
+    }
+    return url;
+  };
 
   const getProofUrl = () => {
     if (!receiptData?.transfer_proof_path) return null;
@@ -275,7 +324,7 @@ export default function ReceiptPage({ decodedToken }) {
                 <tbody>
                   <tr className="border-bottom border-light">
                     <td className="py-4 px-2">
-                      <div className="fw-bold text-dark">Jumlah {isWithdrawal ? "Penarikan" : "Pinjaman"}</div>
+                      <div className="fw-bold text-dark">{isPendanaanSyariah ? "Target Dana yang Dibutuhkan" : `Jumlah ${isWithdrawal ? "Penarikan" : "Pinjaman"}`}</div>
                       <small className="text-muted">Nominal transaksi yang diajukan</small>
                     </td>
                     <td className="py-4 px-2 text-end">
@@ -285,12 +334,94 @@ export default function ReceiptPage({ decodedToken }) {
                     </td>
                   </tr>
 
+                  {isPendanaanSyariah && (
+                    <>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Nama Usaha</div>
+                          <small className="text-muted">Identitas bisnis UMKM</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h5 mb-0">
+                            {receiptData.business_name || receiptData.business_profile?.business_name || "-"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Sektor Bisnis Utama</div>
+                          <small className="text-muted">Kategori industri/bidang usaha</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h6 mb-0">
+                            {receiptData.business_sector || receiptData.business_profile?.business_sector || "-"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Alamat Tempat Usaha</div>
+                          <small className="text-muted">Lokasi operasional bisnis</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h6 mb-0 text-wrap" style={{maxWidth: '300px', display: 'inline-block'}}>
+                            {receiptData.business_address || receiptData.business_profile?.business_address || "-"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Estimasi Omset Tahunan Saat Ini</div>
+                          <small className="text-muted">Pendapatan kotor setahun</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h5 mb-0">
+                            {formatCurrency(receiptData.estimated_yearly_turnover || (receiptData.business_profile?.monthly_revenue * 12) || 0)}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Tujuan Penggunaan Dana</div>
+                          <small className="text-muted">Rencana alokasi dana</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h6 mb-0 text-wrap" style={{maxWidth: '300px', display: 'inline-block'}}>
+                            {receiptData.purpose || receiptData.funding_purpose || "-"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Estimasi Omset (Bulanan)</div>
+                          <small className="text-muted">Selama periode pendanaan</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-dark h5 mb-0">
+                            {formatCurrency(receiptData.estimated_monthly_turnover || receiptData.business_profile?.monthly_revenue || 0)}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="border-bottom border-light">
+                        <td className="py-4 px-2">
+                          <div className="fw-bold text-dark">Tawaran Bagi Hasil Investor</div>
+                          <small className="text-muted">Persentase bagi hasil keuntungan</small>
+                        </td>
+                        <td className="py-4 px-2 text-end">
+                          <span className="fw-bold text-success h5 mb-0">
+                            {receiptData.investor_profit_share || receiptData.profit_share || 0}%
+                          </span>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+
                   {!isWithdrawal && (
                     <>
                       <tr className="border-bottom border-light">
                         <td className="py-4 px-2">
-                          <div className="fw-bold text-dark">Jangka Waktu</div>
-                          <small className="text-muted">Durasi pinjaman</small>
+                          <div className="fw-bold text-dark">{isPendanaanSyariah ? "Periode Pengembalian Modal" : "Jangka Waktu"}</div>
+                          <small className="text-muted">{isPendanaanSyariah ? "Durasi pendanaan" : "Durasi pinjaman"}</small>
                         </td>
                         <td className="py-4 px-2 text-end">
                           <span className="fw-bold text-dark h5 mb-0">
@@ -298,17 +429,19 @@ export default function ReceiptPage({ decodedToken }) {
                           </span>
                         </td>
                       </tr>
-                      <tr className="border-bottom border-light">
-                        <td className="py-4 px-2">
-                          <div className="fw-bold text-dark">Angsuran per Bulan</div>
-                          <small className="text-muted">Kewajiban bulanan</small>
-                        </td>
-                        <td className="py-4 px-2 text-end">
-                          <span className="fw-bold text-dark h5 mb-0">
-                            {formatCurrency(receiptData.monthly_installment)}
-                          </span>
-                        </td>
-                      </tr>
+                      {!isPendanaanSyariah && (
+                        <tr className="border-bottom border-light">
+                          <td className="py-4 px-2">
+                            <div className="fw-bold text-dark">Angsuran per Bulan</div>
+                            <small className="text-muted">Kewajiban bulanan</small>
+                          </td>
+                          <td className="py-4 px-2 text-end">
+                            <span className="fw-bold text-dark h5 mb-0">
+                              {formatCurrency(receiptData.monthly_installment)}
+                            </span>
+                          </td>
+                        </tr>
+                      )}
                     </>
                   )}
 
@@ -369,6 +502,32 @@ export default function ReceiptPage({ decodedToken }) {
               </Table>
             </div>
 
+            {isPendanaanSyariah && (
+              <div className="mb-5">
+                <h6 className="text-uppercase text-muted fw-bold ls-1 mb-3">Dokumen Legalitas & Pendukung</h6>
+                <Row className="gy-4">
+                  <Col md={4}>
+                    <div className="border rounded overflow-hidden shadow-sm bg-light" style={{ height: '300px' }}>
+                      <ProtectedFileViewer url={receiptData.file_evidence ? getFileUrl(receiptData, 'evidence') : '#'} title="Bukti Kepemilikan" />
+                    </div>
+                    <div className="text-center mt-2 fw-semibold text-dark small">Bukti Kepemilikan Usaha</div>
+                  </Col>
+                  <Col md={4}>
+                    <div className="border rounded overflow-hidden shadow-sm bg-light" style={{ height: '300px' }}>
+                      <ProtectedFileViewer url={receiptData.contract_proof ? getFileUrl(receiptData, 'contract_proof') : '#'} title="Bukti Kerjasama" />
+                    </div>
+                    <div className="text-center mt-2 fw-semibold text-dark small">Bukti Kerjasama / Kontrak</div>
+                  </Col>
+                  <Col md={4}>
+                    <div className="border rounded overflow-hidden shadow-sm bg-light" style={{ height: '300px' }}>
+                      <ProtectedFileViewer url={receiptData.additional_documents ? getFileUrl(receiptData, 'additional_documents') : '#'} title="Dokumen Pendukung" />
+                    </div>
+                    <div className="text-center mt-2 fw-semibold text-dark small">Dokumen Pendukung Tambahan</div>
+                  </Col>
+                </Row>
+              </div>
+            )}
+
             {/* Approval Chain using nice badges */}
             <h6 className="text-uppercase text-muted fw-bold ls-1 mb-3">Status Persetujuan</h6>
             <Row className="mb-5 gy-3">
@@ -392,23 +551,14 @@ export default function ReceiptPage({ decodedToken }) {
             </Row>
 
             {/* Lampiran Bukti Transfer */}
-            {isWithdrawal && receiptData.method !== "TUNAI" && (
+            {((isWithdrawal && receiptData.method !== "TUNAI") || (!isWithdrawal && receiptData.metode_pencairan !== "Tunai")) && (
               <div className="mt-4 pt-4 border-top">
                 <h6 className="text-uppercase text-muted fw-bold ls-1 mb-3">Lampiran Bukti Transfer</h6>
                 <div className="text-center mb-4">
                   {proofUrl ? (
                     isProofPdf ? (
-                      <div className="p-4 border rounded-4 d-inline-block bg-light shadow-sm">
-                        <FaRegFileAlt size={48} className="text-danger mb-3" />
-                        <h6 className="fw-bold mb-2">Dokumen PDF Terlampir</h6>
-                        <Button 
-                          variant="outline-primary" 
-                          size="sm" 
-                          className="rounded-pill px-4 fw-bold mt-2"
-                          onClick={() => window.open(proofUrl, "_blank")}
-                        >
-                          Lihat PDF
-                        </Button>
+                      <div className="border rounded overflow-hidden shadow-sm bg-light w-100" style={{ height: '800px' }}>
+                        <ProtectedFileViewer url={proofUrl} title="Bukti Transfer" />
                       </div>
                     ) : (
                       <img 

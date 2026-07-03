@@ -34,6 +34,10 @@ class UJualBeli {
     return http.get(`/financial/detail/${id}`);
   }
 
+  getPelunasanBillItems(financingId) {
+    return http.get(`/financial/pelunasan-items/${financingId}`);
+  }
+
   getOptions() {
     return http.get("/financial/options");
   }

@@ -6,11 +6,11 @@ import {
   Form,
   Spinner,
   Alert,
-  Toast,
   Button,
   Row,
   Col,
 } from "react-bootstrap";
+import Swal from "sweetalert2";
 import {
   FaBell,
   FaClock,
@@ -201,15 +201,18 @@ export default function NotificationPage() {
     sms: false,
   });
 
-  // Toast notifications
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastVariant, setToastVariant] = useState("success");
+
 
   const showNotification = useCallback((message, variant = "success") => {
-    setToastMessage(message);
-    setToastVariant(variant);
-    setShowToast(true);
+    const iconMap = { success: 'success', danger: 'error', warning: 'warning', info: 'info' };
+    Swal.fire({
+      title: message,
+      icon: iconMap[variant] || 'info',
+      toast: true,
+      position: 'top-end',
+      timer: 3000,
+      showConfirmButton: false
+    });
   }, []);
 
   // Fetch data notifikasi dari API
@@ -688,26 +691,7 @@ export default function NotificationPage() {
         </Row>
       )}
 
-      {/* Toast Notification */}
-      <Toast
-        show={showToast}
-        onClose={() => setShowToast(false)}
-        delay={3000}
-        autohide
-        className="position-fixed top-0 end-0 m-3"
-        style={{ zIndex: 9999 }}
-        bg={toastVariant}
-      >
-        <Toast.Header className={`bg-${toastVariant} text-white justify-content-between`}>
-          <div className="d-flex align-items-center">
-            <FaCheckCircle className="me-2" />
-            <strong className="me-auto">Pusat Notifikasi</strong>
-          </div>
-        </Toast.Header>
-        <Toast.Body className={toastVariant === "light" ? "text-dark" : "text-white"}>
-          {toastMessage}
-        </Toast.Body>
-      </Toast>
+
     </div>
   );
 }

@@ -34,18 +34,18 @@ const SearchFilter = ({
             <span className="tab-badge">{tabCounts.all}</span>
           </button>
           <button 
-            onClick={() => setActiveTab("credit")}
-            className={`filter-tab-btn ${activeTab === "credit" ? 'active' : ''}`}
+            onClick={() => setActiveTab("active")}
+            className={`filter-tab-btn ${activeTab === "active" ? 'active' : ''}`}
           >
-            Pembiayaan (Kredit)
-            <span className="tab-badge">{tabCounts.credit}</span>
+            Berjalan
+            <span className="tab-badge">{tabCounts.active}</span>
           </button>
           <button 
-            onClick={() => setActiveTab("debit")}
-            className={`filter-tab-btn ${activeTab === "debit" ? 'active' : ''}`}
+            onClick={() => setActiveTab("completed")}
+            className={`filter-tab-btn ${activeTab === "completed" ? 'active' : ''}`}
           >
-            Setoran (Debet)
-            <span className="tab-badge">{tabCounts.debit}</span>
+            Selesai
+            <span className="tab-badge">{tabCounts.completed}</span>
           </button>
         </div>
       </div>

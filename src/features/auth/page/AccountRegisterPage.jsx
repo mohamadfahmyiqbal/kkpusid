@@ -76,6 +76,7 @@ export default function RegisterPage() {
               <section className="pbs-register-left-v2">
                 <div className="mosque-overlay"></div>
                 <div className="pbs-register-info-wrap">
+                  {/* Title & Description */}
                   <div className="mb-4">
                     <span className="badge rounded-pill bg-success bg-opacity-25 text-success px-3 py-2 mb-3 pbs-register-badge">PAGUYUBAN USAHA</span>
                     <h1 className="display-5 fw-bold text-white mb-3 pbs-register-title">
@@ -88,6 +89,7 @@ export default function RegisterPage() {
                     </p>
                   </div>
 
+                  {/* Illustration Image */}
                   <div className="text-center my-5">
                     <img
                       src="/assets/images/register_illustration.png"
@@ -96,6 +98,7 @@ export default function RegisterPage() {
                     />
                   </div>
 
+                  {/* Benefits List */}
                   <div className="d-flex flex-column gap-4">
                     {[
                       { icon: <FaShieldAlt size={22} />, title: "Aman & Terpercaya", desc: "Komunitas yang berfokus pada kesuksesan bersama." },
@@ -114,13 +117,14 @@ export default function RegisterPage() {
                     ))}
                   </div>
 
-                  <div className="d-flex align-items-center gap-3 bg-white bg-opacity-5 p-4 rounded-4 border border-white border-opacity-10 mt-5">
-                    <div className="bg-success bg-opacity-20 p-2 rounded-circle d-flex align-items-center justify-content-center pbs-support-icon-container">
-                      <FaHeadset className="pbs-support-icon" />
+                  {/* Customer Support Info */}
+                  <div className="d-flex align-items-center gap-3 bg-light p-4 rounded-4 border mt-5 shadow-sm">
+                    <div className="bg-success bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
+                      <FaHeadset className="text-success fs-4" />
                     </div>
                     <div>
-                      <small className="d-block text-white-50">Butuh bantuan?</small>
-                      <span className="text-white fw-bold small">
+                      <small className="d-block text-muted">Butuh bantuan?</small>
+                      <span className="text-success fw-bold small">
                         Hubungi kami di 0812-3456-7890
                       </span>
                     </div>
@@ -148,6 +152,7 @@ export default function RegisterPage() {
 
                     <Form onSubmit={handleRegister} noValidate>
                       <Row className="g-3">
+                        {/* Input Nama Lengkap */}
                         <Col md={12}>
                           <Form.Label>Nama Lengkap</Form.Label>
                           <InputGroup hasValidation>
@@ -195,6 +200,7 @@ export default function RegisterPage() {
                               variant="light"
                               className="border border-start-0 text-muted pbs-password-eye-btn"
                               onClick={() => setShowPassword(!showPassword)}
+                              type="button"
                             >
                               {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </Button>
@@ -218,6 +224,7 @@ export default function RegisterPage() {
                               variant="light"
                               className="border border-start-0 text-muted pbs-password-eye-btn"
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              type="button"
                             >
                               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                             </Button>
@@ -225,6 +232,7 @@ export default function RegisterPage() {
                           </InputGroup>
                         </Col>
 
+                        {/* Tombol Register */}
                         <Col md={12} className="mt-4">
                           <Button
                             type="submit"
@@ -244,6 +252,7 @@ export default function RegisterPage() {
                           </Button>
                         </Col>
 
+                        {/* Syarat & Ketentuan */}
                         <Col md={12} className="text-center mt-3">
                           <span className="text-muted pbs-terms-text">
                             Dengan mendaftar, Anda telah menyetujui <a href="#" className="text-decoration-none">Syarat & Ketentuan</a> Paguyuban Usaha Sukses.

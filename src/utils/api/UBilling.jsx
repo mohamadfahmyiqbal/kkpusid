@@ -64,6 +64,13 @@ class UBilling {
   syncMidtransStatus(orderId) {
     return http.post("/billing/sync-status", { order_id: orderId });
   }
+
+  /**
+   * Memicu sinkronisasi ringkasan finansial dan laporan jual beli secara manual (berguna di localhost)
+   */
+  manualSyncSummary() {
+    return http.post("/billing/manual-sync-summary");
+  }
 }
 
 const uBilling = new UBilling();

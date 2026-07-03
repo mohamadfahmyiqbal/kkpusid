@@ -7,15 +7,16 @@ import {
   Form,
   Button,
   Spinner,
-  Alert,
-  ProgressBar,
-} from "react-bootstrap";
+  
+  ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import { FaStore, FaArrowLeft, FaUpload, FaFileAlt } from "react-icons/fa";
 
 import { profileService } from "../../../services/profileService";
 import api from "../../../utils/api/common";
+import Alert from "../../../components/ui/SwalAlert";
+
 
 const SECTOR_OPTIONS = [
   "Retail",
@@ -163,13 +164,34 @@ const FormPendanaanSyariah = () => {
         metode_pencairan: "Non Tunai",
         nama_nasabah: formData.pemilikUsaha,
         no_rekening: "0000000000",
-        bank_tujuan: "Bank Syariah"
+        bank_tujuan: "Bank Syariah",
+        business_name: formData.namaUsaha,
+        business_sector: formData.sektor,
+        business_address: formData.alamat,
+        estimated_yearly_turnover: parseInt(String(formData.omsetTahunan).replace(/\D/g, ""), 10) || 0,
+        estimated_monthly_turnover: parseInt(String(formData.omsetKerjasama).replace(/\D/g, ""), 10) || 0,
+        investor_profit_share: parseFloat(formData.bagiHasil) || 0
       };
 
       const response = await api.post("/financing/apply", payload);
       const financingId = response.data?.data?.financing_id;
 
       if (financingId) {
+        if (formData.buktiKepemilikan || formData.buktiKerjasama || formData.filePendukung) {
+          const uploadData = new FormData();
+          if (formData.buktiKepemilikan) uploadData.append("evidence", formData.buktiKepemilikan);
+          if (formData.buktiKerjasama) uploadData.append("buktiKerjasama", formData.buktiKerjasama);
+          if (formData.filePendukung) uploadData.append("filePendukung", formData.filePendukung);
+
+          try {
+            await api.post(`/financing/evidence/${financingId}`, uploadData, {
+              headers: { "Content-Type": "multipart/form-data" }
+            });
+          } catch (uploadError) {
+            console.error("Upload error:", uploadError);
+          }
+        }
+
         const mappedData = {
           id: financingId,
           amount: payload.principal_amount,

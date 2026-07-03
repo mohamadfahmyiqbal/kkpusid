@@ -43,6 +43,14 @@ const useRegistrationSocket = (registration_id, setData) => {
                 }
               : prev.member?.status,
           },
+          approvals: payload.approval_step_id ? [
+             ...(prev.approvals || []).filter(a => a.approval_step_id !== payload.approval_step_id),
+             {
+                 approval_step_id: payload.approval_step_id,
+                 note: payload.note,
+                 step: { step_order: payload.step_order, verifierRole: { role_name: payload.role_name } }
+             }
+          ] : prev.approvals,
         };
 
         return newState;
