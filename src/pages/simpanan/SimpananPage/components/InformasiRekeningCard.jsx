@@ -1,10 +1,11 @@
-import React, { useEffect, useState, memo, useMemo, useCallback } from "react";
-import { Card, Spinner,  Button } from "react-bootstrap";
+import React, { useEffect, useState, memo, useCallback } from "react";
+import { Spinner } from "react-bootstrap";
+import Card from "../../../../components/ui/Card";
+import Button from "../../../../components/ui/Button";
 import { 
   MdInfoOutline, 
   MdAddCircleOutline, 
   MdAccountBalanceWallet, 
-  MdPerson, 
   MdCreditCard,
   MdRefresh
 } from "react-icons/md";
@@ -36,24 +37,6 @@ const InformasiRekeningCard = memo(
     const [isRefreshing, setIsRefreshing] = useState(false);
     const navigate = useNavigate();
     const { userData } = useProfile();
-
-    // Konfigurasi Tema Warna Premium
-    const themes = useMemo(() => ({
-      primary: {
-        gradient: "linear-gradient(135deg, #075985 0%, #0369a1 40%, #0ea5e9 100%)",
-        shadow: "rgba(7, 89, 133, 0.3)",
-      },
-      success: {
-        gradient: "linear-gradient(135deg, #065f46 0%, #059669 40%, #10b981 100%)",
-        shadow: "rgba(5, 150, 105, 0.3)",
-      },
-      warning: {
-        gradient: "linear-gradient(135deg, #92400e 0%, #d97706 40%, #f59e0b 100%)",
-        shadow: "rgba(217, 119, 6, 0.3)",
-      },
-    }), []);
-
-    const activeTheme = useMemo(() => themes[variant] || themes.primary, [variant, themes]);
 
     const fetchDetail = useCallback(async (isManual = false) => {
       if (!activeType) return;
@@ -142,8 +125,9 @@ const InformasiRekeningCard = memo(
     if (loading)
       return (
         <Card
-          className="border-0 shadow-sm text-center py-5 text-white loading-card"
-          style={{ background: activeTheme.gradient }}
+          variant="premium"
+          theme={variant}
+          className="text-center py-5 loading-card"
         >
           <div className="d-flex flex-column align-items-center justify-content-center h-100">
             <Spinner animation="border" variant="light" size="sm" />
@@ -165,14 +149,7 @@ const InformasiRekeningCard = memo(
       );
 
     return (
-      <Card
-        className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card"
-        style={{ 
-          background: activeTheme.gradient, 
-          boxShadow: `0 20px 40px -10px ${activeTheme.shadow}`
-        }}
-      >
-        <div className="glass-sheen" />
+      <Card variant="premium" theme={variant}>
         <Card.Body className="p-4 relative card-body-front">
           {/* Card Top */}
           <div className="d-flex justify-content-between align-items-center mb-4">
@@ -217,8 +194,8 @@ const InformasiRekeningCard = memo(
               {/* Logic Pokok: Tampilkan 'Detail' jika ada tagihan, 'Setoran' jika tidak */}
               {activeType.includes("POKOK") && (
                 <Button
-                  variant="light"
-                  className="flex-fill border-0 shadow-sm rounded-3 py-2 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+                  variant="premium"
+                  className="flex-fill rounded-3 py-2 d-flex align-items-center justify-content-center gap-2"
                   onClick={() => handleAction("PAY")}
                 >
                   {details?.billItemIds?.length > 0 ? (
@@ -232,8 +209,8 @@ const InformasiRekeningCard = memo(
               {/* Logic Wajib/Sukarela: Selalu ada Setoran */}
               {(activeType.includes("WAJIB") || activeType.includes("SUKARELA")) && (
                 <Button
-                  variant="light"
-                  className="flex-fill border-0 shadow-sm rounded-3 py-2 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+                  variant="premium"
+                  className="flex-fill rounded-3 py-2 d-flex align-items-center justify-content-center gap-2"
                   onClick={() => handleAction("BILL")}
                 >
                   <MdAddCircleOutline size={18} /> Setoran
@@ -243,8 +220,8 @@ const InformasiRekeningCard = memo(
               {/* Logic Sukarela: Tambahan tombol Pencairan */}
               {activeType.includes("SUKARELA") && details?.saldo > 0 && (
                 <Button
-                  variant="outline-light"
-                  className="flex-fill shadow-sm rounded-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text btn-pencairan"
+                  variant="premium-outline"
+                  className="flex-fill rounded-3 py-2 d-flex align-items-center justify-content-center gap-2"
                   onClick={() => handleAction("WITHDRAW")}
                 >
                   <MdAccountBalanceWallet size={18} /> Pencairan

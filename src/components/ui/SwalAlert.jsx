@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { Alert } from 'react-bootstrap';
 
-const SwalAlert = ({ variant = 'info', children, onClose, dismissible, show = true, ...props }) => {
+const SwalAlert = ({ variant = 'info', children, onClose, dismissible, show = true, asSwal = false, ...props }) => {
   useEffect(() => {
-    if (!show) return;
+    if (!show || !asSwal) return;
 
     // Helper to extract text from React children
     const extractText = (node) => {
@@ -38,12 +39,18 @@ const SwalAlert = ({ variant = 'info', children, onClose, dismissible, show = tr
         }
       });
     }
-  }, [children, variant, onClose, show]);
+  }, [children, variant, onClose, show, asSwal]);
 
-  return null; // Do not render anything in DOM
+  if (asSwal) return null; // Do not render anything in DOM if asSwal is true
+
+  return (
+    <Alert variant={variant} onClose={onClose} dismissible={dismissible} show={show} {...props}>
+      {children}
+    </Alert>
+  );
 };
 
-SwalAlert.Heading = ({ children }) => <>{children}</>;
-SwalAlert.Link = ({ children }) => <>{children}</>;
+SwalAlert.Heading = Alert.Heading;
+SwalAlert.Link = Alert.Link;
 
 export default SwalAlert;

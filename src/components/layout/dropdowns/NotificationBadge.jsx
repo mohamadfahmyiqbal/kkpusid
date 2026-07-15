@@ -2,7 +2,6 @@ import React from "react";
 import { Badge } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import PropTypes from "prop-types";
-import { FONT_SIZES } from "../../../constants/layout";
 
 const NotificationBadge = ({ unreadCount, ariaExpanded = false }) => {
   return (

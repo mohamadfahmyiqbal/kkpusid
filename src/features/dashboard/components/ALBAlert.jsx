@@ -1,6 +1,6 @@
 import React from "react";
 import {  Badge } from "react-bootstrap";
-import { FaInfoCircle, FaTimes } from "react-icons/fa";
+import { FaInfoCircle } from "react-icons/fa";
 import Alert from "../../../components/ui/SwalAlert";
 
 

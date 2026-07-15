@@ -1,7 +1,6 @@
 // src/utils/helper/SocketListener.js
 import { useEffect } from "react";
 import { useSocket } from "../../components/layout/contexts/SocketContext";
-import Swal from "sweetalert2";
 
 const useSocketListener = (callback) => {
   const { socket } = useSocket();
@@ -10,14 +9,7 @@ const useSocketListener = (callback) => {
     if (socket) {
       // 1. Listen untuk notifikasi umum (jika masih ada)
       socket.on("notification", (data) => {
-        Swal.fire({
-          title: data.message || "Ada notifikasi baru",
-          icon: "info",
-          toast: true,
-          position: "top-end",
-          timer: 3000,
-          showConfirmButton: false
-        });
+        // Tampil toast ditangani oleh App.jsx
       });
 
       // 2. Listen untuk update status persetujuan (Dinamis sesuai backend)
@@ -33,16 +25,7 @@ const useSocketListener = (callback) => {
           IN_PROGRESS: "diproses ke tahap berikutnya",
         };
 
-        Swal.fire({
-          title: `Update ${data.entityRef}: Permohonan ${
-            statusMap[data.status] || data.status
-          }`,
-          icon: "success",
-          toast: true,
-          position: "top-end",
-          timer: 3000,
-          showConfirmButton: false
-        });
+        // Tampil toast ditangani oleh App.jsx
 
         // Panggil callback untuk update state komponen
         if (callback && typeof callback === 'function') {
@@ -63,16 +46,7 @@ const useSocketListener = (callback) => {
       socket.on("new_notification", (data) => {
 
         
-        // Tampilkan toast notifikasi
-        Swal.fire({
-          title: data.title || "Notifikasi Baru",
-          text: data.content || "",
-          icon: "success",
-          toast: true,
-          position: "top-end",
-          timer: 3000,
-          showConfirmButton: false
-        });
+        // Tampil toast ditangani oleh App.jsx
 
         // Handle khusus untuk PAYMENT_SUCCESS
         if (data.type === "PAYMENT_SUCCESS") {

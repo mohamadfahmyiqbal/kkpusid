@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Nav, Spinner } from 'react-bootstrap';
-import { FaFileInvoiceDollar, FaHistory, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaHistory, FaExclamationCircle } from 'react-icons/fa';
 import UBilling from '../../../../utils/api/UBilling';
 import BillList from '../../../global/BillingPage/components/BillList';
 import HistoryList from '../../../global/BillingPage/components/HistoryList';

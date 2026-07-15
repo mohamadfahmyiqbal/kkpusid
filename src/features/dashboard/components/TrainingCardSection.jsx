@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Card, Button, Row, Col } from "react-bootstrap";
 import { 
   MdSchool, 
@@ -26,6 +26,14 @@ const TrainingItem = React.memo(({ item, onViewMateri, onStartEvaluasi }) => {
         return { bg: "#f1f5f9", color: "#475569", label: "Belum Mulai" };
     }
   }, [item.status]);
+
+  const handleViewMateri = useCallback(() => {
+    onViewMateri(item.id, item.type);
+  }, [item.id, item.type, onViewMateri]);
+
+  const handleStartEvaluasi = useCallback(() => {
+    onStartEvaluasi(item.id, item.type);
+  }, [item.id, item.type, onStartEvaluasi]);
 
   return (
     <div className="dc-train-card-wrapper h-100">
@@ -69,7 +77,7 @@ const TrainingItem = React.memo(({ item, onViewMateri, onStartEvaluasi }) => {
             <Button
               variant="outline-primary"
               className="dc-btn-secondary d-flex align-items-center justify-content-center gap-2"
-              onClick={() => onViewMateri(item.id, item.type)}
+              onClick={handleViewMateri}
             >
               <MdMenuBook size={18} />
               <span>Baca Materi</span>
@@ -77,7 +85,7 @@ const TrainingItem = React.memo(({ item, onViewMateri, onStartEvaluasi }) => {
             <Button
               variant="primary"
               className="dc-btn-primary d-flex align-items-center justify-content-center gap-2"
-              onClick={() => onStartEvaluasi(item.id, item.type)}
+              onClick={handleStartEvaluasi}
             >
               <MdPlayArrow size={20} />
               <span>Mulai Evaluasi</span>
@@ -128,119 +136,6 @@ const TrainingCardSection = ({
         ))}
       </Row>
 
-      <style>{`
-        .dc-training-section {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        .dc-section-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .dc-train-card-v2 {
-          border-radius: 20px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          background: white;
-          border: 1px solid #f1f5f9 !important;
-        }
-
-        .dc-train-card-v2:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.1) !important;
-          border-color: #e2e8f0 !important;
-        }
-
-        .dc-badge-program {
-          font-size: 10px;
-          font-weight: 800;
-          padding: 4px 10px;
-          border-radius: 6px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .dc-badge-program.wajib {
-          background: #eff6ff;
-          color: #2563eb;
-        }
-
-        .dc-badge-program.pilihan {
-          background: #f0fdfa;
-          color: #0d9488;
-        }
-
-        .dc-status-pill {
-          font-size: 11px;
-          font-weight: 700;
-          padding: 4px 12px;
-          border-radius: 999px;
-        }
-
-        .dc-train-code {
-          font-size: 12px;
-          font-weight: 600;
-          color: #94a3b8;
-          letter-spacing: 0.3px;
-        }
-
-        .dc-train-title {
-          font-size: 16px;
-          font-weight: 800;
-          color: #1e293b;
-          line-height: 1.4;
-          min-height: 44px;
-        }
-
-        .dc-meta-info {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .dc-btn-primary {
-          border-radius: 12px;
-          padding: 10px;
-          font-weight: 700;
-          font-size: 14px;
-          transition: all 0.2s ease;
-        }
-
-        .dc-btn-secondary {
-          border-radius: 12px;
-          padding: 10px;
-          font-weight: 600;
-          font-size: 14px;
-          border-color: #e2e8f0;
-          color: #475569;
-          transition: all 0.2s ease;
-        }
-
-        .dc-btn-secondary:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 576px) {
-          .dc-train-title {
-            font-size: 15px;
-            min-height: auto;
-          }
-        }
-      `}</style>
     </section>
   );
 };

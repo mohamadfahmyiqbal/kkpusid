@@ -71,6 +71,13 @@ class UBilling {
   manualSyncSummary() {
     return http.post("/billing/manual-sync-summary");
   }
+
+  /**
+   * Mengambil konfigurasi biaya admin pembayaran
+   */
+  getPaymentFeeConfigs() {
+    return http.get("/billing/payment-fees");
+  }
 }
 
 const uBilling = new UBilling();

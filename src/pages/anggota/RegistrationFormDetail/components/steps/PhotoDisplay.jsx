@@ -1,7 +1,7 @@
 import React from "react";
 import { FaCamera, FaIdCard } from "react-icons/fa";
 
-export default function PhotoDisplay({ label, base64Image: imageSource }) {
+export default React.memo(function PhotoDisplay({ label, base64Image: imageSource }) {
   // Menggunakan label untuk menentukan ikon placeholder
   const PlaceholderIcon = label === "KTP" ? FaIdCard : FaCamera;
 
@@ -38,4 +38,4 @@ export default function PhotoDisplay({ label, base64Image: imageSource }) {
       )}
     </div>
   );
-}
+});

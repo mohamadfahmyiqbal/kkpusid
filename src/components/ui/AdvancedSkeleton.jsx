@@ -1,5 +1,4 @@
 import React from 'react';
-import { COLORS, SPACING, ANIMATIONS } from '../../constants/designTokens';
 
 const Skeleton = ({ 
   variant = 'text', 

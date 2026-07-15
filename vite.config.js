@@ -35,6 +35,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.js',
+    },
     define: envWithProcess,
     resolve: {
       alias: {
@@ -47,6 +52,10 @@ export default defineConfig(({ mode }) => {
       port,
       open: true,
       https: httpsConfig,
+      headers: {
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'X-Content-Type-Options': 'nosniff'
+      }
     },
     build: {
       outDir: 'build',

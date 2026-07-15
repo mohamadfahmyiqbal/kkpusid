@@ -3,9 +3,7 @@ import { Button, Card, Badge, Spinner } from "react-bootstrap";
 import {
   FaArrowLeft,
   FaCheckCircle,
-  FaInfoCircle,
   FaExclamationTriangle,
-  FaBell,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../../components/layout/contexts";

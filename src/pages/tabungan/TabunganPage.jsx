@@ -1,7 +1,6 @@
 // pages/tabungan/TabunganPage.jsx
 
 import React, { useState, useCallback, useEffect } from "react";
-;
 import { useNavigate } from "react-router-dom";
 import { MdSavings, MdAccountBalanceWallet, MdSchool, MdPets } from "react-icons/md";
 import { FaShieldAlt } from "react-icons/fa";
@@ -11,6 +10,7 @@ import ProgramStatusCard from "../../components/program/ProgramStatusCard";
 import { jwtEncode } from "../../utils/helpers";
 import "./TabunganPage.css";
 import Alert from "../../components/ui/SwalAlert";
+;
 
 
 // ── HELPERS ──
@@ -59,7 +59,7 @@ const EmptyState = ({ onPengajuan }) => (
 
 // ── ACTIVE ACCOUNT CARD ──
 
-const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
+const ActiveTabunganCard = ({ accountData, onSetoran, onPencairan, productName }) => {
   const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
   const currentBalance = parseFloat(accountData.current_balance || 0);
   const targetAmount = parseFloat(accountData.target_amount || 0);
@@ -74,16 +74,28 @@ const ActiveTabunganCard = ({ accountData, onSetoran, productName }) => {
       <div style={{ position: 'relative', zIndex: 2 }}>
         <div className="d-flex justify-content-between align-items-start mb-4">
           <div>
-            <h4 className="fw-bold mb-1" style={{ fontSize: '1.25rem' }}>Rekening Aktif</h4>
+            <h4 className="fw-bold mb-1" style={{ fontSize: '1.25rem' }}>
+              {progressPercent >= 100 ? 'Target Tercapai' : 'Rekening Aktif'}
+            </h4>
             <p className="opacity-75 m-0" style={{ fontSize: '0.9rem' }}>{accountData.target_name || productName}</p>
           </div>
-          <button 
-            className="btn btn-light fw-bold rounded-pill px-4" 
-            onClick={onSetoran}
-            style={{ color: '#2563eb', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-          >
-            Setoran
-          </button>
+          {progressPercent < 100 ? (
+            <button 
+              className="btn btn-light fw-bold rounded-pill px-4" 
+              onClick={onSetoran}
+              style={{ color: '#2563eb', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            >
+              Setoran
+            </button>
+          ) : (
+            <button 
+              className="btn btn-light fw-bold rounded-pill px-4" 
+              onClick={onPencairan}
+              style={{ color: '#059669', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            >
+              Pencairan
+            </button>
+          )}
         </div>
 
         <div className="bg-white bg-opacity-10 rounded-4 p-3 mb-3" style={{ backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
@@ -220,6 +232,17 @@ export default function TabunganPage() {
     navigate(`/${token}`);
   }, [navigate, activeProgramId, accountStatus, programs]);
 
+  const handlePencairan = useCallback(() => {
+    const selectedProgram = programs.find(p => p.saving_target_id === activeProgramId);
+    const token = jwtEncode({
+        page: "penarikanTabunganPage",
+        tabunganId: accountStatus.data?.member_saving_target_id,
+        return: "tabunganPage",
+        product: selectedProgram?.target_name || "Tabungan",
+    });
+    navigate(`/${token}`);
+  }, [navigate, activeProgramId, accountStatus, programs]);
+
   const handleProductChange = useCallback((id) => {
     setActiveProgramId(id);
   }, []);
@@ -283,7 +306,7 @@ export default function TabunganPage() {
                  <TabunganSkeleton />
               ) : (
                 <>
-                  {accountStatus.state === "EMPTY" && (
+                  {(accountStatus.state === "EMPTY" || accountStatus.state === "COMPLETED") && (
                     <EmptyState onPengajuan={handlePengajuan} />
                   )}
 
@@ -309,6 +332,7 @@ export default function TabunganPage() {
                     <ActiveTabunganCard 
                       accountData={accountStatus.data} 
                       onSetoran={handleSetoran}
+                      onPencairan={handlePencairan}
                       productName={activeProgramData.target_name}
                     />
                   )}

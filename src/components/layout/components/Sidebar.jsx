@@ -2,29 +2,26 @@ import React, {
   useState,
   useCallback,
   memo,
-  useEffect,
   useMemo,
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { jwtEncode, jwtDecodePage } from "../../../utils/helpers";
 import masjidImage from "../../../assets/images/masjid.png";
 import {
   MdDashboard,
-  MdSavings,
   MdAccountBalance,
   MdGroup,
   MdSchool,
   MdBarChart,
   MdPerson,
-  MdStore,
-  MdSecurity,
   MdHistory,
   MdShoppingCart,
 } from "react-icons/md";
 import { FaWallet } from "react-icons/fa";
+import "./LayoutStyles.css";
 
 const SidebarMenuItem = memo(
-  ({ item, currentPage, openKeys, onDropdownToggle, onCustomNavigate }) => {
+  ({ item, currentPage, openKeys, onDropdownToggle, onCustomNavigate, onClose, isDesktop }) => {
     const isDropdown = !!item.children;
     const itemKey = item.key;
     const isDisabled = !!item.disabled;
@@ -70,6 +67,8 @@ const SidebarMenuItem = memo(
                 openKeys={openKeys}
                 onDropdownToggle={onDropdownToggle}
                 onCustomNavigate={onCustomNavigate}
+                onClose={onClose}
+                isDesktop={isDesktop}
               />
             ))}
           </ul>
@@ -77,21 +76,40 @@ const SidebarMenuItem = memo(
       );
     }
 
+    const targetUrl = `/${jwtEncode({ page: item.href })}`;
+
     return (
       <li className={`${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`} role="none">
-        <button
-          className={`sidebar-link-btn ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-          aria-current={isActive && "page"}
-          aria-label={item.ariaLabel || item.label}
-          onClick={(e) => !isDisabled && onCustomNavigate(e, item.href)}
-          type="button"
-          disabled={isDisabled}
-        >
-          {item.icon && (
-            <item.icon className="sidebar-icon" aria-hidden="true" />
-          )}
-          <span className="sidebar-text">{item.label}</span>
-        </button>
+        {isDisabled ? (
+          <button
+            className={`sidebar-link-btn disabled`}
+            aria-label={item.ariaLabel || item.label}
+            type="button"
+            disabled
+          >
+            {item.icon && (
+              <item.icon className="sidebar-icon" aria-hidden="true" />
+            )}
+            <span className="sidebar-text">{item.label}</span>
+          </button>
+        ) : (
+          <Link
+            to={targetUrl}
+            className={`sidebar-link-btn ${isActive ? "active" : ""}`}
+            aria-current={isActive && "page"}
+            aria-label={item.ariaLabel || item.label}
+            onClick={(e) => {
+              if (!isDesktop && onClose) {
+                onClose();
+              }
+            }}
+          >
+            {item.icon && (
+              <item.icon className="sidebar-icon" aria-hidden="true" />
+            )}
+            <span className="sidebar-text">{item.label}</span>
+          </Link>
+        )}
       </li>
     );
   },
@@ -241,189 +259,9 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
       aria-label="Main menu"
       style={sidebarStyle}
     >
-      <style>{`
-        .sidebar-horizontal .sidebar-nav > ul {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          height: 100%;
-          margin: 0;
-          padding: 0 20px;
-        }
-        .sidebar-horizontal .sidebar-nav > ul > li {
-          position: relative;
-        }
-        .sidebar-horizontal .sidebar-link-btn {
-          height: 48px;
-          padding: 0 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          border: none;
-          background: transparent;
-          color: #64748b;
-          font-size: 13.5px;
-          font-weight: 500;
-          transition: all 0.2s ease;
-          position: relative;
-        }
-        @media (max-width: 1200px) {
-          .sidebar-horizontal .sidebar-link-btn {
-            padding: 0 10px !important;
-            font-size: 12px !important;
-            gap: 4px !important;
-          }
-          .sidebar-horizontal .sidebar-icon {
-            font-size: 16px !important;
-          }
-          .sidebar-horizontal .sidebar-submenu {
-            min-width: 180px !important;
-          }
-        }
-        .sidebar-horizontal .sidebar-link-btn:hover {
-          color: #1e293b;
-          background-color: #f8fafc;
-        }
-        .sidebar-horizontal .sidebar-link-btn.active {
-          color: #2563eb;
-          font-weight: 600;
-        }
-        .sidebar-horizontal .sidebar-link-btn.active::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 16px;
-          right: 16px;
-          height: 2px;
-          background-color: #2563eb;
-        }
-        .sidebar-horizontal .sidebar-submenu {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          min-width: 220px;
-          background: white;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-          border: 1px solid #f1f5f9;
-          border-radius: 0 0 12px 12px;
-          padding: 8px;
-          display: none;
-          z-index: 1000;
-        }
-        .sidebar-horizontal li:hover > .sidebar-submenu,
-        .sidebar-horizontal .sidebar-submenu.show {
-          display: block;
-        }
-        .sidebar-horizontal .sidebar-submenu .sidebar-link-btn {
-          width: 100%;
-          height: 40px;
-          border-radius: 8px;
-        }
-        .sidebar-horizontal .nav-small-cap {
-          display: none;
-        }
-        .sidebar-horizontal .sidebar-icon {
-          font-size: 18px;
-          opacity: 0.7;
-        }
-        .sidebar-horizontal .sidebar-link-btn.active .sidebar-icon {
-          opacity: 1;
-        }
-        .sidebar-horizontal .has-arrow::after {
-          content: "▾";
-          font-size: 10px;
-          margin-left: 4px;
-        }
-
-        /* Vertical Mobile Styles */
-        .sidebar-vertical .sidebar-nav > ul {
-          padding: 10px 16px;
-        }
-        .sidebar-vertical .sidebar-link-btn {
-          width: 100%;
-          padding: 12px 16px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          border: none;
-          background: transparent;
-          color: #475569;
-          font-size: 14.5px;
-          font-weight: 500;
-          border-radius: 12px;
-          margin-bottom: 4px;
-          text-align: left;
-          transition: all 0.2s ease;
-        }
-        .sidebar-vertical .sidebar-link-btn:hover {
-          background-color: #f1f5f9;
-          color: #1e293b;
-        }
-        .sidebar-vertical .sidebar-link-btn.active {
-          background-color: #eff6ff;
-          color: #2563eb;
-          font-weight: 600;
-        }
-        .sidebar-link-btn.disabled {
-          opacity: 0.5;
-          cursor: not-allowed !important;
-        }
-        .sidebar-link-btn.disabled .sidebar-icon {
-          opacity: 0.5;
-        }
-        /* Emerald accent for active icons in mobile */
-        .sidebar-vertical .sidebar-link-btn.active .sidebar-icon {
-          color: #00d9a6;
-        }
-        .sidebar-vertical .sidebar-submenu {
-          margin-left: 24px;
-          border-left: 1.5px solid #e2e8f0;
-          padding-left: 8px;
-          display: none;
-          margin-bottom: 8px;
-        }
-        .sidebar-vertical .sidebar-submenu.show {
-          display: block;
-          animation: slideDown 0.25s ease-out;
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .sidebar-vertical .nav-small-cap {
-          padding: 20px 16px 10px;
-          font-size: 11px;
-          font-weight: 700;
-          color: #94a3b8;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        .sidebar-vertical .has-arrow::after {
-          content: "▾";
-          font-size: 10px;
-          margin-left: auto;
-          transition: transform 0.3s ease;
-          opacity: 0.5;
-        }
-        .sidebar-vertical .sidebar-link-btn[aria-expanded="true"]::after {
-          transform: rotate(180deg);
-        }
-      `}</style>
-
       <div className="scroll-sidebar h-100 d-flex flex-column">
         {!isDesktop && (
-          <div 
-            className="sidebar-brand-box p-4"
-            style={{ 
-              background: 'linear-gradient(135deg, #02113d 0%, #031b5a 100%)',
-              height: 140,
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center'
-            }}
-          >
+          <div className="sidebar-brand-box p-4 sidebar-brand-gradient">
             <div className="d-flex align-items-center gap-3" style={{ position: 'relative', zIndex: 2 }}>
               <img src="/assets/icons/PUSlogo.png" alt="Logo" style={{ height: "48px" }} />
               <div className="d-flex flex-column" style={{ lineHeight: 1.1 }}>
@@ -455,7 +293,8 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
                 pointerEvents: "none",
                 zIndex: 1,
               }}
-            />          </div>
+            />
+          </div>
         )}
 
         <nav className="sidebar-nav flex-grow-1">
@@ -469,6 +308,7 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
                 openKeys={openKeys}
                 onDropdownToggle={handleDropdownToggle}
                 onCustomNavigate={handleNavigation}
+                onClose={onClose}
                 isDesktop={isDesktop}
               />
             ))}

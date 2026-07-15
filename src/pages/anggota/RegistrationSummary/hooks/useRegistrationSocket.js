@@ -1,16 +1,15 @@
+import { useCallback } from "react";
 import useSocketListener from "../../../../utils/helper/SocketListener";
 
 const useRegistrationSocket = (registration_id, setData) => {
-
-
-  useSocketListener((payload) => {
+  const handlePayload = useCallback((payload) => {
 
 
 
 
 
     if (
-      payload.entityId === String(registration_id) &&
+      String(payload.entityId).toLowerCase() === String(registration_id).toLowerCase() &&
       (payload.entityRef === "member_registration" ||
         payload.entityRef === "members")
     ) {
@@ -55,10 +54,10 @@ const useRegistrationSocket = (registration_id, setData) => {
 
         return newState;
       });
-    } else {
-
     }
-  });
+  }, [registration_id, setData]);
+
+  useSocketListener(handlePayload);
 };
 
 export default useRegistrationSocket;

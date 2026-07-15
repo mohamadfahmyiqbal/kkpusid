@@ -49,7 +49,7 @@ export const useFinancialSummary = (userData) => {
         const sukarela = fetchedDetails.find(d => d.type === "SS_SUKARELA")?.balance || 0;
         const deposit = fetchedDetails.find(d => d.type === "TABUNGAN_DEPOSIT")?.balance || 0;
 
-        const totalSimpanan = pokok + wajib + sukarela + deposit;
+        const totalSimpanan = pokok + wajib + sukarela;
         
         // Pre-calculate tabungan metrics
         const tabunganBalance = tDetails.reduce((acc, curr) => acc + (curr.balance || 0), 0);

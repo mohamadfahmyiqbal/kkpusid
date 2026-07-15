@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "react-bootstrap";
-import { FaArrowLeft, FaPrint } from "react-icons/fa";
+import { FaPrint } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const InvoiceHeader = ({ onBack, onPrint }) => {

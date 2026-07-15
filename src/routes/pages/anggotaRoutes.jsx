@@ -1,4 +1,4 @@
-import React, { lazy } from "react";
+import { lazy } from "react";
 const anggotaRoutes = {
   accountPage: {
     component: lazy(() => import("../../pages/anggota/AccountPage/AccountPage")),

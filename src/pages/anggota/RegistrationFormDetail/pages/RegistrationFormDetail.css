@@ -137,3 +137,62 @@
     gap: 4px;
   }
 }
+
+/* ---- React-Select custom styling for Registration steps ---- */
+.rs__control {
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background-color: #f8fafc;
+  padding: 2px 6px;
+  min-height: 45px;
+  font-size: 14px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.rs__control--is-focused {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  border-color: #2563eb;
+}
+
+.rs__control:hover {
+  border-color: #cbd5e1;
+}
+
+.rs__control--is-focused:hover {
+  border-color: #2563eb;
+}
+
+.rs__placeholder {
+  color: #94a3b8;
+}
+
+.rs__single-value {
+  color: #1e293b;
+}
+
+.rs__menu {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.rs__option {
+  background-color: transparent;
+  color: #1e293b;
+}
+
+.rs__option--is-focused {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.rs__option--is-selected {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.rs__option:active {
+  background-color: #2563eb;
+}

@@ -2,20 +2,19 @@ import React, { useCallback } from "react";
 import { Form, Row, Col} from "react-bootstrap";
 import {
   FaUserShield,
-  FaCamera,
   FaCheckCircle,
   FaExclamationTriangle,
   FaLightbulb,
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
-import Alert from "../../../../../components/ui/SwalAlert";
+
 
 
 /**
  * Komponen untuk mengambil Swafoto dengan KTP (Langkah 4).
  * Dioptimasi dengan panduan visual agar verifikasi wajah lebih akurat.
  */
-export default function Step4Swafoto({ formData, setFormData, errors }) {
+export default React.memo(function Step4Swafoto({ formData, setFormData, errors }) {
   const handleSetCapturedImage = useCallback(
     (fieldName, base64Image) => {
       setFormData((prevData) => ({
@@ -41,10 +40,10 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
         </div>
       </div>
 
-      <Row>
+      <Row className="g-4 align-items-stretch">
         <Col lg={7}>
           {/* AREA WEBCAM */}
-          <div className="p-3 rounded-20 bg-light border-0 shadow-sm mb-4">
+          <div className="p-3 p-md-4 rounded-20 bg-white border shadow-sm h-100 d-flex flex-column justify-content-center">
             <WebcamCaptureField
               fieldName="foto_swafoto"
               label="Ambil Swafoto"
@@ -66,7 +65,7 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
 
         <Col lg={5}>
           {/* PANDUAN SWAFOTO */}
-          <div className="requirement-items bg-white p-4 rounded-20 border-dashed h-100">
+          <div className="requirement-items bg-light p-3 p-md-4 rounded-20 border h-100 d-flex flex-column justify-content-center">
             <h6 className="fw-bold text-dark mb-3">Instruksi Swafoto:</h6>
 
             <ul className="list-unstyled mb-4">
@@ -90,18 +89,7 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
               </li>
             </ul>
 
-            <Alert
-              variant="info"
-              className="rounded-12 border-0 shadow-sm small py-3"
-            >
-              <div className="d-flex">
-                <FaCamera className="me-2 mt-1" />
-                <span>
-                  Pastikan kamera sejajar dengan mata dan pencahayaan dari depan
-                  cukup terang.
-                </span>
-              </div>
-            </Alert>
+
 
             {/* Visual Placeholder Swafoto */}
 
@@ -113,4 +101,4 @@ export default function Step4Swafoto({ formData, setFormData, errors }) {
       </Row>
     </div>
   );
-}
+});

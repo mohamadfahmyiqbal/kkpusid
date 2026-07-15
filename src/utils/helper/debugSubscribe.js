@@ -35,9 +35,7 @@ export const debugPushSubscription = async () => {
 
     // 4. Verifikasi VAPID Key dari .env
     const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-     + "...)"
-        : "NO (UNDEFINED)"
-    );
+    console.log("VAPID Key:", publicKey ? "YES (...)" : "NO (UNDEFINED)");
 
     if (!publicKey) {
       console.error(
@@ -49,8 +47,7 @@ export const debugPushSubscription = async () => {
     // 5. Cek Subscription yang Sudah Ada
     const existingSub = await registration.pushManager.getSubscription();
     if (existingSub) {
-      
-      );
+      console.log("Subscription already exists.");
       return existingSub;
     }
 

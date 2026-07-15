@@ -1,7 +1,7 @@
 import React from 'react';
-;
 import { FaLock } from 'react-icons/fa';
 import Alert from "../../../components/ui/SwalAlert";
+;
 
 
 const RoleBasedContent = ({ isFullMember, isCandidate, children }) => {

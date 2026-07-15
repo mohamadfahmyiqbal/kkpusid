@@ -7,15 +7,12 @@ import {
   Button,
   Row,
   Col,
-  
-  Spinner,
   Badge} from "react-bootstrap";
 import {
   FaShieldAlt,
   FaClock,
   FaSyncAlt,
   FaUsers,
-  FaChartLine,
   FaGift,
   FaHeadset,
 } from "react-icons/fa";

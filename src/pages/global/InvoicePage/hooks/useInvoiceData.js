@@ -105,7 +105,16 @@ export const useInvoiceData = () => {
               member_no: detail?.member?.member_code || "ID Registrasi",
               invoice_no: `FIN/${detail.financing_id?.substring(0, 8) || "000"}/${new Date().getFullYear()}`,
               createdAt: detail.createdAt || detail.created_at || new Date().toISOString(),
-              details: [
+              details: isPelunasan && detail.discount > 0 ? [
+                {
+                  description: "Total Tagihan Pelunasan",
+                  amount: parseFloat(detail.total_tagihan) + parseFloat(detail.discount),
+                },
+                {
+                  description: "Diskon Pelunasan",
+                  amount: -parseFloat(detail.discount),
+                }
+              ] : [
                 {
                   description: isPelunasan ? "Pembayaran Pelunasan Jual Beli" : "Down Payment / Cicilan Pembiayaan",
                   amount: finalAmount,

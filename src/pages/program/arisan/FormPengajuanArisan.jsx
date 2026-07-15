@@ -5,11 +5,10 @@ import {
   Container,
   Row,
   Col,
-  Card,
   Form,
-  Button,
-  
   Spinner} from "react-bootstrap";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 import {
   FaCheck,
   FaExclamationTriangle,
@@ -92,19 +91,19 @@ const FormInputField = React.memo(
 // --- Summary Detail Sub-component ---
 const SummaryDetail = React.memo(({ summaryData }) => {
   const getIcon = (key) => {
-    if (key.includes("Kategori")) return <FaInfoCircle className="text-teal opacity-50" size={14} />;
-    if (key.includes("Target")) return <FaMoneyBillWave className="text-teal opacity-50" size={14} />;
-    if (key.includes("Setoran")) return <FaCheck className="text-teal opacity-50" size={14} />;
-    if (key.includes("Peserta")) return <FaUsers className="text-teal opacity-50" size={14} />;
-    if (key.includes("Durasi")) return <FaCalendarAlt className="text-teal opacity-50" size={14} />;
-    return <FaLayerGroup className="text-teal opacity-50" size={14} />;
+    if (key.includes("Kategori")) return <FaInfoCircle className="text-white opacity-75" size={14} />;
+    if (key.includes("Target")) return <FaMoneyBillWave className="text-white opacity-75" size={14} />;
+    if (key.includes("Setoran")) return <FaCheck className="text-white opacity-75" size={14} />;
+    if (key.includes("Peserta")) return <FaUsers className="text-white opacity-75" size={14} />;
+    if (key.includes("Durasi")) return <FaCalendarAlt className="text-white opacity-75" size={14} />;
+    return <FaLayerGroup className="text-white opacity-75" size={14} />;
   };
 
   return (
-    <div className="summary-gradient-card">
-      <div className="summary-accent-header d-flex justify-content-between align-items-center">
-        <h5 className="fw-bold mb-0 font-outfit">Ringkasan Arisan</h5>
-        <div className="summary-badge-premium">Detail Grup</div>
+    <Card className="overflow-hidden" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none' }}>
+      <div className="d-flex justify-content-between align-items-center p-4" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+        <h5 className="fw-bold mb-0 font-outfit text-white">Ringkasan Arisan</h5>
+        <div className="summary-badge-premium text-white" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>Detail Grup</div>
       </div>
       <div className="p-4">
         <div className="summary-grid">
@@ -112,13 +111,14 @@ const SummaryDetail = React.memo(({ summaryData }) => {
             const isTarget = key.includes("Target");
             const isContribution = key.includes("Setoran");
             return (
-              <div className="summary-item" key={key}>
+              <div className="summary-item" key={key} style={{ borderBottom: '1px dashed rgba(255, 255, 255, 0.2)' }}>
                 <div className="d-flex align-items-center gap-2">
                   {getIcon(key)}
-                  <span className="text-muted small fw-bold">{key}</span>
+                  <span className="small fw-bold text-white opacity-75">{key}</span>
                 </div>
                 <span
-                  className={`fw-bold ${isTarget || isContribution ? "large-amount-display" : "text-dark"}`}
+                  className={`fw-bold text-white ${isTarget || isContribution ? "large-amount-display" : ""}`}
+                  style={{ color: "white" }}
                 >
                   {value}
                 </span>
@@ -127,7 +127,7 @@ const SummaryDetail = React.memo(({ summaryData }) => {
           })}
         </div>
       </div>
-    </div>
+    </Card>
   );
 });
 
@@ -435,7 +435,7 @@ export default function FormPengajuanArisan({ decodedToken }) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="premium-form-card border-0 p-3 p-md-4 mb-4">
+                  <Card variant="form" className="p-3 p-md-4 mb-4">
                     <Card.Body>
                       <div className="form-section-header">
                         <h6 className="fw-bold font-outfit mb-0 text-dark">
@@ -510,7 +510,7 @@ export default function FormPengajuanArisan({ decodedToken }) {
                   </Card>
 
                   {/* Akad details card */}
-                  <Card className="premium-form-card border-0 p-3 p-md-4">
+                  <Card variant="form" className="p-3 p-md-4">
                     <Card.Body>
                       <div className="form-section-header">
                         <h6 className="fw-bold font-outfit mb-0 text-dark">
@@ -537,7 +537,7 @@ export default function FormPengajuanArisan({ decodedToken }) {
                   <SummaryDetail summaryData={summaryData} />
 
                   {/* Agreement Checkboxes */}
-                  <Card className="premium-form-card border-0 p-4">
+                  <Card variant="form" className="p-4">
                     <div className="form-section-header mb-3">
                       <h6 className="fw-bold font-outfit mb-0 text-dark">
                         Pernyataan Persetujuan
@@ -584,22 +584,14 @@ export default function FormPengajuanArisan({ decodedToken }) {
                   {/* Action Button */}
                   <div className="d-grid gap-2">
                     <Button
+                      variant="form"
                       type="submit"
                       disabled={isSubmitDisabled}
-                      className="btn-submit-premium w-100 d-flex flex-column align-items-center justify-content-center py-3"
+                      isLoading={isLoading}
+                      loadingText="Memproses Pengajuan..."
+                      className="w-100 d-flex flex-column align-items-center justify-content-center py-3"
                     >
-                      {isLoading ? (
-                        <div className="d-flex align-items-center gap-2">
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            variant="light"
-                          />
-                          <span className="fw-bold">
-                            Memproses Pengajuan...
-                          </span>
-                        </div>
-                      ) : (
+                      {!isLoading && (
                         <>
                           <span
                             className="fw-bold"

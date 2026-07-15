@@ -10,10 +10,7 @@ import {
   Col} from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../../utils/helpers";
 import {
-  FaArrowLeft,
-  FaCheckCircle,
   FaKey,
   FaCamera,
   FaUser,

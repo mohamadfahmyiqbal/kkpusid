@@ -3,26 +3,16 @@ import {
   Container,
   Row,
   Col,
-  Card,
-  Form,
-  Button,
-  Spinner,
-  
-  Badge} from "react-bootstrap";
+  Spinner} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import {
   FaKaaba,
   FaGraduationCap,
-  FaQuran,
   FaUtensils,
   FaReceipt,
-  FaCheckCircle,
-  FaArrowLeft,
-  FaWallet,
 } from "react-icons/fa";
-import { MdOutlineDateRange } from "react-icons/md";
 
 import SetoranAccountSummary from "./components/SetoranAccountSummary";
 import SetoranTagihanList from "./components/SetoranTagihanList";

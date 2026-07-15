@@ -11,7 +11,7 @@ import {
   ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import { FaStore, FaArrowLeft, FaUpload, FaFileAlt } from "react-icons/fa";
+import { FaUpload } from "react-icons/fa";
 
 import { profileService } from "../../../services/profileService";
 import api from "../../../utils/api/common";

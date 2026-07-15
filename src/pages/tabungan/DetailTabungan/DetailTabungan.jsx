@@ -6,9 +6,15 @@ import {
   Button,
   
   Badge,
-  Table} from "react-bootstrap";
+  Table,
+  Modal,
+  Form,
+  Spinner
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
+import http from "../../../utils/api/common";
+import Swal from "sweetalert2";
 import {
   FaKaaba,
   FaGraduationCap,
@@ -19,6 +25,7 @@ import {
 } from "react-icons/fa";
 import "./DetailTabungan.css";
 import Alert from "../../../components/ui/SwalAlert";
+import { useProfile } from "../../../components/layout/contexts";
 
 
 // Product configurations
@@ -43,6 +50,17 @@ const TABUNGAN_CONFIG = {
     icon: <FaUtensils size={32} />,
     color: "warning",
   },
+};
+
+const normalizeBankName = (bankName) => {
+  if (!bankName) return "Bank Syariah Indonesia";
+  const name = bankName.toLowerCase();
+  if (name.includes("syariah") || name.includes("bsi")) return "Bank Syariah Indonesia";
+  if (name.includes("mandiri")) return "Bank Mandiri";
+  if (name.includes("bca") || name.includes("central asia")) return "BCA";
+  if (name.includes("bri") || name.includes("rakyat indonesia")) return "BRI";
+  if (name.includes("bni") || name.includes("negara indonesia")) return "BNI";
+  return "Bank Syariah Indonesia";
 };
 
 // ── Skeleton Loader ──
@@ -87,12 +105,41 @@ const DetailSkeleton = () => (
 
 const DetailTabungan = () => {
   const navigate = useNavigate();
+  const { userData } = useProfile();
   const [productType, setProductType] = useState("haji");
+  const [tabunganId, setTabunganId] = useState(null);
   const [accountData, setAccountData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [withdrawData, setWithdrawData] = useState({
+    method: "TRANSFER",
+    bank_name: "",
+    bank_account_no: "",
+    cash_name: "",
+    cash_time: "",
+    cash_location: ""
+  });
+
+  useEffect(() => {
+    if (userData) {
+      const rawBankName = userData.bank_name || userData.bank_info?.bank_name || "";
+      const defaultBankName = normalizeBankName(rawBankName);
+      const defaultAccountNo = userData.bank_account_no || userData.bank_info?.bank_account_no || "";
+
+      setWithdrawData((prev) => ({
+        ...prev,
+        bank_name: prev.bank_name || defaultBankName,
+        bank_account_no: prev.bank_account_no || defaultAccountNo,
+      }));
+    }
+  }, [userData]);
+
   const productConfig = TABUNGAN_CONFIG[productType] || TABUNGAN_CONFIG.haji;
+
+  const [autoOpenWithdraw, setAutoOpenWithdraw] = useState(false);
 
   useEffect(() => {
     // Get product from URL
@@ -102,6 +149,12 @@ const DetailTabungan = () => {
       const decoded = jwtDecodePage(lastPart);
       if (decoded?.product && TABUNGAN_CONFIG[decoded.product]) {
         setProductType(decoded.product);
+      }
+      if (decoded?.tabunganId) {
+        setTabunganId(decoded.tabunganId);
+      }
+      if (decoded?.action === "withdraw") {
+        setAutoOpenWithdraw(true);
       }
     } catch (e) {
       console.error("Error decoding URL:", e);
@@ -116,7 +169,7 @@ const DetailTabungan = () => {
         accountNumber: "TBG-2024-001234",
         accountName: "Ahmad Fauzi",
         targetAmount: 25000000,
-        currentBalance: 12500000,
+        currentBalance: 25000000,
         initialDeposit: 500000,
         tenor: 60,
         startDate: "2024-01-15",
@@ -160,6 +213,19 @@ const DetailTabungan = () => {
     }, 1000);
   }, []);
 
+  const progressPercentage = accountData
+    ? Math.round((accountData.currentBalance / accountData.targetAmount) * 100)
+    : 0;
+
+  useEffect(() => {
+    if (accountData && autoOpenWithdraw) {
+      if (progressPercentage >= 100) {
+        setShowWithdrawModal(true);
+      }
+      setAutoOpenWithdraw(false); // Only do it once
+    }
+  }, [accountData, autoOpenWithdraw, progressPercentage]);
+
   const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat("id-ID").format(value);
   }, []);
@@ -193,9 +259,65 @@ const DetailTabungan = () => {
     navigate(`/${token}`);
   }, [navigate]);
 
-  const progressPercentage = accountData
-    ? Math.round((accountData.currentBalance / accountData.targetAmount) * 100)
-    : 0;
+
+
+  const handlePencairanClick = useCallback(() => {
+    if (progressPercentage < 100) {
+      Swal.fire({
+        title: "Perhatian",
+        text: "Tabungan baru bisa dicairkan jika target nominal terpenuhi.",
+        icon: "warning"
+      });
+      return;
+    }
+    setShowWithdrawModal(true);
+  }, [progressPercentage]);
+
+  const handleWithdrawSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      // Use actual tabunganId from token or fallback to mock
+      const targetId = tabunganId || accountData?.memberSavingTargetId || "dummy-id";
+      
+      const payload = {
+        method: withdrawData.method,
+        bank_name: withdrawData.method === "TRANSFER" ? withdrawData.bank_name : null,
+        bank_account_no: withdrawData.method === "TRANSFER" ? withdrawData.bank_account_no : null,
+        cash_name: withdrawData.method === "TUNAI" ? withdrawData.cash_name : null,
+        cash_time: withdrawData.method === "TUNAI" ? withdrawData.cash_time : null,
+        cash_location: withdrawData.method === "TUNAI" ? withdrawData.cash_location : null,
+      };
+
+      const res = await http.post(`/tabungan/pengajuan/${targetId}/withdraw`, payload);
+      
+      const withdrawalId = res.data?.data?.withdrawal_id || res.data?.data?.id;
+
+      setShowWithdrawModal(false);
+      Swal.fire({
+        title: "Berhasil",
+        text: "Pengajuan pencairan tabungan berhasil dikirim. Menunggu persetujuan.",
+        icon: "success"
+      }).then(() => {
+        const token = jwtEncode({
+          page: "transactionDetailPage",
+          withdrawalId: withdrawalId,
+          tabunganId: targetId,
+          return: "tabunganPage",
+          product: productConfig?.label || "Tabungan",
+        });
+        navigate(`/${token}`);
+      });
+    } catch (err) {
+      Swal.fire({
+        title: "Gagal",
+        text: err.response?.data?.message || "Gagal mengajukan pencairan",
+        icon: "error"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // ── Loading State ──
 
@@ -347,14 +469,24 @@ const DetailTabungan = () => {
               <Card.Body className="p-4">
                 <h6 className="fw-bold mb-3">Menu Aksi</h6>
                 <div className="d-flex gap-2 flex-wrap">
-                  <Button
-                    variant="primary"
-                    className="px-4 py-2 shadow-sm"
-                    onClick={handleSetoran}
-                  >
-                    <FaPlus className="me-2" />
-                    Setoran
-                  </Button>
+                  {progressPercentage < 100 ? (
+                    <Button
+                      variant="primary"
+                      className="px-4 py-2 shadow-sm"
+                      onClick={handleSetoran}
+                    >
+                      <FaPlus className="me-2" />
+                      Setoran
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="success"
+                      className="px-4 py-2 shadow-sm"
+                      onClick={handlePencairanClick}
+                    >
+                      Pencairan
+                    </Button>
+                  )}
                   <Button
                     variant="outline-secondary"
                     className="px-4 py-2"
@@ -419,6 +551,99 @@ const DetailTabungan = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal Pencairan */}
+      <Modal show={showWithdrawModal} onHide={() => setShowWithdrawModal(false)} centered>
+        <Form onSubmit={handleWithdrawSubmit}>
+          <Modal.Header closeButton>
+            <Modal.Title>Form Pencairan Tabungan</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Alert variant="info" className="mb-3">
+              Anda akan mencairkan seluruh saldo terkumpul sebesar <strong>Rp {formatCurrency(accountData?.currentBalance || 0)}</strong>.
+            </Alert>
+            <Form.Group className="mb-3">
+              <Form.Label>Metode Pencairan</Form.Label>
+              <Form.Select 
+                value={withdrawData.method} 
+                onChange={(e) => setWithdrawData({...withdrawData, method: e.target.value})}
+              >
+                <option value="TRANSFER">Transfer Bank</option>
+                <option value="TUNAI">Ambil Tunai</option>
+                <option value="SIMPANAN">Pindahkan ke Saldo Simpanan Koperasi</option>
+              </Form.Select>
+            </Form.Group>
+
+            {withdrawData.method === "TRANSFER" && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Nama Bank</Form.Label>
+                  <Form.Control 
+                    required 
+                    placeholder="Contoh: BCA, BSI, Mandiri"
+                    value={withdrawData.bank_name}
+                    onChange={(e) => setWithdrawData({...withdrawData, bank_name: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>No Rekening</Form.Label>
+                  <Form.Control 
+                    required 
+                    placeholder="Nomor rekening tujuan"
+                    value={withdrawData.bank_account_no}
+                    onChange={(e) => setWithdrawData({...withdrawData, bank_account_no: e.target.value})}
+                  />
+                </Form.Group>
+              </>
+            )}
+
+            {withdrawData.method === "SIMPANAN" && (
+              <Alert variant="info" className="mb-3">
+                Dana pencairan akan dipindahkan ke saldo Simpanan Koperasi Anda dan bisa dicairkan kapan saja melalui menu Tarik Tunai.
+              </Alert>
+            )}
+
+            {withdrawData.method === "TUNAI" && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Nama Pengambil</Form.Label>
+                  <Form.Control 
+                    required 
+                    value={withdrawData.cash_name}
+                    onChange={(e) => setWithdrawData({...withdrawData, cash_name: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Lokasi Pengambilan</Form.Label>
+                  <Form.Control 
+                    required 
+                    placeholder="Contoh: Kantor Cabang Utama"
+                    value={withdrawData.cash_location}
+                    onChange={(e) => setWithdrawData({...withdrawData, cash_location: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Waktu Pengambilan</Form.Label>
+                  <Form.Control 
+                    type="date"
+                    required 
+                    value={withdrawData.cash_time}
+                    onChange={(e) => setWithdrawData({...withdrawData, cash_time: e.target.value})}
+                  />
+                </Form.Group>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowWithdrawModal(false)} disabled={isSubmitting}>
+              Batal
+            </Button>
+            <Button variant="primary" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Spinner size="sm" animation="border" /> : "Ajukan Pencairan"}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 };

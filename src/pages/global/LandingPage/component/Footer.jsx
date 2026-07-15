@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { Link } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import {
   RiFacebookFill,
@@ -10,33 +11,35 @@ import {
   RiPhoneLine,
 } from "react-icons/ri";
 
+import { jwtEncode } from "../../../../utils/helpers";
+
 const Footer = () => {
   const services = [
-    "Pinjaman Lunak",
-    "Pelatihan Usaha",
-    "Kemitraan Produk",
-    "Pendampingan Bisnis",
+    { name: "Pinjaman Lunak", path: `/${jwtEncode({ page: "servicesPinjaman" })}` },
+    { name: "Pelatihan Usaha", path: `/${jwtEncode({ page: "servicesPelatihan" })}` },
+    { name: "Kemitraan Produk", path: `/${jwtEncode({ page: "servicesKemitraan" })}` },
+    { name: "Pendampingan Bisnis", path: `/${jwtEncode({ page: "servicesPendampingan" })}` },
   ];
 
   const information = [
-    "Tentang Kami",
-    "Cara Kerja",
-    "Artikel",
-    "FAQ",
+    { name: "Tentang Kami", path: `/${jwtEncode({ page: "about" })}` },
+    { name: "Cara Kerja", path: `/${jwtEncode({ page: "howItWorks" })}` },
+    { name: "Artikel", path: `/${jwtEncode({ page: "articles" })}` },
+    { name: "FAQ", path: `/${jwtEncode({ page: "faq" })}` },
   ];
 
   const help = [
-    "Pusat Bantuan",
-    "Syarat & Ketentuan",
-    "Kebijakan Privasi",
-    "Kontak Kami",
+    { name: "Pusat Bantuan", path: `/${jwtEncode({ page: "helpCenter" })}` },
+    { name: "Syarat & Ketentuan", path: `/${jwtEncode({ page: "termsConditions" })}` },
+    { name: "Kebijakan Privasi", path: `/${jwtEncode({ page: "privacyPolicy" })}` },
+    { name: "Kontak Kami", path: `/${jwtEncode({ page: "contact" })}` },
   ];
 
   const socialLinks = [
-    { icon: RiFacebookFill, name: "Facebook" },
-    { icon: RiInstagramLine, name: "Instagram" },
-    { icon: RiYoutubeFill, name: "YouTube" },
-    { icon: RiLinkedinFill, name: "LinkedIn" },
+    { icon: RiFacebookFill, name: "Facebook", path: "#" },
+    { icon: RiInstagramLine, name: "Instagram", path: "#" },
+    { icon: RiYoutubeFill, name: "YouTube", path: "#" },
+    { icon: RiLinkedinFill, name: "LinkedIn", path: "#" },
   ];
 
   return (
@@ -56,7 +59,7 @@ const Footer = () => {
               {socialLinks.map((social, index) => (
                 <a
                   key={index}
-                  href="#"
+                  href={social.path}
                   className="social-link"
                   aria-label={social.name}
                 >
@@ -72,7 +75,7 @@ const Footer = () => {
             <ul className="footer-list">
               {services.map((service, index) => (
                 <li key={index}>
-                  <a href="#">{service}</a>
+                  <Link to={service.path}>{service.name}</Link>
                 </li>
               ))}
             </ul>
@@ -84,7 +87,7 @@ const Footer = () => {
             <ul className="footer-list">
               {information.map((info, index) => (
                 <li key={index}>
-                  <a href="#">{info}</a>
+                  <Link to={info.path}>{info.name}</Link>
                 </li>
               ))}
             </ul>
@@ -96,7 +99,7 @@ const Footer = () => {
             <ul className="footer-list">
               {help.map((item, index) => (
                 <li key={index}>
-                  <a href="#">{item}</a>
+                  <Link to={item.path}>{item.name}</Link>
                 </li>
               ))}
             </ul>
@@ -124,10 +127,11 @@ const Footer = () => {
         <Row className="footer-bottom">
           <Col xs={12}>
             <div className="footer-copyright">
-              <p>© 2025 Paguyuban Usaha Sukses. All rights reserved.</p>
-              <p className="regulatory-info">
-                Terdaftar & Diawasi oleh Dewan Pengawas Syariah (DPS)
-              </p>
+              <p>© 2025 KKPUS (Koperasi & Layanan Pembiayaan Usaha Syariah). All rights reserved.</p>
+              <div className="regulatory-info" style={{ marginTop: '10px', fontSize: '0.9rem', color: '#a0a0a0' }}>
+                <p>Nomor Badan Hukum Koperasi: <strong>12345/BH/M.KUKM.2/XI/2025</strong> | Izin Usaha Simpan Pinjam: <strong>No. 98765/USP/2025</strong></p>
+                <p>Terdaftar & Diawasi oleh <strong>Kementerian Koperasi dan UKM</strong> serta <strong>Dewan Pengawas Syariah (DPS)</strong> guna memastikan kepatuhan terhadap prinsip-prinsip syariah.</p>
+              </div>
             </div>
           </Col>
         </Row>

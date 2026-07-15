@@ -6,6 +6,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 export default function ApprovalPlaceholder({
   role,
@@ -18,8 +19,38 @@ export default function ApprovalPlaceholder({
   const IconRole =
     role === "PENGAWAS" || role === "Pengawas" ? FaUserShield : FaUserTie;
 
+  const handleClick = () => {
+    let statusText = "Pending";
+    let iconType = "info";
+    
+    if (isRejected) {
+      statusText = "Ditolak";
+      iconType = "error";
+    } else if (isReadyToPay) {
+      statusText = "Siap Bayar";
+      iconType = "success";
+    } else if (isApproved) {
+      statusText = "Selesai";
+      iconType = "success";
+    }
+
+    Swal.fire({
+      title: `Detail Persetujuan - ${role}`,
+      html: `
+        <div class="text-center" style="font-size: 14px;">
+          <p class="mb-2"><strong>Status:</strong> <span class="badge ${isRejected ? 'bg-danger' : isApproved || isReadyToPay ? 'bg-success' : 'bg-secondary'}">${statusText}</span></p>
+          ${approverName ? `<p class="mb-2"><strong>Oleh:</strong> ${approverName}</p>` : ''}
+          ${note ? `<div class="mt-3 p-3 bg-light rounded text-start"><strong class="d-block mb-1">Catatan:</strong> <span class="fst-italic">"${note}"</span></div>` : '<p class="text-muted mt-2">Tidak ada catatan.</p>'}
+        </div>
+      `,
+      icon: iconType,
+      confirmButtonText: "Tutup",
+      confirmButtonColor: "#0d9488"
+    });
+  };
+
   return (
-    <div className="text-center">
+    <div className="text-center" onClick={handleClick} style={{ cursor: "pointer" }}>
       <div
         className="mx-auto rounded-circle d-flex align-items-center justify-content-center position-relative"
         style={{

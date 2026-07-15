@@ -10,15 +10,9 @@ import React, {
 import { initSocket } from "../../../utils/socket";
 import UBilling from "../../../utils/api/UBilling";
 import UNotification from "../../../utils/api/UNotification";
+import { jwtDecode } from "jwt-decode";
 
 const ProfileContext = createContext();
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL ||
-  import.meta.env.VITE_API_ORIGIN ||
-  process.env.REACT_APP_SOCKET_URL ||
-  process.env.REACT_APP_API_ORIGIN ||
-  "https://localhost:3445";
-
 
 
 /**
@@ -83,6 +77,17 @@ export const ProfileProvider = ({ children }) => {
     }
   }, []);
 
+  const markNotificationAsRead = useCallback(async (id) => {
+    try {
+      await UNotification.markAsRead(id);
+      setNotifications((prev) => 
+        prev.map((n) => ((n.id || n.notification_id) === id ? { ...n, status: 2 } : n))
+      );
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  }, []);
+
   const connectSocket = useCallback(() => {
     const token = localStorage.getItem("token");
 
@@ -107,22 +112,30 @@ export const ProfileProvider = ({ children }) => {
 
     const socket = initSocket(token);
 
-    socket.on("connect", () => {
-      setSocketConnected(true);
+    const registerToSocket = () => {
       try {
-        const base64Url = token.split(".")[1];
-        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        const decoded = JSON.parse(atob(base64));
+        const decoded = jwtDecode(token);
         if (decoded?.member_id) {
           socket.emit("register", decoded.member_id);
         }
       } catch (err) {
-        console.error("Token decoding failed", err);
+        console.error("Gagal register socket:", err);
       }
+    };
+
+    const handleConnect = () => {
+      setSocketConnected(true);
+      registerToSocket();
       socket.emit("profile:request");
       fetchBills();
       fetchNotifications();
-    });
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    }
+
+    socket.on("connect", handleConnect);
 
     socket.on("profile:update", (data) => {
       setUserData(data);
@@ -131,9 +144,7 @@ export const ProfileProvider = ({ children }) => {
 
     // Listener Pasca Approval Ketua: Memicu refresh data akun & tagihan
     socket.on("registration:status_update", () => {
-      socket.emit("profile:request");
-      fetchBills();
-      fetchNotifications();
+      // Diserahkan ke global event agar tidak double fetch
       window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
     });
 
@@ -165,8 +176,6 @@ export const ProfileProvider = ({ children }) => {
     // Listener untuk notifikasi baru (termasuk PAYMENT_SUCCESS)
     socket.on("new_notification", (data) => {
       if (data.type === "PAYMENT_SUCCESS") {
-        socket.emit("profile:request");
-        fetchBills();
         window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
       }
       // Semua notifikasi baru (apapun typenya) masukkan ke list
@@ -203,12 +212,12 @@ export const ProfileProvider = ({ children }) => {
     };
 
     const handleProfileRefresh = () => {
-
       setLoading(true); // <-- Pause UI rendering to wait for new profile
       if (socketRef.current?.connected) {
         socketRef.current.emit("profile:request");
       }
       fetchBills();
+      fetchNotifications();
     };
 
     window.addEventListener("storage_sync", handleLoginSync);
@@ -245,8 +254,9 @@ export const ProfileProvider = ({ children }) => {
       logout,
       socketConnected,
       socket: socketRef.current,
+      markNotificationAsRead,
     }),
-    [userData, notifications, bills, loading, logout, socketConnected],
+    [userData, notifications, bills, loading, logout, socketConnected, markNotificationAsRead],
   );
 
   return (

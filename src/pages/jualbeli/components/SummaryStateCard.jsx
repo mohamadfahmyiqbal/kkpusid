@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Button } from "react-bootstrap";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 import { 
   MdAccountBalance, 
   MdAddCircleOutline, 
@@ -20,8 +21,7 @@ const SummaryStateCard = ({
 }) => {
   if (isApproved) {
     return (
-      <Card className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg">
-        <div className="glass-sheen" />
+      <Card variant="premium" theme="primary">
         <Card.Body className="p-4 relative" style={{ zIndex: 2 }}>
           {/* Card Top */}
           <div className="d-flex justify-content-between align-items-center mb-4">
@@ -79,15 +79,15 @@ const SummaryStateCard = ({
           {/* Action Buttons */}
           <div className="d-flex gap-2 mb-2">
             <Button 
-              variant="light" 
-              className="w-100 border-0 shadow-sm rounded-3 py-2.5 fw-bold text-teal d-flex align-items-center justify-content-center gap-2 premium-btn-hover premium-btn-text"
+              variant="premium" 
+              className="w-100 rounded-3 py-2.5 d-flex align-items-center justify-content-center gap-2"
               onClick={handleGoToSetoran}
             >
               <MdAddCircleOutline size={20} /> Bayar Setoran
             </Button>
             <Button 
-              variant="outline-light" 
-              className="w-100 border shadow-sm rounded-3 py-2.5 fw-bold text-white d-flex align-items-center justify-content-center gap-2 premium-btn-hover btn-pelunasan"
+              variant="premium-outline" 
+              className="w-100 rounded-3 py-2.5 d-flex align-items-center justify-content-center gap-2"
               onClick={handleGoToPelunasan}
             >
               <MdAccountBalance size={20} /> Pelunasan
@@ -115,8 +115,7 @@ const SummaryStateCard = ({
     const pendingAmount = pendingTx?.nominal_kredit || pendingTx?.nominal_debet || 0;
 
     return (
-      <Card className="premium-card premium-card-pending border-0 text-white text-center p-4 p-md-5 shadow-lg">
-        <div className="glass-sheen" />
+      <Card variant="premium" theme="warning" className="text-center p-4 p-md-5">
         <Card.Body className="relative" style={{ zIndex: 2 }}>
           {/* Pulsing Radar Container */}
           <div className="pending-radar-pulse mb-4">
@@ -160,8 +159,8 @@ const SummaryStateCard = ({
           </div>
 
           <Button 
-            variant="light" 
-            className="rounded-pill px-5 py-2 fw-bold text-warning border-0 premium-btn-action shadow-md"
+            variant="premium" 
+            className="rounded-pill px-5 py-2"
             onClick={() => handleGoToDetail(pendingId)}
           >
             Lihat Detail Pengajuan
@@ -172,10 +171,9 @@ const SummaryStateCard = ({
   }
 
   return (
-    <Card className="premium-card premium-card-empty border-0 text-white text-center p-4 p-md-5 shadow-lg">
+    <Card variant="premium" theme="primary" className="text-center p-4 p-md-5">
       <div className="card-decor-circle c1" />
       <div className="card-decor-circle c2" />
-      <div className="glass-sheen" />
       <Card.Body className="relative" style={{ zIndex: 2 }}>
         <div className="mb-4 text-white opacity-90">
           <MdHandshake size={56} className="animate-pulse" />
@@ -212,8 +210,8 @@ const SummaryStateCard = ({
         </div>
 
         <Button 
-          variant="light" 
-          className="rounded-pill px-5 py-2.5 fw-bold text-primary border-0 premium-btn-action shadow-md d-inline-flex align-items-center gap-2"
+          variant="premium" 
+          className="rounded-pill px-5 py-2.5 d-inline-flex align-items-center gap-2"
           onClick={handleGoToFormPembelian}
         >
           Buat Pengajuan Baru <MdAddCircleOutline size={18} />

@@ -35,7 +35,7 @@ const ProgramAccountCard = ({
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect">
             <span className="fw-bold tracking-wider card-type-label">   
-              {isArisan ? "INFORMASI ARISAN" : "INFORMASI PINJAMAN"}    
+              {isArisan ? "INFORMASI ARISAN" : "INFORMASI PINJAMAN LUNAK"}    
             </span>
           </div>
           <span className="premium-status-badge">

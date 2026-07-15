@@ -1,6 +1,5 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy } from 'react';
 import { Spinner } from 'react-bootstrap';
-import DashboardSkeleton from './DashboardSkeleton';
 
 // Lazy loaded components
 const LazyFinancialSection = lazy(() => import('./FinancialSection'));

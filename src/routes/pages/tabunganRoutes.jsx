@@ -24,6 +24,12 @@ const tabunganRoutes = {
     ),
     isProtected: true,
   },
+  penarikanTabunganPage: {
+    component: lazy(
+      () => import("../../pages/tabungan/PenarikanTabunganPage/PenarikanTabunganPage"),
+    ),
+    isProtected: true,
+  },
 };
 
 export default tabunganRoutes;

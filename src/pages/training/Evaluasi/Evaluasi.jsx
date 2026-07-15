@@ -6,9 +6,6 @@ import {
   Card,
   Button,
   Spinner,
-  
-  Badge,
-  Form,
   ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";

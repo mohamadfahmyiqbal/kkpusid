@@ -15,7 +15,6 @@ import {
   FaShieldAlt,
   FaUsers,
   FaChartLine,
-  FaGift,
   FaHeadset,
   FaPaperPlane,
   FaArrowLeft,

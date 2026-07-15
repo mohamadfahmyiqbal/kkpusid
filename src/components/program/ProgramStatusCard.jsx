@@ -3,7 +3,7 @@
 import React from "react";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import { FaFileAlt, FaCheckCircle, FaShieldAlt, FaPercent } from "react-icons/fa";
+import { FaFileAlt } from "react-icons/fa";
 import { 
   MdCached,
   MdHandshake,

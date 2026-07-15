@@ -1,7 +1,8 @@
 // pages/program/pinjaman/FormPengajuanPinjaman.jsx
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Row, Col, Card, Form} from "react-bootstrap";
+import { Row, Col, Form} from "react-bootstrap";
+import Card from "../../../components/ui/Card";
 import { FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -326,7 +327,7 @@ export default function FormPengajuanPinjaman() {
           <Row className="g-4">
             {/* Left Column: Form Fields */}
             <Col lg={7} xl={8} className="animate-fade-in">
-              <Card className="premium-form-card border-0 p-3 p-md-4">
+              <Card variant="form" className="p-3 p-md-4">
                 <Card.Body>
                   <NominalTenorSection
                     loanProducts={loanProducts}

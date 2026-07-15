@@ -5,8 +5,6 @@ import {
   Col,
   Card,
   Spinner,
-  
-  Table,
   Tabs,
   Tab} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Container, Spinner, Row, Col } from "react-bootstrap";
+import { Card, Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { MdArrowBack, MdAccountBalanceWallet } from "react-icons/md";
+import { MdAccountBalanceWallet } from "react-icons/md";
 import Swal from "sweetalert2";
 import { jwtEncode } from "../../utils/helpers";
 import UJualBeli from "../../utils/api/UJualBeli";

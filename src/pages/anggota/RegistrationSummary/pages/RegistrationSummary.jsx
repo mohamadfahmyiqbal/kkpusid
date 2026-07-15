@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Table, Row, Col, Button } from "react-bootstrap";
+import { Card, Row, Col, Button } from "react-bootstrap";
 import {
   FaArrowLeft,
   FaFileInvoiceDollar,
@@ -11,7 +11,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import ApprovalPlaceholder from "../../../../components/ui/ApprovalPlaceholder";
 import { jwtEncode } from "../../../../utils/helpers";
-import InfoRow from "../components/InfoRow";
 import useApprovalStatus from "../hooks/useApprovalStatus";
 import useRegistrationSocket from "../hooks/useRegistrationSocket";
 import usePaymentHandler from "../../../../hooks/usePaymentHandler";
@@ -58,6 +57,8 @@ export default function RegistrationSummary({
     address_ktp,
     foto_ktp,
     foto_swafoto,
+    ktp_photo_path,
+    selfie_photo_path,
     final_status,
     is_approved_pengawas,
     is_approved_ketua,
@@ -90,6 +91,11 @@ export default function RegistrationSummary({
       },
       displayName: "Pendaftaran Anggota",
       return: "registrationPage",
+      bankInfo: approvalStatus.ketuaDone ? {
+        bank_name: data?.bank_name,
+        bank_account_no: data?.bank_account_no,
+        account_holder: data?.account_holder
+      } : null,
     });
 
     navigate(`/${token}`);
@@ -118,7 +124,7 @@ export default function RegistrationSummary({
       </div>
 
       {/* CARD 1: DATA PENDAFTAR */}
-      <Card className="border-0 shadow-sm rounded-20 p-4 mb-4" style={{ borderColor: "#f1f5f9" }}>
+      <Card className="border-0 shadow-sm rounded-20 p-3 p-md-4 mb-3 mb-md-4" style={{ borderColor: "#f1f5f9" }}>
         <Row className="align-items-center">
           <Col md={2} className="text-center text-md-start mb-3 mb-md-0">
             <div className="mx-auto mx-md-0 rounded-circle bg-soft-primary text-primary d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
@@ -149,7 +155,7 @@ export default function RegistrationSummary({
       </Card>
 
       {/* CARD 2: VERIFIKASI DOKUMEN FOTO */}
-      <Card className="border-0 shadow-sm rounded-20 p-4 mb-4" style={{ borderColor: "#f1f5f9" }}>
+      <Card className="border-0 shadow-sm rounded-20 p-3 p-md-4 mb-3 mb-md-4" style={{ borderColor: "#f1f5f9" }}>
         <div className="d-flex align-items-center border-bottom pb-3 mb-3">
           <span className="bg-soft-primary text-primary rounded-8 p-2 me-2 d-inline-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
             <FaIdCard size={14} />
@@ -161,7 +167,7 @@ export default function RegistrationSummary({
             <div className="text-center p-3 border rounded-12 bg-light shadow-sm">
               <p className="small fw-bold text-muted mb-2">Foto KTP</p>
               <img
-                src={getImgSrc(foto_ktp)}
+                src={getImgSrc(foto_ktp || ktp_photo_path)}
                 className="img-fluid rounded border shadow-sm"
                 alt="KTP"
                 style={{ maxHeight: "200px", objectFit: "contain", width: "100%", backgroundColor: "#fff" }}
@@ -176,7 +182,7 @@ export default function RegistrationSummary({
             <div className="text-center p-3 border rounded-12 bg-light shadow-sm">
               <p className="small fw-bold text-muted mb-2">Swafoto</p>
               <img
-                src={getImgSrc(foto_swafoto)}
+                src={getImgSrc(foto_swafoto || selfie_photo_path)}
                 className="img-fluid rounded border shadow-sm"
                 alt="Selfie"
                 style={{ maxHeight: "200px", objectFit: "contain", width: "100%", backgroundColor: "#fff" }}
@@ -191,7 +197,7 @@ export default function RegistrationSummary({
       </Card>
 
       {/* CARD 3: DETAIL DOMISILI */}
-      <Card className="border-0 shadow-sm rounded-20 p-4 mb-4" style={{ borderColor: "#f1f5f9" }}>
+      <Card className="border-0 shadow-sm rounded-20 p-3 p-md-4 mb-3 mb-md-4" style={{ borderColor: "#f1f5f9" }}>
         <div className="d-flex align-items-center border-bottom pb-3 mb-3">
           <span className="bg-soft-primary text-primary rounded-8 p-2 me-2 d-inline-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
             <FaMapMarkerAlt size={14} />
@@ -227,7 +233,7 @@ export default function RegistrationSummary({
       </Card>
 
       {/* CARD 4: STATUS PERSETUJUAN */}
-      <Card className="border-0 shadow-sm rounded-20 p-4 mb-4" style={{ borderColor: "#f1f5f9" }}>
+      <Card className="border-0 shadow-sm rounded-20 p-3 p-md-4 mb-3 mb-md-4" style={{ borderColor: "#f1f5f9" }}>
         <div className="d-flex align-items-center border-bottom pb-3 mb-4">
           <span className="bg-soft-primary text-primary rounded-8 p-2 me-2 d-inline-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
             <FaCheckCircle size={14} />

@@ -18,14 +18,17 @@ const ActionButtons = ({
   const navigate = useNavigate();
 
   const isApprovedAndReady = useMemo(() => {
+    const hasBendahara = detail?.approvalChain?.some(a => a.role?.toUpperCase() === 'BENDAHARA') ||
+                         detail?.approvals?.some(a => (a.role || a.role_name)?.toUpperCase() === 'BENDAHARA');
+                         
     const isDone = 
       approvalStatus?.pengawasDone &&
       approvalStatus?.ketuaDone &&
-      (isFinancing || isTabungan || isSukukOrder ? approvalStatus?.bendaharaDone : true) &&
+      (hasBendahara ? approvalStatus?.bendaharaDone : true) &&
       !approvalStatus?.isRejected;
     
     return isDone || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
-  }, [isFinancing, isTabungan, isSukukOrder, approvalStatus]);
+  }, [approvalStatus, detail]);
 
   const isPinjamanProduct = isFinancing && 
     !(productName?.toLowerCase().includes('arisan')) && 
@@ -91,7 +94,7 @@ const ActionButtons = ({
   return (
     <section className="mt-5 d-print-none">
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-        {isApprovedAndReady && (isFinancing || isTabungan || isSukukOrder) && (
+        {isApprovedAndReady && (isFinancing || isTabungan || isSukukOrder) && detail?.status !== 'PAID' && (
           <Button
             variant="primary"
             size="lg"
@@ -108,6 +111,39 @@ const ActionButtons = ({
           >
             <FaFileInvoiceDollar />
             {getButtonText()}
+          </Button>
+        )}
+
+        {isSukukOrder && detail?.status === 'PAID' && detail?.sukuk?.status === 'COMPLETED' && (
+           <Button
+            variant="success"
+            size="lg"
+            className="rounded-pill px-5 py-3 fw-bold shadow d-flex align-items-center justify-content-center gap-2"
+            onClick={async () => {
+              try {
+                // we should add sweetalert but simple fetch first, or we can use the default handler
+                const res = await fetch(`/api/sukuk/withdraw/${transactionId}`, {
+                   method: 'POST',
+                   headers: {
+                     'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${localStorage.getItem('token')}`
+                   }
+                });
+                const data = await res.json();
+                if (data.status) {
+                   alert("Pengajuan pencairan berhasil dikirim.");
+                   window.location.reload();
+                } else {
+                   alert(data.message || "Gagal mengajukan pencairan.");
+                }
+              } catch (e) {
+                 alert("Terjadi kesalahan.");
+              }
+            }}
+            style={{ background: 'linear-gradient(45deg, #10b981, #059669)', border: 'none' }}
+          >
+            <FaWallet />
+            AJUKAN PENCAIRAN
           </Button>
         )}
 

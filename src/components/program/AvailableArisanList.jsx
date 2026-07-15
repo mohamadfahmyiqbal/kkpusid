@@ -1,7 +1,6 @@
 import React from "react";
 import { Row, Col, Card, Button, Badge } from "react-bootstrap";
 import {
-  MdGroup,
   MdChevronRight,
   MdEvent,
   MdPeople,

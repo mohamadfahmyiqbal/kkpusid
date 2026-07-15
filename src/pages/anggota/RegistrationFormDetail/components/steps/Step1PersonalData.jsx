@@ -4,62 +4,16 @@ import { FaMapMarkerAlt, FaIdCard, FaInfoCircle, FaUser } from "react-icons/fa";
 import Select from "react-select";
 import UGlobal from "../../../../../utils/api/UGlobal";
 
-export default function Step1PersonalData({
+const Step1PersonalData = ({
   formData,
   handleChange,
   errors,
   setFormData,
-}) {
+}) => {
   const [provinces, setProvinces] = useState([]);
   const [regencies, setRegencies] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [villages, setVillages] = useState([]);
-
-  const customStyles = {
-    control: (base, state) => ({
-      ...base,
-      borderRadius: "12px",
-      border: "1.5px solid #e2e8f0",
-      backgroundColor: "#f8fafc",
-      padding: "2px 6px",
-      minHeight: "45px",
-      fontSize: "14px",
-      boxShadow: state.isFocused ? "0 0 0 4px rgba(37, 99, 235, 0.1)" : "none",
-      borderColor: state.isFocused ? "#2563eb" : "#e2e8f0",
-      transition: "all 0.2s ease",
-      "&:hover": {
-        borderColor: state.isFocused ? "#2563eb" : "#cbd5e1",
-      },
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#94a3b8",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: "#1e293b",
-    }),
-    menu: (base) => ({
-      ...base,
-      borderRadius: "12px",
-      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e2e8f0",
-      overflow: "hidden",
-      zIndex: 9999,
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? "#2563eb"
-        : state.isFocused
-        ? "rgba(37, 99, 235, 0.08)"
-        : "transparent",
-      color: state.isSelected ? "#ffffff" : "#1e293b",
-      "&:active": {
-        backgroundColor: "#2563eb",
-      },
-    }),
-  };
 
   // Load Awal Provinsi
   useEffect(() => {
@@ -144,6 +98,23 @@ export default function Step1PersonalData({
     }
   };
 
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderRadius: "12px",
+      border: state.isFocused ? "1px solid #86b7fe" : "none",
+      boxShadow: state.isFocused ? "0 0 0 0.25rem rgba(13,110,253,.25)" : "0 .125rem .25rem rgba(0,0,0,.075)",
+      padding: "2px",
+      backgroundColor: "#fff",
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: "12px",
+      overflow: "hidden",
+      boxShadow: "0 .5rem 1rem rgba(0,0,0,.15)",
+    }),
+  };
+
   return (
     <div className="p-2">
       {/* SECTION 1: DATA IDENTITAS */}
@@ -159,7 +130,7 @@ export default function Step1PersonalData({
         </div>
       </div>
 
-      <div className="p-4 rounded-20 bg-light border-0 mb-4">
+      <div>
         <Row className="g-3">
           {/* NIK KTP */}
           <Col md={6}>
@@ -225,12 +196,14 @@ export default function Step1PersonalData({
         </div>
       </div>
 
-      <div className="p-4 rounded-20 bg-light border-0 mb-3">
+      <div>
         <Row className="mb-3 g-3">
+          {/* PROVINSI */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">Provinsi <span className="text-danger">*</span></Form.Label>
             <Select
-              styles={customStyles}
+              classNamePrefix="rs"
+              styles={selectStyles}
               options={provinces}
               placeholder="Pilih Provinsi..."
               onChange={handleProvinceSelect}
@@ -243,10 +216,12 @@ export default function Step1PersonalData({
               <div className="text-danger small mt-1">{errors.province_id}</div>
             )}
           </Col>
+          {/* KOTA / KABUPATEN */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">Kota / Kabupaten <span className="text-danger">*</span></Form.Label>
             <Select
-              styles={customStyles}
+              classNamePrefix="rs"
+              styles={selectStyles}
               options={regencies}
               placeholder="Pilih Kota..."
               isDisabled={!formData.province_id}
@@ -262,10 +237,12 @@ export default function Step1PersonalData({
         </Row>
 
         <Row className="mb-3 g-3">
+          {/* KECAMATAN */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">Kecamatan <span className="text-danger">*</span></Form.Label>
             <Select
-              styles={customStyles}
+              classNamePrefix="rs"
+              styles={selectStyles}
               options={districts}
               placeholder="Pilih Kecamatan..."
               isDisabled={!formData.city_id}
@@ -279,10 +256,12 @@ export default function Step1PersonalData({
               <div className="text-danger small mt-1">{errors.district_id}</div>
             )}
           </Col>
+          {/* KELURAHAN */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">Kelurahan <span className="text-danger">*</span></Form.Label>
             <Select
-              styles={customStyles}
+              classNamePrefix="rs"
+              styles={selectStyles}
               options={villages}
               placeholder="Pilih Kelurahan..."
               isDisabled={!formData.district_id}
@@ -305,6 +284,7 @@ export default function Step1PersonalData({
         </Row>
 
         <Row className="mb-3 g-3">
+          {/* RT */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">RT</Form.Label>
             <Form.Control
@@ -316,6 +296,7 @@ export default function Step1PersonalData({
               placeholder="Contoh: 001"
             />
           </Col>
+          {/* RW */}
           <Col md={6}>
             <Form.Label className="fw-bold small mb-2">RW</Form.Label>
             <Form.Control
@@ -329,25 +310,31 @@ export default function Step1PersonalData({
           </Col>
         </Row>
 
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold small mb-2">
-            Alamat Lengkap (Jalan / Blok / No) <span className="text-danger">*</span>
-          </Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            name="alamat_ktp"
-            value={formData.alamat_ktp || ""}
-            onChange={handleChange}
-            isInvalid={!!errors.alamat_ktp}
-            className="rounded-12 border-0 shadow-sm py-3 px-4"
-            placeholder="Contoh: Jl. Sudirman No. 123, Blok A5"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.alamat_ktp}
-          </Form.Control.Feedback>
-        </Form.Group>
+        {/* ALAMAT LENGKAP */}
+        <Row className="mb-3 g-3">
+          <Col xs={12}>
+            <Form.Group>
+              <Form.Label className="fw-bold small mb-2">
+                Alamat Lengkap (Jalan / Blok / No) <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="alamat_ktp"
+                value={formData.alamat_ktp || ""}
+                onChange={handleChange}
+                isInvalid={!!errors.alamat_ktp}
+                className="rounded-12 border-0 shadow-sm py-3 px-4"
+                placeholder="Contoh: Jl. Sudirman No. 123, Blok A5"
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.alamat_ktp}
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Col>
+        </Row>
 
+        {/* INFO TAMBAHAN */}
         <div className="alert alert-info d-flex align-items-center rounded-12 mt-4 mb-0 border-0 bg-white shadow-sm p-3">
           <FaInfoCircle className="text-primary me-2 flex-shrink-0" size={16} />
           <small className="text-muted">
@@ -358,4 +345,6 @@ export default function Step1PersonalData({
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(Step1PersonalData);

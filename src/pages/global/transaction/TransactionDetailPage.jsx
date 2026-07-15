@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Card, Row, Col, Badge, Button } from "react-bootstrap";
+import { Card, Row, Col, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaHistory, FaCheckCircle, FaTimesCircle, FaClock, FaInfoCircle, FaArrowLeft } from "react-icons/fa";
-import { MdShield } from "react-icons/md";
+import { FaHistory, FaCheckCircle, FaTimesCircle, FaClock, FaInfoCircle } from "react-icons/fa";
 
 import { jwtEncode } from "../../../utils/helpers";
 import USimpanan from "../../../utils/api/USimpanan";
@@ -199,6 +198,12 @@ const TransactionDetailPage = ({ decodedToken }) => {
 
     if (status === "REJECTED" || approvalStatus?.isRejected) {
       return <Badge bg="danger" className="rounded-pill px-3 py-2"><FaTimesCircle className="me-1" /> DITOLAK</Badge>;
+    }
+    if (status === "WITHDRAWAL_REQUESTED") {
+      return <Badge bg="info" className="rounded-pill px-3 py-2"><FaClock className="me-1" /> PENCAIRAN DIPROSES</Badge>;
+    }
+    if (status === "WITHDRAWN") {
+      return <Badge bg="success" className="rounded-pill px-3 py-2"><FaCheckCircle className="me-1" /> SUDAH DICAIRKAN</Badge>;
     }
     if (status === "COMPLETED" || status === "PAID" || status === "SUCCESS" || status === "APPROVED" || approvalStatus?.isApproved) {
       return <Badge bg="success" className="rounded-pill px-3 py-2"><FaCheckCircle className="me-1" /> DISETUJUI / SELESAI</Badge>;

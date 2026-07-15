@@ -6,7 +6,7 @@ import UBilling from "../../../../utils/api/UBilling";
 import { jwtEncode } from "../../../../utils/helpers";
 import { useBillingData } from "../hooks/useBillingData";
 import { useProfile } from "../../../../components/layout/contexts";
-import { FaFileInvoiceDollar, FaExclamationCircle, FaPlus, FaHistory, FaWallet, FaInfoCircle, FaClock, FaShieldAlt } from "react-icons/fa";
+import { FaFileInvoiceDollar, FaExclamationCircle, FaPlus, FaHistory, FaWallet, FaInfoCircle } from "react-icons/fa";
 
 import SummaryStats from "../components/SummaryStats";
 import PendingBillsTab from "../components/PendingBillsTab";
@@ -31,7 +31,7 @@ const BillingPage = ({ decodedToken }) => {
 
   const { bills, history, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, displayName } = useBillingData(decodedToken);
   const { userData } = useProfile();
-  const bankInfo = userData?.bank_info || null;
+  const bankInfo = userData?.bank_info || decodedToken?.bankInfo || null;
 
   const safeBills = Array.isArray(bills) ? bills : [];
   const pendingCount = safeBills.length;
@@ -197,7 +197,7 @@ const BillingPage = ({ decodedToken }) => {
 
       {/* ── Hero Header ── */}
       <div className="bp-hero">
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+        <div className="d-flex align-items-start gap-3">
           <div className="bp-hero-icon">
             {categoryName === "TABUNGAN_DEPOSIT" || categoryName?.toUpperCase().includes("SUKARELA") ? (
               <FaWallet size={24} color="#fff" />
@@ -219,7 +219,7 @@ const BillingPage = ({ decodedToken }) => {
         </div>
 
         {loadingData ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 20, color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
+          <div className="d-flex align-items-center gap-2 mt-3 text-white-50 small">
             <Spinner animation="border" size="sm" />
             Memuat data...
           </div>
@@ -263,8 +263,18 @@ const BillingPage = ({ decodedToken }) => {
               {activeTab === "pending" && (
                 <div className="bp-card">
                   {(isSukarela && pendingCount === 0) ? (
-                    <div style={{ padding: 20 }}>
+                    <div className="p-3 p-md-4">
                       <SukarelaForm
+                        title={
+                          categoryName === "TABUNGAN_DEPOSIT" 
+                            ? `Setoran ${tabunganDetail?.target_name || tabunganDetail?.category || "Tabungan"}` 
+                            : "Setoran Sukarela"
+                        }
+                        subtitle={
+                          categoryName === "TABUNGAN_DEPOSIT"
+                            ? "Masukkan jumlah setoran tabungan yang diinginkan"
+                            : "Masukkan jumlah nominal yang ingin Anda setorkan"
+                        }
                         customAmount={customAmount}
                         setCustomAmount={setCustomAmount}
                         handleNavigateToInvoice={handlePay}

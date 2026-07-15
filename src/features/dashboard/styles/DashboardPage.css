@@ -118,12 +118,32 @@
 /* ============================================= */
 .dc-steps {
   margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  display: flex;
+  overflow-x: auto;
+  flex-wrap: nowrap;
   gap: 12px;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.dc-steps::-webkit-scrollbar {
+  height: 4px;
+}
+
+.dc-steps::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dc-steps::-webkit-scrollbar-thumb {
+  background: rgba(3, 27, 90, 0.2);
+  border-radius: 4px;
 }
 
 .dc-step {
+  flex: 0 0 130px;
+  scroll-snap-align: start;
   padding: 16px;
   border-radius: var(--dc-radius-md);
   text-align: center;
@@ -587,34 +607,10 @@
 }
 
 @media (max-width: 576px) {
-  .dc-steps {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 12px;
-    padding-bottom: 12px;
-    margin-top: 16px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
-
-  .dc-steps::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .dc-steps::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .dc-steps::-webkit-scrollbar-thumb {
-    background: rgba(3, 27, 90, 0.2);
-    border-radius: 4px;
-  }
+    /* Inherited from global .dc-steps now */
 
   .dc-step {
     flex: 0 0 130px;
-    scroll-snap-align: start;
     padding: 12px;
     border-radius: var(--dc-radius-sm);
   }
@@ -655,5 +651,489 @@
 
   .dc-train-card {
     padding: 16px;
+  }
+}
+
+/* ============================================= */
+/* Main Menu Section */
+/* ============================================= */
+.dc-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 4px;
+}
+
+@media (min-width: 992px) {
+  .dc-menu-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.dc-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  border-radius: 16px;
+}
+
+.dc-menu-item:not(.is-disabled):hover {
+  transform: translateY(-5px);
+}
+
+.dc-menu-item:not(.is-disabled):hover .dc-menu-icon-wrapper {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.dc-menu-item.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dc-menu-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.dc-menu-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .dc-menu-grid {
+    gap: 12px;
+  }
+  .dc-menu-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+  .dc-menu-label {
+    font-size: 11px;
+  }
+}
+
+/* ============================================= */
+/* Tagihan Section */
+/* ============================================= */
+.dc-bill-section {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.dc-bill-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px;
+  cursor: grab;
+}
+
+.dc-bill-scroll-container:active {
+  cursor: grabbing;
+}
+
+/* Styled scrollbar for better visibility */
+.dc-bill-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.dc-bill-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.dc-bill-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.dc-bill-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dc-bill-scroll-content {
+  display: flex;
+  padding: 0 16px;
+  gap: 16px;
+  width: max-content; /* Ensure content doesn't wrap and forces scroll */
+}
+
+.dc-bill-item-wrapper {
+  flex: 0 0 240px;
+  width: 240px;
+}
+
+.dc-bill-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dc-bill-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: #e2e8f0;
+}
+
+.dc-bill-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dc-bill-icon-bg {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc-bill-type {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dc-bill-card-body {
+  flex-grow: 1;
+  margin-bottom: 16px;
+}
+
+.dc-bill-desc {
+  display: block;
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dc-bill-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.dc-bill-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px dashed #f1f5f9;
+  color: #2563eb;
+}
+
+.dc-bill-action-text {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dc-bill-summary-card {
+  background: #fff5f5;
+  border: 1px solid #fee2e2;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.dc-summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc-empty-bill-card {
+  background: #f0fdf4;
+  border: 1px dashed #bbf7d0;
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.dc-empty-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.dc-bill-card.skeleton {
+  pointer-events: none;
+  min-height: 160px;
+}
+
+@media (max-width: 576px) {
+  .dc-bill-item-wrapper {
+    flex: 0 0 220px;
+    width: 220px;
+  }
+  .dc-bill-card {
+    padding: 16px;
+  }
+  .dc-bill-amount {
+    font-size: 16px;
+  }
+}
+
+/* ============================================= */
+/* Training Card Section */
+/* ============================================= */
+.dc-training-section {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.dc-section-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc-train-card-v2 {
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  border: 1px solid #f1f5f9 !important;
+}
+
+.dc-train-card-v2:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.1) !important;
+  border-color: #e2e8f0 !important;
+}
+
+.dc-badge-program {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dc-badge-program.wajib {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.dc-badge-program.pilihan {
+  background: #f0fdfa;
+  color: #0d9488;
+}
+
+.dc-status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.dc-train-code {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+
+.dc-train-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.4;
+  min-height: 44px;
+}
+
+.dc-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dc-btn-primary {
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dc-btn-secondary {
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  border-color: #e2e8f0;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.dc-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+@media (max-width: 576px) {
+  .dc-train-title {
+    font-size: 15px;
+    min-height: auto;
+  }
+}
+
+/* ============================================= */
+/* Article Card Section */
+/* ============================================= */
+.dc-article-section {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.dc-article-row-v2 {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dc-article-row-v2:last-child {
+  border-bottom: none;
+}
+
+.dc-article-row-v2:hover {
+  background-color: #f8fafc;
+}
+
+.dc-article-row-v2:hover .dc-article-title {
+  color: #2563eb;
+}
+
+.dc-article-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.dc-article-body {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.dc-article-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.dc-article-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dc-article-meta {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.dc-read-more {
+  color: #2563eb;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.dc-article-row-v2:hover .dc-read-more {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+  .dc-article-row-v2 {
+    padding: 16px;
+    gap: 16px;
+  }
+  .dc-article-thumb {
+    width: 64px;
+    height: 64px;
+  }
+  .dc-article-title {
+    font-size: 14px;
+  }
+  .dc-read-more {
+    display: none;
   }
 }

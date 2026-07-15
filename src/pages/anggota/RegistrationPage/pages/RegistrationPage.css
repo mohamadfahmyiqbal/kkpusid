@@ -178,3 +178,32 @@
   .rp-stepper-container { padding: 12px 16px; }
   .rp-step-label { display: none; }
 }
+
+/* ---- Utility classes for content spacing and typography ---- */
+.rp-loading-container {
+  min-height: 60vh;
+}
+
+.rp-section-title {
+  font-size: 15px;
+  color: #111827;
+}
+
+.rp-section-desc {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.rp-section-content {
+  padding-left: 68px;
+}
+
+.rp-bantuan-title {
+  font-size: 14px;
+  color: #111827;
+}
+
+.rp-bantuan-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+}

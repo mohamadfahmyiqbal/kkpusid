@@ -9,11 +9,13 @@ import React, {
 } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
+import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import { 
   MdAccountBalance, 
   MdGroup, 
-  MdInfoOutline
+  MdInfoOutline,
+  MdVisibility
 } from "react-icons/md";
 
 import ProgramAccountCard from "../../components/program/ProgramAccountCard";
@@ -128,6 +130,7 @@ export default function ProgramPage() {
         status: raw.status,
         isPending: raw.is_pending,
         isApproved: raw.is_approved,
+        isLunas: raw.is_lunas,
         statusLabel: raw.status_label || (raw.is_approved ? "Aktif" : "Menunggu Approval"),
         financingId: raw.financing_id,
       };
@@ -241,7 +244,7 @@ export default function ProgramPage() {
       return (
         <div className="animate-fade-in">
           <ProgramStatusCard
-            title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman"}`}
+            title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman Lunak"}`}
             message="Pengajuan menunggu approval"
             buttonText="Lihat Detail Pengajuan"
             onButtonClick={handlePengajuan}
@@ -255,12 +258,56 @@ export default function ProgramPage() {
       return (
         <div className="animate-fade-in">
           <ProgramStatusCard
-            title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman"}`}
-            message={`Selamat! Transaksi ${activeTab} Anda sebelumnya telah lunas. Anda dapat mengajukan yang baru sekarang.`}
+            title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman Lunak"}`}
+            message={`Selamat! Transaksi ${activeTab === "pinjaman" ? "pinjaman lunak" : activeTab} Anda sebelumnya telah lunas. Anda dapat mengajukan yang baru sekarang.`}
             buttonText={activeTab === "arisan" ? "Daftar Arisan Baru" : "Pengajuan Pinjaman Baru"}
             onButtonClick={handlePengajuan}
             variant="empty"
           />
+          <div className="mt-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h5 className="fw-bold text-dark mb-1 font-outfit">
+                  {activeTab === "arisan" ? (
+                    <><MdGroup className="me-2 text-primary" size={22} /> Riwayat Arisan</>
+                  ) : (
+                    <><MdAccountBalance className="me-2 text-primary" size={22} /> Riwayat Pinjaman</>
+                  )}
+                </h5>
+                <p className="text-muted small mb-0">
+                  Riwayat transaksi Anda yang telah lunas
+                </p>
+              </div>
+            </div>
+            <div className="table-responsive">
+              <Table hover className="align-middle bg-white rounded-3 overflow-hidden shadow-sm text-sm">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Nama Program</th>
+                    <th>No. Peserta / Akad</th>
+                    <th>Tanggal Buka</th>
+                    <th>Total Saldo</th>
+                    <th>Status</th>
+                    <th className="text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="fw-medium">{activeData.produk}</td>
+                    <td>{activeData.akad}</td>
+                    <td>{activeData.tanggalBuka}</td>
+                    <td className="fw-bold text-success">{activeData.saldoAkhir}</td>
+                    <td><span className="badge bg-secondary">Closed</span></td>
+                    <td className="text-center">
+                      <Button variant="light" size="sm" onClick={handleDetail} className="text-primary border-0 rounded-circle p-2 shadow-sm" title="Lihat Detail">
+                        <MdVisibility size={18} />
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </div>
         </div>
       );
     }
@@ -281,8 +328,8 @@ export default function ProgramPage() {
     return (
       <div className="animate-fade-in">
         <ProgramStatusCard
-          title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman"}`}
-          message={`Anda belum memiliki transaksi ${activeTab} yang aktif.`}
+          title={`Informasi ${activeTab === "arisan" ? "Arisan" : "Pinjaman Lunak"}`}
+          message={`Anda belum memiliki transaksi ${activeTab === "pinjaman" ? "pinjaman lunak" : activeTab} yang aktif.`}
           buttonText={activeTab === "arisan" ? "Daftar Sekarang" : "Pengajuan Pinjaman Baru"}
           onButtonClick={handlePengajuan}
           variant="empty"

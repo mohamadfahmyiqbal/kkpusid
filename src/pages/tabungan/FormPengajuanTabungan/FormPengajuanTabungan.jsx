@@ -3,20 +3,21 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo
 } from "react";
 import {
-  Card,
   Form,
-  Button,
   Spinner,
-  
   ProgressBar,
   Row,
   Col,
-  Container} from "react-bootstrap";
+  Container
+} from "react-bootstrap";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import { FaKaaba, FaGraduationCap, FaUtensils, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaKaaba, FaGraduationCap, FaUtensils, FaExclamationTriangle } from "react-icons/fa";
 import { TabunganService } from "../../../services/tabungan.service";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "../../../components/layout/contexts";
@@ -40,7 +41,8 @@ const FormPengajuanTabungan = () => {
 
   const [programData, setProgramData] = useState(null);
   const [formData, setFormData] = useState({
-    setoranAwal: "",
+    monthly_deposit: "",
+    term_months: "",
     akadAgreed: false,
   });
   const [errors, setErrors] = useState({});
@@ -80,11 +82,23 @@ const FormPengajuanTabungan = () => {
       const rawValue = parseCurrency(e.target.value);
       setFormData((prev) => ({
         ...prev,
-        setoranAwal: rawValue,
+        monthly_deposit: rawValue,
       }));
-      setErrors((prev) => ({ ...prev, setoranAwal: "" }));
+      setErrors((prev) => ({ ...prev, monthly_deposit: "" }));
     },
     [parseCurrency]
+  );
+
+  const handleTermChange = useCallback(
+    (e) => {
+      const val = e.target.value.replace(/\D/g, "");
+      setFormData((prev) => ({
+        ...prev,
+        term_months: val,
+      }));
+      setErrors((prev) => ({ ...prev, term_months: "" }));
+    },
+    []
   );
 
   const handleAkadChange = useCallback((e) => {
@@ -94,12 +108,23 @@ const FormPengajuanTabungan = () => {
     }));
   }, []);
 
+  const calculatedTarget = useMemo(() => {
+    const deposit = parseInt(formData.monthly_deposit, 10) || 0;
+    const term = parseInt(formData.term_months, 10) || 0;
+    return deposit * term;
+  }, [formData.monthly_deposit, formData.term_months]);
+
   const validateForm = useCallback(() => {
     const newErrors = {};
-    const setoran = parseInt(formData.setoranAwal.replace(/\D/g, ""), 10) || 0;
+    const setoran = parseInt(formData.monthly_deposit, 10) || 0;
+    const term = parseInt(formData.term_months, 10) || 0;
     
     if (setoran <= 0) {
-      newErrors.setoranAwal = "Setoran awal harus lebih dari 0";
+      newErrors.monthly_deposit = "Setoran bulanan harus lebih dari 0";
+    }
+
+    if (term <= 0) {
+      newErrors.term_months = "Durasi harus lebih dari 0";
     }
 
     if (!formData.akadAgreed) {
@@ -108,7 +133,7 @@ const FormPengajuanTabungan = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, programData, formatCurrency]);
+  }, [formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,7 +146,8 @@ const FormPengajuanTabungan = () => {
     try {
       const payload = {
         saving_target_id: programData.saving_target_id,
-        setoranAwal: parseInt(formData.setoranAwal.replace(/\D/g, ""), 10),
+        monthly_deposit: parseInt(formData.monthly_deposit, 10),
+        term_months: parseInt(formData.term_months, 10),
       };
 
       const response = await TabunganService.submitApplication(payload);
@@ -130,9 +156,9 @@ const FormPengajuanTabungan = () => {
 
       const mappedData = {
         id: applicationId,
-        amount: programData.target_amount,
-        item_price: payload.setoranAwal,
-        cooperation_months: programData.term_months,
+        amount: calculatedTarget,
+        item_price: payload.monthly_deposit,
+        cooperation_months: payload.term_months,
         purpose: programData.target_name,
         item_name: programData.target_name,
         account_type: "Simpanan Target",
@@ -155,8 +181,8 @@ const FormPengajuanTabungan = () => {
         catalog: {
           target_name: programData.target_name,
           category: programData.category,
-          target_amount: programData.target_amount,
-          term_months: programData.term_months
+          target_amount: calculatedTarget,
+          term_months: payload.term_months
         }
       };
 
@@ -205,7 +231,7 @@ const FormPengajuanTabungan = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card className="premium-form-card border-0 p-3 p-md-4 mb-4 shadow-sm">
+                <Card variant="form" className="p-3 p-md-4 mb-4">
                   <Card.Body>
                     <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                       <div className="p-3 rounded-circle bg-primary bg-opacity-10 text-primary me-3">
@@ -231,52 +257,78 @@ const FormPengajuanTabungan = () => {
                     </div>
 
                     <Row className="mb-4">
-                      <Col md={6}>
+                      <Col md={12}>
                         <div className="p-3 bg-light rounded-3 mb-3 mb-md-0 border">
-                          <span className="small text-muted d-block mb-1">Target Nominal</span>
-                          <span className="fw-bold text-dark fs-5">Rp {formatCurrency(programData.target_amount)}</span>
-                        </div>
-                      </Col>
-                      <Col md={6}>
-                        <div className="p-3 bg-light rounded-3 border">
-                          <span className="small text-muted d-block mb-1">Durasi Program (Tenor)</span>
-                          <span className="fw-bold text-dark fs-5">{programData.term_months} Bulan</span>
+                          <span className="small text-muted d-block mb-1">Target Nominal (Otomatis dari Setoran Bulanan × Durasi)</span>
+                          <span className="fw-bold text-dark fs-5">Rp {formatCurrency(calculatedTarget)}</span>
                         </div>
                       </Col>
                     </Row>
 
-                    <Form.Group className="mb-4 custom-input-group">
-                      <Form.Label className="form-label d-flex align-items-center fw-semibold">
-                        Setoran Awal
-                        <span className="text-danger ms-1">*</span>
-                      </Form.Label>
-                      <Form.Control
-                        ref={firstInputRef}
-                        type="text"
-                        name="setoranAwal"
-                        value={formData.setoranAwal ? `Rp ${formatCurrency(formData.setoranAwal)}` : ""}
-                        onChange={handleSetoranChange}
-                        placeholder="Contoh: Rp 500.000"
-                        className={`custom-flat-input ${errors.setoranAwal ? "border-danger error-shake" : ""}`}
-                        isInvalid={!!errors.setoranAwal}
-                        disabled={loading}
-                        inputMode="numeric"
-                      />
-                      <AnimatePresence>
-                        {errors.setoranAwal && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                            <Form.Control.Feedback type="invalid" className="d-block mt-1">
-                              <small className="text-danger fw-bold">{errors.setoranAwal}</small>
-                            </Form.Control.Feedback>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Form.Group>
+                    <Row className="mb-4">
+                      <Col md={6}>
+                        <Form.Group className="custom-input-group">
+                          <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                            Setoran Bulanan
+                            <span className="text-danger ms-1">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            ref={firstInputRef}
+                            type="text"
+                            name="monthly_deposit"
+                            value={formData.monthly_deposit ? `Rp ${formatCurrency(formData.monthly_deposit)}` : ""}
+                            onChange={handleSetoranChange}
+                            placeholder="Contoh: Rp 500.000"
+                            className={`custom-flat-input ${errors.monthly_deposit ? "border-danger error-shake" : ""}`}
+                            isInvalid={!!errors.monthly_deposit}
+                            disabled={loading}
+                            inputMode="numeric"
+                          />
+                          <AnimatePresence>
+                            {errors.monthly_deposit && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                                <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                                  <small className="text-danger fw-bold">{errors.monthly_deposit}</small>
+                                </Form.Control.Feedback>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="custom-input-group">
+                          <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                            Durasi Program (Bulan)
+                            <span className="text-danger ms-1">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="term_months"
+                            value={formData.term_months}
+                            onChange={handleTermChange}
+                            placeholder="Contoh: 12"
+                            className={`custom-flat-input ${errors.term_months ? "border-danger error-shake" : ""}`}
+                            isInvalid={!!errors.term_months}
+                            disabled={loading}
+                            inputMode="numeric"
+                          />
+                          <AnimatePresence>
+                            {errors.term_months && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                                <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                                  <small className="text-danger fw-bold">{errors.term_months}</small>
+                                </Form.Control.Feedback>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </Form.Group>
+                      </Col>
+                    </Row>
                   </Card.Body>
                 </Card>
 
                 {/* Akad details card */}
-                <Card className="premium-form-card border-0 p-3 p-md-4 shadow-sm">
+                <Card variant="form" className="p-3 p-md-4">
                   <Card.Body>
                     <div className="form-section-header">
                       <h6 className="fw-bold font-outfit mb-0 text-dark">
@@ -308,7 +360,7 @@ const FormPengajuanTabungan = () => {
                   <div className="p-4 bg-white rounded-bottom-4 shadow-sm">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <span className="text-muted small fw-bold">Durasi Program</span>
-                      <span className="fw-bold fs-5 text-primary">{programData.term_months} Bulan</span>
+                      <span className="fw-bold fs-5 text-primary">{formData.term_months || 0} Bulan</span>
                     </div>
                     <ProgressBar
                       now={100}
@@ -318,13 +370,13 @@ const FormPengajuanTabungan = () => {
                     />
                     <div className="d-flex justify-content-between mt-3 pt-3 border-top">
                       <span className="text-muted small">Target Terkumpul</span>
-                      <span className="fw-bold">Rp {formatCurrency(programData.target_amount)}</span>
+                      <span className="fw-bold">Rp {formatCurrency(calculatedTarget)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Agreement Checkboxes */}
-                <Card className="premium-form-card border-0 p-4 shadow-sm">
+                <Card variant="form" className="p-4">
                   <div className="form-section-header mb-3">
                     <h6 className="fw-bold font-outfit mb-0 text-dark">
                       Pernyataan Persetujuan
@@ -350,17 +402,14 @@ const FormPengajuanTabungan = () => {
                 {/* Action Button */}
                 <div className="d-grid gap-2">
                   <Button
+                    variant="form"
                     type="submit"
-                    disabled={loading || !formData.akadAgreed}
-                    className="btn-submit-premium w-100 d-flex flex-column align-items-center justify-content-center py-3 shadow-md border-0"
-                    style={{ background: 'var(--primary-color, #0d6efd)' }}
+                    isLoading={loading}
+                    loadingText="Memproses Pengajuan..."
+                    disabled={!formData.akadAgreed}
+                    className="w-100 d-flex flex-column align-items-center justify-content-center py-3"
                   >
-                    {loading ? (
-                      <div className="d-flex align-items-center gap-2">
-                        <Spinner animation="border" size="sm" variant="light" />
-                        <span className="fw-bold">Memproses Pengajuan...</span>
-                      </div>
-                    ) : (
+                    {!loading && (
                       <>
                         <span className="fw-bold" style={{ fontSize: "16px" }}>Ajukan Sekarang</span>
                         <small className="opacity-75" style={{ fontSize: "11px" }}>Konfirmasi Pembukaan Rekening</small>

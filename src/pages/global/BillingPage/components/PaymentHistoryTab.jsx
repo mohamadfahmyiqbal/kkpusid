@@ -3,17 +3,97 @@ import {
   FaCheckCircle,
   FaHistory,
   FaDownload,
-  FaChevronLeft,
-  FaChevronRight,
   FaEye,
 } from "react-icons/fa";
 import { formatIDR, formatDate, formatInvoiceNumber, ITEMS_PER_PAGE } from "./utils";
+import DataTable from "../../../../components/ui/DataTable";
 
 function PaymentHistoryTab({ history, onViewInvoice }) {
   const safeHistory = useMemo(() => (Array.isArray(history) ? history : []), [history]);
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(safeHistory.length / ITEMS_PER_PAGE));
   const pageItems = safeHistory.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+  const columns = [
+    {
+      header: "No. Invoice",
+      render: (item) => {
+        const billId = item.bill_item_id || item.id;
+        const dateObj = item.bill?.updatedAt || item.bill?.updated_at || item.updated_at || item.updatedAt || item.created_at || item.createdAt;
+        return (
+          <>
+            <div className="bp-inv-number">
+              {billId ? formatInvoiceNumber(billId, dateObj) : "-"}
+            </div>
+            <div style={{ fontSize: 10, color: "#6b7280" }}>
+              {dateObj
+                ? new Date(dateObj).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB"
+                : ""}
+            </div>
+          </>
+        );
+      }
+    },
+    {
+      header: "Jenis Tagihan",
+      render: (item) => {
+        const title = item.type?.type_name || "Tagihan";
+        const subTitle = item.category_code?.replace(/_/g, " ") || "Pembayaran";
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="bp-type-icon" style={{ background: "#f0fdf4" }}>
+              <FaCheckCircle size={13} color="#10b981" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 12 }}>
+                {title}
+              </div>
+              <div style={{ fontSize: 10, color: "#6b7280" }}>
+                {item.description || subTitle}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      header: "Tanggal Bayar",
+      render: (item) => {
+        const dateObj = item.bill?.updatedAt || item.bill?.updated_at || item.updated_at || item.updatedAt || item.created_at || item.createdAt;
+        return <span style={{ fontSize: 12 }}>{formatDate(dateObj)}</span>;
+      }
+    },
+    {
+      header: "Jumlah",
+      render: (item) => <span style={{ fontWeight: 700, fontSize: 13 }}>{formatIDR(item.amount)}</span>
+    },
+    {
+      header: "Status",
+      render: () => <span className="bp-badge bp-badge-paid">Lunas</span>
+    },
+    {
+      header: "Aksi",
+      render: (item) => {
+        const billId = item.bill_item_id || item.id;
+        return (
+          <div style={{ display: "flex", gap: 4 }}>
+            <button className="bp-btn-download">
+              <FaDownload size={10} />
+              Unduh
+            </button>
+            {onViewInvoice && (
+              <button
+                className="bp-btn-invoice"
+                onClick={() => onViewInvoice(billId)}
+              >
+                <FaEye size={10} /> Invoice
+              </button>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
 
   if (safeHistory.length === 0) {
     return (
@@ -37,96 +117,19 @@ function PaymentHistoryTab({ history, onViewInvoice }) {
       </div>
 
       <div className="bp-table-wrap">
-        <table className="bp-table">
-          <thead>
-            <tr>
-              <th>No. Invoice</th>
-              <th>Jenis Tagihan</th>
-              <th>Tanggal Bayar</th>
-              <th>Jumlah</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageItems.map((item, idx) => {
-              const billId = item.bill_item_id || item.id;
-              const dateObj = item.bill?.updatedAt || item.bill?.updated_at || item.updated_at || item.updatedAt || item.created_at || item.createdAt;
-              const title = item.type?.type_name || "Tagihan";
-              const subTitle = item.category_code?.replace(/_/g, " ") || "Pembayaran";
-
-              return (
-                <tr key={billId || idx}>
-                  <td>
-                    <div className="bp-inv-number">
-                      {billId ? formatInvoiceNumber(billId, dateObj) : "-"}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#6b7280" }}>
-                      {dateObj
-                        ? new Date(dateObj).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB"
-                        : ""}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div className="bp-type-icon" style={{ background: "#f0fdf4" }}>
-                        <FaCheckCircle size={13} color="#10b981" />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 12 }}>
-                          {title}
-                        </div>
-                        <div style={{ fontSize: 10, color: "#6b7280" }}>
-                          {item.description || subTitle}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 12 }}>{formatDate(dateObj)}</td>
-                  <td style={{ fontWeight: 700, fontSize: 13 }}>{formatIDR(item.amount)}</td>
-                  <td>
-                    <span className="bp-badge bp-badge-paid">Lunas</span>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button className="bp-btn-download">
-                        <FaDownload size={10} />
-                        Unduh
-                      </button>
-                      {onViewInvoice && (
-                        <button
-                          className="bp-btn-invoice"
-                          onClick={() => onViewInvoice(billId)}
-                        >
-                          <FaEye size={10} /> Invoice
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="bp-pagination">
-        <span className="bp-page-info">
-          Menampilkan {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, safeHistory.length)} dari {safeHistory.length} transaksi
-        </span>
-        <div className="bp-page-buttons">
-          <button className="bp-page-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-            <FaChevronLeft size={10} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i + 1} className={`bp-page-btn ${page === i + 1 ? "active" : ""}`} onClick={() => setPage(i + 1)}>
-              {i + 1}
-            </button>
-          ))}
-          <button className="bp-page-btn" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-            <FaChevronRight size={10} />
-          </button>
-        </div>
+        <DataTable
+          columns={columns}
+          data={pageItems}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            onPageChange: setPage,
+            totalItems: safeHistory.length,
+            itemsPerPage: ITEMS_PER_PAGE
+          }}
+          hover={false}
+          responsive={false}
+        />
       </div>
     </div>
   );

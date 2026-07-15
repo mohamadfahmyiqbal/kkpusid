@@ -3,8 +3,6 @@ import {
   Card,
   Button,
   Form,
-  Row,
-  Col,
   Container,
   InputGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";

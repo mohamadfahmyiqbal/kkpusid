@@ -11,13 +11,11 @@ import {
   Tabs,
   Tab,
   Form,
-  ListGroup,
-  ProgressBar} from "react-bootstrap";
+  ListGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
 import {
-  FaBook,
   FaEdit,
   FaDownload,
   FaFileAlt,

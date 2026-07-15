@@ -1,10 +1,9 @@
 import React from "react";
-import { ListGroup, Row, Col, Alert, Button, Form } from "react-bootstrap";
+import { Row, Col, Button, Form } from "react-bootstrap";
 import {
   FaEdit,
   FaClipboardCheck,
   FaInfoCircle,
-  FaCheckCircle,
   FaUser,
   FaCamera,
   FaUserCircle,
@@ -15,11 +14,11 @@ import {
 import PhotoDisplay from "./PhotoDisplay";
 
 const DetailItem = ({ label, value }) => (
-  <div className="d-flex justify-content-between align-items-center py-2 px-1 border-bottom border-light">
-    <span className="text-muted small fw-medium">{label}</span>
+  <div className="d-flex justify-content-between align-items-center py-2 px-1 border-bottom border-light flex-wrap">
+    <span className="text-muted small fw-medium me-2">{label}</span>
     <span
-      className="fw-semibold text-dark text-end small"
-      style={{ maxWidth: "60%" }}
+      className="fw-semibold text-dark text-end small text-break"
+      style={{ maxWidth: "100%", flex: "1 1 auto", textAlign: "right" }}
     >
       {value || "-"}
     </span>
@@ -27,8 +26,8 @@ const DetailItem = ({ label, value }) => (
 );
 
 const SectionWrapper = ({ title, icon: Icon, onEdit, children }) => (
-  <div className="bg-white rounded-20 border shadow-sm p-4 mb-4 h-100 d-flex flex-column" style={{ borderColor: "#f1f5f9" }}>
-    <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+  <div className="bg-white rounded-20 border shadow-sm p-2 p-md-3 mb-3 h-100 d-flex flex-column" style={{ borderColor: "#f1f5f9" }}>
+    <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
       <h6 className="fw-bold mb-0 text-dark d-flex align-items-center" style={{ fontSize: "14px" }}>
         <span className="bg-soft-primary text-primary rounded-8 p-2 me-2 d-inline-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
           <Icon size={14} />
@@ -51,7 +50,7 @@ const SectionWrapper = ({ title, icon: Icon, onEdit, children }) => (
   </div>
 );
 
-export default function Step8Summary({
+export default React.memo(function Step8Summary({
   formData,
   handleEditStep,
   isCommitmentChecked,
@@ -186,9 +185,9 @@ export default function Step8Summary({
       </Row>
 
       {/* PERSETUJUAN */}
-      <div className="mt-4 p-4 rounded-20 bg-white border shadow-sm" style={{ borderColor: "#f1f5f9" }}>
-        <div className="border-start border-4 border-info rounded-12 shadow-sm p-3 mb-4 bg-white d-flex align-items-start">
-          <FaInfoCircle className="text-info me-3 mt-1 flex-shrink-0" size={18} />
+      <div className="mt-3 p-2 p-md-3 rounded-20 bg-white border shadow-sm" style={{ borderColor: "#f1f5f9" }}>
+        <div className="border-start border-4 border-info rounded-12 shadow-sm p-2 p-md-3 mb-3 bg-white d-flex align-items-start">
+          <FaInfoCircle className="text-info me-2 mt-1 flex-shrink-0" size={16} />
           <div className="small text-muted" style={{ lineHeight: "1.6" }}>
             Dengan menekan tombol <strong>Kirim Sekarang</strong>, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh Anggaran Dasar serta Anggaran Rumah Tangga (AD/ART) Koperasi Paguyuban Usaha Sukses.
           </div>
@@ -205,9 +204,9 @@ export default function Step8Summary({
           style={{ cursor: "pointer" }}
           checked={isCommitmentChecked}
           onChange={(e) => setIsCommitmentChecked(e.target.checked)}
-          className="p-3 bg-light rounded-12 border border-light shadow-sm d-flex align-items-center"
+          className="p-2 p-md-3 bg-white rounded-12 border shadow-sm d-flex align-items-center"
         />
       </div>
     </div>
   );
-}
+});

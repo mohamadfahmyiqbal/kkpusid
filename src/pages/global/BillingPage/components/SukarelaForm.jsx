@@ -9,6 +9,8 @@ const SukarelaForm = ({
   setCustomAmount,
   handleNavigateToInvoice,
   isSubmitting,
+  title = "Setoran Sukarela",
+  subtitle = "Masukkan jumlah nominal yang ingin Anda setorkan"
 }) => {
   const handleChange = useCallback(
     (e) => {
@@ -29,9 +31,9 @@ const SukarelaForm = ({
         <div className="bp-sukarela-icon mb-3">
           <FaDonate size={24} />
         </div>
-        <h5 className="fw-bold mb-1">Setoran Sukarela</h5>
+        <h5 className="fw-bold mb-1">{title}</h5>
         <p className="text-muted small mb-0">
-          Masukkan jumlah nominal yang ingin Anda setorkan
+          {subtitle}
         </p>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Container, Spinner,  Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaExclamationTriangle, FaArrowLeft } from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 // Components
@@ -22,6 +22,7 @@ const InvoicePage = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocalPaid, setIsLocalPaid] = useState(false);
+  const [paymentInstruction, setPaymentInstruction] = useState(null);
 
   const {
     billData,
@@ -137,9 +138,9 @@ const InvoicePage = () => {
     navigate(`/${returnPage}`);
   }, [navigate, returnPage, registrationId, categoryName, product, id, isPaid, isRegistrationFlow, isSimpananFlow, isPelunasan, originalReturn, category, financingId, productName]);
 
-  const handlePay = async () => {
-    if (!window.snap) {
-      Swal.fire({ title: 'Perhatian', text: "Sistem pembayaran belum siap. Mohon refresh halaman.", icon: 'warning' });
+  const handlePay = async (selectedMethod) => {
+    if (!selectedMethod) {
+      Swal.fire({ title: 'Perhatian', text: "Silakan pilih metode pembayaran.", icon: 'warning' });
       return;
     }
 
@@ -160,7 +161,8 @@ const InvoicePage = () => {
       const response = await UBilling.createMidtransTransaction({
         bill_item_ids: billItemIds,
         amount: totalAmount,
-        financing_id: financingId, // Tambahkan financingId agar backend bisa melakukan mapping pelunasan
+        financing_id: financingId,
+        payment_type: selectedMethod,
         tx_category:
           category === "SUKARELA"
             ? "SAVINGS_DEPOSIT"
@@ -184,60 +186,12 @@ const InvoicePage = () => {
         
         startPolling();
 
-        window.snap.pay(response.data.data.snapToken, {
-          onSuccess: async (result) => {
-            clearTimeout(safetyTimeout);
-
-            setIsLocalPaid(true); // Set local paid status immediately for instant success UI
-            
-            // Tutup popup snap secepatnya agar pengguna tidak menunggu sync selesai
-            if (window.snap && window.snap.hide) {
-              window.snap.hide();
-            } else {
-              const snapEl = document.getElementById('snap-midtrans');
-              if (snapEl) {
-                snapEl.style.display = 'none'; // Sembunyikan saja dulu untuk menghindari error postMessage
-                setTimeout(() => snapEl.remove(), 2000); // Hapus setelah aman
-              }
-            }
-            
-            // Lakukan sinkronisasi manual ke backend karena webhook mungkin gagal (terutama di localhost)
-            try {
-              if (result.order_id) {
-                await UBilling.syncMidtransStatus(result.order_id);
-              }
-              // ✅ Tambahkan pemicu sinkronisasi laporan untuk summary & jual beli
-              await UBilling.manualSyncSummary();
-            } catch (syncErr) {
-              console.error("Gagal melakukan sinkronisasi status transaksi:", syncErr);
-            }
-
-            startPolling(); // Keep polling to verify payment receipt in the DB
-            await refreshData();
-            setIsProcessing(false);
-            window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
-            window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
-          },
-          onPending: (result) => {
-            clearTimeout(safetyTimeout);
-
-            startPolling(); // Start polling to watch for status changes
-            refreshData();
-            setIsProcessing(false);
-          },
-          onClose: () => {
-            clearTimeout(safetyTimeout);
-
-            setIsProcessing(false);
-            refreshData();
-          },
-          onError: (result) => {
-            clearTimeout(safetyTimeout);
-            console.error("❌ Midtrans onError:", result);
-            setIsProcessing(false);
-            stopPolling();
-          },
-        });
+        
+        if (response.data.data.midtransResponse) {
+          setPaymentInstruction(response.data.data.midtransResponse);
+        }
+        
+        setIsProcessing(false);
       }
     } catch (err) {
       clearTimeout(safetyTimeout);
@@ -320,13 +274,61 @@ const InvoicePage = () => {
         isPaid={isPaid} 
       />
       
-      <InvoiceActions 
-        isPaid={isPaid} 
-        isProcessing={isProcessing} 
-        onPay={handlePay} 
-        onBack={handleNavigateBack}
-        returnPageName={returnPageName}
-      />
+      {paymentInstruction ? (
+        <div className="mt-4 p-4 border rounded shadow-sm bg-white">
+          <h5 className="fw-bold text-primary mb-3">Instruksi Pembayaran</h5>
+          {paymentInstruction.payment_type === 'bank_transfer' && paymentInstruction.va_numbers && (
+            <div>
+              <p>Silakan transfer ke Virtual Account berikut:</p>
+              <h4 className="fw-bold">{paymentInstruction.va_numbers[0].bank.toUpperCase()} - {paymentInstruction.va_numbers[0].va_number}</h4>
+              <p>Jumlah: Rp {parseInt(paymentInstruction.gross_amount).toLocaleString('id-ID')}</p>
+            </div>
+          )}
+          {paymentInstruction.payment_type === 'echannel' && (
+            <div>
+              <p>Silakan transfer Mandiri Bill Payment:</p>
+              <h4 className="fw-bold">Biller Code: {paymentInstruction.biller_code}</h4>
+              <h4 className="fw-bold">Bill Key: {paymentInstruction.bill_key}</h4>
+              <p>Jumlah: Rp {parseInt(paymentInstruction.gross_amount).toLocaleString('id-ID')}</p>
+            </div>
+          )}
+          {paymentInstruction.payment_type === 'gopay' && (
+            <div>
+              <p>Silakan scan QR Code GoPay berikut:</p>
+              {paymentInstruction.actions && paymentInstruction.actions.map((action, idx) => {
+                if (action.name === 'generate-qr-code') {
+                  return <img key={idx} src={action.url} alt="GoPay QR Code" className="mb-3 border p-2 rounded" style={{ maxWidth: "200px" }}/>;
+                }
+                if (action.name === 'deeplink-redirect') {
+                  return <div key={idx} className="mt-2"><Button href={action.url} target="_blank" variant="success">Buka Aplikasi Gojek</Button></div>;
+                }
+                return null;
+              })}
+            </div>
+          )}
+          {paymentInstruction.payment_type === 'qris' && (
+            <div className="text-center">
+              <p>Silakan scan QR Code QRIS berikut:</p>
+              {paymentInstruction.actions && paymentInstruction.actions.map((action, idx) => {
+                if (action.name === 'generate-qr-code') {
+                  return <img key={idx} src={action.url} alt="QRIS QR Code" className="mb-3 border p-3 bg-white rounded shadow-sm mx-auto" style={{ maxWidth: "250px", display: "block" }}/>;
+                }
+                return null;
+              })}
+            </div>
+          )}
+          <Button variant="outline-secondary" className="mt-3 w-100" onClick={() => setPaymentInstruction(null)}>Ganti Metode Pembayaran</Button>
+        </div>
+      ) : (
+        <InvoiceActions 
+          isPaid={isPaid} 
+          isProcessing={isProcessing} 
+          onPay={handlePay} 
+          onBack={handleNavigateBack}
+          returnPageName={returnPageName}
+          totalAmount={totalAmount}
+        />
+      )}
 
       {/* Footer Branding d-print-none */}
       <div className="text-center mt-5 d-print-none opacity-50">

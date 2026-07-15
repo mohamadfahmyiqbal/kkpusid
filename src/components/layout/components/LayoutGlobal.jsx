@@ -1,4 +1,3 @@
-// src/components/layout/components/LayoutGlobal.jsx
 import React, { useCallback, lazy, Suspense } from "react";
 import { useProfile } from "../contexts";
 import { useKeyboardShortcuts } from "../../../hooks/useKeyboardShortcuts";
@@ -18,25 +17,38 @@ import { jwtEncode } from "../../../utils/helpers";
 // Lazy load NotificationPrompt untuk mengurangi bundle size initial
 const NotificationPrompt = lazy(() => import("../../ui/NotificationPrompt"));
 
-const PAGE_TITLES = {
-  dashboard: "Dashboard",
-  notificationPage: "Notifikasi",
-  notificationDetailPage: "Detail Notifikasi",
-  billingPage: "Setoran Simpanan",
-  invoicePage: "Invoice",
-  accountPage: "Profil Saya",
-  transactionDetailPage: "Detail Jual Beli",
-  registrationPage: "Pendaftaran",
-  registrationFormDetail: "Formulir Pendaftaran",
-  simpananPage: "Simpanan",
-  penarikanSimpananPage: "Penarikan Simpanan",
-  jualBeliPage: "Jual Beli",
-  formPengajuanTransaksi: "Pengajuan Jual Beli",
-  investasiPage: "Investasi",
-  trainingPage: "Training",
-  tabunganPage: "Tabungan",
-  programPage: "Program",
-};
+// Extracted Component for cleaner code
+const UnauthorizedState = ({ error, isTransitioning, handleLogout }) => (
+  <div className="py-5 text-center">
+    <div className="error-access-card animate-error-shake">
+      <div className="error-icon-wrapper mb-3">
+        <i className="fa fa-exclamation-triangle text-danger fa-3x animate-pulse"></i>
+      </div>
+      <h4 className="text-danger mb-3">Akses Terbatas</h4>
+      <p className="text-muted mb-4">
+        {error || "Sesi Anda telah berakhir. Silakan login kembali."}
+      </p>
+      <button
+        className="btn btn-primary w-100 mt-3 fw-bold btn-hover-lift"
+        onClick={handleLogout}
+        disabled={isTransitioning}
+      >
+        {isTransitioning ? (
+          <>
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            Memproses...
+          </>
+        ) : (
+          "Kembali ke Beranda"
+        )}
+      </button>
+    </div>
+  </div>
+);
 
 const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
   const navigate = useNavigate();
@@ -75,8 +87,8 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
       } else {
         navigate(`/${jwtEncode({ page: "dashboard" })}`);
       }
-    } catch (error) {
-      console.error("Navigation error:", error);
+    } catch (err) {
+      console.error("Navigation error:", err);
       navigate(`/${jwtEncode({ page: "dashboard" })}`);
     }
   }, [location.key, navigate]);
@@ -131,7 +143,6 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
       >
         <main
           className={`container-fluid flex-grow-1 fade-in px-2 px-md-3 ${isTransitioning ? "page-transitioning" : ""}`}
-          role="main"
           aria-label={ACCESSIBILITY_LABELS.MAIN_CONTENT}
         >
           {showPageNavigation && (
@@ -148,35 +159,11 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
           {loading ? (
             <DashboardSkeleton />
           ) : error || !userData ? (
-            <div className="py-5 text-center">
-              <div className="error-access-card animate-error-shake">
-                <div className="error-icon-wrapper mb-3">
-                  <i className="fa fa-exclamation-triangle text-danger fa-3x animate-pulse"></i>
-                </div>
-                <h4 className="text-danger mb-3">Akses Terbatas</h4>
-                <p className="text-muted mb-4">
-                  {error || "Sesi Anda telah berakhir. Silakan login kembali."}
-                </p>
-                <button
-                  className="btn btn-primary w-100 mt-3 fw-bold btn-hover-lift"
-                  onClick={handleLogout}
-                  disabled={isTransitioning}
-                >
-                  {isTransitioning ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Memproses...
-                    </>
-                  ) : (
-                    "Kembali ke Beranda"
-                  )}
-                </button>
-              </div>
-            </div>
+            <UnauthorizedState 
+              error={error} 
+              isTransitioning={isTransitioning} 
+              handleLogout={handleLogout} 
+            />
           ) : (
             <EnhancedErrorBoundary>
               {children}
@@ -192,4 +179,4 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
   );
 };
 
-export default LayoutGlobal;
+export default React.memo(LayoutGlobal);

@@ -8,14 +8,14 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
-import Alert from "../../../../../components/ui/SwalAlert";
+
 
 
 /**
  * Komponen untuk mengambil foto KTP (Langkah 3).
  * Dioptimasi dengan panduan visual dan UI modern.
  */
-export default function Step3CaptureKTP({ formData, setFormData, errors }) {
+export default React.memo(function Step3CaptureKTP({ formData, setFormData, errors }) {
   const handleSetCapturedImage = useCallback(
     (fieldName, base64Image) => {
       setFormData((prevData) => ({
@@ -41,10 +41,10 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
         </div>
       </div>
 
-      <Row>
+      <Row className="g-4 align-items-stretch">
         <Col lg={7}>
           {/* AREA WEBCAM */}
-          <div className="p-3 rounded-20 bg-light border-0 shadow-sm mb-4">
+          <div className="p-3 p-md-4 rounded-20 bg-white border shadow-sm h-100 d-flex flex-column justify-content-center">
             <WebcamCaptureField
               fieldName="foto_ktp"
               label="Foto Kartu Tanda Penduduk (KTP)"
@@ -67,7 +67,7 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
 
         <Col lg={5}>
           {/* PANDUAN PENGAMBILAN GAMBAR */}
-          <div className="requirement-items bg-white p-4 rounded-20 border-dashed h-100">
+          <div className="requirement-items bg-light p-3 p-md-4 rounded-20 border h-100 d-flex flex-column justify-content-center">
             <h6 className="fw-bold text-dark mb-3">Panduan Foto KTP:</h6>
 
             <ul className="list-unstyled mb-4">
@@ -91,13 +91,7 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
               </li>
             </ul>
 
-            <Alert
-              variant="warning"
-              className="rounded-12 border-0 shadow-sm small"
-            >
-              <strong>Penting:</strong> Gunakan KTP asli, bukan fotokopi atau
-              hasil scan layar komputer.
-            </Alert>
+
 
             {/* Visual Placeholder KTP */}
             <div className="mt-4 text-center opacity-25">
@@ -108,4 +102,4 @@ export default function Step3CaptureKTP({ formData, setFormData, errors }) {
       </Row>
     </div>
   );
-}
+});

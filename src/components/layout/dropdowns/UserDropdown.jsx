@@ -3,21 +3,16 @@ import { createPortal } from "react-dom";
 import { Spinner } from "react-bootstrap";
 import {
   FaUser,
-  FaWallet,
   FaPowerOff,
   FaChevronRight,
   FaChevronDown,
-  FaIdCard,
 } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import PropTypes from "prop-types";
 import { useNavigation } from "../../../hooks/useNavigation";
-import { sanitizeText, getSafeDisplayName } from "../../../utils/sanitization";
-import {
-  FONT_SIZES,
-  ACCESSIBILITY_LABELS,
-  CSS_CLASSES,
-} from "../../../constants/layout";
+import { sanitizeText } from "../../../utils/sanitization";
+import { ACCESSIBILITY_LABELS } from "../../../constants/layout";
+import "./UserDropdown.css";
 
 // Generate initials from full name
 const getInitials = (name) => {
@@ -45,19 +40,6 @@ const getAvatarGradient = (name) => {
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 };
-
-// Inject keyframes once into <head>
-if (typeof document !== "undefined" && !document.getElementById("user-dropdown-styles")) {
-  const styleEl = document.createElement("style");
-  styleEl.id = "user-dropdown-styles";
-  styleEl.textContent = `
-    @keyframes dropdownSlideInUser {
-      from { opacity: 0; transform: scale(0.92) translateY(-8px); }
-      to   { opacity: 1; transform: scale(1)   translateY(0); }
-    }
-  `;
-  document.head.appendChild(styleEl);
-}
 
 const UserDropdown = memo(function UserDropdown({
   user = null,
@@ -98,9 +80,30 @@ const UserDropdown = memo(function UserDropdown({
 
   useEffect(() => {
     if (!isDropdownOpen) return;
+    
     const onKey = (e) => { if (e.key === "Escape") setIsDropdownOpen(false); };
+    
+    const updatePos = () => {
+      if (btnRef.current) {
+        const rect = btnRef.current.getBoundingClientRect();
+        const dropdownWidth = Math.min(288, window.innerWidth - 24);
+        setDropdownPos({
+          top: rect.bottom + 8,
+          right: Math.max(12, window.innerWidth - rect.right - 4),
+          width: dropdownWidth,
+        });
+      }
+    };
+
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [isDropdownOpen]);
 
   const isRegularMember = user?.member_type === "Anggota Reguler" || user?.status_id === 2;
@@ -116,32 +119,17 @@ const UserDropdown = memo(function UserDropdown({
       page: "accountPage",
       color: "#3b82f6",
     },
-    {
-      icon: FaWallet,
-      label: "Saldo & Tabungan",
-      desc: "Kelola keuangan Anda",
-      page: "balancePage",
-      color: "#10b981",
-    },
-    {
-      icon: FaIdCard,
-      label: "Keanggotaan",
-      desc: "Status & informasi akun",
-      page: isRegularMember ? "accountPage" : "registrationPage",
-      color: "#8b5cf6",
-    },
   ];
 
   return (
-    <li className="nav-item user-dropdown" style={{ position: "relative" }}>
+    <li className="nav-item user-dropdown-container">
       <button
         ref={btnRef}
-        className="nav-link p-0 d-flex align-items-center border-0 bg-transparent"
+        className="nav-link p-0 d-flex align-items-center border-0 bg-transparent user-btn"
         onClick={handleToggle}
         aria-expanded={isDropdownOpen}
         aria-haspopup="true"
         aria-label={ACCESSIBILITY_LABELS.USER_MENU}
-        style={{ transition: "opacity 0.15s" }}
       >
         {loading ? (
           <Spinner animation="border" size="sm" variant="light" />
@@ -211,91 +199,37 @@ const UserDropdown = memo(function UserDropdown({
           <>
             {/* Backdrop */}
             <div
-              style={{ position: "fixed", inset: 0, zIndex: 9999998, backgroundColor: "transparent" }}
+              style={{ position: "fixed", inset: 0, zIndex: 1040, backgroundColor: "transparent" }}
               onClick={() => setIsDropdownOpen(false)}
             />
 
             {/* Panel */}
             <div
+              className={`ud-panel ${isAnimating ? "animating-in" : ""}`}
               style={{
-                position: "fixed",
                 top: dropdownPos.top,
                 right: dropdownPos.right,
                 width: dropdownPos.width,
-                zIndex: 9999999,
-                backgroundColor: "#ffffff",
-                borderRadius: "16px",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(0,0,0,0.06)",
-                overflow: "hidden",
-                transformOrigin: "top right",
-                animation: isAnimating ? "dropdownSlideInUser 0.25s cubic-bezier(0.34,1.56,0.64,1)" : "none",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-
-
               {/* Profile Header */}
-              <div
-                style={{
-                  background: "linear-gradient(135deg, #02113d 0%, #1e3a8a 100%)",
-                  padding: "20px",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
+              <div className="ud-header">
                 {/* Decorative circles */}
-                <div style={{
-                  position: "absolute", top: -20, right: -20,
-                  width: 80, height: 80, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.05)",
-                }} />
-                <div style={{
-                  position: "absolute", bottom: -10, right: 20,
-                  width: 50, height: 50, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.04)",
-                }} />
+                <div className="ud-header-circle-1" />
+                <div className="ud-header-circle-2" />
 
                 <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
                   {/* Large Initials Avatar */}
                   <div style={{ position: "relative" }}>
                     <div
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: "16px",
-                        background: `linear-gradient(135deg, ${gradFrom}, ${gradTo})`,
-                        border: "2.5px solid rgba(255,255,255,0.35)",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 22,
-                        fontWeight: 900,
-                        color: "#ffffff",
-                        letterSpacing: "1px",
-                        userSelect: "none",
-                        flexShrink: 0,
-                      }}
+                      className="ud-avatar-large"
+                      style={{ background: `linear-gradient(135deg, ${gradFrom}, ${gradTo})` }}
                     >
                       {initials}
                     </div>
                     {isRegularMember && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: -4,
-                          right: -4,
-                          background: "#22c55e",
-                          borderRadius: "50%",
-                          width: 18,
-                          height: 18,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          border: "1.5px solid #ffffff",
-                        }}
-                      >
+                      <div className="ud-verified-badge">
                         <MdVerified size={12} color="#ffffff" />
                       </div>
                     )}
@@ -303,71 +237,24 @@ const UserDropdown = memo(function UserDropdown({
 
                   {/* User Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        color: "#ffffff",
-                        fontWeight: 800,
-                        fontSize: 14,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
+                    <div className="ud-user-name">
                       {sanitizeText(user?.full_name) || "Guest User"}
                     </div>
-                    <div
-                      style={{
-                        color: "rgba(255,255,255,0.65)",
-                        fontSize: 11,
-                        marginTop: 2,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
+                    <div className="ud-user-email">
                       {sanitizeText(user?.email) || "No email"}
                     </div>
-                    <div style={{ marginTop: 6 }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          padding: "3px 8px",
-                          borderRadius: "6px",
-                          background: memberBadgeColor.bg,
-                          color: memberBadgeColor.text,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          border: `1px solid ${memberBadgeColor.border}`,
-                        }}
-                      >
-                        {isRegularMember && <MdVerified size={10} />}
-                        {user?.member_type || "Calon Anggota"}
-                      </span>
+                    <div className="ud-member-type-badge" style={{ background: memberBadgeColor.bg, color: memberBadgeColor.text, border: `1px solid ${memberBadgeColor.border}` }}>
+                      {isRegularMember && <MdVerified size={10} />}
+                      {user?.member_type || "Calon Anggota"}
                     </div>
                   </div>
                 </div>
 
                 {/* Member ID */}
                 {user?.member_no && (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      background: "rgba(255,255,255,0.1)",
-                      borderRadius: "8px",
-                      padding: "7px 12px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>
-                      ID Anggota
-                    </span>
-                    <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 12, letterSpacing: "0.5px" }}>
-                      {sanitizeText(user?.member_no)}
-                    </span>
+                  <div className="ud-member-id-box">
+                    <span className="ud-member-id-label">ID Anggota</span>
+                    <span className="ud-member-id-val">{sanitizeText(user?.member_no)}</span>
                   </div>
                 )}
               </div>
@@ -380,44 +267,14 @@ const UserDropdown = memo(function UserDropdown({
                     type="button"
                     onClick={() => handleNav(item.page)}
                     aria-label={item.label}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "10px 12px",
-                      border: "none",
-                      borderRadius: "10px",
-                      background: "transparent",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      transition: "background 0.15s",
-                      marginBottom: 2,
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f8fafc"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                    className="ud-menu-item"
                   >
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "10px",
-                        background: `${item.color}15`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
+                    <div className="ud-menu-icon" style={{ background: `${item.color}15` }}>
                       <item.icon size={14} color={item.color} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#94a3b8" }}>
-                        {item.desc}
-                      </div>
+                      <div className="ud-menu-title">{item.label}</div>
+                      <div className="ud-menu-desc">{item.desc}</div>
                     </div>
                     <FaChevronRight size={10} color="#cbd5e1" />
                   </button>
@@ -433,59 +290,21 @@ const UserDropdown = memo(function UserDropdown({
                   type="button"
                   onClick={logout}
                   aria-label={ACCESSIBILITY_LABELS.LOGOUT}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 12px",
-                    border: "none",
-                    borderRadius: "10px",
-                    background: "transparent",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#fff5f5"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  className="ud-logout-item"
                 >
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "10px",
-                      background: "#fff5f5",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="ud-logout-icon">
                     <FaPowerOff size={14} color="#ef4444" />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444" }}>
-                      Keluar Aplikasi
-                    </div>
-                    <div style={{ fontSize: 11, color: "#fca5a5" }}>
-                      Akhiri sesi sekarang
-                    </div>
+                    <div className="ud-logout-title">Keluar Aplikasi</div>
+                    <div className="ud-logout-desc">Akhiri sesi sekarang</div>
                   </div>
                 </button>
               </div>
 
               {/* Version badge */}
-              <div
-                style={{
-                  padding: "8px 20px",
-                  borderTop: "1px solid #f1f5f9",
-                  textAlign: "center",
-                  background: "#fafafa",
-                }}
-              >
-                <span style={{ fontSize: 10, color: "#cbd5e1", fontWeight: 500 }}>
-                  Paguyuban Usaha Sukses © 2024
-                </span>
+              <div className="ud-footer">
+                <span className="ud-footer-text">Paguyuban Usaha Sukses © 2024</span>
               </div>
             </div>
           </>,
@@ -508,4 +327,3 @@ UserDropdown.propTypes = {
 };
 
 export default UserDropdown;
-

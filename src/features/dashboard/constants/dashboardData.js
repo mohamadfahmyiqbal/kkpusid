@@ -40,16 +40,19 @@ export const TRAINING_DATA = [
 
 export const ARTICLE_DATA = [
   {
+    id: 1,
     title: "Strategi Mengembangkan Usaha Mikro di Era Digital",
     desc: "Pelajari strategi praktis untuk mengembangkan usaha mikro Anda.",
     date: "20 Mei 2024",
   },
   {
+    id: 2,
     title: "Manajemen Keuangan Syariah untuk UMKM",
     desc: "Kelola keuangan usaha dengan prinsip syariah berkelanjutan.",
     date: "18 Mei 2024",
   },
   {
+    id: 3,
     title: "Peluang dan Tantangan UMKM di Tahun 2024",
     desc: "Kenali peluang pertumbuhan dan tantangan UMKM tahun ini.",
     date: "15 Mei 2024",

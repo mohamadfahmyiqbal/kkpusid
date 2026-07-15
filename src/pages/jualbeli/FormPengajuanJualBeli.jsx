@@ -9,7 +9,6 @@ import {
   InputGroup} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import {
-  MdArrowBack,
   MdCategory,
   MdShoppingBag,
   MdAttachMoney,
@@ -19,11 +18,6 @@ import {
   MdCheckCircle,
   MdReceiptLong,
   MdShield,
-  MdPerson,
-  MdLocalAtm,
-  MdAccountBalance,
-  MdLocationOn,
-  MdAccessTime,
 } from "react-icons/md";
 import { jwtEncode } from "../../utils/helpers";
 import { useProfile } from "../../components/layout/contexts";

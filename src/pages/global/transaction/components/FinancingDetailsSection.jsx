@@ -1,6 +1,5 @@
 import React from "react";
 import { FaInfoCircle, FaHandshake, FaFileContract, FaCalendarCheck, FaUsers, FaClipboardList, FaFileAlt, FaMoneyBillWave } from "react-icons/fa";
-import { MdShield } from "react-icons/md";
 import InfoRow from "./InfoRow";
 
 const FinancingDetailsSection = ({ detail, isPelunasan }) => {
@@ -79,11 +78,19 @@ const FinancingDetailsSection = ({ detail, isPelunasan }) => {
           </>
         )}
 
-        {detail?.operational_cost && parseFloat(detail.operational_cost) !== 0 && (
+        {detail?.operational_cost && parseFloat(detail.operational_cost) !== 0 && !isPelunasan && (
           <InfoRow 
             icon={<FaMoneyBillWave size={12} />} 
-            label={isPelunasan ? "Diskon Pelunasan" : "Biaya Operasional"} 
+            label="Biaya Operasional" 
             value={`Rp ${parseFloat(Math.abs(detail.operational_cost)).toLocaleString("id-ID")} ${parseFloat(detail.operational_cost) < 0 ? "(Dikurangi)" : "(Ditambah)"}`} 
+          />
+        )}
+
+        {isPelunasan && detail?.discount && parseFloat(detail.discount) > 0 && (
+          <InfoRow 
+            icon={<FaMoneyBillWave size={12} />} 
+            label="Diskon Pelunasan" 
+            value={`Rp ${parseFloat(detail.discount).toLocaleString("id-ID")} (Dikurangi)`} 
           />
         )}
 

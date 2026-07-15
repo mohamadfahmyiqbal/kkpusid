@@ -14,7 +14,6 @@ import {
   FaTimes,
   FaTag,
   FaEnvelope,
-  FaEnvelopeOpen,
 } from "react-icons/fa";
 import { useNotificationFeatures } from "../hooks/useNotificationFeatures";
 

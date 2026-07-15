@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { jwtEncode } from "../../../utils/helpers";
 import { motion } from "framer-motion";
-import { FaCheckCircle, FaRegFileAlt, FaFileInvoiceDollar, FaPrint, FaDownload, FaArrowLeft } from "react-icons/fa";
+import { FaCheckCircle, FaRegFileAlt, FaPrint, FaDownload, FaArrowLeft } from "react-icons/fa";
 import api from "../../../utils/api/common";
 
 const ProtectedFileViewer = ({ url, title }) => {

@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { Dropdown, Button, Badge, Modal, Form } from "react-bootstrap";
+import { Dropdown, Button, Badge, Modal } from "react-bootstrap";
 import {
   FaCheckSquare,
   FaSquare,
   FaTrash,
-  FaEnvelope,
-  FaEnvelopeOpen,
 } from "react-icons/fa";
 import { useNotificationFeatures } from "../hooks/useNotificationFeatures";
 

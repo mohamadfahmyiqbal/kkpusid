@@ -4,21 +4,16 @@ import React, { useState, useCallback, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import Badge from "react-bootstrap/Badge";
 import Alert from "react-bootstrap/Alert";
-import Spinner from "react-bootstrap/Spinner";
+import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import { FaPlusCircle, FaRedo } from "react-icons/fa";
 import {
-  MdPeople,
   MdTrackChanges,
-  MdPayments,
-  MdEvent,
-  MdChevronRight,
   MdGroup,
   MdAccountBalance,
+  MdVisibility
 } from "react-icons/md";
 
 import ProgramAccountCard from "../../../components/program/ProgramAccountCard";
@@ -56,6 +51,7 @@ export default function ArisanPage() {
 
   // Dynamic API state
   const [activeArisan, setActiveArisan] = useState(null);
+  const [historyArisan, setHistoryArisan] = useState(null);
   const [availableArisans, setAvailableArisans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,12 +77,25 @@ export default function ArisanPage() {
       }
 
       const activeResult = await activeRes.json();
+      
+      let hasActive = false;
 
       if (activeResult.success && activeResult.data) {
-        setActiveArisan(activeResult.data);
+        if (activeResult.data.is_lunas) {
+          setHistoryArisan(activeResult.data);
+          setActiveArisan(null);
+        } else {
+          setActiveArisan(activeResult.data);
+          setHistoryArisan(null);
+          hasActive = true;
+        }
       } else {
         setActiveArisan(null);
-        // 2. Fetch available arisans only if no active arisan exists
+        setHistoryArisan(null);
+      }
+
+      // 2. Fetch available arisans only if no active arisan exists
+      if (!hasActive) {
         const availableRes = await fetch(getApiUrl("program/arisan/available"), {
           method: "GET",
           headers,
@@ -146,6 +155,16 @@ export default function ArisanPage() {
 
   }, [navigate]);
 
+  const handleHistoryDetail = useCallback(() => {
+    if (historyArisan?.financing_id) {
+      const token = jwtEncode({
+        page: "transactionDetailPage",
+        financingId: historyArisan.financing_id,
+      });
+      navigate(`/${token}`);
+    }
+  }, [historyArisan, navigate]);
+
   // Handle saat tab berubah (kembali ke ProgramPage)
   const handleTabChange = useCallback(
     (key) => {
@@ -183,7 +202,8 @@ export default function ArisanPage() {
         statusLabel: activeArisan.status_label || activeArisan.status || "Aktif",
         isApproved: activeArisan.is_approved,
         isPending: activeArisan.is_pending,
-        financingId: activeArisan.financing_id
+        financingId: activeArisan.financing_id,
+        isLunas: activeArisan.is_lunas
       };
 
       return (
@@ -239,6 +259,64 @@ export default function ArisanPage() {
             availableArisan={currentList}
             onJoinClick={(item) => handleGabungArisan(item.arisan_id || item.id)}
           />
+        )}
+
+        {historyArisan && (
+          <div className="mt-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h5 className="fw-bold text-dark mb-1 font-outfit">
+                  <MdTrackChanges className="me-2 text-primary" size={22} />
+                  Riwayat Arisan
+                </h5>
+                <p className="text-muted small mb-0">
+                  Riwayat keikutsertaan arisan Anda yang telah lunas
+                </p>
+              </div>
+            </div>
+            <div className="table-responsive">
+              <Table hover className="align-middle bg-white rounded-3 overflow-hidden shadow-sm text-sm">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Nama Program</th>
+                    <th>No. Peserta / Akad</th>
+                    <th>Tanggal Buka</th>
+                    <th>Total Saldo</th>
+                    <th>Status</th>
+                    <th className="text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="fw-medium">{historyArisan.program_name} ({historyArisan.batch_name})</td>
+                    <td>No. Peserta: {historyArisan.participant_no || "-"}</td>
+                    <td>
+                      {historyArisan.created_at
+                        ? new Date(historyArisan.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="fw-bold text-success">
+                      {new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                        minimumFractionDigits: 0,
+                      }).format(historyArisan.current_balance || 0)}
+                    </td>
+                    <td><span className="badge bg-secondary">Closed</span></td>
+                    <td className="text-center">
+                      <Button variant="light" size="sm" onClick={handleHistoryDetail} className="text-primary border-0 rounded-circle p-2 shadow-sm" title="Lihat Detail">
+                        <MdVisibility size={18} />
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </div>
         )}
       </>
     );

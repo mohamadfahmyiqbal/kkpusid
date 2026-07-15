@@ -9,9 +9,10 @@ import {
   ProgressBar,
   
   Badge,
-  Spinner} from "react-bootstrap";
+  Spinner
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaArrowRight, FaSave, FaArrowLeft, FaCheck, FaFileSignature } from "react-icons/fa";
+import { FaUserCircle, FaArrowRight, FaSave, FaArrowLeft, FaFileSignature } from "react-icons/fa";
 import AnggotaService from "../services/AnggotaService";
 import { jwtEncode } from "../../../../utils/helpers";
 import { useProfile } from "../hooks/useProfile";
@@ -27,8 +28,6 @@ import Step6EmergencyContact from "../components/steps/Step6EmergencyContact";
 import Step7BankData from "../components/steps/Step7BankData";
 import Step8Summary from "../components/steps/Step8Summary";
 import Alert from "../../../../components/ui/SwalAlert";
-
-
 const totalSteps = 8;
 
 const stepLabels = [
@@ -41,6 +40,57 @@ const stepLabels = [
   "Rekening Bank",
   "Ringkasan",
 ];
+
+const validateStep = (currentStep, data) => {
+  let stepErrors = {};
+  if (currentStep === 1) {
+    if (!data.nik_ktp || data.nik_ktp.length !== 16)
+      stepErrors.nik_ktp = "NIK harus 16 digit.";
+    if (!data.full_name) stepErrors.full_name = "Nama lengkap wajib diisi.";
+    if (!data.alamat_ktp) stepErrors.alamat_ktp = "Alamat wajib diisi.";
+    if (!data.province_id) stepErrors.province_id = "Provinsi wajib dipilih.";
+    if (!data.city_id) stepErrors.city_id = "Kota/Kabupaten wajib dipilih.";
+    if (!data.district_id)
+      stepErrors.district_id = "Kecamatan wajib dipilih.";
+    if (!data.subdistrict_id)
+      stepErrors.subdistrict_id = "Kelurahan wajib dipilih.";
+  }
+  if (currentStep === 2) {
+    if (!data.tipeAnggota)
+      stepErrors.tipeAnggota = "Tipe anggota wajib dipilih.";
+    if (!data.phone_number) stepErrors.phone_number = "Nomor HP wajib diisi.";
+    if (!data.email) stepErrors.email = "Email wajib diisi.";
+  }
+  if (currentStep === 3 && !data.foto_ktp) {
+    stepErrors.foto_ktp = "Foto KTP wajib diambil.";
+  }
+  if (currentStep === 4 && !data.foto_swafoto) {
+    stepErrors.foto_swafoto = "Swafoto wajib diambil.";
+  }
+  if (currentStep === 5) {
+    if (!data.occupation) stepErrors.occupation = "Pekerjaan wajib diisi.";
+    if (!data.employer_name)
+      stepErrors.employer_name = "Nama tempat bekerja wajib diisi.";
+    if (!data.employer_address)
+      stepErrors.employer_address = "Alamat tempat bekerja wajib diisi.";
+  }
+  if (currentStep === 6) {
+    if (!data.contact_name)
+      stepErrors.contact_name = "Nama kontak darurat wajib diisi.";
+    if (!data.phone_number_emergency)
+      stepErrors.phone_number_emergency =
+        "No. HP kontak darurat wajib diisi.";
+    if (!data.relation) stepErrors.relation = "Hubungan wajib diisi.";
+  }
+  if (currentStep === 7) {
+    if (!data.bank_name) stepErrors.bank_name = "Nama bank wajib diisi.";
+    if (!data.bank_account_no)
+      stepErrors.bank_account_no = "Nomor rekening wajib diisi.";
+    if (!data.account_holder)
+      stepErrors.account_holder = "Nama pemilik rekening wajib diisi.";
+  }
+  return stepErrors;
+};
 
 export default function RegistrationFormDetail() {
   const navigate = useNavigate();
@@ -105,58 +155,7 @@ export default function RegistrationFormDetail() {
     setErrors((prev) => ({ ...prev, [fieldName]: undefined }));
   }, []);
 
-  const validateStep = (currentStep, data) => {
-    let stepErrors = {};
-    if (currentStep === 1) {
-      if (!data.nik_ktp || data.nik_ktp.length !== 16)
-        stepErrors.nik_ktp = "NIK harus 16 digit.";
-      if (!data.full_name) stepErrors.full_name = "Nama lengkap wajib diisi.";
-      if (!data.alamat_ktp) stepErrors.alamat_ktp = "Alamat wajib diisi.";
-      if (!data.province_id) stepErrors.province_id = "Provinsi wajib dipilih.";
-      if (!data.city_id) stepErrors.city_id = "Kota/Kabupaten wajib dipilih.";
-      if (!data.district_id)
-        stepErrors.district_id = "Kecamatan wajib dipilih.";
-      if (!data.subdistrict_id)
-        stepErrors.subdistrict_id = "Kelurahan wajib dipilih.";
-    }
-    if (currentStep === 2) {
-      if (!data.tipeAnggota)
-        stepErrors.tipeAnggota = "Tipe anggota wajib dipilih.";
-      if (!data.phone_number) stepErrors.phone_number = "Nomor HP wajib diisi.";
-      if (!data.email) stepErrors.email = "Email wajib diisi.";
-    }
-    if (currentStep === 3 && !data.foto_ktp) {
-      stepErrors.foto_ktp = "Foto KTP wajib diambil.";
-    }
-    if (currentStep === 4 && !data.foto_swafoto) {
-      stepErrors.foto_swafoto = "Swafoto wajib diambil.";
-    }
-    if (currentStep === 5) {
-      if (!data.occupation) stepErrors.occupation = "Pekerjaan wajib diisi.";
-      if (!data.employer_name)
-        stepErrors.employer_name = "Nama tempat bekerja wajib diisi.";
-      if (!data.employer_address)
-        stepErrors.employer_address = "Alamat tempat bekerja wajib diisi.";
-    }
-    if (currentStep === 6) {
-      if (!data.contact_name)
-        stepErrors.contact_name = "Nama kontak darurat wajib diisi.";
-      if (!data.phone_number_emergency)
-        stepErrors.phone_number_emergency =
-          "No. HP kontak darurat wajib diisi.";
-      if (!data.relation) stepErrors.relation = "Hubungan wajib diisi.";
-    }
-    if (currentStep === 7) {
-      if (!data.bank_name) stepErrors.bank_name = "Nama bank wajib diisi.";
-      if (!data.bank_account_no)
-        stepErrors.bank_account_no = "Nomor rekening wajib diisi.";
-      if (!data.account_holder)
-        stepErrors.account_holder = "Nama pemilik rekening wajib diisi.";
-    }
-    return stepErrors;
-  };
-
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     const currentErrors = validateStep(step, formData);
     if (Object.keys(currentErrors).length > 0) {
       setErrors(currentErrors);
@@ -165,15 +164,15 @@ export default function RegistrationFormDetail() {
     setAnimDir("next");
     setErrors({});
     if (step < totalSteps) setStep((s) => s + 1);
-  };
+  }, [step, formData]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     setAnimDir("prev");
     setErrors({});
     if (step > 1) setStep((s) => s - 1);
-  };
+  }, [step]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!isCommitmentChecked) return;
 
     const finalErrors = {};
@@ -207,7 +206,7 @@ export default function RegistrationFormDetail() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isCommitmentChecked, formData, navigate]);
 
   const renderStep = useMemo(() => {
     const props = {
@@ -276,7 +275,7 @@ export default function RegistrationFormDetail() {
               </div>
 
               {/* Header */}
-              <CardHeader className="bg-white border-0 p-4 pb-2">
+              <CardHeader className="bg-white border-0 p-3 p-md-4 pb-2">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
                   <div className="d-flex align-items-center">
                     <div
@@ -324,7 +323,7 @@ export default function RegistrationFormDetail() {
               </CardHeader>
 
               {/* Body */}
-              <CardBody className="p-4 p-md-5 pt-0">
+              <CardBody className="p-3 p-md-4 pt-0">
                 {submitError && (
                   <Alert
                     variant="danger"
@@ -363,7 +362,7 @@ export default function RegistrationFormDetail() {
                     {isLastStep ? (
                       <Button
                         variant="primary"
-                        className="px-5 py-2 fw-bold shadow-sm rounded-12"
+                        className="px-4 px-md-5 py-2 fw-bold shadow-sm rounded-12"
                         onClick={handleSubmit}
                         disabled={!isCommitmentChecked || isSubmitting}
                       >
@@ -385,7 +384,7 @@ export default function RegistrationFormDetail() {
                     ) : (
                       <Button
                         variant="primary"
-                        className="px-5 py-2 fw-bold shadow-sm rounded-12"
+                        className="px-4 px-md-5 py-2 fw-bold shadow-sm rounded-12"
                         onClick={nextStep}
                       >
                         Selanjutnya{" "}

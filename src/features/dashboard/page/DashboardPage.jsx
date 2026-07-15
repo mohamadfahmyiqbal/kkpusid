@@ -12,12 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../../components/layout/contexts/ProfileContext";
 import { useDashboardRole } from "../hooks/useDashboardRole";
 import useRegistrationStatus from "../../../pages/anggota/RegistrationPage/hooks/useRegistrationStatus";
-import FinancialSection from "../components/FinancialSection";
-import MainMenuSection from "../components/MainMenuSection";
-import TagihanSection from "../components/TagihanSection";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import DateTimeCard from "../components/DateTimeCard";
-import CandidateStepsCard from "../components/CandidateStepsCard";
+import MainMenuSection from "../components/MainMenuSection";
 import TrainingCardSection from "../components/TrainingCardSection";
 import ArticleCardSection from "../components/ArticleCardSection";
 import NextStepsCard from "../components/NextStepsCard";
@@ -29,9 +26,15 @@ import {
 } from "../constants/dashboardData";
 import "../styles/DashboardPage.css";
 
+const CandidateStepsCard = React.lazy(() => import("../components/CandidateStepsCard"));
+const FinancialSection = React.lazy(() => import("../components/FinancialSection"));
+const TagihanSection = React.lazy(() => import("../components/TagihanSection"));
+
+const CS_WHATSAPP_LINK = "https://wa.me/6281234567890";
+
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { userData, loading: profileLoading } = useProfile();
+  const { userData, loading: profileLoading, error: profileError } = useProfile();
   const roleConfigs = useDashboardRole(userData);
   const {
     isRegistered,
@@ -39,12 +42,9 @@ export default function DashboardPage() {
     loading: registrationLoading,
   } = useRegistrationStatus();
 
-  // Memoized role flags
-  const isCandidate = useMemo(
-    () => roleConfigs?.isCandidate ?? true,
-    [roleConfigs],
-  );
-  const isALB = useMemo(() => roleConfigs?.isALB ?? false, [roleConfigs]);
+  // Role flags
+  const isCandidate = roleConfigs?.isCandidate ?? true;
+  const isALB = roleConfigs?.isALB ?? false;
 
   // Greeting name
   const safeGreetingName = useMemo(() => {
@@ -56,7 +56,6 @@ export default function DashboardPage() {
 
   // Steps for Candidate Registration Status
   const steps = useMemo(() => {
-    const isDone = isRegistered;
     const finalStatus = registrationData?.final_status || "PENDING";
     const isApproved = finalStatus === "APPROVED";
 
@@ -71,8 +70,8 @@ export default function DashboardPage() {
       {
         no: 2,
         title: "Daftar Menjadi Anggota",
-        desc: isDone ? "Selesai" : "Belum Lengkap",
-        status: isDone ? "done" : "active",
+        desc: isRegistered ? "Selesai" : "Belum Lengkap",
+        status: isRegistered ? "done" : "active",
         icon: <FaClipboardList />,
       },
       {
@@ -80,10 +79,10 @@ export default function DashboardPage() {
         title: "Approval",
         desc: isApproved
           ? "Disetujui"
-          : isDone
+          : isRegistered
           ? "Proses Verifikasi"
           : "Menunggu",
-        status: isApproved ? "done" : isDone ? "active" : "pending",
+        status: isApproved ? "done" : isRegistered ? "active" : "pending",
         icon: <FaShieldAlt />,
       },
       {
@@ -94,7 +93,7 @@ export default function DashboardPage() {
         icon: <FaUser />,
       },
     ];
-  }, [isRegistered, registrationData]);
+  }, [isRegistered, registrationData?.final_status]);
 
   // Next steps navigation items
   const nextSteps = useMemo(
@@ -121,7 +120,7 @@ export default function DashboardPage() {
         icon: <FaComments />,
         title: "Konsultasi Dengan Kami",
         desc: "Tim kami siap membantu Anda",
-        link: "https://wa.me/6281234567890",
+        link: CS_WHATSAPP_LINK,
       },
     ],
     [isCandidate],
@@ -141,6 +140,10 @@ export default function DashboardPage() {
     [navigate],
   );
 
+  const handleContactCS = useCallback(() => {
+    window.open(CS_WHATSAPP_LINK, "_blank", "noopener,noreferrer");
+  }, []);
+
   // Step/link navigation handler
   const handleStepNavigation = useCallback(
     (pageKey, link) => {
@@ -159,8 +162,17 @@ export default function DashboardPage() {
   );
 
   const handleViewMateri = useCallback(
-    (kurikulumId, type) => navigateToPage({ page: "detailMateri", kurikulumId, type }),
-    [navigateToPage],
+    (id, type) => {
+      navigate(`/${jwtEncode({ page: "trainingMateri", id, type, return: "dashboard" })}`);
+    },
+    [navigate]
+  );
+
+  const handleReadArticle = useCallback(
+    (id) => {
+      navigate(`/${jwtEncode({ page: "articleDetail", id, return: "dashboard" })}`);
+    },
+    [navigate]
   );
 
   const handleStartEvaluasi = useCallback(
@@ -171,6 +183,23 @@ export default function DashboardPage() {
   // Loading state
   if (profileLoading || (isCandidate && registrationLoading)) {
     return <DashboardSkeleton />;
+  }
+
+  // Error state if user data fails to load
+  if (!profileLoading && (!userData || profileError)) {
+    return (
+      <div className="dc-page-container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+        <Card className="text-center p-4 border-0 shadow-sm dc-support-box">
+          <Card.Body>
+            <h4 className="mb-3">Gagal Memuat Data</h4>
+            <p className="text-muted mb-4">Maaf, kami mengalami kendala saat memuat data profil Anda. Silakan coba lagi.</p>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Muat Ulang Halaman
+            </Button>
+          </Card.Body>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -205,16 +234,26 @@ export default function DashboardPage() {
           {/* LEFT PANEL */}
           <Col xs={12} lg={8}>
             {isCandidate && (
-              <CandidateStepsCard
-                steps={steps}
-                onNavigate={handleStepNavigation}
-              />
+              <React.Suspense fallback={<div className="mb-4"><DashboardSkeleton /></div>}>
+                <CandidateStepsCard
+                  steps={steps}
+                  onNavigate={handleStepNavigation}
+                />
+              </React.Suspense>
             )}
 
-            {!isCandidate && <FinancialSection />}
+            {!isCandidate && (
+              <React.Suspense fallback={<div className="mb-4"><DashboardSkeleton /></div>}>
+                <FinancialSection />
+              </React.Suspense>
+            )}
             <MainMenuSection isALB={isALB} isCandidate={isCandidate} />
             
-            {!isCandidate && <TagihanSection />}
+            {!isCandidate && (
+              <React.Suspense fallback={<div className="mb-4"><DashboardSkeleton /></div>}>
+                <TagihanSection />
+              </React.Suspense>
+            )}
 
             <TrainingCardSection
               trainingData={TRAINING_DATA}
@@ -226,6 +265,7 @@ export default function DashboardPage() {
             <ArticleCardSection
               articleData={ARTICLE_DATA}
               onSeeAll={handleTrainingNavigation}
+              onReadArticle={handleReadArticle}
             />
           </Col>
 
@@ -245,13 +285,7 @@ export default function DashboardPage() {
                 </p>
                 <Button
                   variant="primary"
-                  onClick={() =>
-                    window.open(
-                      "https://wa.me/6281234567890",
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
+                  onClick={handleContactCS}
                 >
                   Hubungi Kami
                 </Button>

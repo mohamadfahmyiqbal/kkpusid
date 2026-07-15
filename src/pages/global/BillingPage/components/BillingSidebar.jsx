@@ -38,9 +38,9 @@ function BillingSidebar({ bankInfo }) {
         {methods.map((m, i) => (
           <div className="bp-payment-method" key={i}>
             <div className={`bp-bank-logo ${m.cls}`}>{m.logo}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</div>
-              <div style={{ fontSize: 11, color: "#6b7280" }}>{m.owner}</div>
+            <div className="flex-grow-1">
+              <div className="fw-semibold text-dark" style={{ fontSize: "13px" }}>{m.name}</div>
+              <div className="text-muted" style={{ fontSize: "11px" }}>{m.owner}</div>
             </div>
             {m.isPrimary && <span className="bp-badge-primary-sm">Utama</span>}
           </div>

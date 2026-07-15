@@ -1,11 +1,8 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtEncode } from "../../../../utils/helpers";
 import {
-  Card,
   Form,
   Spinner,
-  Alert,
   Button,
   Row,
   Col,
@@ -22,10 +19,8 @@ import {
   FaChevronRight,
   FaGraduationCap,
   FaWallet,
-  FaLock,
   FaInfoCircle,
   FaExclamationTriangle,
-  FaChevronLeft,
 } from "react-icons/fa";
 import { useProfile } from "../../../../components/layout/contexts";
 import UNotification from "../../../../utils/api/UNotification";

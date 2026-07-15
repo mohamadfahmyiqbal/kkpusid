@@ -6,7 +6,6 @@ import authService from "../service/authService";
 import useNotificationPermission from "./useNotificationPermission";
 import usePushSubscription from "./usePushSubscription";
 import { AUTH_CONSTANTS } from "../constants/authConstants";
-import { logger } from "../utils/logger";
 
 const LOGIN_PATH = `/${jwtEncode({ page: "authLogin" })}`;
 const {

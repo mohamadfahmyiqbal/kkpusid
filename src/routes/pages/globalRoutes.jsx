@@ -1,4 +1,4 @@
-import React, { lazy } from "react";
+import { lazy } from "react";
 
 const globalRoutes = {
   globalSplash: {
@@ -36,6 +36,18 @@ const globalRoutes = {
   receiptPage: {
     component: lazy(() => import("../../pages/global/ReceiptPage/ReceiptPage")),
     isProtected: true,
+  },
+  articleDetail: {
+    component: lazy(() => import("../../pages/global/ArticleDetailPage/ArticleDetailPage")),
+    isProtected: true,
+  },
+  privacyPolicy: {
+    component: lazy(() => import("../../pages/global/PrivacyPolicyPage/PrivacyPolicyPage")),
+    isProtected: false,
+  },
+  termsConditions: {
+    component: lazy(() => import("../../pages/global/TermsConditionsPage/TermsConditionsPage")),
+    isProtected: false,
   },
 };
 

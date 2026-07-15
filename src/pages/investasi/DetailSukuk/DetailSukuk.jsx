@@ -11,7 +11,7 @@ import {
   Badge} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import { FaCertificate, FaArrowLeft, FaShieldAlt, FaChartLine } from "react-icons/fa";
+import { FaCertificate, FaShieldAlt, FaChartLine } from "react-icons/fa";
 import { useDetailSukuk } from "./hooks/useDetailSukuk";
 import { motion, AnimatePresence } from "framer-motion";
 import "./DetailSukuk.css";

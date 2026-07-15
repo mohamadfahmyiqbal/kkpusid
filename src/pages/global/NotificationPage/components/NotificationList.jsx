@@ -1,5 +1,5 @@
 import React from "react";
-import { ListGroup, Spinner } from "react-bootstrap";
+import { ListGroup } from "react-bootstrap";
 import { FaBellSlash } from "react-icons/fa";
 
 const NotificationList = ({ loading, notifications, children }) => {
