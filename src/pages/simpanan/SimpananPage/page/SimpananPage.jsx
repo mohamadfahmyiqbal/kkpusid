@@ -53,7 +53,19 @@ const SimpananPage = ({ decodedToken }) => {
 
         if (products.length > 0) {
           const targetCode = decodedToken?.activeTab;
-          const targetProduct = targetCode ? products.find(p => p.product_code === targetCode) : null;
+          let targetProduct = null;
+          
+          if (targetCode) {
+            const targetUpper = targetCode.toString().toUpperCase();
+            targetProduct = products.find(p => 
+              p.product_code === targetCode || 
+              p.product_code?.toUpperCase().includes(targetUpper) ||
+              targetUpper.includes(p.product_code?.toUpperCase()) ||
+              (targetUpper.includes("WAJIB") && p.product_code?.toUpperCase().includes("WAJIB")) ||
+              (targetUpper.includes("POKOK") && p.product_code?.toUpperCase().includes("POKOK")) ||
+              (targetUpper.includes("SUKARELA") && p.product_code?.toUpperCase().includes("SUKARELA"))
+            );
+          }
           
           if (targetProduct) {
             setActiveTab({ code: targetProduct.product_code, name: targetProduct.product_name });

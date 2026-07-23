@@ -35,18 +35,8 @@ export const usePaymentHandler = () => {
       setPaymentSuccess(true);
       setPaymentData(event.detail);
       
-      // Tutup Snap popup
+      // Tutup Snap popup jika ada
       handleCloseSnap();
-      
-      // Tampilkan konfirmasi sukses
-      Swal.fire({
-        title: 'Pembayaran berhasil! Keanggotaan Anda sedang diaktifkan...',
-        icon: 'success',
-        toast: true,
-        position: 'top',
-        timer: 5000,
-        showConfirmButton: false
-      });
     };
 
     // Register event listeners

@@ -43,6 +43,7 @@ const FormPengajuanTabungan = () => {
   const [formData, setFormData] = useState({
     monthly_deposit: "",
     term_months: "",
+    target_amount: "",
     akadAgreed: false,
   });
   const [errors, setErrors] = useState({});
@@ -77,6 +78,18 @@ const FormPengajuanTabungan = () => {
     return value.replace(/\D/g, "");
   }, []);
 
+  const handleTargetChange = useCallback(
+    (e) => {
+      const rawValue = parseCurrency(e.target.value);
+      setFormData((prev) => ({
+        ...prev,
+        target_amount: rawValue,
+      }));
+      setErrors((prev) => ({ ...prev, target_amount: "" }));
+    },
+    [parseCurrency]
+  );
+
   const handleSetoranChange = useCallback(
     (e) => {
       const rawValue = parseCurrency(e.target.value);
@@ -108,19 +121,40 @@ const FormPengajuanTabungan = () => {
     }));
   }, []);
 
+  const isQurban = programData?.category?.toLowerCase().includes("qurban");
+
   const calculatedTarget = useMemo(() => {
+    if (isQurban) return parseInt(formData.target_amount, 10) || 0;
     const deposit = parseInt(formData.monthly_deposit, 10) || 0;
     const term = parseInt(formData.term_months, 10) || 0;
     return deposit * term;
-  }, [formData.monthly_deposit, formData.term_months]);
+  }, [isQurban, formData.target_amount, formData.monthly_deposit, formData.term_months]);
+
+  const calculatedDeposit = useMemo(() => {
+    if (!isQurban) return parseInt(formData.monthly_deposit, 10) || 0;
+    const target = parseInt(formData.target_amount, 10) || 0;
+    const term = parseInt(formData.term_months, 10) || 0;
+    return term > 0 ? Math.ceil(target / term) : 0;
+  }, [isQurban, formData.target_amount, formData.term_months, formData.monthly_deposit]);
 
   const validateForm = useCallback(() => {
     const newErrors = {};
-    const setoran = parseInt(formData.monthly_deposit, 10) || 0;
+    const setoran = calculatedDeposit;
     const term = parseInt(formData.term_months, 10) || 0;
     
-    if (setoran <= 0) {
-      newErrors.monthly_deposit = "Setoran bulanan harus lebih dari 0";
+    if (isQurban) {
+      const target = parseInt(formData.target_amount, 10) || 0;
+      if (target <= 0) {
+        newErrors.target_amount = "Target nominal harus lebih dari 0";
+      }
+    } else {
+      if (setoran <= 0) {
+        newErrors.monthly_deposit = "Setoran bulanan harus lebih dari 0";
+      }
+    }
+
+    if (term <= 0) {
+      newErrors.term_months = "Durasi harus lebih dari 0";
     }
 
     if (term <= 0) {
@@ -146,7 +180,7 @@ const FormPengajuanTabungan = () => {
     try {
       const payload = {
         saving_target_id: programData.saving_target_id,
-        monthly_deposit: parseInt(formData.monthly_deposit, 10),
+        monthly_deposit: calculatedDeposit,
         term_months: parseInt(formData.term_months, 10),
       };
 
@@ -256,44 +290,86 @@ const FormPengajuanTabungan = () => {
                       </h6>
                     </div>
 
-                    <Row className="mb-4">
-                      <Col md={12}>
-                        <div className="p-3 bg-light rounded-3 mb-3 mb-md-0 border">
-                          <span className="small text-muted d-block mb-1">Target Nominal (Otomatis dari Setoran Bulanan × Durasi)</span>
-                          <span className="fw-bold text-dark fs-5">Rp {formatCurrency(calculatedTarget)}</span>
-                        </div>
-                      </Col>
-                    </Row>
+                    {!isQurban && (
+                      <Row className="mb-4">
+                        <Col md={12}>
+                          <div className="p-3 bg-light rounded-3 mb-3 mb-md-0 border">
+                            <span className="small text-muted d-block mb-1">Target Nominal (Otomatis dari Setoran Bulanan × Durasi)</span>
+                            <span className="fw-bold text-dark fs-5">Rp {formatCurrency(calculatedTarget)}</span>
+                          </div>
+                        </Col>
+                      </Row>
+                    )}
+                    {isQurban && (
+                      <Row className="mb-4">
+                        <Col md={12}>
+                          <Form.Group className="custom-input-group">
+                            <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                              Target Nominal
+                              <span className="text-danger ms-1">*</span>
+                            </Form.Label>
+                            <Form.Control
+                              ref={firstInputRef}
+                              type="text"
+                              name="target_amount"
+                              value={formData.target_amount ? `Rp ${formatCurrency(formData.target_amount)}` : ""}
+                              onChange={handleTargetChange}
+                              placeholder="Contoh: Rp 3.500.000"
+                              className={`custom-flat-input ${errors.target_amount ? "border-danger error-shake" : ""}`}
+                              isInvalid={!!errors.target_amount}
+                              disabled={loading}
+                              inputMode="numeric"
+                            />
+                            <AnimatePresence>
+                              {errors.target_amount && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                                  <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                                    <small className="text-danger fw-bold">{errors.target_amount}</small>
+                                  </Form.Control.Feedback>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                    )}
 
                     <Row className="mb-4">
                       <Col md={6}>
-                        <Form.Group className="custom-input-group">
-                          <Form.Label className="form-label d-flex align-items-center fw-semibold">
-                            Setoran Bulanan
-                            <span className="text-danger ms-1">*</span>
-                          </Form.Label>
-                          <Form.Control
-                            ref={firstInputRef}
-                            type="text"
-                            name="monthly_deposit"
-                            value={formData.monthly_deposit ? `Rp ${formatCurrency(formData.monthly_deposit)}` : ""}
-                            onChange={handleSetoranChange}
-                            placeholder="Contoh: Rp 500.000"
-                            className={`custom-flat-input ${errors.monthly_deposit ? "border-danger error-shake" : ""}`}
-                            isInvalid={!!errors.monthly_deposit}
-                            disabled={loading}
-                            inputMode="numeric"
-                          />
-                          <AnimatePresence>
-                            {errors.monthly_deposit && (
-                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                                <Form.Control.Feedback type="invalid" className="d-block mt-1">
-                                  <small className="text-danger fw-bold">{errors.monthly_deposit}</small>
-                                </Form.Control.Feedback>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </Form.Group>
+                        {isQurban ? (
+                          <div className="p-3 bg-light rounded-3 mb-3 mb-md-0 border h-100 d-flex flex-column justify-content-center">
+                            <span className="small text-muted d-block mb-1">Setoran Bulanan (Target ÷ Durasi)</span>
+                            <span className="fw-bold text-dark fs-5">Rp {formatCurrency(calculatedDeposit)}</span>
+                          </div>
+                        ) : (
+                          <Form.Group className="custom-input-group">
+                            <Form.Label className="form-label d-flex align-items-center fw-semibold">
+                              Setoran Bulanan
+                              <span className="text-danger ms-1">*</span>
+                            </Form.Label>
+                            <Form.Control
+                              ref={firstInputRef}
+                              type="text"
+                              name="monthly_deposit"
+                              value={formData.monthly_deposit ? `Rp ${formatCurrency(formData.monthly_deposit)}` : ""}
+                              onChange={handleSetoranChange}
+                              placeholder="Contoh: Rp 500.000"
+                              className={`custom-flat-input ${errors.monthly_deposit ? "border-danger error-shake" : ""}`}
+                              isInvalid={!!errors.monthly_deposit}
+                              disabled={loading}
+                              inputMode="numeric"
+                            />
+                            <AnimatePresence>
+                              {errors.monthly_deposit && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                                  <Form.Control.Feedback type="invalid" className="d-block mt-1">
+                                    <small className="text-danger fw-bold">{errors.monthly_deposit}</small>
+                                  </Form.Control.Feedback>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </Form.Group>
+                        )}
                       </Col>
                       <Col md={6}>
                         <Form.Group className="custom-input-group">

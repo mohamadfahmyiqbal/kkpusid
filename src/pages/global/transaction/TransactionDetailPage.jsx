@@ -383,6 +383,7 @@ const TransactionDetailPage = ({ decodedToken }) => {
                     approvalStatus={approvalStatus}
                     productName={detail?.category}
                     detail={detail}
+                    returnPage={returnPage}
                   />
                 </div>
 

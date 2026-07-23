@@ -132,12 +132,11 @@ const useAccountRegister = () => {
     if (!isValid) {
       const firstError = Object.values(valErrors).find(Boolean);
       Swal.fire({
-        title: firstError || "Silakan lengkapi semua data dengan benar.",
         icon: "error",
-        toast: true,
-        position: "top-end",
-        timer: 3000,
-        showConfirmButton: false
+        title: "Validasi Gagal",
+        text: firstError || "Silakan lengkapi semua data dengan benar.",
+        confirmButtonText: "Tutup",
+        confirmButtonColor: "#ef4444"
       });
       return;
     }
@@ -154,25 +153,25 @@ const useAccountRegister = () => {
 
       if (res.data?.success) {
         Swal.fire({
-          title: SUCCESS_MESSAGES.REGISTER || "Registrasi berhasil!",
           icon: "success",
-          toast: true,
-          position: "top-end",
-          timer: 3000,
-          showConfirmButton: false
+          title: "Registrasi Berhasil!",
+          text: SUCCESS_MESSAGES.REGISTER || "Akun Anda telah berhasil dibuat. Silakan login untuk melanjutkan.",
+          confirmButtonText: "Ke Halaman Login",
+          confirmButtonColor: "#10b981",
+          allowOutsideClick: false
+        }).then(() => {
+          resetForm();
+          navigate(LOGIN_PATH);
         });
-        resetForm();
-        setTimeout(() => navigate(LOGIN_PATH), REDIRECT_DELAY_MS);
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Registrasi gagal, silakan coba lagi.";
       Swal.fire({
-        title: msg,
         icon: "error",
-        toast: true,
-        position: "top-end",
-        timer: 3000,
-        showConfirmButton: false
+        title: "Registrasi Gagal",
+        text: msg,
+        confirmButtonText: "Tutup",
+        confirmButtonColor: "#ef4444"
       });
     } finally {
       setLoading(false);

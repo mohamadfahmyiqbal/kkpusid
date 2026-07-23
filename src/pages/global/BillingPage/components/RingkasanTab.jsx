@@ -23,9 +23,11 @@ function RingkasanTab({ bills, history, onGoToPending }) {
           {overdue.length > 0 && (
             <div className="bp-ringkasan-card-alert">⚠ {overdue.length} tagihan sudah melewati jatuh tempo</div>
           )}
-          <button className="bp-ringkasan-btn" onClick={onGoToPending}>
-            Bayar Sekarang
-          </button>
+          {safeBills.length > 0 && (
+            <button className="bp-ringkasan-btn" onClick={onGoToPending}>
+              Bayar Sekarang
+            </button>
+          )}
         </div>
 
         {/* Lunas */}

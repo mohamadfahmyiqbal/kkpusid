@@ -1,0 +1,1 @@
+import{Ar as e}from"./vendor-react-DnAjXFO1.js";var t=e.create({baseURL:`https://api.kkpus.id/api`,withCredentials:!0,headers:{"Content-Type":`application/json`}});t.interceptors.request.use(e=>{let t=localStorage.getItem(`token`);return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));export{t};

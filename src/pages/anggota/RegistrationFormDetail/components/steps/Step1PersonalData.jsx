@@ -184,7 +184,7 @@ const Step1PersonalData = ({
       </div>
 
       {/* SECTION 2: DETAIL DOMISILI */}
-      <div className="d-flex align-items-center mb-4">
+      <div className="d-flex align-items-center mt-5 mb-4">
         <div className="icon-box bg-soft-primary text-primary me-3">
           <FaMapMarkerAlt />
         </div>

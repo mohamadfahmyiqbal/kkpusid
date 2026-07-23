@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Container, Spinner,  Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaExclamationTriangle } from "react-icons/fa";
@@ -46,11 +46,24 @@ const InvoicePage = () => {
     setDynamicBillId,
   } = useInvoiceData();
 
+  const hasShownSuccessSwal = useRef(false);
+
   // Listener untuk menutup Snap popup dari socket notification
   useEffect(() => {
     const handlePaymentComplete = () => {
+      if (hasShownSuccessSwal.current) return;
+      hasShownSuccessSwal.current = true;
 
-      
+      // Tampilkan Swal dialog sukses pembayaran
+      Swal.fire({
+        icon: 'success',
+        title: 'Pembayaran Berhasil!',
+        text: 'Pembayaran Anda telah diterima dan diverifikasi oleh sistem.',
+        confirmButtonText: 'Selesai',
+        confirmButtonColor: '#10b981',
+        allowOutsideClick: false
+      });
+
       // Beri sedikit jeda agar backend selesai memproses ledger
       setTimeout(async () => {
         if (window.snap && window.snap.hide) {
@@ -72,7 +85,7 @@ const InvoicePage = () => {
 
   const isPaid = billData?.status === "PAID" || status === "success" || isLocalPaid;
   const isRegistrationFlow = returnPage === "registrationPage" || (returnPage === "billingPage" && registrationId);
-  const isSimpananFlow = isPaid && originalReturn === "simpananPage";
+  const isSimpananFlow = originalReturn === "simpananPage" || returnPage === "simpananPage" || category === "SIMPANAN" || category === "SUKARELA" || category === "WAJIB" || category === "POKOK";
   const isPelunasan = (productName || product || categoryName || category)?.toLowerCase().includes("pelunasan");
 
   const handleNavigateBack = useCallback(() => {
@@ -83,7 +96,21 @@ const InvoicePage = () => {
     }
 
     if (isSimpananFlow) {
-      navigate(`/${jwtEncode({ page: "simpananPage", activeTab: categoryName })}`);
+      // Tentukan kode tab berdasarkan kategori/productName/description yang ada
+      const billDetailDesc = billData?.details?.map(d => d.description).join(" ") || "";
+      const targetCategory = `${categoryName || ""} ${category || ""} ${product || ""} ${productName || ""} ${billDetailDesc}`;
+      let activeTabCode = "SUKARELA"; // default fallback
+      
+      const catUpper = targetCategory.toUpperCase();
+      if (catUpper.includes("WAJIB")) {
+        activeTabCode = "WAJIB";
+      } else if (catUpper.includes("POKOK")) {
+        activeTabCode = "POKOK";
+      } else if (catUpper.includes("SUKARELA")) {
+        activeTabCode = "SUKARELA";
+      }
+
+      navigate(`/${jwtEncode({ page: "simpananPage", activeTab: activeTabCode })}`);
       return;
     }
 

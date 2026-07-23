@@ -32,8 +32,8 @@ import {
 import { profileService } from "../../../services/profileService";
 import { getSocket } from "../../../utils/socket";
 import "./AccountPage.css";
+import { jwtEncode } from "../../../utils/helpers";
 import Alert from "../../../components/ui/SwalAlert";
-
 
 // Helper untuk format tanggal Indonesia
 const formatDate = (dateStr) => {
@@ -294,20 +294,7 @@ export default function AccountPage() {
   };
 
   const handleTerminateKeanggotaan = async () => {
-    const result = await Swal.fire({
-      title: "Konfirmasi",
-      text: "Apakah Anda yakin ingin mengajukan penghentian keanggotaan? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, Hentikan",
-      cancelButtonText: "Batal"
-    });
-    if (result.isConfirmed) {
-      showNotification(
-        "Pengajuan penghentian keanggotaan berhasil diajukan ke pengurus.",
-        "warning"
-      );
-    }
+    navigate(`/${jwtEncode({ page: "resignationCheck" })}`);
   };
 
   const renderAvatar = (user) => {
@@ -433,7 +420,7 @@ export default function AccountPage() {
                       Bergabung sejak{" "}
                       {userProfile?.join_date && userProfile.join_date !== "-"
                         ? formatDate(userProfile.join_date)
-                        : "25 Maret 2024"}
+                        : "-"}
                     </span>
                   </div>
                 </div>
@@ -446,9 +433,9 @@ export default function AccountPage() {
                   <strong className="text-white fs-7">Akun Anda Terverifikasi</strong>
                   <span className="opacity-75 fs-8">
                     Terakhir diperbarui{" "}
-                    {userProfile?.join_date && userProfile.join_date !== "-"
-                      ? formatDate(userProfile.join_date)
-                      : "25 Mei 2024"}
+                    {userProfile?.updated_at && userProfile.updated_at !== "-"
+                      ? formatDate(userProfile.updated_at)
+                      : "-"}
                   </span>
                 </div>
               </div>
@@ -500,7 +487,7 @@ export default function AccountPage() {
                     <span className="ap-info-value">
                       {userProfile?.join_date && userProfile.join_date !== "-"
                         ? formatDate(userProfile.join_date)
-                        : "25 Maret 2024"}
+                        : "-"}
                     </span>
                   </div>
                 </div>

@@ -14,10 +14,25 @@ const ActionButtons = ({
   approvalStatus,
   productName,
   detail,
+  returnPage,
 }) => {
   const navigate = useNavigate();
 
+  const isFromHistory = useMemo(() => {
+    if (!returnPage) return false;
+    const lowerReturn = returnPage.toLowerCase();
+    return lowerReturn.includes("history") || lowerReturn.includes("riwayat") || lowerReturn.includes("jualbeli");
+  }, [returnPage]);
+
   const isApprovedAndReady = useMemo(() => {
+    const isArisan = productName?.toLowerCase().includes('arisan') || detail?.category?.toLowerCase().includes('arisan');
+    const isStatusApproved = detail?.status === 'APPROVED' || detail?.status === 'APPROVED_WAITING_PAYMENT';
+    
+    // For Arisan, it must be explicitly fully approved.
+    if (isArisan) {
+      return isStatusApproved || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
+    }
+
     const hasBendahara = detail?.approvalChain?.some(a => a.role?.toUpperCase() === 'BENDAHARA') ||
                          detail?.approvals?.some(a => (a.role || a.role_name)?.toUpperCase() === 'BENDAHARA');
                          
@@ -27,8 +42,8 @@ const ActionButtons = ({
       (hasBendahara ? approvalStatus?.bendaharaDone : true) &&
       !approvalStatus?.isRejected;
     
-    return isDone || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
-  }, [approvalStatus, detail]);
+    return isDone || isStatusApproved || approvalStatus?.isApproved || approvalStatus?.isReadyToPay;
+  }, [approvalStatus, detail, productName]);
 
   const isPinjamanProduct = isFinancing && 
     !(productName?.toLowerCase().includes('arisan')) && 
@@ -94,7 +109,7 @@ const ActionButtons = ({
   return (
     <section className="mt-5 d-print-none">
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-        {isApprovedAndReady && (isFinancing || isTabungan || isSukukOrder) && detail?.status !== 'PAID' && (
+        {isApprovedAndReady && !isFromHistory && (isFinancing || isTabungan || isSukukOrder) && detail?.status !== 'PAID' && detail?.status !== 'APPROVED' && detail?.status !== 'COMPLETED' && (
           <Button
             variant="primary"
             size="lg"
@@ -147,12 +162,14 @@ const ActionButtons = ({
           </Button>
         )}
 
-        {isApprovedAndReady && !isFinancing && !isTabungan && !isSukukOrder && (
+        {isApprovedAndReady && (
+          (!isFinancing && !isTabungan && !isSukukOrder) || isPinjamanProduct
+        ) && (
           <Button
             variant="primary"
             size="lg"
             className="rounded-pill px-5 py-3 fw-bold shadow d-flex align-items-center justify-content-center gap-2"
-            onClick={() => navigate(`/${jwtEncode({ page: 'receiptPage', withdrawalId: transactionId })}`)}
+            onClick={() => navigate(`/${jwtEncode({ page: 'receiptPage', ...(isFinancing ? { financingId: transactionId } : { withdrawalId: transactionId }) })}`)}
             style={{ 
               background: 'linear-gradient(45deg, #10b981, #059669)',
               border: 'none'

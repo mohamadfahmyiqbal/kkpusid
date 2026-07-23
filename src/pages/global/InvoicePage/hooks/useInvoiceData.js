@@ -66,6 +66,7 @@ export const useInvoiceData = () => {
               if (isPolling) {
                 window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
                 window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
+                window.dispatchEvent(new CustomEvent("PAYMENT_SUCCESSFUL", { detail: newData }));
               }
             }
           }
@@ -83,6 +84,7 @@ export const useInvoiceData = () => {
               if (isPolling) {
                 window.dispatchEvent(new Event("REFRESH_REGISTRATION_STATUS"));
                 window.dispatchEvent(new CustomEvent("profileUpdated", { detail: { timestamp: Date.now() } }));
+                window.dispatchEvent(new CustomEvent("PAYMENT_SUCCESSFUL", { detail: newData }));
               }
             }
           }

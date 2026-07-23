@@ -193,19 +193,25 @@ export default React.memo(function Step8Summary({
           </div>
         </div>
 
-        <Form.Check
-          type="checkbox"
-          id="commitmentCheck"
-          label={
-            <span className="small fw-bold text-dark ms-2" style={{ cursor: "pointer" }}>
-              Saya menyatakan bahwa seluruh data yang saya masukkan adalah <span className="text-primary">benar, valid</span>, dan dapat dipertanggungjawabkan sesuai hukum yang berlaku.
-            </span>
-          }
-          style={{ cursor: "pointer" }}
-          checked={isCommitmentChecked}
-          onChange={(e) => setIsCommitmentChecked(e.target.checked)}
-          className="p-2 p-md-3 bg-white rounded-12 border shadow-sm d-flex align-items-center"
-        />
+        <div 
+          className={`p-3 p-md-4 rounded-12 border shadow-sm d-flex align-items-center ${
+            isCommitmentChecked ? "bg-primary bg-opacity-10 border-primary" : "bg-white"
+          }`}
+          style={{ cursor: "pointer", transition: "all 0.3s ease" }}
+          onClick={() => setIsCommitmentChecked(!isCommitmentChecked)}
+        >
+          <Form.Check
+            type="checkbox"
+            id="commitmentCheck"
+            checked={isCommitmentChecked}
+            onChange={(e) => {}} // Handled by wrapper
+            style={{ transform: "scale(1.2)", pointerEvents: "none" }}
+            className="mb-0 m-0"
+          />
+          <span className="small fw-bold text-dark ms-3" style={{ userSelect: "none" }}>
+            Saya menyatakan bahwa seluruh data yang saya masukkan adalah <span className="text-primary">benar, valid</span>, dan dapat dipertanggungjawabkan sesuai hukum yang berlaku.
+          </span>
+        </div>
       </div>
     </div>
   );

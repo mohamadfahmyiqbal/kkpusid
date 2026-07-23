@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import PAGE_COMPONENTS from "./PageRoutes";
 import { jwtDecodePage } from "../utils/helpers";
 import LayoutGlobal from "../components/layout/components/LayoutGlobal";
-import { TransactionProvider } from "../components/layout/contexts";
+import { TransactionProvider, useProfile } from "../components/layout/contexts";
 
 const PageLoader = () => (
   <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
@@ -17,6 +17,10 @@ const PageLoader = () => (
 export const EncryptedPage = React.memo(() => {
   const { token } = useParams();
 
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [token]);
+
   const decodedData = useMemo(() => {
     try {
       return jwtDecodePage(token);
@@ -26,7 +30,16 @@ export const EncryptedPage = React.memo(() => {
     }
   }, [token]);
 
-  const pageName = decodedData?.page;
+  const { userData } = useProfile();
+  let pageName = decodedData?.page;
+  
+  // Intercept if member has active termination
+  if (userData?.active_termination) {
+    if (pageName !== "termination_progress" && pageName !== "globalSplash" && pageName !== "landingPage") {
+      pageName = "termination_progress";
+    }
+  }
+
   const routeConfig = PAGE_COMPONENTS[pageName];
 
   if (!decodedData || !routeConfig) {

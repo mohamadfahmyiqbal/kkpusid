@@ -7,11 +7,11 @@ import {
   Col,
   Row,
   ProgressBar,
-  
   Badge,
   Spinner
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { FaUserCircle, FaArrowRight, FaSave, FaArrowLeft, FaFileSignature } from "react-icons/fa";
 import AnggotaService from "../services/AnggotaService";
 import { jwtEncode } from "../../../../utils/helpers";
@@ -192,7 +192,14 @@ export default function RegistrationFormDetail() {
       const response = await AnggotaService.submitRegistration(formData);
       if (response.data?.status === true) {
         localStorage.removeItem("temp_reg_data");
-        navigate(`/${jwtEncode({ page: "registrationPage" })}`);
+        const regLink = `/${jwtEncode({ page: "registrationPage" })}`;
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          html: `Pengajuan pendaftaran anggota berhasil dikirim.<br><br><a href="${regLink}" class="btn btn-primary btn-sm mt-2">Lihat Status Pendaftaran</a>`,
+          showConfirmButton: false,
+          showCloseButton: true
+        });
       } else {
         setSubmitError(
           response.data?.message || "Gagal mengirim data permohonan.",

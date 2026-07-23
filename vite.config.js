@@ -59,11 +59,26 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'build',
-      chunkSizeWarningLimit: 1600,
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('@fortawesome') || id.includes('phosphor-react') || id.includes('react-icons')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('bootstrap') || id.includes('react-bootstrap')) {
+                return 'vendor-bootstrap';
+              }
+              if (id.includes('framer-motion')) {
+                return 'vendor-framer';
+              }
+              if (id.includes('xstate') || id.includes('@xstate')) {
+                return 'vendor-xstate';
+              }
               return 'vendor';
             }
           }

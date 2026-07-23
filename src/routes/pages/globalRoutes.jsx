@@ -49,6 +49,10 @@ const globalRoutes = {
     component: lazy(() => import("../../pages/global/TermsConditionsPage/TermsConditionsPage")),
     isProtected: false,
   },
+  termination_progress: {
+    component: lazy(() => import("../../pages/global/termination/TerminationProgressPage")),
+    isProtected: true,
+  },
 };
 
 export default globalRoutes;

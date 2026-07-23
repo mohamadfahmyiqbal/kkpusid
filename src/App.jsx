@@ -42,38 +42,91 @@ const App = () => {
 
         // Event listeners untuk update real-time
         socket.on('notifications:update', (data) => {
-          toast.info(data.title || 'Notifikasi baru', {
-            position: "top-right",
-            autoClose: 5000,
-          });
+          // Handled via socket & components
         });
 
         socket.on('profile:update', (data) => {
-          toast.success('Profil diperbarui');
-          // TODO: Update ProfileProvider jika diperlukan
+          // Silent profile update
         });
 
-        socket.on('withdrawals:update', (data) => {
-          toast.info('Data penarikan diperbarui');
-        });
+        const handleWithdrawalSocketUpdate = (data) => {
+          const statusName = (data?.status || data?.final_status || data?.decision || '').toUpperCase();
+          const roleName = data?.role_name || data?.currentStep?.verifierRole?.role_name || data?.step_name || 'Pengurus';
+          const isApproved = statusName === 'APPROVED' || statusName === 'DISETUJUI';
+          const isRejected = statusName === 'REJECTED' || statusName === 'DITOLAK';
+          const withdrawalId = data?.withdrawalId || data?.withdrawal_id || data?.entityId || data?.id;
+
+          const detailTarget = withdrawalId 
+            ? `/${jwtEncode({ page: "transactionDetailPage", withdrawalId })}`
+            : `/${jwtEncode({ page: "penarikanSimpananPage" })}`;
+
+          if (isApproved) {
+            Swal.fire({
+              title: 'Pencairan Disetujui!',
+              text: 'Pengajuan pencairan simpanan Anda telah disetujui sepenuhnya.',
+              icon: 'success',
+              showCancelButton: true,
+              confirmButtonColor: '#10b981',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Lihat Detail',
+              cancelButtonText: 'Tutup'
+            }).then((result) => {
+              if (result.isConfirmed) window.location.href = detailTarget;
+            });
+          } else if (isRejected) {
+            Swal.fire({
+              title: 'Pencairan Ditolak',
+              text: data?.notes || data?.note || 'Pengajuan pencairan simpanan Anda tidak disetujui.',
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              confirmButtonText: 'Tutup'
+            });
+          } else {
+            Swal.fire({
+              title: 'Pencairan Diproses',
+              text: `Pengajuan pencairan simpanan Anda berhasil disetujui pada tahap (${roleName}).`,
+              icon: 'info',
+              showCancelButton: true,
+              confirmButtonColor: '#0d6efd',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Cek Detail',
+              cancelButtonText: 'Tutup'
+            }).then((result) => {
+              if (result.isConfirmed) window.location.href = detailTarget;
+            });
+          }
+        };
+
+        socket.on('withdrawals:update', handleWithdrawalSocketUpdate);
+        socket.on('SAVINGS_WITHDRAWAL_UPDATED', handleWithdrawalSocketUpdate);
+        socket.on('SAVINGS_WITHDRAWALS_UPDATED', handleWithdrawalSocketUpdate);
 
         socket.on('savings:update', (data) => {
-          toast.info('Data tabungan diperbarui');
+          // Refresh data tanpa menampilkan toast
         });
 
-        socket.on('financing_applications:update', (data) => {
+        const handleFinancingSocketUpdate = (data) => {
+          const financingId = data?.financingId || data?.financing_id || data?.entityId || data?.id;
+          const targetUrl = financingId 
+            ? `/${jwtEncode({ page: "transactionDetailPage", financingId })}`
+            : `/${jwtEncode({ page: "programPage" })}`;
+
           Swal.fire({
-            title: 'Pembaruan Pembiayaan',
-            text: 'Status pengajuan pembiayaan Anda telah diperbarui.',
+            title: 'Pembaruan Pembiayaan / Arisan',
+            text: 'Status pengajuan Anda telah diperbarui oleh pengurus.',
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#0d6efd',
             confirmButtonText: 'Cek Sekarang',
             cancelButtonText: 'Tutup'
           }).then((result) => {
-            if (result.isConfirmed) window.location.href = `/${jwtEncode({ page: "dashboard" })}`;
+            if (result.isConfirmed) window.location.href = targetUrl;
           });
-        });
+        };
+
+        socket.on('financing_applications:update', handleFinancingSocketUpdate);
+        socket.on('FINANCING_APPLICATIONS_UPDATED', handleFinancingSocketUpdate);
+        socket.on('FINANCING_APPLICATION_UPDATED', handleFinancingSocketUpdate);
 
         const handleRegistrationUpdate = (data) => {
           // Selalu trigger refresh global untuk memastikan state sinkron dengan DB
@@ -101,8 +154,14 @@ const App = () => {
         socket.on('new_notification', (data) => {
           const titleLower = (data?.title || '').toLowerCase();
           const isApproval = titleLower.includes('disetujui') || titleLower.includes('approval') || data?.type === 'APPROVAL' || titleLower.includes('verifikasi');
+          const isPaymentSuccess = data?.type === 'PAYMENT_SUCCESS' || titleLower.includes('pembayaran');
 
-          if (isApproval) {
+          if (isPaymentSuccess) {
+            // Trigger event untuk menutup Snap popup & refresh status
+            window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));
+            window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
+            window.dispatchEvent(new CustomEvent("PAYMENT_SUCCESSFUL", { detail: data }));
+          } else if (isApproval) {
             Swal.fire({
               title: data.title || 'Persetujuan Berhasil',
               text: data.content || 'Ada pembaruan pada status pengajuan Anda.',
@@ -118,20 +177,14 @@ const App = () => {
               }
             });
           } else {
-            // Tampilkan toast notifikasi biasa
-            toast.success(data.title || 'Notifikasi Baru', {
-              description: data.content || '',
-              position: "top-center",
-              autoClose: 5000,
+            // Tampilkan Swal dialog untuk notifikasi lainnya
+            Swal.fire({
+              icon: 'info',
+              title: data.title || 'Notifikasi Baru',
+              text: data.content || '',
+              confirmButtonText: 'OK',
+              confirmButtonColor: '#0d6efd'
             });
-          }
-
-          // Handle khusus untuk PAYMENT_SUCCESS
-          if (data.type === "PAYMENT_SUCCESS") {
-            // Trigger event untuk menutup Snap popup
-            window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));
-            // Trigger refresh status registrasi
-            window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
           }
         });
 

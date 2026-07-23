@@ -16,6 +16,10 @@ const anggotaRoutes = {
     component: lazy(() => import("../../pages/anggota/RegistrationSummary")),
     isProtected: true,
   },
+  resignationCheck: {
+    component: lazy(() => import("../../pages/anggota/ResignationCheckPage/ResignationCheckPage")),
+    isProtected: true,
+  },
 };
 
 export default anggotaRoutes;

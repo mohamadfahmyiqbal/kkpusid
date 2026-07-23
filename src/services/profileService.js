@@ -56,7 +56,13 @@ export const profileService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching profile:", error);
-      throw error;
+      if (error.response?.status === 404) {
+        throw new Error("Data anggota tidak ditemukan. Anda belum terdaftar sebagai anggota penuh atau data tidak ada.");
+      }
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error("Terjadi kesalahan saat memuat data profil.");
     }
   },
 
@@ -118,6 +124,7 @@ export const profileService = {
       bank_account_no: backendData.bank_info?.bank_account_no || "-",
       bank_name: backendData.bank_info?.bank_name || "-",
       account_holder: backendData.bank_info?.account_holder || "-",
+      updated_at: backendData.updated_at || "-",
     };
   },
 

@@ -9,8 +9,10 @@ import { jwtEncode } from "../../../utils/helpers";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaRegFileAlt, FaPrint, FaDownload, FaArrowLeft } from "react-icons/fa";
 import api from "../../../utils/api/common";
+import html2pdf from "html2pdf.js";
+import { useRef } from "react";
 
-const ProtectedFileViewer = ({ url, title }) => {
+const ProtectedFileViewer = ({ url, title, isImage = false, className = "", style = {} }) => {
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,8 +22,12 @@ const ProtectedFileViewer = ({ url, title }) => {
     const fetchFile = async () => {
       try {
         setLoading(true);
-        const response = await api.get(url, { responseType: 'blob' });
-        objectUrl = URL.createObjectURL(response.data);
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error("Gagal mengunduh berkas");
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
         setBlobUrl(objectUrl);
       } catch (err) {
         console.error("Failed to load protected file:", err);
@@ -41,10 +47,14 @@ const ProtectedFileViewer = ({ url, title }) => {
     };
   }, [url]);
 
-  if (loading) return <div className="d-flex align-items-center justify-content-center w-100 h-100 bg-light text-secondary"><Spinner size="sm" animation="border" className="me-2"/> Memuat...</div>;
-  if (error || !url || url === '#') return <div className="d-flex align-items-center justify-content-center w-100 h-100 bg-light text-danger small">Gagal memuat dokumen</div>;
+  if (loading) return <div className="d-flex align-items-center justify-content-center w-100 p-4 bg-light text-secondary"><Spinner size="sm" animation="border" className="me-2"/> Memuat bukti transfer...</div>;
+  if (error || !url || url === '#') return <div className="d-flex align-items-center justify-content-center w-100 p-4 bg-light text-danger small">Gagal memuat bukti transfer</div>;
 
-  return <iframe src={blobUrl} title={title} style={{ width: '100%', height: '100%', border: 'none' }} />;
+  if (isImage) {
+    return <img src={blobUrl} alt={title} className={className} style={style} />;
+  }
+
+  return <iframe src={blobUrl} title={title} style={{ width: '100%', height: '100%', border: 'none', ...style }} />;
 };
 
 const API_BASE_URL =
@@ -157,17 +167,37 @@ export default function ReceiptPage({ decodedToken }) {
     loadData();
   }, [financingId, withdrawalId, isWithdrawal, navigate]);
 
-  const handleDownloadPDF = () => {
-    Swal.fire({
-      icon: "info",
-      title: "Download PDF",
-      text: "Fitur download PDF sedang dalam pengembangan.",
-      confirmButtonColor: "#0d6efd",
-    });
-  };
+  const receiptRef = useRef(null);
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = () => {
+    const element = receiptRef.current;
+    if (!element) return;
+
+    Swal.fire({
+      title: 'Memproses PDF...',
+      text: 'Mohon tunggu sebentar',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    const fileName = `Resi_${isWithdrawal ? "Penarikan" : "Pinjaman"}_${isWithdrawal ? (receiptData.id || receiptData.withdrawal_id) : receiptData.financing_id}.pdf`;
+
+    const opt = {
+      margin:       0.5,
+      filename:     fileName,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).outputPdf('bloburl').then((pdfUrl) => {
+      Swal.close();
+      window.open(pdfUrl, '_blank');
+    }).catch(err => {
+      Swal.close();
+      console.error(err);
+      Swal.fire('Error', 'Gagal memproses PDF', 'error');
+    });
   };
 
   if (isLoading) {
@@ -201,12 +231,18 @@ export default function ReceiptPage({ decodedToken }) {
 
   const getProofUrl = () => {
     if (!receiptData?.transfer_proof_path) return null;
-    const baseUrl = API_BASE_URL.endsWith("/api") ? API_BASE_URL.slice(0, -4) : API_BASE_URL;
-    return `${baseUrl}/${receiptData.transfer_proof_path}`;
+    let path = receiptData.transfer_proof_path;
+    if (path.startsWith("/")) path = path.slice(1);
+    
+    // Ensure static upload requests hit /api/uploads/ path
+    if (path.startsWith("uploads/")) {
+      return `${API_BASE_URL}/${path.replace(/^uploads\//, "uploads/")}`;
+    }
+    return `${API_BASE_URL}/${path}`;
   };
 
   const proofUrl = getProofUrl();
-  const isProofPdf = proofUrl && proofUrl.toLowerCase().endsWith('.pdf');
+  const isProofPdf = receiptData?.transfer_proof_path?.toLowerCase().endsWith('.pdf');
 
   return (
     <Container fluid className="py-3 px-0">
@@ -221,9 +257,9 @@ export default function ReceiptPage({ decodedToken }) {
         </Button>
         <div className="d-flex gap-2">
           <Button 
-            variant="outline-primary" 
-            className="rounded-pill px-4 fw-semibold d-flex align-items-center" 
-            onClick={handlePrint}
+            variant="outline-secondary" 
+            className="rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center" 
+            onClick={() => window.print()}
           >
             <FaPrint className="me-2" /> Cetak Resi
           </Button>
@@ -242,20 +278,21 @@ export default function ReceiptPage({ decodedToken }) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <Card className="border-0 shadow-lg rounded-4 overflow-hidden position-relative print-area bg-white">
-          {/* Background Decorative Element */}
-          <div 
-            className="position-absolute no-print" 
-            style={{ 
-              top: "-50px", 
-              right: "-50px", 
-              width: "200px", 
-              height: "200px", 
-              borderRadius: "50%", 
-              background: isPaid ? "rgba(40, 167, 69, 0.05)" : "rgba(0, 123, 255, 0.05)",
-              zIndex: 0
-            }} 
-          />
+        <div ref={receiptRef}>
+          <Card className="border-0 shadow-lg rounded-4 overflow-hidden position-relative print-area bg-white">
+            {/* Background Decorative Element */}
+            <div 
+              className="position-absolute no-print" 
+              style={{ 
+                top: "-50px", 
+                right: "-50px", 
+                width: "200px", 
+                height: "200px", 
+                borderRadius: "50%", 
+                background: isPaid ? "rgba(40, 167, 69, 0.05)" : "rgba(0, 123, 255, 0.05)",
+                zIndex: 0
+              }} 
+            />
 
           {/* Banner Status with Gradient */}
           <div
@@ -284,10 +321,10 @@ export default function ReceiptPage({ decodedToken }) {
                     Diterbitkan Untuk:
                   </small>
                   <h4 className="fw-bold text-dark mb-1">
-                    {receiptData.member?.full_name || "-"}
+                    {receiptData.member?.full_name || receiptData.member?.name || "-"}
                   </h4>
                   <p className="text-primary fw-semibold mb-0">
-                    {receiptData.member?.member_no || "-"}
+                    {receiptData.member?.member_no || receiptData.member?.memberId || "-"}
                   </p>
                   <small className="text-muted d-block mt-1">
                     Email: {receiptData.member?.email || "-"}
@@ -561,9 +598,10 @@ export default function ReceiptPage({ decodedToken }) {
                         <ProtectedFileViewer url={proofUrl} title="Bukti Transfer" />
                       </div>
                     ) : (
-                      <img 
-                        src={proofUrl} 
-                        alt="Bukti Transfer" 
+                      <ProtectedFileViewer 
+                        url={proofUrl} 
+                        title="Bukti Transfer" 
+                        isImage={true}
                         className="img-fluid rounded-4 border shadow-sm"
                         style={{ maxHeight: "300px", objectFit: "contain" }}
                       />
@@ -618,6 +656,7 @@ export default function ReceiptPage({ decodedToken }) {
 
           </Card.Body>
         </Card>
+        </div>
       </motion.div>
 
       {/* Footer Branding d-print-none */}
@@ -634,19 +673,36 @@ export default function ReceiptPage({ decodedToken }) {
         .table-responsive-custom { border-radius: 12px; }
         
         @media print {
-          body { background: white !important; }
-          .container { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
-          .card { border: none !important; box-shadow: none !important; }
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+          body { 
+            background: white !important; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
+          }
+          .container, .container-fluid { 
+            padding: 0 !important; 
+            max-width: 100% !important; 
+            margin: 0 !important; 
+          }
+          .card { 
+            border: none !important; 
+            box-shadow: none !important; 
+          }
           .bg-gradient-success { 
             -webkit-print-color-adjust: exact !important; 
-            color-adjust: exact !important;
-            background: #28a745 !important;
+            print-color-adjust: exact !important;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
             color: white !important;
           }
           .bg-gradient-success h3, .bg-gradient-success p {
             color: white !important;
           }
-          .d-print-none, .no-print { display: none !important; }
+          .d-print-none, .no-print { 
+            display: none !important; 
+          }
         }
       `}</style>
     </Container>
