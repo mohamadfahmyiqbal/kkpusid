@@ -1,29 +1,58 @@
-import LoginScreen from "../../pages/global/LoginScreen";
-import DashboardScreen from "../../pages/global/DashboardScreen";
-import SplashScreen from "../../pages/global/SplashScreen";
-import LandingScreen from "../../pages/global/LandingScreen";
-import ForgotScreen from "../../pages/global/ForgotScreen";
-import RegisterScreen from "../../pages/global/RegisterScreen";
-import OTPScreen from "../../pages/global/OTPScreen";
-import ResetPasswordScreen from "../../pages/global/ResetPasswordScreen";
-import InvoiceScreen from "../../pages/global/InvoiceScreen";
-import TagihanScreen from "../../pages/global/TagihanScreen";
-import TestDataScreen from "../../pages/global/TestDataScreen";
-import NotificationScreen from "../../pages/global/NotificationScreen";
-import ResiScreen from "../../pages/global/ResiScreen";
+import { lazy } from "react";
 
-export default {
-  splash: SplashScreen, // ini bisa digunakan langsung di RouterConfig.js untuk root "/"
-  landing: LandingScreen, // ini bisa digunakan langsung di RouterConfig.js untuk root "/"
-  login: LoginScreen,
-  forgot: ForgotScreen,
-  verifikasiOTP: OTPScreen,
-  resetPasswordScreen: ResetPasswordScreen,
-  register: RegisterScreen,
-  dashboard: DashboardScreen,
-  notifikasi: NotificationScreen,
-  invoice: InvoiceScreen,
-  tagihan: TagihanScreen,
-  testdata: TestDataScreen,
-  resi: ResiScreen,
+const globalRoutes = {
+  globalSplash: {
+    component: lazy(() => import("../../pages/global/SplashPage/page/SplashPage")),
+    isProtected: false,
+  },
+  landingPage: {
+    component: lazy(() => import("../../pages/global/LandingPage/LandingPage")),
+    isProtected: false,
+  },
+  notificationPage: {
+    component: lazy(() => import("../../pages/global/NotificationPage")),
+    isProtected: true,
+  },
+  notificationDetailPage: {
+    component: lazy(() => import("../../pages/global/NotificationPage").then(module => ({ default: module.NotificationDetailPage }))),
+    isProtected: true,
+  },
+  billingPage: {
+    component: lazy(() => import("../../pages/global/BillingPage/pages/BillingPage")),
+    isProtected: true,
+  },
+  invoicePage: {
+    component: lazy(() => import("../../pages/global/InvoicePage/pages/InvoicePage")),
+    isProtected: true,
+  },
+  accountPage: {
+    component: lazy(() => import("../../pages/anggota/AccountPage/AccountPage")),
+    isProtected: true,
+  },
+  transactionDetailPage: {
+    component: lazy(() => import("../../pages/global/transaction/TransactionDetailPage")),
+    isProtected: true,
+  },
+  receiptPage: {
+    component: lazy(() => import("../../pages/global/ReceiptPage/ReceiptPage")),
+    isProtected: true,
+  },
+  articleDetail: {
+    component: lazy(() => import("../../pages/global/ArticleDetailPage/ArticleDetailPage")),
+    isProtected: true,
+  },
+  privacyPolicy: {
+    component: lazy(() => import("../../pages/global/PrivacyPolicyPage/PrivacyPolicyPage")),
+    isProtected: false,
+  },
+  termsConditions: {
+    component: lazy(() => import("../../pages/global/TermsConditionsPage/TermsConditionsPage")),
+    isProtected: false,
+  },
+  termination_progress: {
+    component: lazy(() => import("../../pages/global/termination/TerminationProgressPage")),
+    isProtected: true,
+  },
 };
+
+export default globalRoutes;

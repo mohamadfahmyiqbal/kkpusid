@@ -1,0 +1,123 @@
+/* fe/src/pages/training/DetailMateri/DetailMateri.css */
+
+.detail-materi-container {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Tab Styles - Sync with Dashboard */
+.custom-detail-tabs.nav-pills {
+  border-bottom: none;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 8px;
+}
+
+.custom-detail-tabs.nav-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-detail-tabs.nav-pills .nav-link {
+  color: #64748b;
+  background: #f1f5f9;
+  border-radius: 99px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.custom-detail-tabs.nav-pills .nav-link.active {
+  color: #fff;
+  background: #005a8d;
+  box-shadow: 0 4px 12px rgba(0, 90, 141, 0.2);
+}
+
+/* Module List Styles */
+.module-list-item {
+  border-radius: 12px !important;
+  margin-bottom: 8px;
+  border: 1px solid #f1f5f9 !important;
+  transition: all 0.2s ease;
+  padding: 16px 20px !important;
+}
+
+.module-list-item:hover {
+  background-color: #f8fafc;
+  transform: translateX(4px);
+  border-color: #e2e8f0 !important;
+}
+
+.module-list-item.completed {
+  background-color: #f0fdf4;
+  border-color: #dcfce7 !important;
+}
+
+.module-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Notes Section */
+.notes-textarea {
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  resize: none;
+  transition: all 0.2s ease;
+}
+
+.notes-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Progress Header */
+.materi-header-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  border-radius: 24px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.materi-header-card::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+/* Action Buttons */
+.btn-back-elegant {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-back-elegant:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

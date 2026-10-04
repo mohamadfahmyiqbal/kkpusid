@@ -1,0 +1,332 @@
+/* components/program/ProgramStatusCard.css */
+
+/* ── Card Base ── */
+.program-status-card {
+  border-radius: 24px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25) !important;
+  border: none;
+  color: #fff;
+  text-align: center;
+}
+
+.program-status-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.4) !important;
+}
+
+/* ── State Variants ── */
+.program-status-card.program-status-pending {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 45%, #7c2d12 85%, #b45309 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.program-status-card.program-status-empty {
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 45%, #1e1b4b 80%, #3730a3 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.program-status-card.program-status-active {
+  background: linear-gradient(135deg, #022c22 0%, #064e3b 40%, #0d9488 80%, #14b8a6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.program-status-card .card-body {
+  padding: 2.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 576px) {
+  .program-status-card .card-body {
+    padding: 1.75rem 1.25rem;
+  }
+}
+
+/* ── Glossy Overlay ── */
+.program-glass-sheen {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Decorative Circles (empty state only) ── */
+.program-decor-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+  pointer-events: none;
+}
+
+.program-decor-circle.c1 {
+  width: 180px; height: 180px;
+  top: -50px; left: 5%;
+}
+
+.program-decor-circle.c2 {
+  width: 240px; height: 240px;
+  bottom: -90px; right: 8%;
+}
+
+/* ── Title & Message ── */
+.program-status-card .card-title {
+  font-weight: 700;
+  font-size: 1.35rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.program-status-card .card-text {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+}
+
+/* ── CTA Button ── */
+.program-cta-btn {
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: 99px;
+  background: #fff !important;
+  color: #1e293b !important;
+  border: none !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.program-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important;
+  background: #fff !important;
+}
+
+.program-cta-btn .btn-icon {
+  opacity: 0.8;
+  margin-right: 6px;
+}
+
+/* ── Stepper (pending state) ── */
+.program-stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  margin: 28px auto 0;
+  position: relative;
+  z-index: 2;
+}
+
+.program-stepper-line {
+  position: absolute;
+  top: 14px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  z-index: -1;
+}
+
+.program-stepper-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #f59e0b;
+  transition: width 0.5s ease;
+}
+
+.program-stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.program-stepper-node {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.program-stepper-step.completed .program-stepper-node {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+
+.program-stepper-step.active .program-stepper-node {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.program-stepper-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.program-stepper-step.completed .program-stepper-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.program-stepper-step.active .program-stepper-label {
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+/* ── Pulsing radar for active step ── */
+.program-radar-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.program-radar-pulse::after {
+  content: '';
+  position: absolute;
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  border-radius: 50%;
+  animation: programRadarPulse 2.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes programRadarPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* ── Benefits Grid (empty/active state) ── */
+.program-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-top: 28px;
+}
+
+.program-benefit-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 12px;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.program-benefit-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-3px);
+}
+
+.program-benefit-icon {
+  color: #a5b4fc;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.program-benefit-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.program-benefit-desc {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .program-benefits-grid {
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .program-benefit-card {
+    padding: 12px 8px;
+  }
+  .program-benefit-title {
+    font-size: 11px;
+  }
+  .program-benefit-desc {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 576px) {
+  .program-status-card {
+    border-radius: 20px;
+  }
+  .program-stepper-container {
+    margin-top: 20px;
+  }
+  .program-stepper-label {
+    font-size: 8px;
+  }
+  .program-stepper-node {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  .program-stepper-line {
+    top: 11px;
+  }
+  .program-benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .program-benefit-card {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+  .program-benefit-icon {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .program-status-card .card-title {
+    font-size: 1.1rem;
+  }
+  .program-status-card .card-text {
+    font-size: 0.8rem;
+  }
+}

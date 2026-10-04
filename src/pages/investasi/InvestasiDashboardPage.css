@@ -1,0 +1,219 @@
+/* src/pages/investasi/InvestasiDashboardPage.css */
+
+.investasi-page-container {
+  min-height: calc(100vh - 100px);
+  padding: 20px;
+  background-color: #f8fafc;
+}
+
+/* Hero Section */
+.investasi-hero {
+  background: linear-gradient(135deg, #02113d 0%, #1e3a8a 50%, #2563eb 100%);
+  border-radius: 20px;
+  padding: 40px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+}
+
+.investasi-hero::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+}
+
+.investasi-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  left: 10%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+}
+
+.investasi-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.investasi-hero-title {
+  font-weight: 800;
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.investasi-hero-subtitle {
+  font-size: 1.05rem;
+  opacity: 0.85;
+  max-width: 550px;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* Premium Card Design */
+.investasi-option-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  padding: 30px;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1;
+}
+
+.investasi-option-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.1);
+}
+
+.investasi-card-icon-wrapper {
+  width: 65px;
+  height: 65px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: 2;
+}
+
+.investasi-option-card:hover .investasi-card-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.investasi-card-icon-wrapper.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.investasi-card-icon-wrapper.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.investasi-card-title {
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #1f2937;
+  margin-bottom: 12px;
+  z-index: 2;
+  position: relative;
+}
+
+.investasi-card-desc {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  z-index: 2;
+  position: relative;
+}
+
+/* Background blob */
+.investasi-option-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(243,244,246,1) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 0 20px 0 100%;
+  opacity: 0.5;
+  transition: all 0.5s ease;
+  z-index: 0;
+}
+
+.investasi-option-card.success:hover::before {
+  background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, rgba(255,255,255,0) 70%);
+}
+
+.investasi-option-card.primary:hover::before {
+  background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(255,255,255,0) 70%);
+}
+
+.investasi-option-card:hover::before {
+  transform: scale(1.5);
+  opacity: 1;
+}
+
+.investasi-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+  padding-top: 15px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.investasi-card-footer.success { color: #059669; }
+.investasi-card-footer.primary { color: #2563eb; }
+
+.investasi-card-footer-icon {
+  transition: transform 0.3s ease;
+}
+
+.investasi-option-card:hover .investasi-card-footer-icon {
+  transform: translateX(4px);
+}
+
+/* Section Title */
+.investasi-section-title {
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.investasi-section-desc {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* Animation */
+.investasi-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .investasi-hero {
+    padding: 30px 20px;
+  }
+  .investasi-hero-title {
+    font-size: 1.8rem;
+  }
+  .investasi-option-card {
+    padding: 24px;
+  }
+}

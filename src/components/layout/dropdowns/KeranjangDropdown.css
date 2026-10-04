@@ -1,0 +1,325 @@
+/* Dropdown Container */
+.keranjang-dropdown-container {
+  position: relative;
+}
+
+.keranjang-btn {
+  transition: opacity 0.15s;
+}
+
+/* Badge Pulse Animation */
+@keyframes pulseBadge {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.3), 0 2px 6px rgba(239,68,68,0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(255,255,255,0.1), 0 2px 12px rgba(239,68,68,0.7); }
+}
+
+.kd-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.kd-badge-warning {
+  background: #f59e0b;
+}
+
+.kd-badge-danger {
+  background: #ef4444;
+  animation: pulseBadge 2s infinite;
+}
+
+/* Panel Animation */
+@keyframes dropdownSlideInKeranjang {
+  from { opacity: 0; transform: scale(0.92) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+.kd-panel {
+  position: fixed;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  overflow: hidden;
+  transform-origin: top right;
+  z-index: 1050;
+}
+
+.kd-panel.animating-in {
+  animation: dropdownSlideInKeranjang 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Header */
+.kd-header {
+  background: linear-gradient(135deg, #02113d 0%, #1e3a8a 100%);
+  padding: 16px 20px;
+}
+
+.kd-header-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kd-header-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.kd-header-subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+}
+
+/* Header Buttons */
+.kd-btn-outline {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+}
+
+.kd-btn-outline:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.kd-btn-solid {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #02113d;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+}
+
+.kd-btn-solid:hover {
+  background: #ffffff;
+}
+
+/* Total Amount Pill */
+.kd-total-pill {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kd-total-label {
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+}
+
+.kd-total-value {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+/* Overdue Warning */
+.kd-warning-bar {
+  background: #fff5f5;
+  border-bottom: 1px solid #fecaca;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kd-warning-text {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Empty State */
+.kd-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.kd-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kd-empty-title {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.kd-empty-subtitle {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* List Item */
+.kd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.kd-item:hover {
+  background: #f8fafc;
+}
+
+.kd-item.overdue {
+  background: #fff5f5;
+}
+
+.kd-item.overdue:hover {
+  background: #fee2e2;
+}
+
+.kd-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kd-item-icon.default {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.kd-item-icon.warning {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.kd-item-icon.danger {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+
+.kd-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kd-item-date {
+  font-size: 11px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kd-item-date.default { color: #94a3b8; }
+.kd-item-date.warning { color: #d97706; }
+.kd-item-date.danger { color: #ef4444; }
+
+.kd-item-amount {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+/* Footer CTA */
+.kd-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafafa;
+  display: flex;
+  gap: 8px;
+}
+
+.kd-footer-btn-secondary {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.kd-footer-btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.kd-footer-btn-primary {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #02113d 0%, #1e3a8a 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(2,17,61,0.25);
+  transition: opacity 0.15s;
+}
+
+.kd-footer-btn-primary:hover {
+  opacity: 0.9;
+}

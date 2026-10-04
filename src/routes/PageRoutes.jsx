@@ -1,15 +1,23 @@
-import anggotaRoutes from "./pages/anggotaRoutes";
 import globalRoutes from "./pages/globalRoutes";
-import JBRoutes from "./pages/JBRoutes";
-import ProgramRoutes from "./pages/ProgramRoutes";
+import authRoutes from "./pages/authRoutes";
+import anggotaRoutes from "./pages/anggotaRoutes";
 import simpananRoutes from "./pages/simpananRoutes";
+import jualbeliRoutes from "./pages/jualbeliRoutes";
+import programRoutes from "./pages/programRoutes";
+import tabunganRoutes from "./pages/tabunganRoutes";
+import investasiRoutes from "./pages/investasiRoutes";
+import trainingRoutes from "./pages/trainingRoutes";
 
 const PAGE_COMPONENTS = {
   ...globalRoutes,
+  ...authRoutes,
   ...anggotaRoutes,
   ...simpananRoutes,
-  ...JBRoutes,
-  ...ProgramRoutes,
+  ...jualbeliRoutes,
+  ...programRoutes,
+  ...tabunganRoutes,
+  ...investasiRoutes,
+  ...trainingRoutes,
 };
 
 export default PAGE_COMPONENTS;
