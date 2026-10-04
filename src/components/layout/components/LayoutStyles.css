@@ -1,0 +1,229 @@
+/* src/components/layout/components/LayoutStyles.css */
+
+/* --- SIDEBAR HORIZONTAL (DESKTOP) --- */
+.sidebar-horizontal .sidebar-nav > ul {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0 20px;
+}
+.sidebar-horizontal .sidebar-nav > ul > li {
+  position: relative;
+}
+.sidebar-horizontal .sidebar-link-btn {
+  height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+  text-decoration: none;
+}
+@media (max-width: 1200px) {
+  .sidebar-horizontal .sidebar-link-btn {
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    gap: 4px !important;
+  }
+  .sidebar-horizontal .sidebar-icon {
+    font-size: 16px !important;
+  }
+  .sidebar-horizontal .sidebar-submenu {
+    min-width: 180px !important;
+  }
+}
+.sidebar-horizontal .sidebar-link-btn:hover {
+  color: #1e293b;
+  background-color: #f8fafc;
+}
+.sidebar-horizontal .sidebar-link-btn.active {
+  color: #2563eb;
+  font-weight: 600;
+}
+.sidebar-horizontal .sidebar-link-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background-color: #2563eb;
+}
+.sidebar-horizontal .sidebar-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+  border-radius: 0 0 12px 12px;
+  padding: 8px;
+  display: none;
+  z-index: 1000;
+}
+.sidebar-horizontal li:hover > .sidebar-submenu,
+.sidebar-horizontal .sidebar-submenu.show {
+  display: block;
+}
+.sidebar-horizontal .sidebar-submenu .sidebar-link-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+}
+.sidebar-horizontal .nav-small-cap {
+  display: none;
+}
+.sidebar-horizontal .sidebar-icon {
+  font-size: 18px;
+  opacity: 0.7;
+}
+.sidebar-horizontal .sidebar-link-btn.active .sidebar-icon {
+  opacity: 1;
+}
+.sidebar-horizontal .has-arrow::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+/* --- SIDEBAR VERTICAL (MOBILE) --- */
+.sidebar-vertical .sidebar-nav > ul {
+  padding: 10px 16px;
+}
+.sidebar-vertical .sidebar-link-btn {
+  width: 100%;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 14.5px;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  text-align: left;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.sidebar-vertical .sidebar-link-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+.sidebar-vertical .sidebar-link-btn.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+.sidebar-link-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+.sidebar-link-btn.disabled .sidebar-icon {
+  opacity: 0.5;
+}
+.sidebar-vertical .sidebar-link-btn.active .sidebar-icon {
+  color: #00d9a6;
+}
+.sidebar-vertical .sidebar-submenu {
+  margin-left: 24px;
+  border-left: 1.5px solid #e2e8f0;
+  padding-left: 8px;
+  display: none;
+  margin-bottom: 8px;
+}
+.sidebar-vertical .sidebar-submenu.show {
+  display: block;
+  animation: slideDown 0.25s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sidebar-vertical .nav-small-cap {
+  padding: 20px 16px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.sidebar-vertical .has-arrow::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  opacity: 0.5;
+}
+.sidebar-vertical .sidebar-link-btn[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* --- HEADER STYLES --- */
+.header-gradient-bg {
+  background: linear-gradient(90deg, #02113d 0%, #031b5a 50%, #05246f 100%);
+  position: relative;
+  overflow: hidden;
+  height: 64px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1050;
+}
+.header-stars-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 75px 15px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 150px 45px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 220px 25px, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(1px 1px at 310px 10px, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 320px 64px;
+  pointer-events: none;
+}
+.sidebar-brand-gradient {
+  background: linear-gradient(135deg, #02113d 0%, #031b5a 100%);
+  height: 140px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* --- OVERLAYS --- */
+.header-masjid-overlay {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  background: url('../../../assets/images/masjid.png') no-repeat right bottom / contain;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sidebar-masjid-overlay {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 50%;
+  height: 70%;
+  background: url('../../../assets/images/masjid.png') no-repeat right bottom / contain;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 1;
+}

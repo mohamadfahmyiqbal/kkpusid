@@ -1,4 +1,4 @@
-import DetailPendaftaranAnggota from "../../page/Anggota/DetailPendaftaranAnggota";
+import DetailPendaftaranAnggota from "../../pages/anggota/DetailPendaftaranAnggota";
 import FormPendaftaranAnggota from "../../page/Anggota/FormPendaftaranAnggota";
 import PendaftaranAnggota from "../../page/Anggota/PendaftaranAnggota";
 import ProfileScreen from "../../page/Anggota/ProfileScreen";

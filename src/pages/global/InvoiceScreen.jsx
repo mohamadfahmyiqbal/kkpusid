@@ -19,6 +19,7 @@ import Sidebar from "../../comp/global/Sidebar";
 import { jwtEncode } from "../../routes/helpers";
 import UInvoice from "../../utils/UInvoice";
 import PaymentMethods from "../../comp/global/payment/PaymentMethods";
+import DokuPaymentModal from "../../comp/global/payment/DokuPaymentModal";
 import InvoiceHeader from "./InvoiceHeader";
 import InvoiceDetail from "./InvoiceDetail";
 import {
@@ -31,6 +32,8 @@ export default function InvoiceScreen() {
   const [loading, setLoading] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
   const [error, setError] = useState(null);
+  const [dokuPayment, setDokuPayment] = useState(null);
+  const [showDokuModal, setShowDokuModal] = useState(false);
 
   const invoiceRef = useRef(null);
   const navigate = useNavigate();
@@ -173,24 +176,26 @@ export default function InvoiceScreen() {
     invoiceRef.current = invoiceData;
 
     try {
-      const res = await UInvoice.payInvoice(invoiceData);
-      const token = res?.data?.data?.token;
-      if (!token) throw new Error("Gagal mendapatkan Snap token");
-
-      if (!window.snap) throw new Error("Midtrans Snap belum siap");
-
-      window.snap.pay(token, {
-        onSuccess: (result) => handleResult("settlement", result),
-        onPending: (result) => handleResult("pending", result),
-        onError: (result) => handleResult("deny", result),
-        onClose: () => handleResult("cancel"),
+      const res = await UInvoice.payInvoice({
+        ...invoiceData,
+        recipient_email: user?.email,
       });
+
+      const dokuData = res?.data?.data;
+      if (!dokuData) throw new Error("Gagal mendapatkan data pembayaran DOKU");
+
+      setDokuPayment(dokuData);
+      setShowDokuModal(true);
     } catch (err) {
-      setError(err?.message || "Terjadi kesalahan saat memproses pembayaran");
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Terjadi kesalahan saat memproses pembayaran DOKU"
+      );
     } finally {
       setLoading(false);
     }
-  }, [invoiceData]);
+  }, [invoiceData, user]);
 
   const handleClick = useCallback(
     (action, payload) => {
@@ -337,6 +342,16 @@ export default function InvoiceScreen() {
             </Col>
           </Row>
         </Container>
+
+        <DokuPaymentModal
+          show={showDokuModal}
+          onHide={() => setShowDokuModal(false)}
+          paymentData={dokuPayment}
+          onCheckStatus={() => {
+            setShowDokuModal(false);
+            getInvoice();
+          }}
+        />
       </div>
     </div>
   );

@@ -1,0 +1,1 @@
+import{gt as e}from"./vendor-CHYBhA0-.js";var t={}.REACT_APP_API_BASE_URL||`https://localhost:3445/api`,n=e.create({baseURL:t,withCredentials:!0,headers:{"Content-Type":`application/json`}});n.interceptors.request.use(e=>{let t=localStorage.getItem(`token`);return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));export{n as t};

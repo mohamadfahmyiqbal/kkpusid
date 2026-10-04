@@ -1,24 +1,36 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { jwtEncode } from "./helpers";
+import { jwtEncode } from "../utils/helpers";
 import { EncryptedPage } from "./EncryptedPage";
-import PAGE_COMPONENTS from "./PageRoutes";
-import globalRoutes from "./pages/globalRoutes";
-
-const SplashScreen = globalRoutes.splash;
+import NavigationErrorBoundary from "../components/shared/NavigationErrorBoundary";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <SplashScreen />,
+    element: (
+      <NavigationErrorBoundary>
+        <Navigate to={`/${jwtEncode({ page: "globalSplash" })}`} replace />
+      </NavigationErrorBoundary>
+    ),
+    errorElement: (
+      <Navigate
+        to={`/${jwtEncode({ page: "landingPage", _error: "route_root" })}`}
+        replace
+      />
+    ),
   },
-  // Redirect otomatis ke /page/:token berdasarkan nama halaman
-  ...Object.keys(PAGE_COMPONENTS).map((key) => ({
-    path: `/${key}`,
-    element: <Navigate to={`/${jwtEncode({ page: key })}`} replace />,
-  })),
   {
     path: "/:token",
-    element: <EncryptedPage />,
+    element: (
+      <NavigationErrorBoundary>
+        <EncryptedPage />
+      </NavigationErrorBoundary>
+    ),
+    errorElement: (
+      <Navigate
+        to={`/${jwtEncode({ page: "landingPage", _error: "route_token" })}`}
+        replace
+      />
+    ),
   },
 ]);
 

@@ -1,9 +1,18 @@
-import PencairanSimpananScreen from "../../pages/simpanan/PencairanSimpananScreen";
-import SimpananScreen from "../../pages/simpanan/SimpananScreen";
-import SukarelaScreen from "../../pages/simpanan/SukarelaScreen";
+import { lazy } from "react";
 
-export default {
-  Simpanan: SimpananScreen,
-  Sukarela: SukarelaScreen,
-  Pencairan: PencairanSimpananScreen,
+const simpananRoutes = {
+  simpananDetailSaldo: {
+    component: lazy(() => import("../../pages/simpanan/DetailSaldoPage/page/DetailSaldoPage")),
+    isProtected: true,
+  },
+  simpananPage: {
+    component: lazy(() => import("../../pages/simpanan/SimpananPage/page/SimpananPage")),
+    isProtected: true,
+  },
+  penarikanSimpananPage: {
+    component: lazy(() => import("../../pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage")),
+    isProtected: true,
+  },
 };
+
+export default simpananRoutes;

@@ -1,0 +1,54 @@
+/* CSS styles for ReceiptPage and printable format */
+.ls-1 {
+  letter-spacing: 1px;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.table-responsive-custom {
+  border-radius: 12px;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .container,
+  .container-fluid {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .bg-gradient-success {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: white !important;
+  }
+
+  .bg-gradient-success h3,
+  .bg-gradient-success p {
+    color: white !important;
+  }
+
+  .d-print-none,
+  .no-print {
+    display: none !important;
+  }
+}
