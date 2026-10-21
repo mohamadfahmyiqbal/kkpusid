@@ -2,6 +2,7 @@ import React, { useEffect, useState, memo, useCallback } from "react";
 import { Spinner } from "react-bootstrap";
 import Card from "../../../../components/ui/Card";
 import Button from "../../../../components/ui/Button";
+import StatusBadge from "../../../../components/ui/StatusBadge";
 import { 
   MdInfoOutline, 
   MdAddCircleOutline, 
@@ -158,7 +159,7 @@ const InformasiRekeningCard = memo(
               <span className="fw-bold tracking-wider card-type-label">INFORMASI REKENING</span>
             </div>
             <div className="d-flex align-items-center gap-2">
-              <span className="premium-status-badge">AKTIF</span>
+              <StatusBadge status="AKTIF" size="sm" />
               <button 
                 className={`btn btn-link p-0 text-white opacity-75 hover-opacity-100 transition-all ${isRefreshing ? 'fa-spin' : ''}`}
                 onClick={() => fetchDetail(true)}

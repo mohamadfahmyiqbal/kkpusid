@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
 import { FaTrophy, FaMedal, FaArrowLeft, FaUser, FaStar } from "react-icons/fa";
+import LoadingState from "../../../components/ui/LoadingState";
 import "./Ranking.css";
 import Alert from "../../../components/ui/SwalAlert";
 
@@ -112,10 +113,12 @@ const Ranking = () => {
 
   if (loading) {
     return (
-      <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-white">
-        <Spinner animation="border" variant="primary" size="lg" />
-        <p className="mt-3 text-muted fw-medium">Memuat papan peringkat...</p>
-      </div>
+      <LoadingState
+        size="lg"
+        message="Memuat papan peringkat..."
+        minHeight="100vh"
+        className="bg-white"
+      />
     );
   }
 

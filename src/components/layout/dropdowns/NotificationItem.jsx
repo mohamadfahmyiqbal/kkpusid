@@ -19,13 +19,17 @@ const NotificationItem = ({ notif, onClick }) => {
         padding: "12px 16px",
         border: "none",
         borderBottom: "1px solid #f1f5f9",
-        background: isUnread ? "linear-gradient(90deg, #eff6ff 0%, #ffffff 100%)" : "#ffffff",
+        background: isUnread
+          ? "linear-gradient(90deg, #eff6ff 0%, #ffffff 100%)"
+          : "#ffffff",
         cursor: "pointer",
         textAlign: "left",
         transition: "background 0.15s ease",
         position: "relative",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "#f8fafc"; }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "#f8fafc";
+      }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = isUnread
           ? "linear-gradient(90deg, #eff6ff 0%, #ffffff 100%)"
@@ -48,10 +52,11 @@ const NotificationItem = ({ notif, onClick }) => {
           boxShadow: isUnread ? "0 2px 8px rgba(59,130,246,0.3)" : "none",
         }}
       >
-        {isUnread
-          ? <FaBell size={14} color="#ffffff" />
-          : <FaCheckDouble size={14} color="#94a3b8" />
-        }
+        {isUnread ? (
+          <FaBell size={14} color="#ffffff" />
+        ) : (
+          <FaCheckDouble size={14} color="#94a3b8" />
+        )}
       </div>
 
       {/* Content */}
@@ -112,7 +117,8 @@ NotificationItem.propTypes = {
     title: PropTypes.string.isRequired,
     body: PropTypes.string.isRequired,
     status: PropTypes.number.isRequired,
-    sent_at: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    sent_at: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
   }).isRequired,
   onClick: PropTypes.func.isRequired,
 };

@@ -1,3 +1,5 @@
+@import "./dropdown-common.css";
+
 /* Dropdown Container */
 .keranjang-dropdown-container {
   position: relative;
@@ -9,8 +11,17 @@
 
 /* Badge Pulse Animation */
 @keyframes pulseBadge {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.3), 0 2px 6px rgba(239,68,68,0.4); }
-  50% { box-shadow: 0 0 0 5px rgba(255,255,255,0.1), 0 2px 12px rgba(239,68,68,0.7); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.3),
+      0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(255, 255, 255, 0.1),
+      0 2px 12px rgba(239, 68, 68, 0.7);
+  }
 }
 
 .kd-badge {
@@ -38,25 +49,8 @@
   animation: pulseBadge 2s infinite;
 }
 
-/* Panel Animation */
-@keyframes dropdownSlideInKeranjang {
-  from { opacity: 0; transform: scale(0.92) translateY(-8px); }
-  to   { opacity: 1; transform: scale(1)   translateY(0); }
-}
-
-.kd-panel {
-  position: fixed;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
-  overflow: hidden;
-  transform-origin: top right;
-  z-index: 1050;
-}
-
 .kd-panel.animating-in {
-  animation: dropdownSlideInKeranjang 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: dropdownSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Header */
@@ -69,7 +63,7 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,17 +76,17 @@
 }
 
 .kd-header-subtitle {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 11px;
 }
 
 /* Header Buttons */
 .kd-btn-outline {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 6px 12px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -103,12 +97,12 @@
 }
 
 .kd-btn-outline:hover {
-  background: rgba(255,255,255,0.22);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .kd-btn-solid {
-  background: rgba(255,255,255,0.9);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   padding: 6px 12px;
   color: #02113d;
@@ -128,7 +122,7 @@
 /* Total Amount Pill */
 .kd-total-pill {
   margin-top: 12px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 10px 14px;
   display: flex;
@@ -137,7 +131,7 @@
 }
 
 .kd-total-label {
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
 }
 
@@ -261,9 +255,15 @@
   gap: 4px;
 }
 
-.kd-item-date.default { color: #94a3b8; }
-.kd-item-date.warning { color: #d97706; }
-.kd-item-date.danger { color: #ef4444; }
+.kd-item-date.default {
+  color: #94a3b8;
+}
+.kd-item-date.warning {
+  color: #d97706;
+}
+.kd-item-date.danger {
+  color: #ef4444;
+}
 
 .kd-item-amount {
   font-weight: 700;
@@ -316,7 +316,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  box-shadow: 0 4px 12px rgba(2,17,61,0.25);
+  box-shadow: 0 4px 12px rgba(2, 17, 61, 0.25);
   transition: opacity 0.15s;
 }
 

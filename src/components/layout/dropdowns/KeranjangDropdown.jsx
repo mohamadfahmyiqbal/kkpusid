@@ -30,29 +30,45 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
   const { navigateTo } = useNavigation();
   const [error, setError] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownPos, setDropdownPos] = useState({ top: 70, right: 0, width: 340 });
+  const [dropdownPos, setDropdownPos] = useState({
+    top: 70,
+    right: 0,
+    width: 340,
+  });
   const [isAnimating, setIsAnimating] = useState(false);
   const btnRef = useRef(null);
 
-  const safeBills = useMemo(() => Array.isArray(bills) ? bills : [], [bills]);
+  const safeBills = useMemo(() => (Array.isArray(bills) ? bills : []), [bills]);
 
-  const formatIDR = useMemo(() => new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }), []);
+  const formatIDR = useMemo(
+    () =>
+      new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+      }),
+    [],
+  );
 
   const safeFormatIDR = useCallback(
     (val) => {
-      try { return formatIDR.format(val || 0); }
-      catch { return "Rp 0"; }
+      try {
+        return formatIDR.format(val || 0);
+      } catch {
+        return "Rp 0";
+      }
     },
     [formatIDR],
   );
 
   const safeItemData = useCallback((item) => {
     if (!item || typeof item !== "object") {
-      return { id: "unknown", description: "Data tidak tersedia", amount: 0, due_date: null };
+      return {
+        id: "unknown",
+        description: "Data tidak tersedia",
+        amount: 0,
+        due_date: null,
+      };
     }
     return {
       id: item.bill_item_id || item.id || `unknown-${Date.now()}`,
@@ -88,9 +104,11 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
 
   useEffect(() => {
     if (!isDropdownOpen) return;
-    
-    const onKey = (e) => { if (e.key === "Escape") setIsDropdownOpen(false); };
-    
+
+    const onKey = (e) => {
+      if (e.key === "Escape") setIsDropdownOpen(false);
+    };
+
     const updatePos = () => {
       if (btnRef.current) {
         const rect = btnRef.current.getBoundingClientRect();
@@ -116,7 +134,9 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
 
   const { overdueBills } = useMemo(() => {
     const now = new Date();
-    const overdue = safeBills.filter((b) => b.due_date && new Date(b.due_date) < now);
+    const overdue = safeBills.filter(
+      (b) => b.due_date && new Date(b.due_date) < now,
+    );
     return { overdueBills: overdue };
   }, [safeBills]);
 
@@ -137,7 +157,9 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
       >
         <FaFileInvoiceDollar size={18} />
         {safeBills.length > 0 && (
-          <span className={`kd-badge ${overdueBills.length > 0 ? "kd-badge-danger" : "kd-badge-warning"}`}>
+          <span
+            className={`kd-badge ${overdueBills.length > 0 ? "kd-badge-danger" : "kd-badge-warning"}`}
+          >
             {safeBills.length}
           </span>
         )}
@@ -148,7 +170,12 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
           <>
             {/* Backdrop */}
             <div
-              style={{ position: "fixed", inset: 0, zIndex: 1040, backgroundColor: "transparent" }}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 1040,
+                backgroundColor: "transparent",
+              }}
               onClick={() => setIsDropdownOpen(false)}
             />
 
@@ -164,19 +191,31 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
             >
               {/* Header */}
               <div className="kd-header">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     <div className="kd-header-icon-wrap">
                       <FaFileInvoiceDollar size={15} color="#ffffff" />
                     </div>
                     <div>
                       <div className="kd-header-title">Tagihan Pending</div>
                       <div className="kd-header-subtitle">
-                        {safeBills.length > 0 ? `${safeBills.length} tagihan aktif` : "Tidak ada tagihan"}
+                        {safeBills.length > 0
+                          ? `${safeBills.length} tagihan aktif`
+                          : "Tidak ada tagihan"}
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <button onClick={handleNavigate} className="kd-btn-outline">
                       Semua
                     </button>
@@ -192,7 +231,9 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
                 {safeBills.length > 0 && (
                   <div className="kd-total-pill">
                     <span className="kd-total-label">Total Tagihan</span>
-                    <span className="kd-total-value">{safeFormatIDR(totalAmount)}</span>
+                    <span className="kd-total-value">
+                      {safeFormatIDR(totalAmount)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -208,16 +249,31 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
               )}
 
               {/* List */}
-              <div style={{ maxHeight: MAX_HEIGHTS.KERANJANG_LIST, overflowY: "auto" }}>
+              <div
+                style={{
+                  maxHeight: MAX_HEIGHTS.KERANJANG_LIST,
+                  overflowY: "auto",
+                }}
+              >
                 {loading ? (
                   <div style={{ padding: "32px 20px", textAlign: "center" }}>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    <span style={{ color: "#64748b", fontSize: 13 }}>Memuat tagihan...</span>
+                    <span style={{ color: "#64748b", fontSize: 13 }}>
+                      Memuat tagihan...
+                    </span>
                   </div>
                 ) : error ? (
                   <div style={{ padding: "32px 20px", textAlign: "center" }}>
                     <FaExclamationTriangle color="#f59e0b" size={28} />
-                    <p style={{ color: "#64748b", fontSize: 13, margin: "8px 0" }}>{error}</p>
+                    <p
+                      style={{
+                        color: "#64748b",
+                        fontSize: 13,
+                        margin: "8px 0",
+                      }}
+                    >
+                      {error}
+                    </p>
                     <button
                       onClick={() => setError(null)}
                       style={{
@@ -239,18 +295,26 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
                       <FaCheckCircle size={28} color="#059669" />
                     </div>
                     <div>
-                      <div className="kd-empty-title">Semua Tagihan Lunas! 🎉</div>
-                      <div className="kd-empty-subtitle">Tidak ada tagihan yang perlu dibayar</div>
+                      <div className="kd-empty-title">
+                        Semua Tagihan Lunas! 🎉
+                      </div>
+                      <div className="kd-empty-subtitle">
+                        Tidak ada tagihan yang perlu dibayar
+                      </div>
                     </div>
                   </div>
                 ) : (
                   safeBills.map((item) => {
                     const safeData = safeItemData(item);
                     const now = new Date();
-                    const isOverdue = safeData.due_date && new Date(safeData.due_date) < now;
-                    const isDueSoon = !isOverdue && safeData.due_date &&
-                      new Date(safeData.due_date) <= new Date(Date.now() + 3 * 86400000);
-                    
+                    const isOverdue =
+                      safeData.due_date && new Date(safeData.due_date) < now;
+                    const isDueSoon =
+                      !isOverdue &&
+                      safeData.due_date &&
+                      new Date(safeData.due_date) <=
+                        new Date(Date.now() + 3 * 86400000);
+
                     let iconClass = "default";
                     let dateClass = "default";
                     if (isOverdue) {
@@ -269,16 +333,19 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
                         className={`kd-item ${isOverdue ? "overdue" : ""}`}
                       >
                         <div className={`kd-item-icon ${iconClass}`}>
-                          {isOverdue
-                            ? <FaExclamationCircle size={16} color="#ef4444" />
-                            : isDueSoon
-                            ? <FaCalendarAlt size={16} color="#d97706" />
-                            : <FaFileInvoiceDollar size={16} color="#3b82f6" />
-                          }
+                          {isOverdue ? (
+                            <FaExclamationCircle size={16} color="#ef4444" />
+                          ) : isDueSoon ? (
+                            <FaCalendarAlt size={16} color="#d97706" />
+                          ) : (
+                            <FaFileInvoiceDollar size={16} color="#3b82f6" />
+                          )}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="kd-item-title">{safeData.description}</div>
+                          <div className="kd-item-title">
+                            {safeData.description}
+                          </div>
                           {safeData.due_date && (
                             <div className={`kd-item-date ${dateClass}`}>
                               <FaCalendarAlt size={9} />
@@ -289,7 +356,9 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
                         </div>
 
                         <div style={{ flexShrink: 0, textAlign: "right" }}>
-                          <div className="kd-item-amount">{safeFormatIDR(safeData.amount)}</div>
+                          <div className="kd-item-amount">
+                            {safeFormatIDR(safeData.amount)}
+                          </div>
                           <FaChevronRight size={10} color="#cbd5e1" />
                         </div>
                       </button>
@@ -300,11 +369,17 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
 
               {/* Footer CTA */}
               <div className="kd-footer">
-                <button onClick={handleNavigate} className="kd-footer-btn-secondary">
+                <button
+                  onClick={handleNavigate}
+                  className="kd-footer-btn-secondary"
+                >
                   Semua Tagihan
                 </button>
                 {safeBills.length > 0 && (
-                  <button onClick={handleNavigate} className="kd-footer-btn-primary">
+                  <button
+                    onClick={handleNavigate}
+                    className="kd-footer-btn-primary"
+                  >
                     Bayar Sekarang <FaArrowRight size={11} />
                   </button>
                 )}

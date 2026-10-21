@@ -5,11 +5,10 @@ import {
   Col,
   Card,
   Button,
-  Spinner,
-  
   Badge
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import LoadingState from "../../../components/ui/LoadingState";
 import { jwtEncode } from "../../../utils/helpers";
 import { 
   FaStore, 
@@ -70,10 +69,11 @@ const PendanaanSyariah = () => {
 
   if (loading) {
     return (
-      <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-light">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-3 text-muted fw-semibold">Memuat data pendanaan...</p>
-      </div>
+      <LoadingState
+        message="Memuat data pendanaan..."
+        minHeight="100vh"
+        className="bg-light"
+      />
     );
   }
 

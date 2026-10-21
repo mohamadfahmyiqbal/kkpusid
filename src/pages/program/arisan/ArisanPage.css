@@ -137,9 +137,7 @@
   box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3) !important;
 }
 
-.font-outfit {
-  font-family: 'Outfit', 'Inter', sans-serif;
-}
+/* .font-outfit provided by global utilities.css */
 
 /* Scoped Utility Classes replacing Inline Styles */
 

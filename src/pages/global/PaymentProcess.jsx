@@ -20,14 +20,7 @@ import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import Footer from "../../comp/global/Footer";
 import UInvoice from "../../utils/UInvoice";
-
-// Utility format Rupiah
-const formatRupiah = (value) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(value || 0);
+import { formatRupiah } from "../../utils/formatRupiah";
 
 export default function PaymentProcess() {
   const [user, setUser] = useState(null);

@@ -308,10 +308,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* @keyframes fadeIn provided by global animations.css */
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {

@@ -54,12 +54,18 @@ const BillingPage = ({ decodedToken }) => {
   /* mandatory bills auto-select */
   const mandatoryBills = useMemo(() => {
     if (decodedToken?.return === "registrationPage") {
-      const month = new Date().toLocaleDateString("en-US", { month: "long" }).toLowerCase();
-      return (bills || []).filter(
-        (b) =>
-          b.description?.toLowerCase().includes("simpanan pokok") ||
-          b.description?.toLowerCase().includes(`simpanan wajib - ${month}`),
+      // Untuk pendaftaran baru, pilih Simpanan Pokok dan Simpanan Wajib pertama/aktif
+      const pokok = (bills || []).filter((b) =>
+        b.description?.toLowerCase().includes("simpanan pokok") ||
+        b.category_code === "SW_POKOK"
       );
+      const wajib = (bills || []).filter((b) =>
+        b.description?.toLowerCase().includes("simpanan wajib") ||
+        b.category_code === "SW_WAJIB"
+      );
+      // Ambil seluruh pokok dan simpanan wajib pertama (bulan berjalan)
+      const firstWajib = wajib.length > 0 ? [wajib[0]] : [];
+      return [...pokok, ...firstWajib];
     }
     if (decodedToken?.return === "savingsPage") {
       return (bills || []).filter((b) => b.description?.toLowerCase().includes("sukarela"));
