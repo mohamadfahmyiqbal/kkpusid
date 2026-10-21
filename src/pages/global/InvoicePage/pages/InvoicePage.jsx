@@ -163,7 +163,7 @@ const InvoicePage = () => {
         onPrint={() => window.print()}
       />
 
-      <InvoiceStatusBadge isPaid={isPaid} />
+      <InvoiceStatusBadge isPaid={isPaid} status={billData?.status} />
 
       <InvoiceCard
         billData={billData}
@@ -171,21 +171,24 @@ const InvoicePage = () => {
         isPaid={isPaid}
       />
 
-      {paymentInstruction ? (
-        <InvoicePaymentInstruction
-          paymentInstruction={paymentInstruction}
-          onReset={() => setPaymentInstruction(null)}
-        />
-      ) : (
-        <InvoiceActions
-          isPaid={isPaid}
-          isProcessing={isProcessing}
-          onPay={handlePay}
-          onBack={handleNavigateBack}
-          returnPageName={returnPageName}
-          totalAmount={totalAmount}
-        />
-      )}
+      <InvoiceActions
+        isPaid={isPaid}
+        billData={billData}
+        totalAmount={totalAmount}
+        billItemIds={billItemIds}
+        category={category}
+        financingId={financingId}
+        onBack={handleNavigateBack}
+        returnPageName={returnPageName}
+        onPaymentSubmitted={(result) => {
+          if (result?.bill_id) {
+            setDynamicBillId(result.bill_id);
+          }
+          if (refreshData) {
+            refreshData();
+          }
+        }}
+      />
 
       <InvoiceFooter />
     </Container>

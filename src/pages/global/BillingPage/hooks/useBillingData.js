@@ -60,9 +60,10 @@ export const useBillingData = (decodedToken) => {
   const loadInitialData = useCallback(async () => {
     setLoadingData(true);
     try {
-      const fetchFilter = (categoryName === "TABUNGAN_DEPOSIT" || categoryName === "FINANCING")
-        ? { ...filterParams, category: undefined } 
-        : filterParams;
+      // Endpoint backend /billing/list/pending hanya memfilter by member_id dan bill_type_id
+      // Jangan kirimkan category atau registration_id sebagai query param agar query tidak terganggu
+      const fetchFilter = {};
+      if (filterParams.bill_type_id) fetchFilter.bill_type_id = filterParams.bill_type_id;
 
       const tIdFetch = decodedToken?.tabungan_id || decodedToken?.tabunganId;
 
@@ -85,7 +86,15 @@ export const useBillingData = (decodedToken) => {
       const filterContextBills = (data) => {
         let rawData = Array.isArray(data) ? data : [];
 
-        if (financingId || categoryName === "FINANCING") {
+        if (categoryName === "MEMBER_REGISTRATION" || decodedToken?.return === "registrationPage") {
+          rawData = rawData.filter(
+            (bill) =>
+              bill.category_code === "SW_POKOK" ||
+              bill.category_code === "SW_WAJIB" ||
+              bill.description?.toLowerCase().includes("simpanan pokok") ||
+              bill.description?.toLowerCase().includes("simpanan wajib")
+          );
+        } else if (financingId || categoryName === "FINANCING") {
           rawData = rawData.filter((bill) =>
             hasCategory(bill, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "TRANSACTION_INSTALLMENT")
           );
@@ -130,8 +139,36 @@ export const useBillingData = (decodedToken) => {
         return rawData;
       };
 
+      const filteredHistory = resHistory.data?.status ? filterContextBills(resHistory.data.data) : [];
+
       if (resPending.data?.status) {
         let rawData = filterContextBills(resPending.data.data);
+
+        // Pastikan DP / Uang Tanda Keseriusan muncul di daftar tagihan jika belum dibayar
+        if (downPayment > 0) {
+          const hasInHistory = filteredHistory.some(
+            (h) =>
+              hasCategory(h, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "DP_PEMBIAYAAN") &&
+              (h.status === "PAID" || h.status === "COMPLETED")
+          );
+          const hasInPending = rawData.some((b) =>
+            hasCategory(b, (code) => code === "TRANSACTION_DOWN_PAYMENT" || code === "DP_PEMBIAYAAN")
+          );
+
+          if (!hasInHistory && !hasInPending) {
+            rawData.unshift({
+              bill_item_id: "dp-" + (financingId || Date.now()),
+              id: "dp-" + (financingId || Date.now()),
+              description: "Uang Tanda Keseriusan (DP)",
+              amount: downPayment,
+              status: "UNPAID",
+              category_code: "TRANSACTION_DOWN_PAYMENT",
+              financing_application_id: financingId,
+              due_date: new Date().toISOString(),
+            });
+          }
+        }
+
         const sorted = rawData.sort(
           (a, b) =>
             new Date(a.due_date || a.createdAt) -
@@ -142,39 +179,7 @@ export const useBillingData = (decodedToken) => {
         setBills([]);
       }
 
-      if (resHistory.data?.status) {
-        const filteredHistory = filterContextBills(resHistory.data.data);
-        
-        // Inject Down Payment into history if not already present
-        if (downPayment > 0) {
-          const hasDP = filteredHistory.some(h => hasCategory(h, code => code === "TRANSACTION_DOWN_PAYMENT" || code === "DP_PEMBIAYAAN"));
-          if (!hasDP) {
-            filteredHistory.unshift({
-              id: "dp-" + (financingId || Date.now()),
-              description: "Uang Muka / Down Payment",
-              amount: downPayment,
-              status: "PAID",
-              category_code: "TRANSACTION_DOWN_PAYMENT",
-              updated_at: new Date().toISOString()
-            });
-          }
-        }
-        
-        setHistory(filteredHistory);
-      } else {
-        const fallbackHistory = [];
-        if (downPayment > 0) {
-          fallbackHistory.push({
-            id: "dp-" + (financingId || Date.now()),
-            description: "Uang Muka / Down Payment",
-            amount: downPayment,
-            status: "PAID",
-            category_code: "TRANSACTION_DOWN_PAYMENT",
-            updated_at: new Date().toISOString()
-          });
-        }
-        setHistory(fallbackHistory);
-      }
+      setHistory(filteredHistory);
     } catch (err) {
       console.error("Gagal memuat data billing:", err);
       setBills([]);

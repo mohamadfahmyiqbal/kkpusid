@@ -1,7 +1,9 @@
 // 📁 src/pages/global/BillingPage/components/BillList.jsx
 import React, { useCallback, useMemo, useState } from "react";
-import { Card, ListGroup, Form, Button, Spinner, Pagination } from "react-bootstrap";
+import { Card, ListGroup, Form, Button, Spinner } from "react-bootstrap";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
+import UIPagination from "../../../../components/ui/Pagination";
+import { ITEMS_PER_PAGE } from "./utils";
 
 const BillList = ({
   bills,
@@ -146,26 +148,14 @@ const BillList = ({
             </div>
 
             {totalPages > 1 && (
-              <div className="d-flex justify-content-center mt-3 mb-2">
-                <Pagination size="sm" className="mb-0">
-                  <Pagination.Prev
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  />
-                  {[...Array(totalPages)].map((_, idx) => (
-                    <Pagination.Item
-                      key={idx + 1}
-                      active={idx + 1 === currentPage}
-                      onClick={() => handlePageChange(idx + 1)}
-                    >
-                      {idx + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    disabled={currentPage === totalPages}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  />
-                </Pagination>
+              <div className="px-3 pb-2">
+                <UIPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={bills.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                />
               </div>
             )}
 

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Alert, Button } from "react-bootstrap";
 import { FaPlusCircle, FaRedo } from "react-icons/fa";
 import { MdGroup } from "react-icons/md";
-import AvailableArisanList from "../../../components/program/AvailableArisanList";
+import AvailableArisanList from "../../../../components/program/AvailableArisanList";
 import ArisanEmptyState from "./ArisanEmptyState";
 
 export default function AvailableArisanSection({

@@ -1,6 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import Card from "../../../components/ui/Card";
+import Card from "../../../../components/ui/Card";
 import {
   FaUsers,
   FaLayerGroup,

@@ -45,6 +45,22 @@ class UBilling {
   }
 
   /**
+   * Mengambil daftar rekening resmi Koperasi untuk pembayaran transfer manual
+   */
+  getCooperativeBanks() {
+    return http.get("/billing/cooperative-banks");
+  }
+
+  /**
+   * Submit bukti transfer pembayaran manual
+   */
+  submitManualPayment(formData) {
+    return http.post("/billing/manual-payment", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+
+  /**
    * Method tambahan jika Anda memiliki alur deposit langsung
    */
   createDepositSukarela(payload) {

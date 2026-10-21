@@ -1,5 +1,6 @@
 import React from "react";
-import { Row, Col, Card, Badge } from "react-bootstrap";
+import { Row, Col, Card } from "react-bootstrap";
+import StatusBadge from "../../../../../components/ui/StatusBadge";
 import { formatCurrency } from "./tabunganHelpers";
 
 export default function AccountInfoCard({
@@ -24,9 +25,7 @@ export default function AccountInfoCard({
               </p>
             </div>
           </div>
-          <Badge bg="success" className="detail-status-badge px-3 py-2">
-            Aktif
-          </Badge>
+          <StatusBadge status="Aktif" size="lg" />
         </div>
 
         <Row className="g-3">

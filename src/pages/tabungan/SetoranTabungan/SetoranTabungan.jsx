@@ -3,8 +3,9 @@ import {
   Container,
   Row,
   Col,
-  Spinner} from "react-bootstrap";
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import LoadingState from "../../../components/ui/LoadingState";
 import { motion } from "framer-motion";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import {
@@ -219,10 +220,12 @@ const SetoranTabungan = () => {
 
   if (loading) {
     return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 bg-light">
-        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
-        <p className="mt-3 text-secondary fw-medium">Memuat data tagihan...</p>
-      </div>
+      <LoadingState
+        size="lg"
+        message="Memuat data tagihan..."
+        minHeight="100vh"
+        className="bg-light"
+      />
     );
   }
 

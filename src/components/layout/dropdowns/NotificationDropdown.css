@@ -1,3 +1,5 @@
+@import "./dropdown-common.css";
+
 .notification-dropdown-container {
   position: relative;
 }
@@ -16,19 +18,16 @@
   z-index: 1050; /* Above navbars usually */
   background-color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
   transform-origin: top right;
 }
 
 .nd-panel.animating-in {
   animation: dropdownSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes dropdownSlideIn {
-  from { opacity: 0; transform: scale(0.92) translateY(-8px); }
-  to   { opacity: 1; transform: scale(1)   translateY(0); }
 }
 
 /* Header */
@@ -44,7 +43,7 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,13 +56,13 @@
 }
 
 .nd-header-subtitle {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 11px;
 }
 
 .nd-header-btn {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 6px 12px;
   color: #ffffff;
@@ -77,7 +76,7 @@
 }
 
 .nd-header-btn:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Unread Bar */
@@ -95,7 +94,7 @@
   height: 6px;
   border-radius: 50%;
   background: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .nd-unread-text {

@@ -152,9 +152,7 @@
 }
 
 /* Text & Typography Helpers */
-.font-outfit {
-  font-family: 'Outfit', sans-serif;
-}
+/* .font-outfit provided by global utilities.css */
 
 .font-plus-jakarta {
   font-family: 'Plus Jakarta Sans', sans-serif;

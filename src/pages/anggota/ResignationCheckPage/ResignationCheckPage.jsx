@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
   Card,
-  Button,
-  Spinner,
   Container,
 } from "react-bootstrap";
-import { FaExclamationCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import LoadingState from "../../../components/ui/LoadingState";
+import ErrorState from "../../../components/ui/ErrorState";
 import { jwtEncode } from "../../../utils/helpers";
 import uBilling from "../../../utils/api/UBilling";
 import uGlobal from "../../../utils/api/UGlobal";
@@ -182,28 +181,18 @@ export default function ResignationCheckPage() {
       <Card className="rcp-main-card border-0 shadow-sm">
         <Card.Body className="p-4 p-md-5">
           {loading ? (
-            <div className="d-flex flex-column align-items-center justify-content-center py-5">
-              <Spinner
-                animation="border"
-                variant="primary"
-                style={{ width: "3rem", height: "3rem" }}
-              />
-              <p className="mt-3 text-muted">
-                Sedang memeriksa kewajiban dan tagihan Anda...
-              </p>
-            </div>
+            <LoadingState
+              size="lg"
+              message="Sedang memeriksa kewajiban dan tagihan Anda..."
+              minHeight="250px"
+            />
           ) : error ? (
-            <div className="text-center py-5">
-              <FaExclamationCircle
-                className="text-danger mb-3"
-                style={{ fontSize: "3rem" }}
-              />
-              <h5>Gagal Memeriksa Data</h5>
-              <p className="text-muted">{error}</p>
-              <Button variant="outline-primary" onClick={fetchData}>
-                Coba Lagi
-              </Button>
-            </div>
+            <ErrorState
+              title="Gagal Memeriksa Data"
+              message={error}
+              onRetry={fetchData}
+              minHeight="250px"
+            />
           ) : (
             <div className="rcp-content animate-fade-in">
               {/* Status Header Banner */}

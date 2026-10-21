@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { Spinner, Row, Col } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 import Swal from "sweetalert2";
+import LoadingState from "../../../../components/ui/LoadingState";
 import { useProfile } from "../../../../components/layout/contexts";
 import UNotification from "../../../../utils/api/UNotification";
 import { getSocket } from "../../../../utils/socket";
@@ -227,10 +228,11 @@ export default function NotificationPage() {
 
       {/* Grid Utama (2 Kolom) */}
       {loading ? (
-        <div className="py-5 text-center">
-          <Spinner animation="border" variant="primary" />
-          <p className="text-muted mt-3">Memuat notifikasi...</p>
-        </div>
+        <LoadingState
+          size="lg"
+          message="Memuat notifikasi..."
+          minHeight="350px"
+        />
       ) : (
         <Row className="g-4">
           {/* Kolom Kiri: Notifikasi & Filter */}

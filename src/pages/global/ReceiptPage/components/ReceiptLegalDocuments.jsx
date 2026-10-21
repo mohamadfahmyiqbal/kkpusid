@@ -1,13 +1,15 @@
 import React from "react";
 import { Row, Col } from "react-bootstrap";
 import ProtectedFileViewer from "./ProtectedFileViewer";
-import api from "../../../utils/api/common";
+import api from "../../../../utils/api/common";
+import { API_BASE_URL } from "./receiptHelpers";
 
 export default function ReceiptLegalDocuments({ receiptData }) {
   const getFileUrl = (transaction, type) => {
     const txId = transaction?.id || transaction?.financing_id;
     if (!txId) return "#";
-    let url = `${api.defaults.baseURL}/financing/evidence/${txId}/download`;
+    const baseUrl = api?.defaults?.baseURL || API_BASE_URL || "https://localhost:3445/api";
+    let url = `${baseUrl}/financing/evidence/${txId}/download`;
     if (type) {
       url += `?type=${type}`;
     }

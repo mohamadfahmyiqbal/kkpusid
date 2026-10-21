@@ -56,6 +56,19 @@ const ActionButtons = ({
 
   const isPelunasan = productName?.toLowerCase().includes('pelunasan') || detail?.category?.toLowerCase().includes('pelunasan');
 
+  const downPayment = parseFloat(detail?.down_payment || 0);
+
+  const isWaitingDP = useMemo(() => {
+    return (
+      isFinancing &&
+      downPayment > 0 &&
+      approvalStatus?.pengawasDone &&
+      approvalStatus?.ketuaDone &&
+      !approvalStatus?.bendaharaDone &&
+      !approvalStatus?.isRejected
+    );
+  }, [isFinancing, downPayment, approvalStatus]);
+
   const handlePay = () => {
     if (isPinjamanProduct) {
       navigate(`/${jwtEncode({ page: "receiptPage", financingId: transactionId })}`);
@@ -81,8 +94,12 @@ const ActionButtons = ({
       return: "transactionDetailPage"
     };
     
-    if (isFinancing) params.financing_id = transactionId;
-    else if (isTabungan) {
+    if (isFinancing) {
+      params.financing_id = transactionId;
+      if (downPayment > 0) {
+        params.downPayment = downPayment;
+      }
+    } else if (isTabungan) {
       params.tabungan_id = transactionId;
       params.displayName = "Setoran Tabungan";
     } else if (isSukukOrder) {
@@ -98,6 +115,9 @@ const ActionButtons = ({
   const getButtonText = () => {
     if (isPinjamanProduct) return "LIHAT RESI PENCAIRAN";
     if (isPelunasan) return "LIHAT INVOICE";
+    if (isWaitingDP) {
+      return detail?.has_uploaded_dp ? "LIHAT STATUS PEMBAYARAN DP" : "BAYAR UANG TANDA KESERIUSAN (DP)";
+    }
     if (isFinancing) {
       if (productName?.toLowerCase().includes('arisan')) return "BAYAR SETORAN ARISAN";
       return "BAYAR INVOICE SEKARANG";
@@ -109,7 +129,7 @@ const ActionButtons = ({
   return (
     <section className="mt-5 d-print-none">
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-        {isApprovedAndReady && !isFromHistory && (isFinancing || isTabungan || isSukukOrder) && detail?.status !== 'PAID' && detail?.status !== 'APPROVED' && detail?.status !== 'COMPLETED' && (
+        {(isApprovedAndReady || isWaitingDP) && !isFromHistory && (isFinancing || isTabungan || isSukukOrder) && detail?.status !== 'PAID' && detail?.status !== 'APPROVED' && detail?.status !== 'COMPLETED' && (
           <Button
             variant="primary"
             size="lg"
