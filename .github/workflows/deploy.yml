@@ -2,7 +2,7 @@ name: CI/CD Vite React to VPS (kkpus.id)
 
 on:
   push:
-    branches: [ "master", "main" ]
+    branches: [ "master", "main", "feat/cicd-setup" ]
 
 jobs:
   deploy:
