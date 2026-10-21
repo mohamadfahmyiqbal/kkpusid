@@ -3,7 +3,7 @@ import authRoutes from "./pages/authRoutes";
 import anggotaRoutes from "./pages/anggotaRoutes";
 import simpananRoutes from "./pages/simpananRoutes";
 import jualbeliRoutes from "./pages/jualbeliRoutes";
-import programRoutes from "./pages/programRoutes";
+import programRoutes from "./pages/ProgramRoutes";
 import tabunganRoutes from "./pages/tabunganRoutes";
 import investasiRoutes from "./pages/investasiRoutes";
 import trainingRoutes from "./pages/trainingRoutes";
