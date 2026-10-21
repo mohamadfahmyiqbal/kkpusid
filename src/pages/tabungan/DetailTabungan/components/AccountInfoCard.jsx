@@ -1,6 +1,6 @@
 import React from "react";
 import { Row, Col, Card } from "react-bootstrap";
-import StatusBadge from "../../../../../components/ui/StatusBadge";
+import StatusBadge from "../../../../components/ui/StatusBadge";
 import { formatCurrency } from "./tabunganHelpers";
 
 export default function AccountInfoCard({
