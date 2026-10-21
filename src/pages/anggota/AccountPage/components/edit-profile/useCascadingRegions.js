@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import UGlobal from "../../../../utils/api/UGlobal";
+import UGlobal from "../../../../../utils/api/UGlobal";
 
 export function useCascadingRegions(show, provinceId, cityId, districtId) {
   const [provinces, setProvinces] = useState([]);

@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Form, Button, Spinner } from "react-bootstrap";
-import Alert from "../../../components/ui/SwalAlert";
+import Alert from "../../../../components/ui/SwalAlert";
 import { formatCurrency } from "./tabunganHelpers";
 
 export default function WithdrawalModal({

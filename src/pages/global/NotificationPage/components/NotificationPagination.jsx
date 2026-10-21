@@ -1,5 +1,5 @@
 import React from "react";
-import Pagination from "../../../components/ui/Pagination";
+import Pagination from "../../../../components/ui/Pagination";
 
 const NotificationPagination = ({ currentPage, totalPages, onPageChange }) => {
   return (

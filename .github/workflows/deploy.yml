@@ -34,6 +34,6 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p 2222 ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy dist to VPS
+      - name: Deploy build to VPS
         run: |
-          rsync -avz --delete -e "ssh -p 2222" dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/kkpus.id/
+          rsync -avz --delete -e "ssh -p 2222" build/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/kkpus.id/
