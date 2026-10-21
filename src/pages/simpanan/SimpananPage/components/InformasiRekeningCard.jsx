@@ -16,7 +16,7 @@ import { jwtEncode } from "../../../../utils/helpers";
 import { getSocket } from "../../../../utils/socket";
 import { useProfile } from "../../../../components/layout/contexts";
 import Swal from "sweetalert2";
-import "../../../jualbeli/JualBeliDashboardPage.css";
+import "../../../jualBeli/JualBeliDashboardPage.css";
 import "./InformasiRekeningCard.css";
 import Alert from "../../../../components/ui/SwalAlert";
 
