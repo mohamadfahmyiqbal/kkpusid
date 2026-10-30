@@ -62,7 +62,7 @@ export const AUTH_CONSTANTS = {
     OTP_INVALID: "Kode OTP harus 6 digit angka",
     PASSWORD_MISMATCH: "Password baru dan konfirmasi password tidak cocok",
     PASSWORD_STRENGTH:
-      "Password harus mengandung huruf besar, kecil, dan angka",
+      "Password harus mengandung huruf besar, kecil, angka, dan karakter khusus/simbol",
   },
 
   // Success Messages

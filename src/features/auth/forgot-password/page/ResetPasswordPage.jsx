@@ -50,29 +50,31 @@ export default function ResetPasswordPage() {
     hasLower: /[a-z]/.test(newPassword),
     hasUpper: /[A-Z]/.test(newPassword),
     hasNumber: /\d/.test(newPassword),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(newPassword),
   };
 
   const calculatePasswordStrength = (password) => {
     let strength = 0;
-    if (password.length >= AUTH_CONSTANTS.PASSWORD_MIN_LENGTH) strength += 25;
-    if (/[a-z]/.test(password)) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/\d/.test(password)) strength += 25;
+    if (password.length >= AUTH_CONSTANTS.PASSWORD_MIN_LENGTH) strength += 20;
+    if (/[a-z]/.test(password)) strength += 20;
+    if (/[A-Z]/.test(password)) strength += 20;
+    if (/\d/.test(password)) strength += 20;
+    if (/[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(password)) strength += 20;
     return strength;
   };
 
   const getPasswordStrengthVariant = () => {
-    if (passwordStrength <= 25) return "danger";
-    if (passwordStrength <= 50) return "warning";
-    if (passwordStrength <= 75) return "info";
+    if (passwordStrength <= 40) return "danger";
+    if (passwordStrength <= 60) return "warning";
+    if (passwordStrength <= 80) return "info";
     return "success";
   };
 
   const getPasswordStrengthText = () => {
     if (passwordStrength === 0) return "";
-    if (passwordStrength <= 25) return "Lemah";
-    if (passwordStrength <= 50) return "Cukup";
-    if (passwordStrength <= 75) return "Kuat";
+    if (passwordStrength <= 40) return "Lemah";
+    if (passwordStrength <= 60) return "Cukup";
+    if (passwordStrength <= 80) return "Kuat";
     return "Sangat Kuat";
   };
 
@@ -429,6 +431,25 @@ export default function ResetPasswordPage() {
                                     }
                                   >
                                     Angka (0-9)
+                                  </span>
+                                </div>
+                                <div className="col-sm-12 d-flex align-items-center gap-2">
+                                  {checks.hasSpecial ? (
+                                    <FaCheck className="text-success flex-shrink-0" />
+                                  ) : (
+                                    <span
+                                      className="d-inline-block rounded-circle bg-secondary-subtle"
+                                      style={{ width: "8px", height: "8px" }}
+                                    />
+                                  )}
+                                  <span
+                                    className={
+                                      checks.hasSpecial
+                                        ? "text-success fw-medium"
+                                        : ""
+                                    }
+                                  >
+                                    Karakter Khusus / Simbol (@$!%*?&#...)
                                   </span>
                                 </div>
                               </div>
