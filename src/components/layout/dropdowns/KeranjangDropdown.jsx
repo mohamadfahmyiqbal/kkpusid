@@ -173,7 +173,7 @@ const KeranjangDropdown = memo(function KeranjangDropdown() {
               style={{
                 position: "fixed",
                 inset: 0,
-                zIndex: 1040,
+                zIndex: 1090,
                 backgroundColor: "transparent",
               }}
               onClick={() => setIsDropdownOpen(false)}
