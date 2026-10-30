@@ -88,6 +88,13 @@ export default function ResetPasswordPage() {
     setConfirmPassword(e.target.value);
   };
 
+  const isPasswordValid =
+    checks.minLength &&
+    checks.hasLower &&
+    checks.hasUpper &&
+    checks.hasNumber &&
+    checks.hasSpecial;
+
   const isMatch = confirmPassword.length > 0 && newPassword === confirmPassword;
   const isMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
@@ -517,9 +524,8 @@ export default function ResetPasswordPage() {
                             disabled={
                               loading ||
                               success ||
-                              !newPassword ||
-                              !confirmPassword ||
-                              isMismatch
+                              !isPasswordValid ||
+                              !isMatch
                             }
                             className="pbs-submit-v2 w-100 d-flex align-items-center justify-content-center gap-2 shadow-sm"
                             style={{
