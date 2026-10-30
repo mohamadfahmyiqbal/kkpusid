@@ -10,18 +10,15 @@
 
 /* Dropdown Panel */
 .nd-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 360px;
+  position: fixed !important;
   max-width: calc(100vw - 24px);
-  z-index: 1050; /* Above navbars usually */
+  z-index: 1099 !important;
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+    0 20px 60px rgba(0, 0, 0, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transform-origin: top right;
 }

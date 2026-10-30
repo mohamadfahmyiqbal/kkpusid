@@ -123,7 +123,7 @@ const NotificationDropdown = memo(function NotificationDropdown() {
               style={{
                 position: "fixed",
                 inset: 0,
-                zIndex: 1040,
+                zIndex: 1090,
                 backgroundColor: "transparent",
               }}
               onClick={() => setIsDropdownOpen(false)}
@@ -135,7 +135,7 @@ const NotificationDropdown = memo(function NotificationDropdown() {
                 top: dropdownPos.top,
                 right: dropdownPos.right,
                 width: dropdownPos.width,
-                zIndex: 1050,
+                zIndex: 1099,
               }}
               onClick={(e) => e.stopPropagation()}
             >
