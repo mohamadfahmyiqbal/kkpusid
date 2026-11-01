@@ -34,6 +34,23 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
       if (storedVersion !== currentVersion) {
         localStorage.clear();
         sessionStorage.clear();
+
+        // Bersihkan Cookies Domain
+        try {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+            if (name) {
+              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
+              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname};`;
+            }
+          }
+        } catch (e) {
+          console.error('Error clearing cookies:', e);
+        }
+
         if ('caches' in window) {
           try {
             const cacheNames = await caches.keys();
@@ -42,6 +59,18 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
             console.error('Error clearing caches:', e);
           }
         }
+
+        if ('serviceWorker' in navigator) {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+              await reg.unregister();
+            }
+          } catch (e) {
+            console.error('Error unregistering service workers:', e);
+          }
+        }
+
         localStorage.setItem('app_version', currentVersion);
       }
     };
