@@ -1,0 +1,308 @@
+/* pages/tabungan/DetailTabungan/DetailTabungan.css */
+
+.detail-tabungan-page {
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.detail-tabungan-header {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-tabungan-header h3 {
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+/* ── Main Card ── */
+.detail-tabungan-main-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.detail-tabungan-main-card .card-body {
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .detail-tabungan-main-card .card-body {
+    padding: 2rem;
+  }
+}
+
+/* ── Icon Wrapper ── */
+.detail-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-icon-wrapper svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* ── Balance Mini Cards ── */
+.detail-balance-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.detail-balance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.detail-balance-card h4 {
+  font-size: 1.35rem;
+}
+
+@media (min-width: 768px) {
+  .detail-balance-card h4 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── Progress Bar ── */
+.detail-progress {
+  height: 10px;
+  border-radius: 5px;
+  background: #e9ecef;
+}
+
+.detail-progress-bar {
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+/* ── Stats Grid Items ── */
+.detail-stat-item {
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.detail-stat-item:hover {
+  transform: translateY(-2px);
+}
+
+.detail-stat-item p:first-child {
+  font-size: 0.75rem;
+}
+
+.detail-stat-item p:last-child {
+  font-size: 0.9rem;
+}
+
+/* ── Action Buttons Card ── */
+.detail-actions-card {
+  border-radius: 16px;
+}
+
+.detail-actions-card .btn {
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.detail-actions-card .btn-primary {
+  background: #005a8d;
+  border-color: #005a8d;
+}
+
+.detail-actions-card .btn-primary:hover {
+  background: #004b75;
+  border-color: #004b75;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 90, 141, 0.3);
+}
+
+.detail-actions-card .btn-outline-secondary {
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.detail-actions-card .btn-outline-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* ── Transaction History ── */
+.detail-history-card {
+  border-radius: 16px;
+}
+
+.detail-history-card .table {
+  margin-bottom: 0;
+}
+
+.detail-history-card .table thead th {
+  border-top: none;
+  border-bottom: 2px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.75rem;
+}
+
+.detail-history-card .table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  border-bottom-color: #f1f5f9;
+}
+
+.detail-history-card .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.detail-history-card .table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ── Back Button ── */
+.detail-back-btn {
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-back-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* ── Badge Status ── */
+.detail-status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 99px;
+}
+
+/* ── Loading & Error States ── */
+.detail-loading-state {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.detail-error-state {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.detail-error-state .alert {
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* ── Animations ── */
+.detail-animate-fade-in {
+  animation: detailFadeIn 0.4s ease-out;
+}
+
+@keyframes detailFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-animate-pulse {
+  animation: detailPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes detailPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── Skeleton ── */
+.detail-skeleton-balance {
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: detailShimmer 1.5s infinite;
+}
+
+.detail-skeleton-progress {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: detailShimmer 1.5s infinite;
+}
+
+.detail-skeleton-stat {
+  height: 70px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: detailShimmer 1.5s infinite;
+}
+
+@keyframes detailShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 767.98px) {
+  .detail-tabungan-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .detail-icon-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .detail-icon-wrapper svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .detail-balance-card h4 {
+    font-size: 1.15rem;
+  }
+
+  .detail-stat-item p:last-child {
+    font-size: 0.8rem;
+  }
+
+  .detail-history-card .table thead th,
+  .detail-history-card .table tbody td {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+}

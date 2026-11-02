@@ -31,12 +31,22 @@ const SimpananBillingTabs = ({ activeType }) => {
       const processBills = (res) => {
         if (res.data?.status) {
           let rawData = Array.isArray(res.data.data) ? res.data.data : [];
+          const activeUpper = (activeType || "").toUpperCase();
           // Filter by activeType just in case the backend returns too much
           return rawData.filter(bill => {
-            if (bill.category_code) return bill.category_code === activeType || bill.category_code.includes(activeType);
-            if (bill.items && Array.isArray(bill.items)) {
-              return bill.items.some(item => item.category_code === activeType || item.category_code?.includes(activeType));
+            const billCat = (bill.category_code || "").toUpperCase();
+            if (billCat && (billCat === activeUpper || activeUpper.includes(billCat) || billCat.includes(activeUpper))) {
+              return true;
             }
+            if (bill.items && Array.isArray(bill.items)) {
+              return bill.items.some(item => {
+                const itemCat = (item.category_code || "").toUpperCase();
+                return itemCat && (itemCat === activeUpper || activeUpper.includes(itemCat) || itemCat.includes(activeUpper));
+              });
+            }
+            if (activeUpper.includes("POKOK") && (billCat.includes("POKOK") || bill.description?.toUpperCase().includes("POKOK"))) return true;
+            if (activeUpper.includes("WAJIB") && (billCat.includes("WAJIB") || bill.description?.toUpperCase().includes("WAJIB"))) return true;
+            if (activeUpper.includes("SUKARELA") && (billCat.includes("SUKARELA") || bill.description?.toUpperCase().includes("SUKARELA"))) return true;
             return false;
           });
         }

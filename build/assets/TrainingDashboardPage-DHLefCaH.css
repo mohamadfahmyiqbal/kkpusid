@@ -1,0 +1,147 @@
+/* fe/src/pages/training/TrainingDashboardPage.css */
+
+.custom-training-tabs.nav-pills,
+.custom-training-pills.nav-pills {
+  border-bottom: none;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.custom-training-tabs.nav-pills::-webkit-scrollbar,
+.custom-training-pills.nav-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-training-tabs.nav-pills .nav-link,
+.custom-training-pills.nav-pills .nav-link {
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-training-tabs.nav-pills .nav-link:hover,
+.custom-training-pills.nav-pills .nav-link:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.custom-training-tabs.nav-pills .nav-link.active,
+.custom-training-pills.nav-pills .nav-link.active {
+  color: #fff;
+  background: #005a8d;
+  border-color: #005a8d;
+  box-shadow: 0 4px 12px rgba(0, 90, 141, 0.2);
+}
+
+.custom-training-tabs.nav-pills .nav-link.active:hover {
+  background: #004d7a;
+}
+
+.custom-training-pills.nav-pills .nav-link {
+  padding: 8px 18px;
+  font-size: 12.5px;
+  background: white;
+  border-color: #e2e8f0;
+}
+
+.custom-training-pills.nav-pills .nav-link.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Training Card Styles */
+.training-card {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+}
+
+.training-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+.training-card-header-icon {
+  position: relative;
+  z-index: 1;
+}
+
+.text-dark-blue {
+  color: #0f172a;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fw-black {
+  font-weight: 900;
+}
+
+.btn-training-action {
+  transition: all 0.2s ease;
+  border-width: 2px;
+}
+
+.btn-training-action:hover {
+  transform: scale(1.02);
+}
+
+.btn-training-evaluasi {
+  transition: all 0.2s ease;
+}
+
+.btn-training-evaluasi:hover {
+  background-color: #059669 !important;
+  transform: scale(1.05);
+}
+
+.training-card-completed {
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.training-card-completed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 40px 40px 0;
+  border-color: transparent rgba(16, 185, 129, 0.1) transparent transparent;
+  pointer-events: none;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Progress bar animation */
+.progress-bar {
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .training-card:hover {
+    transform: translateY(-4px);
+  }
+}

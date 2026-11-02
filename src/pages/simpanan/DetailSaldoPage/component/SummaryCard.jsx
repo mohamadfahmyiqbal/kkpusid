@@ -11,21 +11,21 @@ const SummaryCard = ({ summary, balanceSummary, transactionsLength }) => {
         <div className="mb-3">
           <small className="text-muted d-block">Total Setoran</small>
           <h4 className="text-success fw-bold">
-            Rp {formatRupiah(summary.totalDeposit.toString())}
+            Rp {formatRupiah((summary?.totalDeposit ?? 0).toString())}
           </h4>
         </div>
 
         <div className="mb-3">
           <small className="text-muted d-block">Total Penarikan</small>
           <h4 className="text-danger fw-bold">
-            Rp {formatRupiah(summary.totalWithdrawal.toString())}
+            Rp {formatRupiah((summary?.totalWithdrawal ?? 0).toString())}
           </h4>
         </div>
 
         <div className="mb-3">
           <small className="text-muted d-block">Jumlah Transaksi</small>
           <h4 className="text-primary fw-bold">
-            {transactionsLength} Transaksi
+            {transactionsLength || 0} Transaksi
           </h4>
         </div>
 

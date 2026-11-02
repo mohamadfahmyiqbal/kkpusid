@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MdSavings, MdAccountBalanceWallet, MdStars } from "react-icons/md";
 import USimpanan from "../../../../utils/api/USimpanan";
 import InformasiRekeningCard from "../components/InformasiRekeningCard";
+import SimpananBillingTabs from "../components/SimpananBillingTabs";
 import Alert from "../../../../components/ui/SwalAlert";
-;
 
 
 /**
@@ -140,6 +140,7 @@ const SimpananPage = ({ decodedToken }) => {
                   displayName={activeTab.name}
                   fromPage="simpananPage"
                 />
+                <SimpananBillingTabs activeType={activeTab.code} />
               </>
             ) : (
               <div className="text-center py-5 bg-light rounded-4 text-muted">

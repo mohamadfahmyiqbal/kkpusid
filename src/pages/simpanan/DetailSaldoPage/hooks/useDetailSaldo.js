@@ -3,8 +3,6 @@ import moment from "moment";
 import USimpanan from "../../../../utils/api/USimpanan";
 
 export const useDetailSaldo = (decodedToken) => {
-  const abortControllerRef = useRef(new AbortController());
-
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,15 +22,13 @@ export const useDetailSaldo = (decodedToken) => {
     };
   }, [decodedToken]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal) => {
     setLoading(true);
     setError(null);
 
     try {
-      const signal = abortControllerRef.current.signal;
-
       const [balanceRes, historyRes] = await Promise.all([
-        USimpanan.getAccountDetail(categoryCode, { signal }),
+        USimpanan.getAccountDetail({ category: categoryCode }, { signal }),
         USimpanan.getSavingsHistory(
           {
             category: categoryCode,
@@ -51,18 +47,20 @@ export const useDetailSaldo = (decodedToken) => {
         setTransactions(historyRes.data.data || []);
       }
     } catch (err) {
-      if (err.name !== "AbortError") {
+      if (err.name !== "AbortError" && !signal?.aborted) {
         console.error("Error fetching detail saldo:", err);
         setError(err.response?.data?.message || "Gagal memuat data transaksi");
       }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [categoryCode, dateRange]);
 
   useEffect(() => {
-    const controller = abortControllerRef.current;
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
 
     return () => {
       controller.abort();
@@ -93,10 +91,17 @@ export const useDetailSaldo = (decodedToken) => {
     let totalWithdrawal = 0;
 
     transactions.forEach((transaction) => {
-      if (transaction.type === "DEPOSIT") {
-        totalDeposit += parseFloat(transaction.amount || 0);
-      } else if (transaction.type === "WITHDRAWAL") {
+      const type = (transaction.type || "").toUpperCase();
+      const isWithdrawal = type === "WITHDRAWAL" || type === "PENARIKAN";
+      const isDeposit =
+        type === "DEPOSIT" ||
+        type === "SETORAN" ||
+        (!type && parseFloat(transaction.amount || 0) > 0);
+
+      if (isWithdrawal) {
         totalWithdrawal += parseFloat(transaction.amount || 0);
+      } else if (isDeposit) {
+        totalDeposit += parseFloat(transaction.amount || 0);
       }
     });
 
