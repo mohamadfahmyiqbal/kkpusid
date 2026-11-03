@@ -8,6 +8,9 @@ export const useLoginForm = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  // Token dan data pengguna disimpan in-memory state, bukan localStorage
+  const [token, setToken] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   const emailHpInvalid = emailHp.trim() === "" || (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailHp) && !/^\d+$/.test(emailHp));
   const passwordInvalid = password.trim() === "";
@@ -24,9 +27,11 @@ export const useLoginForm = () => {
     setLoading(true);
     try {
       const response = await UAuth.accountLogin({ emailHp: emailHp.trim(), password });
-      // Simpan token dan data pengguna
-      localStorage.setItem("token", response.data.data.token);
-      localStorage.setItem("userData", JSON.stringify(response.data.data.user));
+      // Simpan token dan data pengguna ke in-memory state (bukan localStorage)
+      const authToken = response.data.data.token;
+      const user = response.data.data.user;
+      setToken(authToken);
+      setUserData(user);
 
       setSuccess("Login berhasil! Mengalihkan ke dashboard...");
       // Trigger event untuk sync ProfileContext
@@ -52,5 +57,7 @@ export const useLoginForm = () => {
     setShowPassword,
     handleLogin,
     success,
+    token,
+    userData,
   };
 };

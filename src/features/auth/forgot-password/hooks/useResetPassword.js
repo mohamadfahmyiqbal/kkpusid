@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { jwtEncode } from "../../../../utils/helpers";
 import forgotPasswordService from "../service/forgotPasswordService";
 import { AUTH_CONSTANTS } from "../../constants/authConstants";
@@ -15,31 +15,23 @@ export const useResetPassword = () => {
   const [success, setSuccess] = useState(false);
   const [resetToken, setResetToken] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Load reset token dari localStorage
+  // Load reset token dari location.state (dihantarkan dari halaman verifikasi OTP)
   useEffect(() => {
-    try {
-      const tokenData = localStorage.getItem("resetPasswordToken");
-      if (tokenData) {
-        const parsedToken = JSON.parse(tokenData);
-
-        // Check if token expired
-        if (new Date() > new Date(parsedToken.expiresAt)) {
-          localStorage.removeItem("resetPasswordToken");
-          navigate(LOGIN_PATH, { replace: true });
-          return;
-        }
-
-        setResetToken(parsedToken.resetToken);
-      } else {
-        // No token found, redirect to login
+    const resetTokenFromLocation = location.state?.resetToken;
+    if (resetTokenFromLocation) {
+      // Check if token expired
+      if (new Date() > new Date(location.state?.resetTokenExpiresAt)) {
         navigate(LOGIN_PATH, { replace: true });
+        return;
       }
-    } catch (err) {
-      logger.error("Token loading error:", err);
+      setResetToken(resetTokenFromLocation);
+    } else {
+      // No token found, redirect to login
       navigate(LOGIN_PATH, { replace: true });
     }
-  }, [navigate]);
+  }, [location.state, navigate]);
 
   /**
    * Validasi password strength
@@ -49,7 +41,7 @@ export const useResetPassword = () => {
     const hasLowercase = /[a-z]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-~+=/[\]]/.test(password);
 
     return minLength && hasLowercase && hasUppercase && hasNumber && hasSpecial;
   };
@@ -97,10 +89,7 @@ export const useResetPassword = () => {
       });
 
       if (response.success) {
-        // Clear reset token
-        localStorage.removeItem("resetPasswordToken");
-
-        // Set success state
+        // Reset token hanya transient di router state, tidak perlu clear localStorage
         setSuccess(true);
 
         // Reset form dan navigasi ke login setelah delay

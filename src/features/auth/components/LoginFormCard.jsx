@@ -46,13 +46,6 @@ const LoginFormCard = ({
     return phoneRegex.test(emailHp.replace(/\D/g, ""));
   }, [emailHp]);
 
-  // Enhanced input type detection
-  const getInputType = useCallback(() => {
-    if (isValidEmail) return "email";
-    if (isValidPhone) return "tel";
-    return "text";
-  }, [isValidEmail, isValidPhone]);
-
   // Optimized placeholder
   const getPlaceholder = useCallback(() => {
     if (isValidEmail) return "nama@email.com";

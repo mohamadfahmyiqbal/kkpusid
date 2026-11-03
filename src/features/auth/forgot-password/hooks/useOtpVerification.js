@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { jwtEncode } from "../../../../utils/helpers";
 import forgotPasswordService from "../service/forgotPasswordService.js";
 import { AUTH_CONSTANTS } from "../../constants/authConstants";
@@ -76,21 +76,22 @@ export const useOtpVerification = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTimeLeft, setBlockTimeLeft] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Initialize countdown from session expiry
+  // Initialize countdown from session expiry (dari location.state.sessionData)
+  const sessionDataFromLocation = location.state?.sessionData;
   const {
     timeLeft,
     formatTime,
     reset: resetCountdown,
   } = useCountdown(
-    sessionData
+    sessionDataFromLocation
       ? Math.max(
           0,
-          Math.floor((new Date(sessionData.expiresAt) - new Date()) / 1000),
+          Math.floor((new Date(sessionDataFromLocation.expiresAt) - new Date()) / 1000),
         )
       : OTP_CONSTANTS.EXPIRY_MINUTES * 60,
     () => {
-      localStorage.removeItem("forgotPasswordSession");
       navigate(LOGIN_PATH, { replace: true });
     },
   );
@@ -168,17 +169,10 @@ export const useOtpVerification = () => {
           setIsSuccess(true);
           trackOtpAttempt({ success: true });
 
-          // Simpan reset token untuk halaman reset password
-          localStorage.setItem(
-            "resetPasswordToken",
-            JSON.stringify({
-              resetToken: response.data?.resetToken,
-              expiresAt: response.data?.expiresAt,
-            }),
-          );
-
-          // Clear forgot password session
-          localStorage.removeItem("forgotPasswordSession");
+          // Kirim reset token via router state (transient, in-memory),
+          // bukan localStorage untuk menghindari kerentanan XSS
+          const resetToken = response.data?.resetToken;
+          const resetTokenExpiresAt = response.data?.expiresAt;
 
           // Clear sensitive data
           setOtpCode("");
@@ -186,7 +180,10 @@ export const useOtpVerification = () => {
 
           // Navigasi ke halaman reset password dengan delay untuk animation
           setTimeout(() => {
-            navigate(RESET_PASSWORD_PATH, { replace: true });
+            navigate(RESET_PASSWORD_PATH, {
+              replace: true,
+              state: { resetToken, resetTokenExpiresAt },
+            });
           }, 1000);
         } else {
           const errorType = response.message?.includes("kadaluarsa")
@@ -238,30 +235,20 @@ export const useOtpVerification = () => {
     }
   }, [otpCode, loading, isBlocked, handleVerifyOtp]);
 
-  // Load session data dari localStorage
+  // Load session data dari location.state (dihantarkan dari halaman lupa password)
   useEffect(() => {
-    try {
-      const session = localStorage.getItem("forgotPasswordSession");
-      if (session) {
-        const parsedSession = JSON.parse(session);
-
-        // Check if session expired
-        if (new Date() > new Date(parsedSession.expiresAt)) {
-          localStorage.removeItem("forgotPasswordSession");
-          navigate(LOGIN_PATH, { replace: true });
-          return;
-        }
-
-        setSessionData(parsedSession);
-      } else {
-        // No session found, redirect to login
+    if (sessionDataFromLocation) {
+      // Check if session expired
+      if (new Date() > new Date(sessionDataFromLocation.expiresAt)) {
         navigate(LOGIN_PATH, { replace: true });
+        return;
       }
-    } catch (err) {
-      logger.error("Session loading error:", err);
+      setSessionData(sessionDataFromLocation);
+    } else {
+      // No session found, redirect to login
       navigate(LOGIN_PATH, { replace: true });
     }
-  }, [navigate]);
+  }, [sessionDataFromLocation, navigate]);
 
   /**
    * Validasi OTP format
