@@ -122,7 +122,7 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
                 alt="Logo PUS"
                 className="splashx-logo-image"
                 loading="eager"
-                fetchpriority="high"
+                fetchPriority="high"
                 onError={handleLogoError}
               />
             )}

@@ -15,7 +15,7 @@ const iconMap = {
 };
 
 const ServicesSection = ({ services = [] }) => {
-  const handleServiceClick = (serviceTitle) => {
+  const handleServiceClick = (_serviceTitle) => {
     // Navigate to service detail page or show modal
 
     // For now, scroll to contact section

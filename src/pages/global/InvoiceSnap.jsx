@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Modal, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
@@ -12,6 +12,24 @@ export default function PaymentModal({
 }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Fungsi untuk update status dan redirect
+  const handleResult = useCallback(
+    (status, result) => {
+      if (onUpdateStatus) {
+        onUpdateStatus(status);
+      }
+
+      // Delay 2 detik sebelum redirect
+      setTimeout(() => {
+        const tokenEncode = jwtEncode({ page: "invoice" });
+        navigate(`/${tokenEncode}`, { state: { data, snapResult: result } });
+      }, 2000);
+
+      onClose();
+    },
+    [onUpdateStatus, navigate, data, onClose]
+  );
 
   useEffect(() => {
     if (!show || !token) return;
@@ -45,7 +63,6 @@ export default function PaymentModal({
         onPending: (result) => handleResult("Menunggu Pembayaran", result),
         onError: (result) => handleResult("FAILED", result),
         onClose: () => {
-          console.log("User menutup popup Snap");
           onClose();
         },
       });
@@ -54,24 +71,7 @@ export default function PaymentModal({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [show, token, onClose, data]);
-
-  // Fungsi untuk update status dan redirect
-  const handleResult = (status, result) => {
-    console.log(`Pembayaran status ${status}:`, result);
-
-    if (onUpdateStatus) {
-      onUpdateStatus(status);
-    }
-
-    // Delay 2 detik sebelum redirect
-    setTimeout(() => {
-      const tokenEncode = jwtEncode({ page: "invoice" });
-      navigate(tokenEncode, { state: { data, snapResult: result } });
-    }, 2000);
-
-    onClose();
-  };
+  }, [show, token, onClose, handleResult]);
 
   return (
     <Modal show={show} onHide={onClose} centered size="lg">

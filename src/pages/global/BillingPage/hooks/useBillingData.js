@@ -197,7 +197,9 @@ export const useBillingData = (decodedToken) => {
     decodedToken?.tabunganId,
     decodedToken?.order_id,
     decodedToken?.orderId,
-    hasCategory
+    decodedToken?.return,
+    hasCategory,
+    downPayment
   ]);
 
   useEffect(() => {

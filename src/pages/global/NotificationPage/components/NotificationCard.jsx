@@ -4,7 +4,6 @@ import { FaCheckCircle, FaBell } from "react-icons/fa";
 
 const NotificationCard = ({
   loading,
-  notifications,
   onMarkAllAsRead,
   unreadCount,
   children,

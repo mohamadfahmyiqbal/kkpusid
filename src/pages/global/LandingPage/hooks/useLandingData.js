@@ -1,22 +1,15 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import api from "../../../../utils/api/common";
 
-
-
 const useLandingData = () => {
+  const [services, setServices] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [about, setAbout] = useState(null);
+  const [contact, setContact] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (React) {
-
-  }
-  
-  const [services, setServices] = React.useState([]);
-  const [stats, setStats] = React.useState(null);
-  const [about, setAbout] = React.useState(null);
-  const [contact, setContact] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchLandingData = async () => {
       try {
         const [servicesRes, statsRes, aboutRes, contactRes] = await Promise.all(

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
   Row,
@@ -26,6 +27,7 @@ const validate = ({ otp }) => {
 };
 
 export default function OTPScreen() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -63,19 +65,17 @@ export default function OTPScreen() {
         Notification(res);
         setFormData(INITIAL_FORM);
 
-        // Kirim OTP ke resetPasswordScreen lewat sessionStorage
-        sessionStorage.setItem("otp", trimmedOtp);
-
+        // Teruskan OTP aman via React Router state (hindari persistence plaintext di sessionStorage)
         setTimeout(() => {
-          window.location.assign(`/resetPasswordScreen`);
-        }, 2000);
+          navigate("/resetPasswordScreen", { state: { otp: trimmedOtp } });
+        }, 1500);
       } catch (error) {
         Notification(error?.response || error);
       } finally {
         setLoading(false);
       }
     },
-    [formData, loading]
+    [formData, loading, navigate]
   );
 
   const isSubmitDisabled = useMemo(
@@ -107,11 +107,11 @@ export default function OTPScreen() {
                 size={32}
                 title="Sign In"
                 style={{ cursor: "pointer" }}
-                onClick={() => window.location.assign("/login")}
+                onClick={() => navigate("/login")}
                 tabIndex={0}
                 onKeyPress={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    window.location.assign("/login");
+                    navigate("/login");
                   }
                 }}
                 aria-label="Sign In"

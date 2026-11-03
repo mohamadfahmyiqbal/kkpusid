@@ -24,7 +24,6 @@ export default function DashboardScreen() {
   // Cache role checks untuk readability dan performa
   const role = user?.roles ?? null;
   const isRoleOne = useMemo(() => Number(role) === 1, [role]);
-  const isGuestOrCandidate = useMemo(() => role === "1", [role]); // kalau ada logic spesifik
 
   // render komponen kartu berdasarkan role — dipisah agar JSX lebih bersih
   const renderMainCard = () => {
@@ -46,7 +45,7 @@ export default function DashboardScreen() {
 
             <Col xs={8} className="text-center">
               <h6 className="mb-0">KOPERASI KONSUMEN</h6>
-              <h6 className="mb-0">"PAGUYUBAN USAHA SUKSES"</h6>
+              <h6 className="mb-0">&ldquo;PAGUYUBAN USAHA SUKSES&rdquo;</h6>
               <p className="mb-0">
                 No Badan Hukum : <br />
                 AHU-0000852.AH.01.29. TAHUN 2024

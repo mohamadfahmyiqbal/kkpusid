@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import { FaPrint } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-const InvoiceHeader = ({ onBack, onPrint }) => {
+const InvoiceHeader = ({ onPrint }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
