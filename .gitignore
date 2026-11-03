@@ -2,3 +2,5 @@ node_modules
 .aider*
 .env
 .env
+build/
+build/assets/
