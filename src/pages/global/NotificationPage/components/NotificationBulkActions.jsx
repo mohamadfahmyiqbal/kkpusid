@@ -11,7 +11,6 @@ const NotificationBulkActions = ({
   notifications,
   selectedIds,
   onSelectAll,
-  onSelectOne,
   onBulkAction,
   onClearSelection,
 }) => {
@@ -43,8 +42,6 @@ const NotificationBulkActions = ({
   };
 
   const isAllSelected = selectedIds.length === notifications.length;
-  const isSomeSelected =
-    selectedIds.length > 0 && selectedIds.length < notifications.length;
 
   return (
     <>

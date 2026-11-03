@@ -161,12 +161,12 @@ export default function InvoiceScreen() {
     });
   }, []);
 
-  const handleResult = (status, result) => {
+  const handleResult = useCallback((status) => {
     const mappedStatus = mapMidtransStatusToLabel(status);
     setInvoiceData((prev) =>
       prev ? { ...prev, payment_status: mappedStatus } : prev
     );
-  };
+  }, []);
 
   const handlePayment = useCallback(async () => {
     if (!invoiceData) return;
@@ -283,6 +283,7 @@ export default function InvoiceScreen() {
                           selectedMethod={invoiceData.selectedMethod}
                           onPay={(method) => handleClick("method", method)}
                           token={invoiceData.invoice_id}
+                          onUpdateStatus={handleResult}
                         />
                       )}
 

@@ -44,7 +44,6 @@ export const useInvoiceData = () => {
 
   const [dynamicBillId, setDynamicBillIdState] = useState(params.billId);
   const dynamicBillIdRef = useRef(dynamicBillId);
-  const [dynamicOrderId, setDynamicOrderId] = useState(null);
 
   const setDynamicBillId = useCallback((id) => {
     dynamicBillIdRef.current = id;

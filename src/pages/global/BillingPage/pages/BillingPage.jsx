@@ -112,7 +112,7 @@ const BillingPage = ({ decodedToken }) => {
 
   useEffect(() => {
     if (error) setError("");
-  }, [selectedBills, customAmount]);
+  }, [selectedBills, customAmount, error]);
 
   /* handle view invoice — navigate to invoice page for a specific bill item */
   const handleViewInvoice = useCallback((billItemId) => {

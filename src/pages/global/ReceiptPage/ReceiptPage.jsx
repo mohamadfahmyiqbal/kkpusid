@@ -1,7 +1,7 @@
 // pages/global/ReceiptPage/ReceiptPage.jsx
 // Halaman Resi Pembayaran / Penarikan
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Container, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -30,7 +30,7 @@ export default function ReceiptPage({ decodedToken }) {
   const withdrawalId = decodedToken?.withdrawalId;
   const isWithdrawal = !!withdrawalId;
 
-  const fetchReceiptData = async () => {
+  const fetchReceiptData = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -64,7 +64,7 @@ export default function ReceiptPage({ decodedToken }) {
       console.error("Error fetching receipt:", error);
       throw error;
     }
-  };
+  }, [financingId, withdrawalId, isWithdrawal]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -103,7 +103,7 @@ export default function ReceiptPage({ decodedToken }) {
     };
 
     loadData();
-  }, [financingId, withdrawalId, isWithdrawal, navigate]);
+  }, [fetchReceiptData, navigate, financingId, withdrawalId]);
 
   const handleDownloadPDF = () => {
     const element = receiptRef.current;

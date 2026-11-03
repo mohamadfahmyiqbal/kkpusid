@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -52,14 +52,9 @@ export default function ResiScreen() {
 
   const handleClick = async () => {
     try {
-      const payload = {
-        selected,
-        token,
-      };
-      const res = await USimpanan.reqPencairanSimpanan(selected);
-      console.log(res);
-    } catch (error) {
-      console.log(error);
+      await USimpanan.reqPencairanSimpanan(selected);
+    } catch (_error) {
+      // Keep silent in production
     }
   };
   return (

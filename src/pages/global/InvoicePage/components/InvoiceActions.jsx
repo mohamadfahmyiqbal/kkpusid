@@ -10,7 +10,6 @@ import {
   Table,
 } from "react-bootstrap";
 import {
-  FaMoneyBillWave,
   FaArrowLeft,
   FaCheckCircle,
   FaBuilding,
@@ -47,7 +46,7 @@ const InvoiceActions = ({
   const [proofPreview, setProofPreview] = useState(null);
   const [senderName, setSenderName] = useState("");
   const [senderBank, setSenderBank] = useState("");
-  const [senderAccountNo, setSenderAccountNo] = useState("");
+  const [senderAccountNo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copySuccess, setCopySuccess] = useState("");
 
@@ -104,6 +103,23 @@ const InvoiceActions = ({
         });
         return;
       }
+
+      // Validasi ekstensi dan tipe file aman
+      const validExtensions = [".jpg", ".jpeg", ".png", ".webp", ".pdf"];
+      const fileNameLower = file.name.toLowerCase();
+      const hasValidExt = validExtensions.some((ext) => fileNameLower.endsWith(ext));
+      const validMimes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+
+      if (!hasValidExt || !validMimes.includes(file.type)) {
+        Swal.fire({
+          icon: "warning",
+          title: "Format File Tidak Didukung",
+          text: "Format file wajib berupa JPG, PNG, WEBP, atau PDF.",
+        });
+        e.target.value = "";
+        return;
+      }
+
       setProofFile(file);
       if (file.type.startsWith("image/")) {
         setProofPreview(URL.createObjectURL(file));

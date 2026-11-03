@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useCallback, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
-import UMenu from "../../utils/UMenu";
-import notification from "../../comp/global/Notification";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import { FaArrowLeft } from "react-icons/fa";
@@ -13,12 +11,13 @@ export default function TagihanScreen() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const { back, jenis } = location.state;
+  const { back } = location.state || {};
 
   const handleUserChange = useCallback((newUser) => setUser(newUser), []);
 
   const handleClick = useCallback(() => {
-    navigate(`/${jwtEncode({ page: "dashboard" })}`);
+    const targetPage = back || "dashboard";
+    navigate(`/${jwtEncode({ page: targetPage })}`);
   }, [navigate, back]);
 
   return (

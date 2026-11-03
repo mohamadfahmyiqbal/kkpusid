@@ -1,7 +1,7 @@
 import React from "react";
-import { Container, Card } from "react-bootstrap";
+import { Container, Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { MdAccessTime } from "react-icons/md";
+import { MdAccessTime, MdArrowBack } from "react-icons/md";
 import { jwtEncode } from "../../../utils/helpers";
 import { ARTICLE_DATA } from "../../../features/dashboard/constants/dashboardData";
 
@@ -23,6 +23,16 @@ const ArticleDetailPage = ({ decodedToken }) => {
 
   return (
     <Container className="py-4">
+      <div className="mb-3">
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          className="d-inline-flex align-items-center gap-1 rounded-pill px-3"
+          onClick={handleBack}
+        >
+          <MdArrowBack /> Kembali
+        </Button>
+      </div>
       <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
         {/* Placeholder image header */}
         <div 

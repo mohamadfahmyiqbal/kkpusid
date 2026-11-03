@@ -145,7 +145,6 @@ export default function PaymentProcess() {
                             </tr>
                           </thead>
                           <tbody>
-                            {console.log(invoiceData)}
                             {invoiceData?.detailsInvoice?.map((inv, idx) => (
                               <tr key={idx}>
                                 <td>{inv.name}</td>
