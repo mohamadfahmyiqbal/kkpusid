@@ -101,19 +101,15 @@ export const useForgotPassword = () => {
       });
 
       if (response.success) {
-        // Simpan session data untuk halaman OTP
-        localStorage.setItem(
-          "forgotPasswordSession",
-          JSON.stringify({
-            emailHp: normalizedEmailHp,
-            sessionId: response.data?.sessionId,
-            expiresAt: response.data?.expiresAt,
-          }),
-        );
-
-        // Reset form dan navigasi ke halaman OTP
+        // Simpan session data ke router state (transient, in-memory),
+        // bukan localStorage untuk menghindari kerentanan XSS
+        const sessionData = {
+          emailHp: normalizedEmailHp,
+          sessionId: response.data?.sessionId,
+          expiresAt: response.data?.expiresAt,
+        };
         resetForm();
-        navigate(FORGOT_OTP_PATH, { replace: true });
+        navigate(FORGOT_OTP_PATH, { replace: true, state: { sessionData } });
       } else {
         setError(
           response.message || AUTH_CONSTANTS.ERROR_MESSAGES.SERVER_ERROR,
