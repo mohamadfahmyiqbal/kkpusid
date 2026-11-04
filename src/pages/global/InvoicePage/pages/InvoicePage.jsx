@@ -10,7 +10,6 @@ import {
   InvoiceLoading,
   InvoiceError,
   InvoiceStatusBadge,
-  InvoicePaymentInstruction,
   InvoiceFooter,
 } from "../components";
 

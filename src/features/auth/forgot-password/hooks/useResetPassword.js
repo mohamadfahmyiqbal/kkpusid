@@ -49,7 +49,7 @@ export const useResetPassword = () => {
     const hasLowercase = /[a-z]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-~+=/\\[\]]/.test(password);
 
     return minLength && hasLowercase && hasUppercase && hasNumber && hasSpecial;
   };

@@ -4,11 +4,6 @@ import api from "../../../../utils/api/common";
 
 
 const useLandingData = () => {
-
-  if (React) {
-
-  }
-  
   const [services, setServices] = React.useState([]);
   const [stats, setStats] = React.useState(null);
   const [about, setAbout] = React.useState(null);

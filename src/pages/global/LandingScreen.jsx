@@ -80,13 +80,13 @@ export default function LandingScreen() {
               <h1 className="fw-bold display-4">
                 Muamalah
                 <br />
-                Syar'i
+                Syar&apos;i
                 <br />
                 Berkah Hakiki
               </h1>
               <h4 className="mt-3">
-                Bertekad untuk melaksanakan muamalah syar’i sesuai Al-Qur’an,
-                Al-Hadits, serta ijma’ para Salafush Shalih.
+                Bertekad untuk melaksanakan muamalah syar&apos;i sesuai Al-Qur&apos;an,
+                Al-Hadits, serta ijma&apos; para Salafush Shalih.
               </h4>
             </Col>
           </Row>

@@ -29,10 +29,7 @@ const useSocketListener = (callback) => {
 
         // Panggil callback untuk update state komponen
         if (callback && typeof callback === 'function') {
-
           callback(data);
-        } else {
-
         }
 
         // Opsional: Memicu reload global atau update state di sini jika diperlukan

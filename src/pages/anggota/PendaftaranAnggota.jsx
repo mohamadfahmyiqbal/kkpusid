@@ -20,7 +20,6 @@ import Footer from "../../comp/global/Footer";
 
 import { jwtEncode } from "../../routes/helpers";
 // import UAnggota from "../../utils/UAnggota"; // (Tidak dipakai)
-import UApproval from "../../utils/UApproval";
 import { FaArrowLeft } from "react-icons/fa";
 
 export default function PendaftaranAnggota() {

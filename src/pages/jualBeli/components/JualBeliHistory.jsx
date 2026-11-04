@@ -57,4 +57,6 @@ const JualBeliHistory = React.memo(({
   );
 });
 
+JualBeliHistory.displayName = "JualBeliHistory";
+
 export default JualBeliHistory;

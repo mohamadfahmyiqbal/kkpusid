@@ -24,4 +24,6 @@ const SaldoInfo = memo(({ user }) => (
   </Card>
 ));
 
+SaldoInfo.displayName = "SaldoInfo";
+
 export default SaldoInfo;

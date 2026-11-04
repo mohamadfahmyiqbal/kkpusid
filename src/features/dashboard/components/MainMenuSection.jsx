@@ -134,4 +134,6 @@ const MainMenuSection = React.memo(({ isALB, isCandidate }) => {
   );
 });
 
+MainMenuSection.displayName = "MainMenuSection";
+
 export default MainMenuSection;

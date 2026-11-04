@@ -212,7 +212,7 @@ export default function DashboardPage() {
           <Col xs={12} lg={8}>
             <Card className="dc-hero border-0 h-100">
               <Card.Body className="p-0">
-                <h1>Assalamu'alaikum, {safeGreetingName}!</h1>
+                <h1>Assalamu&apos;alaikum, {safeGreetingName}!</h1>
                 <p>Selamat datang di Paguyuban Usaha Sukses.</p>
                 <p>
                   {isCandidate

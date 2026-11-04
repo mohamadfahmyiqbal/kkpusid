@@ -6,7 +6,7 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import routerConfig from "./routes/RouterConfig";
 // Notifikasi Toast
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Swal from "sweetalert2";

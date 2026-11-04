@@ -46,7 +46,7 @@ export default function DashboardScreen() {
 
             <Col xs={8} className="text-center">
               <h6 className="mb-0">KOPERASI KONSUMEN</h6>
-              <h6 className="mb-0">"PAGUYUBAN USAHA SUKSES"</h6>
+              <h6 className="mb-0">&quot;PAGUYUBAN USAHA SUKSES&quot;</h6>
               <p className="mb-0">
                 No Badan Hukum : <br />
                 AHU-0000852.AH.01.29. TAHUN 2024
