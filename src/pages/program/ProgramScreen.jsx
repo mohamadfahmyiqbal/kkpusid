@@ -13,13 +13,14 @@ import {
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
-import CardSimpanan from "../../comp/simpanan/CardSimpanan";
+import Header from "../../components/layout/components/Header";
+import Sidebar from "../../components/layout/components/Sidebar";
 
-import { jwtEncode } from "../../routes/helpers";
+import { jwtEncode } from "../../utils/helpers";
 import UTransaksi from "../../utils/UTransaksi";
 import URequest from "../../utils/URequest";
+
+const CardSimpanan = () => null;
 
 export default function ProgramScreen() {
   const navigate = useNavigate();
@@ -55,7 +56,6 @@ export default function ProgramScreen() {
     [navigate]
   );
 
-  /** Ambil data transaksi Jual Beli */
   const getTransaksi = useCallback(async () => {
     setLoading(true);
     try {
@@ -76,14 +76,13 @@ export default function ProgramScreen() {
       console.log(res);
     } catch (error) {
       console.log(error);
-
-      console.log(error);
     }
-  });
+  }, []);
 
   useEffect(() => {
     getRequest();
-  }, [getRequest]);
+    getTransaksi();
+  }, [getRequest, getTransaksi]);
 
   return (
     <div id="main-wrapper">

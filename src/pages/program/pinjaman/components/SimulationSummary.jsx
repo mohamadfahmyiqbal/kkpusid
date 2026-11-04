@@ -9,7 +9,6 @@ export default function SimulationSummary({
   selectedProduct,
   formatCurrency,
   nominal,
-  principal,
   tenor,
   estimasiAngsuran,
   isLoading,
