@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { MdAccountBalanceWallet } from "react-icons/md";
-import Swal from "sweetalert2";
 import { jwtEncode } from "../../utils/helpers";
 import UJualBeli from "../../utils/api/UJualBeli";
 
@@ -32,42 +31,14 @@ const PelunasanPage = ({ decodedToken }) => {
     navigate(`/${jwtEncode({ page: decodedToken?.return || "jualBeliPage" })}`);
   };
 
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleBayar = async () => {
-    try {
-      setSubmitting(true);
-      const payload = {
-        category: "Pelunasan Jual Beli",
-        item_name: `Pelunasan ${data.purpose || data.item_name || 'Pembiayaan'}`,
-        item_price: sisaTagihan,
-        amount_requested: sisaTagihan,
-        down_payment: 0,
-        principal_amount: sisaTagihan,
-        tenure: 1,
-        monthly_installment: sisaTagihan,
-        margin_percent: 0,
-        margin_amount: 0,
-        total_tagihan: sisaTagihan,
-        operational_cost: 0,
-        keterangan: `PELUNASAN_REF:${data.financing_id}`
-      };
-      
-      const res = await UJualBeli.submitPengajuan(payload);
-      if (res.data?.status) {
-        const newFinancingId = res.data.data.financing_id;
-        navigate(`/${jwtEncode({
-          page: "transactionDetailPage",
-          financingId: newFinancingId,
-          return: "jualBeliPage"
-        })}`);
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire({ title: 'Gagal', text: "Gagal mengajukan pelunasan: " + (error.response?.data?.message || error.message), icon: 'error' });
-    } finally {
-      setSubmitting(false);
-    }
+  const handleBayar = () => {
+    navigate(`/${jwtEncode({
+      page: "billingPage",
+      category: "FINANCING",
+      financingId: data.financing_id,
+      productName: "pembiayaan",
+      return: "jualBeliPage"
+    })}`);
   };
 
   if (loading) {
@@ -179,13 +150,9 @@ const PelunasanPage = ({ decodedToken }) => {
                 size="lg"
                 className="w-100 py-3 rounded-pill fw-bold shadow-sm d-flex justify-content-center align-items-center btn-hover-lift"
                 onClick={handleBayar}
-                disabled={sisaTagihan <= 0 || submitting}
+                disabled={sisaTagihan <= 0}
               >
-                {submitting ? (
-                  <><Spinner size="sm" className="me-2" /> Memproses...</>
-                ) : (
-                  "Lanjutkan Pembayaran"
-                )}
+                Lanjutkan Pembayaran
               </Button>
               <div className="mt-3 text-muted small">
                 Klik tombol di atas untuk melanjutkan ke proses pembayaran.

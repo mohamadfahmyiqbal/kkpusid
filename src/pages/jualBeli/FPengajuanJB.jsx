@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
+import Header from "../../components/layout/components/Header";
+import Sidebar from "../../components/layout/components/Sidebar";
 import {
   Button,
   Card,
@@ -16,8 +16,9 @@ import {
 import { FaArrowLeft } from "react-icons/fa";
 import { formatRupiah } from "../../utils/formatRupiah";
 import URequest from "../../utils/URequest";
-import ApprovalStepper from "../../comp/approval/ApprovalStepper";
 import UJB from "../../utils/UJB";
+
+const ApprovalStepper = () => null;
 
 export default function FPengajuanJB() {
   const navigate = useNavigate();

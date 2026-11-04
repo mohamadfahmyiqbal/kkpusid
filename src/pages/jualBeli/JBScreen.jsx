@@ -13,12 +13,12 @@ import {
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
-import Header from "../../comp/global/header/Header";
-import Sidebar from "../../comp/global/Sidebar";
-import CardSimpanan from "../../comp/simpanan/CardSimpanan";
-
+import Header from "../../components/layout/components/Header";
+import Sidebar from "../../components/layout/components/Sidebar";
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
+
+const CardSimpanan = () => null;
 
 export default function JBScreen() {
   const navigate = useNavigate();
