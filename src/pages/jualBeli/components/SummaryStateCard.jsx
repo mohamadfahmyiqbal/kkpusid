@@ -63,8 +63,6 @@ const SummaryStateCard = ({
                 Rp {(() => {
                   const dp = Number(approvedFinancing?.down_payment || 0);
                   const total = Number(approvedFinancing?.item_price || approvedFinancing?.amount_requested || 0) + Number(approvedFinancing?.operational_cost || 0) + Number(approvedFinancing?.margin_amount || 0);
-                  const tenure = parseInt(approvedFinancing?.tenure || approvedFinancing?.term_months || approvedFinancing?.cooperation_months || 1);
-                  const cicilanPerBulan = Math.ceil((total - dp) / tenure);
                   const cicilanTerbayar = approvedFinancing?.paid_installment_amount !== undefined
                     ? Number(approvedFinancing.paid_installment_amount)
                     : Math.max(0, Number(approvedFinancing?.paid_amount || 0) - dp);
