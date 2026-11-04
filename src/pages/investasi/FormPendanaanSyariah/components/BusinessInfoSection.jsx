@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col, Form } from "react-bootstrap";
+import { Col, Form } from "react-bootstrap";
 import { SECTOR_OPTIONS, formatCurrency } from "./formHelpers";
 
 export default function BusinessInfoSection({

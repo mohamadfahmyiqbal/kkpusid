@@ -10,7 +10,6 @@ import {
   Table,
 } from "react-bootstrap";
 import {
-  FaMoneyBillWave,
   FaArrowLeft,
   FaCheckCircle,
   FaBuilding,

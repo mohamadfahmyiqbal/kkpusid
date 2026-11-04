@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
     hasLower: /[a-z]/.test(newPassword),
     hasUpper: /[A-Z]/.test(newPassword),
     hasNumber: /\d/.test(newPassword),
-    hasSpecial: /[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(newPassword),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>_\-~+=/\\[\]]/.test(newPassword),
   };
 
   const calculatePasswordStrength = (password) => {
@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
     if (/[a-z]/.test(password)) strength += 20;
     if (/[A-Z]/.test(password)) strength += 20;
     if (/\d/.test(password)) strength += 20;
-    if (/[!@#$%^&*(),.?":{}|<>_\-~+=/\\\[\]]/.test(password)) strength += 20;
+    if (/[!@#$%^&*(),.?":{}|<>_\-~+=/\\[\]]/.test(password)) strength += 20;
     return strength;
   };
 

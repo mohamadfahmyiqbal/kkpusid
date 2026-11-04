@@ -81,21 +81,23 @@ export default function PencairanSimpananScreen() {
             alert("Minimal pencairan adalah Rp 50.000");
             return;
           }
-          const res = await USimpanan.reqPencairanSimpanan({
-            title: "Resi Pencairan Sukarela",
-            selected: [
-              {
-                id: `Pencairan${Date.now()}`,
-                name: "Pencairan Simpanan Sukarela",
-                jumlah: nominal,
-              },
-            ],
-            back: "Pencairan",
-            jenis: { name: "Simpanan Sukarela" },
-            type: "Tarik",
-          });
+          let res;
+          try {
+            res = await USimpanan.reqPencairanSimpanan({
+              title: "Resi Pencairan Sukarela",
+              selected: [
+                {
+                  id: `Pencairan${Date.now()}`,
+                  name: "Pencairan Simpanan Sukarela",
+                  jumlah: nominal,
+                },
+              ],
+              back: "Pencairan",
+              jenis: { name: "Simpanan Sukarela" },
+              type: "Tarik",
+            });
 
-          navigate(`/${jwtEncode({ page: "resi" })}`, {
+            navigate(`/${jwtEncode({ page: "resi" })}`, {
             state: {
               title: "Resi Pencairan Sukarela",
               selected: [

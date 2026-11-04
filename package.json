@@ -48,14 +48,32 @@
   },
   "packageManager": "npm@10",
   "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2022": true,
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:react-hooks/recommended",
+      "prettier"
     ],
     "plugins": [
+      "react",
+      "react-hooks",
       "unused-imports"
     ],
     "rules": {
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "warn",
       "unused-imports/no-unused-vars": [
@@ -66,7 +84,14 @@
           "args": "after-used",
           "argsIgnorePattern": "^_"
         }
-      ]
+      ],
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
     }
   },
   "browserslist": {

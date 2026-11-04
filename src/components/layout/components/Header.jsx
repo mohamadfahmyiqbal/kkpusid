@@ -88,7 +88,7 @@ const Header = memo(
 
               <li className="d-none d-sm-block">
                 <div
-                  style={{
+                  style={{ 
                     width: 1,
                     height: 24,
                     background: "rgba(255,255,255,0.15)",
@@ -106,7 +106,7 @@ const Header = memo(
         </nav>
       </header>
     );
-  },
+  }
 );
 
 Header.propTypes = {
@@ -116,5 +116,7 @@ Header.propTypes = {
   isSidebarShown: PropTypes.bool.isRequired,
   isDesktop: PropTypes.bool.isRequired,
 };
+
+Header.displayName = "Header";
 
 export default Header;

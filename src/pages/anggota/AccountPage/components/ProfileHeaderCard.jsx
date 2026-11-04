@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Button } from "react-bootstrap";
+import { Card } from "react-bootstrap";
 import { FaCamera, FaIdCard, FaShieldAlt } from "react-icons/fa";
 
 // Helper untuk format tanggal Indonesia

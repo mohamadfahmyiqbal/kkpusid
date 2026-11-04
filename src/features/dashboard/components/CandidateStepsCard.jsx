@@ -62,6 +62,8 @@ const StepItem = React.memo(({ item, onNavigate }) => {
   );
 });
 
+StepItem.displayName = "StepItem";
+
 const CandidateStepsCard = ({ steps, onNavigate }) => {
   const scrollContainerRef = useRef(null);
 

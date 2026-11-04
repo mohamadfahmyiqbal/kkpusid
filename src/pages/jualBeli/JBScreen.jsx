@@ -9,8 +9,7 @@ import {
   Col,
   Container,
   Row,
-  Image,
- Form
+  Image
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
@@ -20,7 +19,6 @@ import CardSimpanan from "../../comp/simpanan/CardSimpanan";
 
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
-import URequest from "../../utils/URequest";
 
 export default function JBScreen() {
   const navigate = useNavigate();

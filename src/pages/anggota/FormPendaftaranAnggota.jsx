@@ -114,7 +114,7 @@ export default function FormPendaftaranAnggota() {
     switch (step) {
       case 1:
         return (
-          <>
+          <div>
             <h4 className="mb-3">Personal Info</h4>
             <Row>
               <Col xs={12} md={6}>
@@ -194,7 +194,7 @@ export default function FormPendaftaranAnggota() {
                 </Col>
               ))}
             </Row>
-          </>
+          </div>
         );
 
       case 2:
@@ -240,7 +240,7 @@ export default function FormPendaftaranAnggota() {
 
       case 4:
         return (
-          <>
+          <div>
             <h4 className="mb-3">Bank Info</h4>
             <Row>
               {[
@@ -268,7 +268,7 @@ export default function FormPendaftaranAnggota() {
                 </Col>
               ))}
             </Row>
-          </>
+          </div>
         );
 
       case 5:

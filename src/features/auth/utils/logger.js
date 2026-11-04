@@ -4,7 +4,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 export const logger = {
   log: (...args) => {
     if (isDevelopment) {
-
+      console.log(...args);
     }
   },
   warn: (...args) => {
@@ -21,5 +21,10 @@ export const logger = {
     if (isDevelopment) {
       console.debug(...args);
     }
-  }
+  },
+  info: (...args) => {
+    if (isDevelopment) {
+      console.info(...args);
+    }
+  },
 };

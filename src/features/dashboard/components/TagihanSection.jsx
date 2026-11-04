@@ -48,6 +48,8 @@ const BillingCard = React.memo(({ item, onPay }) => {
   );
 });
 
+BillingCard.displayName = "BillingCard";
+
 /**
  * Skeleton loading untuk item tagihan
  */
