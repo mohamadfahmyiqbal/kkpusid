@@ -59,6 +59,7 @@ const DetailTabungan = () => {
   const productConfig = TABUNGAN_CONFIG[productType] || TABUNGAN_CONFIG.haji;
 
   useEffect(() => {
+    let currentId = null;
     const pathParts = window.location.pathname.split("/");
     const lastPart = pathParts[pathParts.length - 1];
     try {
@@ -67,6 +68,7 @@ const DetailTabungan = () => {
         setProductType(decoded.product);
       }
       if (decoded?.tabunganId) {
+        currentId = decoded.tabunganId;
         setTabunganId(decoded.tabunganId);
       }
       if (decoded?.action === "withdraw") {
@@ -76,55 +78,51 @@ const DetailTabungan = () => {
       console.error("Error decoding URL:", e);
     }
 
-    // Mock data for now
-    setTimeout(() => {
-      setAccountData({
-        accountNumber: "TBG-2024-001234",
-        accountName: "Ahmad Fauzi",
-        targetAmount: 25000000,
-        currentBalance: 25000000,
-        initialDeposit: 500000,
-        tenor: 60,
-        startDate: "2024-01-15",
-        endDate: "2029-01-15",
-        monthlyTarget: 416667,
-        status: "active",
-        transactions: [
-          {
-            date: "2024-01-15",
-            type: "Setoran Awal",
-            amount: 500000,
-            balance: 500000,
-          },
-          {
-            date: "2024-02-15",
-            type: "Setoran Bulanan",
-            amount: 416667,
-            balance: 916667,
-          },
-          {
-            date: "2024-03-15",
-            type: "Setoran Bulanan",
-            amount: 416667,
-            balance: 1333334,
-          },
-          {
-            date: "2024-04-15",
-            type: "Setoran Bulanan",
-            amount: 416667,
-            balance: 1750001,
-          },
-          {
-            date: "2024-05-15",
-            type: "Setoran Bulanan",
-            amount: 416667,
-            balance: 2166668,
-          },
-        ],
-      });
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchDetail = async () => {
+      if (!currentId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const { default: TabunganService } = await import("../../../services/tabungan.service");
+        const res = await TabunganService.getTabunganDetail(currentId);
+        const data = res?.data?.data || res?.data;
+        if (data) {
+          const billsRes = await TabunganService.getTabunganBills(currentId).catch(() => ({ data: [] }));
+          const rawBills = billsRes?.data || [];
+          const txs = Array.isArray(rawBills) ? rawBills.filter(b => b.status === "PAID").map(b => ({
+            date: b.updatedAt ? new Date(b.updatedAt).toLocaleDateString("id-ID") : "-",
+            type: b.description || "Setoran",
+            amount: b.amount,
+            balance: b.amount
+          })) : [];
+
+          setAccountData({
+            memberSavingTargetId: data.member_saving_target_id,
+            accountNumber: `TBG-${String(data.member_saving_target_id).padStart(6, "0")}`,
+            accountName: data.member?.full_name || userData?.name || "Anggota",
+            targetAmount: data.catalog?.target_amount || data.target_amount || 0,
+            currentBalance: data.current_balance || 0,
+            initialDeposit: data.catalog?.min_monthly_deposit || data.monthly_deposit || 0,
+            tenor: data.catalog?.term_months || data.term_months || 0,
+            startDate: data.created_at ? new Date(data.created_at).toISOString().split("T")[0] : "-",
+            endDate: "-",
+            monthlyTarget: data.catalog?.min_monthly_deposit || data.monthly_deposit || 0,
+            status: data.status || "active",
+            transactions: txs,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching detail tabungan:", err);
+        setError("Gagal memuat data detail tabungan");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [userData]);
 
   const progressPercentage = accountData
     ? Math.round((accountData.currentBalance / accountData.targetAmount) * 100)
