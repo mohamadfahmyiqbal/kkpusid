@@ -214,10 +214,9 @@ export default function FormPendaftaranAnggota() {
                   type: "textarea",
                 },
               ].map((f) => (
-                <Col xs={12} md={6}>
+                <Col xs={12} md={6} key={f.name}>
                   <Form.Group
                     as={Row}
-                    key={f.name}
                     className="mb-2 align-items-center"
                   >
                     <Form.Label column md={2}>
@@ -248,10 +247,9 @@ export default function FormPendaftaranAnggota() {
                 { label: "No Rekening", name: "no_rekening" },
                 { label: "Nama Nasabah", name: "nama_nasabah" },
               ].map((f) => (
-                <Col xs={12} md={6}>
+                <Col xs={12} md={6} key={f.name}>
                   <Form.Group
                     as={Row}
-                    key={f.name}
                     className="mb-2 align-items-center"
                   >
                     <Form.Label column md={2}>

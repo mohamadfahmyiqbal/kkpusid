@@ -236,4 +236,6 @@ const InformasiRekeningCard = memo(
   },
 );
 
+InformasiRekeningCard.displayName = "InformasiRekeningCard";
+
 export default InformasiRekeningCard;
