@@ -85,8 +85,8 @@ export default function LandingScreen() {
                 Berkah Hakiki
               </h1>
               <h4 className="mt-3">
-                Bertekad untuk melaksanakan muamalah syar’i sesuai Al-Qur’an,
-                Al-Hadits, serta ijma’ para Salafush Shalih.
+                Bertekad untuk melaksanakan muamalah syar&apos;i sesuai Al-Qur&apos;an,
+                Al-Hadits, serta ijma&apos; para Salafush Shalih.
               </h4>
             </Col>
           </Row>

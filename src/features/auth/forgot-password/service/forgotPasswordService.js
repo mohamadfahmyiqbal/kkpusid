@@ -22,7 +22,7 @@ class ForgotPasswordService {
   }
 
   /**
-   * Reset password
+   * Reset password dengan token
    * @param {Object} data - Data reset password {resetToken, newPassword}
    * @returns {Promise} Response dari API
    */
@@ -32,8 +32,8 @@ class ForgotPasswordService {
   }
 
   /**
-   * Kirim ulang OTP
-   * @param {Object} data - Data resend OTP {sessionId}
+   * Resend OTP
+   * @param {Object} data - Data resend {sessionId}
    * @returns {Promise} Response dari API
    */
   async resendOtp(data) {
@@ -45,3 +45,4 @@ class ForgotPasswordService {
 const forgotPasswordService = new ForgotPasswordService();
 
 export default forgotPasswordService;
+

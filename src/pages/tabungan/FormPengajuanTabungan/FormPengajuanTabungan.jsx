@@ -157,10 +157,6 @@ const FormPengajuanTabungan = () => {
       newErrors.term_months = "Durasi harus lebih dari 0";
     }
 
-    if (term <= 0) {
-      newErrors.term_months = "Durasi harus lebih dari 0";
-    }
-
     if (!formData.akadAgreed) {
       newErrors.akadAgreed = "Anda harus menyetujui akad";
     }

@@ -112,8 +112,10 @@ const SidebarMenuItem = memo(
         )}
       </li>
     );
-  },
+  }
 );
+
+SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const hasActiveChild = (item, currentPage) => {
   if (item.href === currentPage) return true;
@@ -123,7 +125,7 @@ const hasActiveChild = (item, currentPage) => {
   return false;
 };
 
-export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSidebarOpen }) {
+function Sidebar({ user, onNavigate, onClose, isDesktop, isSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [openKeys, setOpenKeys] = useState({});
@@ -347,3 +349,6 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
     </aside>
   );
 }
+
+Sidebar.displayName = "Sidebar";
+export default Sidebar;

@@ -41,14 +41,23 @@ const PendanaanSyariah = () => {
     return new Intl.NumberFormat("id-ID").format(value);
   }, []);
 
+  const formatTanggal = useCallback((tanggal) => {
+    if (!tanggal) return "-";
+    const d = new Date(tanggal);
+    if (isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' });
+  }, []);
+
   const handlePengajuanBaru = useCallback(() => {
     const token = jwtEncode({ page: "formPendanaanSyariah" });
     navigate(`/${token}`);
   }, [navigate]);
 
   const handleViewPortofolio = useCallback(() => {
-    // TODO: Navigate to portofolio page
-  }, []);
+    // Rute portofolio tersedia di pusat investasi
+    const token = jwtEncode({ page: "investasiPage" });
+    navigate(`/${token}`);
+  }, [navigate]);
 
   const handleSetoran = useCallback(() => {
     if (!pengajuanData?.financing_id) return;
@@ -66,6 +75,9 @@ const PendanaanSyariah = () => {
     const token = jwtEncode({ page: "investasiPage" });
     navigate(`/${token}`);
   }, [navigate]);
+
+  const isAktif = pengajuanData?.status === 'APPROVED' || pengajuanData?.status === 'ACTIVE';
+  const isDitolak = pengajuanData?.status === 'REJECTED' || pengajuanData?.status === 'CANCELLED';
 
   if (loading) {
     return (
@@ -162,8 +174,10 @@ const PendanaanSyariah = () => {
                         <FaCheckCircle className="text-white opacity-75 me-2" /> Riwayat Persetujuan
                       </h5>
                       <div className="bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 p-4 shadow-sm text-start">
-                        {pengajuanData.approvalChain.map((step, idx) => (
-                          <div key={idx} className={`d-flex align-items-start ${idx !== pengajuanData.approvalChain.length - 1 ? 'mb-4 position-relative' : ''}`}>
+                        {pengajuanData.approvalChain.map((step, idx) => {
+                          const stepKey = step.id || `${step.role || step.stepName || 'step'}-${idx}`;
+                          return (
+                          <div key={stepKey} className={`d-flex align-items-start ${idx !== pengajuanData.approvalChain.length - 1 ? 'mb-4 position-relative' : ''}`}>
                             {idx !== pengajuanData.approvalChain.length - 1 && (
                               <div className="position-absolute bg-white bg-opacity-25" style={{ width: '2px', height: '100%', left: '15px', top: '30px', zIndex: 0 }}></div>
                             )}
@@ -190,13 +204,13 @@ const PendanaanSyariah = () => {
                               )}
                             </div>
                           </div>
-                        ))}
+                        );})}
                       </div>
                     </div>
                   )}
                 </Card.Body>
               </Card>
-            ) : (
+            ) : isAktif ? (
               // Status: Memiliki pendanaan aktif (Approved / Active)
               <Card
                 className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card mb-4"
@@ -242,7 +256,7 @@ const PendanaanSyariah = () => {
                     <div className="col-sm-6 col-md-4">
                       <div className="text-uppercase text-white-50 fw-bold mb-1" style={{ fontSize: '10px', letterSpacing: '1px' }}>TANGGAL BUKA</div>
                       <div className="fw-bold text-white fs-5">
-                        {pengajuanData?.createdAt ? new Date(pengajuanData.createdAt).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : pengajuanData?.created_at ? new Date(pengajuanData.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
+                        {formatTanggal(pengajuanData?.createdAt || pengajuanData?.created_at)}
                       </div>
                     </div>
                   </div>
@@ -257,6 +271,47 @@ const PendanaanSyariah = () => {
                   </div>
                 </Card.Body>
               </Card>
+            ) : isDitolak ? (
+              // Status: Pengajuan ditolak
+              <Card
+                className="premium-card premium-card-active border-0 text-white overflow-hidden shadow-lg animate-fade-in premium-main-card mb-4"
+                style={{ 
+                  background: "linear-gradient(135deg, #7f1d1d 0%, #b91c1c 40%, #dc2626 100%)", 
+                  boxShadow: "0 20px 40px -10px rgba(190, 28, 38, 0.3)",
+                  borderRadius: "16px"
+                }}
+              >
+                <div className="glass-sheen" />
+                <Card.Body className="p-4 p-md-5 relative card-body-front text-center">
+                  <div className="d-flex justify-content-center mb-4">
+                    <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill blur-effect bg-white bg-opacity-10 border border-white border-opacity-25">
+                      <FaTimesCircle size={14} className="text-light" />
+                      <span className="fw-bold tracking-wider card-type-label" style={{ letterSpacing: '1px', fontSize: '11px' }}>STATUS PENGAJUAN</span>
+                    </div>
+                  </div>
+                  <div className="text-white mb-3" style={{ fontSize: "60px" }}>
+                    <FaTimesCircle className="opacity-75" />
+                  </div>
+                  <h3 className="fw-bold mb-3 text-white">Pengajuan Tidak Disetujui</h3>
+                  <p className="text-white opacity-75 mb-4 mx-auto" style={{ maxWidth: '600px' }}>
+                    Pengajuan <strong>{pengajuanData?.category || "Pembiayaan"}</strong> Anda tidak disetujui. {pengajuanData?.rejection_reason || pengajuanData?.catatan_penolakan ? `Alasan: ${pengajuanData?.rejection_reason || pengajuanData?.catatan_penolakan}` : ''}
+                  </p>
+                  <Button
+                    variant="light"
+                    className="px-4 py-2 fw-bold rounded-pill text-primary shadow-sm transition-transform hover-scale mt-2"
+                    onClick={handlePengajuanBaru}
+                  >
+                    <FaPlus className="me-2 mb-1" />
+                    Ajukan Lagi
+                  </Button>
+                </Card.Body>
+              </Card>
+            ) : (
+              // Status tidak diketahui / data kosong
+              <div className="text-center py-5 text-muted">
+                <p>Detail pengajuan tidak tersedia.</p>
+                <Button variant="outline-primary" onClick={refreshData}>Coba Lagi</Button>
+              </div>
             )}
 
             <div className="text-center mt-5 mb-3">

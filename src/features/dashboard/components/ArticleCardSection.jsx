@@ -51,6 +51,8 @@ const ArticleItem = React.memo(({ item, index, onReadArticle }) => {
   );
 });
 
+ArticleItem.displayName = "ArticleItem";
+
 /**
  * Komponen kartu artikel terbaru
  */

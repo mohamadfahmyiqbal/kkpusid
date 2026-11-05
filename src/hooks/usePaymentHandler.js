@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Swal from 'sweetalert2';
 
 /**
  * Hook untuk menangani event pembayaran berhasil dari socket

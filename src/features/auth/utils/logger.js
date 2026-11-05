@@ -21,5 +21,10 @@ export const logger = {
     if (isDevelopment) {
       console.debug(...args);
     }
-  }
+  },
+  info: (...args) => {
+    if (isDevelopment) {
+      console.info(...args);
+    }
+  },
 };

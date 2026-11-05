@@ -48,4 +48,6 @@ const FormInputField = React.memo(
   )
 );
 
+FormInputField.displayName = "FormInputField";
+
 export default FormInputField;
