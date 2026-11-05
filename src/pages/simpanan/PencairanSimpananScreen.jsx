@@ -81,26 +81,12 @@ export default function PencairanSimpananScreen() {
             alert("Minimal pencairan adalah Rp 50.000");
             return;
           }
-          const res = await USimpanan.reqPencairanSimpanan({
-            title: "Resi Pencairan Sukarela",
-            selected: [
-              {
-                id: `Pencairan${Date.now()}`,
-                name: "Pencairan Simpanan Sukarela",
-                jumlah: nominal,
-              },
-            ],
-            back: "Pencairan",
-            jenis: { name: "Simpanan Sukarela" },
-            type: "Tarik",
-          });
-
-          navigate(`/${jwtEncode({ page: "resi" })}`, {
-            state: {
+          try {
+            await USimpanan.reqPencairanSimpanan({
               title: "Resi Pencairan Sukarela",
               selected: [
                 {
-                  id: `PENARIKAN${Date.now()}`,
+                  id: `Pencairan${Date.now()}`,
                   name: "Pencairan Simpanan Sukarela",
                   jumlah: nominal,
                 },
@@ -108,8 +94,27 @@ export default function PencairanSimpananScreen() {
               back: "Pencairan",
               jenis: { name: "Simpanan Sukarela" },
               type: "Tarik",
-            },
-          });
+            });
+
+            navigate(`/${jwtEncode({ page: "resi" })}`, {
+              state: {
+                title: "Resi Pencairan Sukarela",
+                selected: [
+                  {
+                    id: `PENARIKAN${Date.now()}`,
+                    name: "Pencairan Simpanan Sukarela",
+                    jumlah: nominal,
+                  },
+                ],
+                back: "Pencairan",
+                jenis: { name: "Simpanan Sukarela" },
+                type: "Tarik",
+              },
+            });
+            alert("Gagal memproses pencairan. Silahkan cek koneksi.");
+          } catch (error) {
+            console.error("Error reqPencairanSimpanan:", error);
+          }
           break;
 
         /** 📄 Lihat detail invoice */

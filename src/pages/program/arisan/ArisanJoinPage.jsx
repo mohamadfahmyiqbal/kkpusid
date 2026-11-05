@@ -111,6 +111,8 @@ const ArisanListItem = React.memo(({ arisan, handleJoin, handleWaitlist }) => {
   );
 });
 
+ArisanListItem.displayName = "ArisanListItem";
+
 export default function ArisanJoinPage() {
   const navigate = useNavigate();
 

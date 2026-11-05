@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col, Form, Button, Spinner } from "react-bootstrap";
+import { Col, Form, Button, Spinner } from "react-bootstrap";
 import { FaUpload } from "react-icons/fa";
 
 export default function AgreementAndActions({

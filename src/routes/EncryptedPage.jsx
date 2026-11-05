@@ -82,3 +82,5 @@ export const EncryptedPage = React.memo(() => {
     animatedPageContent
   );
 });
+
+EncryptedPage.displayName = "EncryptedPage";

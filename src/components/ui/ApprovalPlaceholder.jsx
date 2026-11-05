@@ -136,7 +136,7 @@ export default function ApprovalPlaceholder({
       {note && (
         <div className="mt-2 text-muted" style={{ fontSize: "10px", maxWidth: "120px", margin: "0 auto", wordWrap: "break-word" }}>
           {approverName && <span className="d-block fw-bold text-dark mb-1" style={{ fontSize: "9px" }}>{approverName}</span>}
-          <span className="fst-italic">"{note}"</span>
+          <span className="fst-italic">&quot;{note}&quot;</span>
         </div>
       )}
     </div>
