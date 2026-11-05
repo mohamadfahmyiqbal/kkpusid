@@ -105,11 +105,10 @@ const Evaluasi = () => {
     setError(null);
 
     try {
-      // Map answers to the format expected by backend
+      // Send selected option to server for secure server-side grade calculation
       const formattedAnswers = questions.map(q => ({
         question_id: q.id,
-        selected_option: answers[q.id],
-        is_correct: answers[q.id] === q.correctAnswer
+        selected_option: answers[q.id]
       }));
 
       const response = await TrainingService.submitEvaluation(materiData.id, formattedAnswers);
