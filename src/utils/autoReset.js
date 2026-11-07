@@ -10,31 +10,45 @@
  * Gunakan query param ?noclear=1 untuk skip (development debugging).
  */
 
-const CURRENT_STATIC_CACHE = 'static-v1.0.0';
-const CURRENT_DYNAMIC_CACHE = 'dynamic-v1.0.0';
-
 const shouldSkipClear = () =>
   window.location.search.includes('noclear=1') ||
   window.location.search.includes('no-clear=1');
 
 /**
- * Hapus semua cache service-worker yang bukan current version.
- * Aman: cache aktif (v1.0.0) tetap diam.
+ * Hapus seluruh cache service-worker (termasuk current version).
+ * Cache v1 lama terkontaminasi respons HTML fallback yang dicampur
+ * sebagai aset JS/CSS, sehingga perlu dibersihkan total agar
+ * aset baru dari server di-fetch ulang dengan benar.
  */
-const clearStaleCaches = async () => {
+const clearAllCaches = async () => {
   if (!('caches' in window)) return false;
 
   try {
     const names = await caches.keys();
-    const stale = names.filter(
-      (name) =>
-        !name.endsWith(CURRENT_STATIC_CACHE) &&
-        !name.endsWith(CURRENT_DYNAMIC_CACHE)
-    );
-    await Promise.all(stale.map((name) => caches.delete(name)));
+    await Promise.all(names.map((name) => caches.delete(name)));
     return true;
   } catch (err) {
-    console.warn('[autoReset] clearStaleCaches gagal:', err.message);
+    console.warn('[autoReset] clearAllCaches gagal:', err.message);
+    return false;
+  }
+};
+
+/**
+ * Unregister semua service worker lama agar SW baru (v2.0.0) aktif
+ * tanpa perlu hard refresh manual dari user.
+ */
+const unregisterServiceWorkers = async () => {
+  if (!('serviceWorker' in navigator)) return false;
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(
+      registrations.map((reg) => reg.unregister())
+    );
+    console.log('[autoReset] Service workers di-unregister:', registrations.length);
+    return true;
+  } catch (err) {
+    console.warn('[autoReset] unregisterServiceWorkers gagal:', err.message);
     return false;
   }
 };
@@ -78,8 +92,10 @@ const clearExpiredCookies = () => {
 };
 
 /**
- * Otomatis membersihkan cache & cookie usang saat app diload pertama kali.
- * Tidak merusak token / userData / appVersion / theme.
+ * Otomatis membersihkan cache & cookie usang serta unregister SW lama
+ * saat app diload pertama kali. Tidak merusak token / userData / appVersion / theme.
+ * Saat selesai, halaman akan reload otomatis agar SW baru v2.0.0 aktif
+ * tanpa perlu hard refresh manual.
  */
 export const autoResetStaleResources = async () => {
   if (shouldSkipClear()) {
@@ -87,17 +103,36 @@ export const autoResetStaleResources = async () => {
     return { skipped: true, caches: false, cookies: false };
   }
 
-  const cachesOk = await clearStaleCaches();
-  const cookiesOk = clearExpiredCookies();
+  // Hindari infinite reload loop: hanya jalankan sekali per sesi
+  const hasReset = sessionStorage.getItem('pus_auto_reset_done') === '1';
 
-  console.log('[autoReset] Selesai', {
-    caches: cachesOk,
-    cookies: cookiesOk,
-  });
+  if (!hasReset) {
+    const cachesOk = await clearAllCaches();
+    const swOk = await unregisterServiceWorkers();
+    const cookiesOk = clearExpiredCookies();
 
-  return {
-    skipped: false,
-    caches: cachesOk,
-    cookies: cookiesOk,
-  };
+    console.log('[autoReset] Selesai', {
+      caches: cachesOk,
+      serviceWorkers: swOk,
+      cookies: cookiesOk,
+    });
+
+    // Tandai sebagai sudah di-reset untuk mencegah infinite reload loop
+    sessionStorage.setItem('pus_auto_reset_done', '1');
+
+    // Reload halaman agar SW baru v2.0.0 aktif dan aset baru di-fetch ulang dari server
+    if (swOk) {
+      window.location.reload();
+    }
+
+    return {
+      skipped: false,
+      caches: cachesOk,
+      serviceWorkers: swOk,
+      cookies: cookiesOk,
+    };
+  }
+
+  console.log('[autoReset] Sudah di-reset dalam sesi ini, melewatkan.');
+  return { skipped: false, caches: true, serviceWorkers: true, cookies: true };
 };
