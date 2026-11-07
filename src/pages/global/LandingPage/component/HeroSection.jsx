@@ -80,7 +80,7 @@ const HeroSection = () => {
             <div className="pbs-hero-img-wrapper">
               <img
                 src={masjidImage}
-                alt="Hero"
+                alt="Ilustrasi Gedung dan Masjid Koperasi Syariah PUS"
                 className="pbs-hero-img"
               />
             </div>

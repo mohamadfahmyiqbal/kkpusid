@@ -57,7 +57,7 @@ const HowItWorksSection = () => {
                   {step.icon}
                 </div>
                 <h5 className="text-white fw-bold mb-3">{step.title}</h5>
-                <p className="text-white-50 mb-0">{step.description}</p>
+                <p className="text-white-75 mb-0" style={{ color: "rgba(255, 255, 255, 0.85)" }}>{step.description}</p>
                 {index < steps.length - 1 && (
                   <div className="pbs-step-connector-mobile"></div>
                 )}
@@ -65,6 +65,18 @@ const HowItWorksSection = () => {
             </div>
           ))}
         </div>
+
+        {steps.length > 1 && (
+          <div className="text-center mt-3 pbs-step-dots">
+            {steps.map((_, idx) => (
+              <button
+                key={idx}
+                className={`pbs-step-dot ${idx === 0 ? "active" : ""}`}
+                aria-label={`Langkah ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         <Row className="g-4 d-none d-lg-flex">
           {steps.map((step, index) => (
@@ -82,7 +94,7 @@ const HowItWorksSection = () => {
                   {step.icon}
                 </div>
                 <h5 className="text-white fw-bold mb-3">{step.title}</h5>
-                <p className="text-white-50 mb-0">{step.description}</p>
+                <p className="text-white-75 mb-0" style={{ color: "rgba(255, 255, 255, 0.85)" }}>{step.description}</p>
                 {index < steps.length - 1 && (
                   <div className="pbs-step-connector"></div>
                 )}

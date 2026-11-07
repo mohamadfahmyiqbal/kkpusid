@@ -42,7 +42,7 @@ const LandingHeader = () => {
           </div>
         </Navbar.Brand>
 
-        <Navbar.Toggle aria-controls="landing-navbar-nav" />
+        <Navbar.Toggle aria-label="Toggle navigasi menu" aria-controls="landing-navbar-nav" />
         <Navbar.Collapse id="landing-navbar-nav">
           <Nav className="mx-auto gap-2">
             <Nav.Link

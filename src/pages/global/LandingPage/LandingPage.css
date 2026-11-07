@@ -112,6 +112,14 @@
   }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  *, *::before, *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+  }
+}
+
 .pbs-badge {
   display: inline-block;
   padding: 8px 16px;
@@ -131,7 +139,7 @@
 
 .pbs-desc {
   max-width: 560px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 18px;
   line-height: 1.7;
 }
@@ -178,7 +186,7 @@
 .pbs-subtitle-section {
   font-size: 18px;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.92);
   max-width: 700px;
 }
 
@@ -274,7 +282,7 @@
 
 .pbs-stat-item p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
@@ -419,6 +427,26 @@
     border-top: 2px dashed rgba(255, 255, 255, 0.2);
     z-index: 1;
   }
+
+  .pbs-step-dots {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .pbs-step-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    margin: 0 4px;
+    cursor: pointer;
+  }
+
+  .pbs-step-dot.active {
+    background: #ffffff;
+  }
 }
 
 /* ARTICLES */
@@ -467,7 +495,7 @@
 }
 
 .article-card .card-text {
-  color: #64748b;
+  color: #475569;
   font-size: 0.95rem;
   line-height: 1.6;
   display: -webkit-box;
@@ -523,6 +551,16 @@
   background: rgba(0, 0, 0, 0.2);
 }
 
+.pbs-footer a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pbs-footer a:hover {
+  color: #ffffff;
+}
+
 .pbs-footer h5,
 .pbs-footer h6 {
   font-weight: 700;
@@ -574,7 +612,8 @@
   }
 
   .pbs-title {
-    font-size: 42px;
+    font-size: 36px;
+    line-height: 1.2;
   }
 
   .pbs-desc {
