@@ -6,10 +6,11 @@
 const JWT_CONFIG = {
   VERSION: "1.0",
   HEADER: {
-    alg: "none",
+    alg: "HS256",
     typ: "JWT",
     ver: "1.0",
   },
+  ALLOWED_ALGORITHMS: ["HS256"],
   // TTL untuk token (24 jam dalam milliseconds)
   DEFAULT_TTL: 24 * 60 * 60 * 1000,
   // Reserved keys yang tidak boleh digunakan di payload
@@ -139,6 +140,25 @@ export const jwtDecodePage = (token) => {
     // Validasi format JWT (header.payload.)
     if (parts.length !== 3) {
       console.warn(`Invalid JWT format: expected 3 parts, got ${parts.length}`);
+      return null;
+    }
+
+    // Parse header untuk validasi algoritma — block alg "none" dan alg berbeda
+    let rawHeader = parts[0];
+    try {
+      let headerBase64 = rawHeader.replace(/-/g, "+").replace(/_/g, "/");
+      const paddingNeeded = headerBase64.length % 4;
+      if (paddingNeeded) {
+        headerBase64 += "=".repeat(4 - paddingNeeded);
+      }
+      const decodedHeader = JSON.parse(decodeURIComponent(atob(headerBase64)));
+      const allowedAlgs = ["HS256", "HS384", "HS512"];
+      if (!decodedHeader || typeof decodedHeader !== "object" || !decodedHeader.alg || !allowedAlgs.includes(decodedHeader.alg)) {
+        console.warn(`JWT header bypass diblok: alg="${decodedHeader?.alg}" tidak diizinkan`);
+        return null;
+      }
+    } catch (err) {
+      console.warn("JWT header decode gagal, ditolak:", err?.message);
       return null;
     }
 
