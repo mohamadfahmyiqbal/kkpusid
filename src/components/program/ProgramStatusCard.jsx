@@ -21,7 +21,7 @@ const ProgramStatusCard = ({
   buttonText,
   onButtonClick,
   variant,
-  status,
+  status: _status,
   pendingAmount,
   pendingDesc
 }) => {

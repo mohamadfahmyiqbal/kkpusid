@@ -79,6 +79,7 @@ const Ranking = () => {
     return <span className="fw-bold">#{rank}</span>;
   };
 
+  // eslint-disable-next-line no-unused-vars
   const getRankBadge = (rank) => {
     if (rank === 1)
       return (

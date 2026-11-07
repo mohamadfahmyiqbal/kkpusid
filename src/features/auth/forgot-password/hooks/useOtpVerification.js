@@ -310,17 +310,13 @@ export const useOtpVerification = () => {
       });
 
       if (response.success) {
-        // Update session dengan expiry baru
+        // Update session dengan expiry baru (state only, tidak localStorage)
         const updatedSession = {
           ...sessionData,
           expiresAt: new Date(
             Date.now() + OTP_CONSTANTS.EXPIRY_MINUTES * 60 * 1000,
           ),
         };
-        localStorage.setItem(
-          "forgotPasswordSession",
-          JSON.stringify(updatedSession),
-        );
         setSessionData(updatedSession);
 
         // Reset countdown
@@ -343,7 +339,6 @@ export const useOtpVerification = () => {
       }
     } catch (err) {
       if (err.response?.status === 404) {
-        localStorage.removeItem("forgotPasswordSession");
         navigate(LOGIN_PATH, { replace: true });
         return;
       }

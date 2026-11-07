@@ -1,70 +1,65 @@
-# Getting Started with Create React App
+# Portal Anggota Koperasi KKPUS (kkpusid)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Aplikasi Web Progressive (PWA) portal mandiri bagi anggota Koperasi KKPUS. Menggunakan React 18, Vite, Bootstrap 5, dan terhubung dengan backend REST API KKPUS.
 
-## Available Scripts
+## Prasyarat Lingkungan
+- **Node.js**: `>=18.0.0 <23.0.0`
+- **npm**: `>=9.0.0`
 
-In the project directory, you can run:
+## Menjalankan Aplikasi
 
-### `npm start`
+### Instalasi Dependensi
+```bash
+npm install
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Server Pengembangan (Development)
+Menjalankan server Vite lokal pada port yang ditentukan (default `https://localhost:3000` atau sesuai konfigurasi `.env`):
+```bash
+npm run dev
+# atau
+npm start
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Menjalankan Pengujian (Testing)
+Pengujian dijalankan menggunakan [Vitest](https://vitest.dev/):
+```bash
+# Mode run sekali selesai (CI)
+npm run test:ci
 
-### `npm test`
+# Mode watch (interaktif lokal)
+npm test
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Pengecekan Kualitas Kode (Linting)
+```bash
+# Cek linting
+npm run lint
 
-### `npm run build`
+# Otomatis memperbaiki peringatan yang dapat di-fix
+npm run lint:fix
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Build Produksi
+Membangun bundle teroptimasi ke direktori `build/`:
+```bash
+npm run build
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Hasil build dapat dipratinjau secara lokal dengan:
+```bash
+npm run preview
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Struktur Direktori Utama
+- `src/features/`: Modul bisnis berorientasi fitur (auth, login, register, dashboard).
+- `src/pages/`: Halaman aplikasi (anggota, simpanan, pinjaman, tabungan, training, dsb.).
+- `src/components/`: Komponen antarmuka yang dapat digunakan kembali (layout, modals, status cards).
+- `src/utils/`: Utilitas aplikasi, helper perutean berbasis token, dan axios interceptor instance.
+- `src/services/`: Lapisan abstraksi panggilan API.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Keamanan & Kontrol Sesi
+Aplikasi mengikuti praktik keamanan sesuai ISO/IEC 27001:2022:
+- Komunikasi API dienkripsi melalui HTTPS dengan sertifikat terkelola.
+- Header Bearer JWT otomatis disisipkan pada setiap request yang membutuhkan autentikasi melalui `api.interceptors.request`.
+- Input dan konten dinamis disanitasi menggunakan DOMPurify sebelum dirender.
