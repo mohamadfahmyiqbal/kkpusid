@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import { Container } from "react-bootstrap";
 import { useSplashRedirect } from "../hooks/useSplashRedirect";
-import { DEFAULT_SPLASH_DELAY } from "../service/splashService";
+import { DEFAULT_SPLASH_DELAY, clearAppCache } from "../service/splashService";
 import "../styles/SplashPage.css";
 
 const LOADING_MESSAGES = [
