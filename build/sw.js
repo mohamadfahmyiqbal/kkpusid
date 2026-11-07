@@ -9,18 +9,17 @@ const DYNAMIC_CACHE = 'dynamic-v2.0.0';
 // Safe static asset patterns
 const STATIC_ASSET_PATTERNS = [
   /^\/assets\//,
-  /\.js$,
-  /\.css$,
-  /\.png$,
-  /\.jpg$,
-  /\.jpeg$,
-  /\.svg$,
-  /\.ico$,
-  /\.woff2?$,
-  /\.ttf$,
-  /\.eot$,
-  /\.webp$,
-  /\.ico$,
+  /\.js$/,
+  /\.css$/,
+  /\.png$/,
+  /\.jpg$/,
+  /\.jpeg$/,
+  /\.svg$/,
+  /\.ico$/,
+  /\.woff2?$/,
+  /\.ttf$/,
+  /\.eot$/,
+  /\.webp$/,
 ];
 
 const STATIC_ASSETS = [
