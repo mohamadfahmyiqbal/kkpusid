@@ -6,12 +6,13 @@ import {
   Card,
   Button,
   Spinner,
-  
+
   Badge,
   Tabs,
   Tab,
   Form,
-  ListGroup} from "react-bootstrap";
+  ListGroup
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import TrainingService from "../../../services/training.service";
@@ -51,11 +52,11 @@ const DetailMateri = () => {
         try {
           setLoading(true);
           const response = await TrainingService.getMaterials(kurikulumId);
-          
+
           if (response.status) {
             // Transform data if needed, or set directly
             const materials = response.data;
-            
+
             // Assume the first material represents the curriculum info for now
             // or fetch curriculum detail separately if needed
             setMateriData({
@@ -74,13 +75,13 @@ const DetailMateri = () => {
               })),
               progress: 0, // Calculate progress
             });
-            
+
             // Calculate progress based on passed evaluations
             const passedCount = materials.filter(m => m.evaluations?.length > 0 && m.evaluations[0].passed).length;
             const progress = materials.length > 0 ? Math.round((passedCount / materials.length) * 100) : 0;
-            
+
             setMateriData(prev => ({ ...prev, progress }));
-            
+
             // Notes handling
             if (materials.length > 0 && materials[0].notes?.length > 0) {
               setNotes(materials[0].notes[0].note_content);
@@ -103,7 +104,7 @@ const DetailMateri = () => {
 
   const handleSaveNotes = async () => {
     if (!notes.trim() || !materiData) return;
-    
+
     setSavingNotes(true);
     try {
       const materialId = materiData.modules?.[0]?.id;
@@ -134,8 +135,6 @@ const DetailMateri = () => {
   }, [navigate, materiData]);
 
   const handleStartQuizMateri = useCallback((modulId) => {
-    // Navigate to specific module quiz
-    console.log("Start quiz for module:", modulId);
   }, []);
 
   const handleStartEvaluasi = useCallback(() => {
@@ -165,8 +164,8 @@ const DetailMateri = () => {
     return (
       <Container className="mt-5 text-center">
         <Alert variant="danger" className="rounded-4 shadow-sm border-0 py-4">
-           <h5 className="fw-bold mb-3">{error}</h5>
-           <Button variant="danger" className="rounded-pill px-4" onClick={handleBack}>Kembali ke Dashboard</Button>
+          <h5 className="fw-bold mb-3">{error}</h5>
+          <Button variant="danger" className="rounded-pill px-4" onClick={handleBack}>Kembali ke Dashboard</Button>
         </Alert>
       </Container>
     );
@@ -255,8 +254,8 @@ const DetailMateri = () => {
                     }
                   >
                     <div className="p-4 p-md-5">
-                       <h5 className="fw-bold mb-4">Materi Pendukung (.PDF)</h5>
-                       <ListGroup variant="flush">
+                      <h5 className="fw-bold mb-4">Materi Pendukung (.PDF)</h5>
+                      <ListGroup variant="flush">
                         {materiData.modules.map((modul) => (
                           <ListGroup.Item
                             key={modul.id}
@@ -338,7 +337,7 @@ const DetailMateri = () => {
                     <FaArrowLeft />
                     <span>Kembali ke Dashboard</span>
                   </Button>
-                  
+
                   {materiData.progress >= 80 && (
                     <Button
                       variant="success"
