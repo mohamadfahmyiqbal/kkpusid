@@ -10,7 +10,7 @@ export const getLandingRoute = () => {
   return `/${encryptedPath}`;
 };
 
-export const clearAppCache = () => {
+export const clearAppCache = async () => {
   const currentVersion = (import.meta && import.meta.env && import.meta.env.VITE_APP_VERSION) || process.env.REACT_APP_APP_VERSION || '1.0.0';
   const storedVersion = localStorage.getItem('app_version');
 
