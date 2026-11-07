@@ -19,7 +19,7 @@ import TransactionBodyContent from "./components/TransactionBodyContent";
 import TransactionStatusFooter from "./components/TransactionStatusFooter";
 import { calculateApprovalStatus } from "./components/transactionDetailHelpers";
 
-import "./TransactionDetailPage.css";
+import "./transaction-detail-page.css";
 
 const TransactionDetailPage = ({ decodedToken }) => {
   const navigate = useNavigate();

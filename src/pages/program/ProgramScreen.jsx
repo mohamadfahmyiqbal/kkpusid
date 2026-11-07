@@ -72,8 +72,9 @@ export default function ProgramScreen() {
   const getRequest = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await URequest.getRequestByNik({ type: "JB" });
+      await URequest.getRequestByNik({ type: "JB" });
     } catch (error) {
+      console.error("Gagal mengambil request:", error);
     }
   }, []);
 

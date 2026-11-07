@@ -4,7 +4,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import FinancialScrollButtons from "./financial/FinancialScrollButtons";
 
 const StepItem = React.memo(({ item, onNavigate }) => {
-  const handleClick = useCallback((e) => {
+  const handleClick = useCallback((_) => {
     if (item.status === "pending") return;
     onNavigate("registrationPage");
   }, [item.status, onNavigate]);

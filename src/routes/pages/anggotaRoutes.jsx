@@ -5,15 +5,15 @@ const anggotaRoutes = {
     isProtected: true,
   },
   registrationPage: {
-    component: lazy(() => import("../../pages/anggota/registration-page/RegistrationPage")),
+    component: lazy(() => import("../../pages/anggota/registration-page/pages/RegistrationPage")),
     isProtected: true,
   },
   registrationFormDetail: {
-    component: lazy(() => import("../../pages/anggota/registration-form-detail/RegistrationFormDetail")),
+    component: lazy(() => import("../../pages/anggota/registration-form-detail/pages/RegistrationFormDetail")),
     isProtected: true,
   },
   registrationSummary: {
-    component: lazy(() => import("../../pages/anggota/registration-summary/RegistrationSummary")),
+    component: lazy(() => import("../../pages/anggota/registration-summary/pages/RegistrationSummary")),
     isProtected: true,
   },
   resignationCheck: {

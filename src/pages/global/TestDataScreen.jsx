@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-imports */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,11 +13,7 @@ import {
 } from "react-bootstrap";
 import { jwtEncode } from "../../routes/helpers";
 
-// CR-02: Hanya tersedia di development. Jangan masukkan ke router produksi.
 export default function TestDataScreen() {
-  if (process.env.NODE_ENV === "production") {
-    return null;
-  }
   const navigate = useNavigate();
   const [testData] = useState({
     requester: {
@@ -49,6 +46,10 @@ export default function TestDataScreen() {
       },
     ],
   });
+
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
 
   const handleTestInvoice = () => {
     const token = jwtEncode({ page: "invoice" });
