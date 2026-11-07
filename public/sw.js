@@ -1,7 +1,24 @@
 // Enhanced Service Worker for PWA Features
-const CACHE_NAME = 'koperasi-v1.0.0';
-const STATIC_CACHE = 'static-v1.0.0';
-const DYNAMIC_CACHE = 'dynamic-v1.0.0';
+const CACHE_NAME = 'koperasi-v2.0.0';
+const STATIC_CACHE = 'static-v2.0.0';
+const DYNAMIC_CACHE = 'dynamic-v2.0.0';
+
+// Aset statis yang aman untuk di-cache (tidak menyimpan HTML fallback ke URL JS)
+const STATIC_ASSET_PATTERNS = [
+  /^\/assets\//,
+  /\.js$/,
+  /\.css$/,
+  /\.png$/,
+  /\.jpg$/,
+  /\.jpeg$/,
+  /\.gif$/,
+  /\.svg$/,
+  /\.ico$/,
+  /\.woff2?$/,
+  /\.ttf$/,
+  /\.eot$/,
+  /\.webp$/,
+];
 
 const STATIC_ASSETS = [
   '/',
@@ -10,10 +27,15 @@ const STATIC_ASSETS = [
   '/assets/icons/PUSlogo.png',
 ];
 
+const isStaticAsset = (pathname) =>
+  STATIC_ASSET_PATTERNS.some((pattern) => pattern.test(pathname));
+
+const isJSOrCSS = (pathname) => /\.js$|\.css$/.test(pathname);
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
-  
+
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
@@ -24,10 +46,10 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches (including possibly contaminated ones)
 self.addEventListener('activate', (event) => {
   console.log('Service Worker: Activating...');
-  
+
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
@@ -48,30 +70,30 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  // Skip non-GET requests and non-http/https schemes (e.g. chrome-extension://, data:)
+
+  // Skip non-GET requests and non-http/https schemes
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
 
-  // Bypass cache completely in development to prevent stale Vite dev server assets
-  const isDevelopment = self.location.hostname === 'localhost' || 
-                        self.location.hostname === '127.0.0.1' || 
+  // Bypass cache completely in development
+  const isDevelopment = self.location.hostname === 'localhost' ||
+                        self.location.hostname === '127.0.0.1' ||
                         self.location.port !== '';
   if (isDevelopment) {
     return;
   }
-  
+
   // Handle different request types
   if (url.origin === self.location.origin) {
-    if (STATIC_ASSETS.includes(url.pathname)) {
-      // Static assets - Cache First
+    if (isStaticAsset(url.pathname)) {
+      // Static assets - Cache First (never cache HTML fallback for JS/CSS)
       event.respondWith(cacheFirst(request));
     } else if (url.pathname.startsWith('/api/')) {
       // API requests - Network First with fallback
       event.respondWith(networkFirst(request));
     } else {
-      // Other same-origin requests - Stale While Revalidate
+      // Other same-origin requests (HTML navigation) - Stale While Revalidate
       event.respondWith(staleWhileRevalidate(request));
     }
   } else {
@@ -80,62 +102,71 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Cache First Strategy
+// Cache First Strategy (untuk aset statis)
 async function cacheFirst(request) {
   const cachedResponse = await caches.match(request);
-  
+
   if (cachedResponse) {
     return cachedResponse;
   }
-  
+
   try {
     const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone());
+
+    // Jangan cache respons non-OK (termasuk fallback HTML SPA / 404)
+    if (!networkResponse.ok) {
+      return networkResponse;
     }
-    
+
+    // Hanya cache aset yang memiliki content-type yang valid untuk module script
+    const contentType = networkResponse.headers.get('content-type') || '';
+    if (isJSOrCSS(request.url) && !contentType.includes('javascript') && !contentType.includes('css')) {
+      return networkResponse;
+    }
+
+    const cache = await caches.open(STATIC_CACHE);
+    cache.put(request, networkResponse.clone());
+
     return networkResponse;
   } catch (error) {
     console.error('Cache First failed:', error);
-    return new Response('Offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable' 
+    return new Response('Offline', {
+      status: 503,
+      statusText: 'Service Unavailable',
     });
   }
 }
 
-// Network First Strategy
+// Network First Strategy (untuk API)
 async function networkFirst(request) {
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.warn('Network First failed (falling back to cache):', error);
-    
+
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
-    return new Response('Offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable' 
+
+    return new Response('Offline', {
+      status: 503,
+      statusText: 'Service Unavailable',
     });
   }
 }
 
-// Stale While Revalidate Strategy
+// Stale While Revalidate Strategy (untuk navigasi HTML)
 async function staleWhileRevalidate(request) {
   const cachedResponse = await caches.match(request);
-  
+
   const fetchPromise = fetch(request).then(async (networkResponse) => {
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE);
@@ -144,12 +175,12 @@ async function staleWhileRevalidate(request) {
     return networkResponse;
   }).catch((error) => {
     console.warn('Fetch failed in staleWhileRevalidate:', error);
-    return new Response('Offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable' 
+    return new Response('Offline', {
+      status: 503,
+      statusText: 'Service Unavailable',
     });
   });
-  
+
   return cachedResponse || fetchPromise;
 }
 
