@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import { Container } from "react-bootstrap";
 import { useSplashRedirect } from "../hooks/useSplashRedirect";
-import { DEFAULT_SPLASH_DELAY, clearAppCache } from "../service/splashService";
+import { DEFAULT_SPLASH_DELAY, clearAppCache, getSplashDelay } from "../service/splashService";
 import "../styles/SplashPage.css";
 
 const LOADING_MESSAGES = [
@@ -22,59 +22,13 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
   // Hook untuk mengalihkan ke halaman landing setelah delay tertentu
   const { skip } = useSplashRedirect(delay);
 
-  const handleLogoError = useCallback(() => {
-    setLogoError(true);
+  // Bersihkan cache dan penyimpanan saat versi aplikasi berubah
+  useEffect(() => {
+    clearAppCache();
   }, []);
 
-  useEffect(() => {
-    const checkCacheVersion = async () => {
-      const currentVersion = (import.meta && import.meta.env && import.meta.env.VITE_APP_VERSION) || process.env.REACT_APP_APP_VERSION || '1.0.0';
-      const storedVersion = localStorage.getItem('app_version');
-
-      if (storedVersion !== currentVersion) {
-        localStorage.clear();
-        sessionStorage.clear();
-
-        // Bersihkan Cookies Domain
-        try {
-          const cookies = document.cookie.split(";");
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
-            const eqPos = cookie.indexOf("=");
-            const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
-            if (name) {
-              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
-              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname};`;
-            }
-          }
-        } catch (e) {
-          console.error('Error clearing cookies:', e);
-        }
-
-        if ('caches' in window) {
-          try {
-            const cacheNames = await caches.keys();
-            await Promise.all(cacheNames.map(name => caches.delete(name)));
-          } catch (e) {
-            console.error('Error clearing caches:', e);
-          }
-        }
-
-        if ('serviceWorker' in navigator) {
-          try {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const reg of registrations) {
-              await reg.unregister();
-            }
-          } catch (e) {
-            console.error('Error unregistering service workers:', e);
-          }
-        }
-
-        localStorage.setItem('app_version', currentVersion);
-      }
-    };
-    checkCacheVersion();
+  const handleLogoError = useCallback(() => {
+    setLogoError(true);
   }, []);
 
   // Efek untuk merotasi pesan loading
@@ -89,8 +43,8 @@ function SplashPage({ delay = DEFAULT_SPLASH_DELAY, className = "" }) {
     <main
       className={`splashx-screen ${className}`}
       role="status"
-      aria-live="polite"
       aria-label="Memuat aplikasi Paguyuban Usaha Sukses"
+      style={{ '--splash-delay': `${getSplashDelay(delay)}ms` }}
     >
       {/* Background stars pattern */}
       <div className="splashx-stars" aria-hidden="true" />
