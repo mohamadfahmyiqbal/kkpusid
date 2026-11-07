@@ -41,11 +41,11 @@ const App = () => {
         registerMember(memberId);
 
         // Event listeners untuk update real-time
-        socket.on('notifications:update', (data) => {
+        socket.on('notifications:update', (_data) => {
           // Handled via socket & components
         });
 
-        socket.on('profile:update', (data) => {
+        socket.on('profile:update', (_data) => {
           // Silent profile update
         });
 
@@ -101,7 +101,7 @@ const App = () => {
         socket.on('SAVINGS_WITHDRAWAL_UPDATED', handleWithdrawalSocketUpdate);
         socket.on('SAVINGS_WITHDRAWALS_UPDATED', handleWithdrawalSocketUpdate);
 
-        socket.on('savings:update', (data) => {
+        socket.on('savings:update', (_data) => {
           // Refresh data tanpa menampilkan toast
         });
 
@@ -128,7 +128,7 @@ const App = () => {
         socket.on('FINANCING_APPLICATIONS_UPDATED', handleFinancingSocketUpdate);
         socket.on('FINANCING_APPLICATION_UPDATED', handleFinancingSocketUpdate);
 
-        const handleRegistrationUpdate = (data) => {
+        const handleRegistrationUpdate = (_data) => {
           // Selalu trigger refresh global untuk memastikan state sinkron dengan DB
           window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
           

@@ -98,7 +98,7 @@ const SidebarMenuItem = memo(
             className={`sidebar-link-btn ${isActive ? "active" : ""}`}
             aria-current={isActive && "page"}
             aria-label={item.ariaLabel || item.label}
-            onClick={(e) => {
+            onClick={() => {
               if (!isDesktop && onClose) {
                 onClose();
               }
@@ -125,7 +125,7 @@ const hasActiveChild = (item, currentPage) => {
   return false;
 };
 
-function Sidebar({ user, onNavigate, onClose, isDesktop, isSidebarOpen }) {
+function Sidebar({ user, onNavigate: _onNavigate, onClose, isDesktop, isSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [openKeys, setOpenKeys] = useState({});
