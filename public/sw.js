@@ -32,6 +32,23 @@ const isStaticAsset = (pathname) =>
 
 const isJSOrCSS = (pathname) => /\.js$|\.css$/.test(pathname);
 
+// Validasi content-type respons cache sebelum dikembalikan
+const isValidCachedResponse = async (response, url) => {
+  if (!response) return false;
+  const contentType = response.headers?.get?.('content-type') || '';
+  const pathname = new URL(url, self.location.href).pathname;
+
+  if (isJSOrCSS(pathname)) {
+    const isJS = contentType.includes('javascript') || contentType.includes('ecmascript') || contentType.includes('module');
+    const isCSS = contentType.includes('css');
+    if (!isJS && !isCSS) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
@@ -106,8 +123,13 @@ self.addEventListener('fetch', (event) => {
 async function cacheFirst(request) {
   const cachedResponse = await caches.match(request);
 
+  // Validasi: jika cachedResponse ternyata HTML untuk file JS/CSS, jangan pakai
   if (cachedResponse) {
-    return cachedResponse;
+    const valid = await isValidCachedResponse(cachedResponse, request.url);
+    if (valid) {
+      return cachedResponse;
+    }
+    console.warn('[SW] Cache terkontaminasi (HTML untuk JS/CSS) diabaikan:', request.url);
   }
 
   try {
