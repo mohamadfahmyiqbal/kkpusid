@@ -35,7 +35,11 @@ if ("serviceWorker" in navigator) {
         .register("/sw.js")
         .then((reg) => {
           // Cek versi SW baru saat setiap load agar tidak perlu hard refresh manual
-          reg.update();
+          try {
+            reg.update();
+          } catch (e) {
+            console.warn('Service Worker: Gagal memeriksa update:', e.message);
+          }
 
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
