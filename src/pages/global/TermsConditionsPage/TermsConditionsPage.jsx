@@ -14,6 +14,7 @@ const TermsConditionsPage = () => {
             onClick={() => navigate(-1)} 
             className="btn btn-link text-decoration-none p-0 d-flex align-items-center"
             style={{ color: '#0d6efd' }}
+            aria-label="Kembali ke halaman sebelumnya"
           >
             <MdArrowBack size={24} className="me-2" />
             Kembali

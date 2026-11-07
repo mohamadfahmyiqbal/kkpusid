@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   Container,
   Row,
@@ -11,6 +11,7 @@ import {
 import { FaSignInAlt } from "react-icons/fa";
 import UAnggota from "../../utils/UAnggota";
 import Notification from "../../comp/global/Notification";
+import { colors, iconSize, borderRadius } from "../../theme/tokens";
 
 const INITIAL_FORM = {
   nama: "",
@@ -53,6 +54,25 @@ const RegisterScreen = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const namaRef = useRef(null);
+  const emailRef = useRef(null);
+  const hpRef = useRef(null);
+  const passwordRef = useRef(null);
+  const rePasswordRef = useRef(null);
+
+  // HI-03: Fokus ke field pertama saat mount, dan ke field error saat submit gagal
+  useEffect(() => {
+    if (namaRef.current) namaRef.current.focus();
+  }, []);
+
+  const focusFirstError = () => {
+    if (errors.nama && namaRef.current) namaRef.current.focus();
+    else if (errors.email && emailRef.current) emailRef.current.focus();
+    else if (errors.hp && hpRef.current) hpRef.current.focus();
+    else if (errors.password && passwordRef.current) passwordRef.current.focus();
+    else if (errors.rePassword && rePasswordRef.current) rePasswordRef.current.focus();
+  };
+
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -86,6 +106,7 @@ const RegisterScreen = () => {
       const newErrors = validate(formData);
       if (Object.keys(newErrors).length) {
         setErrors(newErrors);
+        focusFirstError();
         setLoading(false);
         return;
       }
@@ -111,7 +132,7 @@ const RegisterScreen = () => {
         setLoading(false);
       }
     },
-    [formData]
+    [formData, focusFirstError]
   );
 
   return (
@@ -119,13 +140,13 @@ const RegisterScreen = () => {
       fluid
       className="d-flex flex-column min-vh-100 p-0"
       style={{
-        background: "linear-gradient(164deg, #13547A 0%, #44938A 78%)",
+        background: colors.bgGradient,
       }}
     >
       {/* Header */}
       <header
         className="border-bottom border-white"
-        style={{ background: "#13547A" }}
+        style={{ background: colors.primary }}
       >
         <Container fluid="lg">
           <Row className="align-items-center py-2">
@@ -135,7 +156,7 @@ const RegisterScreen = () => {
             <Col className="d-flex justify-content-end">
               <FaSignInAlt
                 color="white"
-                size={32}
+                size={iconSize.lg}
                 title="Sign In"
                 style={{ cursor: "pointer" }}
                 onClick={() => window.location.assign("/login")}
@@ -152,9 +173,9 @@ const RegisterScreen = () => {
             <Card
               className="shadow-lg border-0 my-4"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: colors.bgCard,
                 backdropFilter: "blur(10px)",
-                borderRadius: "16px",
+                borderRadius: borderRadius.xl,
               }}
             >
               <Card.Body className="p-4">
@@ -167,9 +188,11 @@ const RegisterScreen = () => {
 
                 <Form onSubmit={handleSubmit} autoComplete="off">
                   <Form.Group className="mb-3" controlId="register-nama">
-                    <Form.Label className="text-white">Nama</Form.Label>
+                    <Form.Label className="text-white" htmlFor="register-nama">Nama</Form.Label>
                     <Form.Control
+                      ref={namaRef}
                       type="text"
+                      id="register-nama"
                       name="nama"
                       placeholder="Masukkan Nama Lengkap"
                       value={formData.nama}
@@ -178,16 +201,20 @@ const RegisterScreen = () => {
                       disabled={loading}
                       autoComplete="name"
                       spellCheck={false}
+                      aria-invalid={!!errors.nama}
+                      aria-describedby="register-nama-feedback"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback type="invalid" id="register-nama-feedback">
                       {errors.nama}
                     </Form.Control.Feedback>
                   </Form.Group>
 
                   <Form.Group className="mb-3" controlId="register-email">
-                    <Form.Label className="text-white">Email</Form.Label>
+                    <Form.Label className="text-white" htmlFor="register-email">Email</Form.Label>
                     <Form.Control
+                      ref={emailRef}
                       type="email"
+                      id="register-email"
                       name="email"
                       placeholder="Masukkan Email"
                       value={formData.email}
@@ -196,16 +223,20 @@ const RegisterScreen = () => {
                       disabled={loading}
                       autoComplete="email"
                       spellCheck={false}
+                      aria-invalid={!!errors.email}
+                      aria-describedby="register-email-feedback"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback type="invalid" id="register-email-feedback">
                       {errors.email}
                     </Form.Control.Feedback>
                   </Form.Group>
 
                   <Form.Group className="mb-3" controlId="register-hp">
-                    <Form.Label className="text-white">Nomor HP</Form.Label>
+                    <Form.Label className="text-white" htmlFor="register-hp">Nomor HP</Form.Label>
                     <Form.Control
+                      ref={hpRef}
                       type="text"
+                      id="register-hp"
                       name="hp"
                       placeholder="Masukkan Nomor HP"
                       value={formData.hp}
@@ -214,16 +245,20 @@ const RegisterScreen = () => {
                       disabled={loading}
                       autoComplete="tel"
                       spellCheck={false}
+                      aria-invalid={!!errors.hp}
+                      aria-describedby="register-hp-feedback"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback type="invalid" id="register-hp-feedback">
                       {errors.hp}
                     </Form.Control.Feedback>
                   </Form.Group>
 
                   <Form.Group className="mb-3" controlId="register-password">
-                    <Form.Label className="text-white">Password</Form.Label>
+                    <Form.Label className="text-white" htmlFor="register-password">Password</Form.Label>
                     <Form.Control
+                      ref={passwordRef}
                       type="password"
+                      id="register-password"
                       name="password"
                       placeholder="Masukkan Password"
                       value={formData.password}
@@ -232,18 +267,20 @@ const RegisterScreen = () => {
                       disabled={loading}
                       autoComplete="new-password"
                       spellCheck={false}
+                      aria-invalid={!!errors.password}
+                      aria-describedby="register-password-feedback"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback type="invalid" id="register-password-feedback">
                       {errors.password}
                     </Form.Control.Feedback>
                   </Form.Group>
 
                   <Form.Group className="mb-3" controlId="register-rePassword">
-                    <Form.Label className="text-white">
-                      Ulangi Password
-                    </Form.Label>
+                    <Form.Label className="text-white" htmlFor="register-rePassword">Ulangi Password</Form.Label>
                     <Form.Control
+                      ref={rePasswordRef}
                       type="password"
+                      id="register-rePassword"
                       name="rePassword"
                       placeholder="Ulangi Password"
                       value={formData.rePassword}
@@ -252,8 +289,10 @@ const RegisterScreen = () => {
                       disabled={loading}
                       autoComplete="new-password"
                       spellCheck={false}
+                      aria-invalid={!!errors.rePassword}
+                      aria-describedby="register-rePassword-feedback"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback type="invalid" id="register-rePassword-feedback">
                       {errors.rePassword}
                     </Form.Control.Feedback>
                   </Form.Group>
@@ -262,11 +301,12 @@ const RegisterScreen = () => {
                     type="submit"
                     className="w-100 fw-bold text-uppercase py-2 mt-3"
                     style={{
-                      backgroundColor: "#13547A",
+                      backgroundColor: colors.primary,
                       border: "none",
                       letterSpacing: 1,
                     }}
                     disabled={isSubmitDisabled}
+                    aria-disabled={isSubmitDisabled}
                   >
                     {loading ? (
                       <>
@@ -274,6 +314,7 @@ const RegisterScreen = () => {
                           as="span"
                           animation="border"
                           size="sm"
+                          variant="light"
                           role="status"
                           aria-hidden="true"
                           className="me-2"
@@ -294,7 +335,7 @@ const RegisterScreen = () => {
       {/* Footer */}
       <footer
         className="w-100 border-top border-white text-white py-2"
-        style={{ background: "#13547A" }}
+        style={{ background: colors.primary }}
       >
         <Container>
           <Row className="align-items-center">

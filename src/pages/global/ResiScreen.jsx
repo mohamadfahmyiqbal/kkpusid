@@ -71,6 +71,7 @@ export default function ResiScreen() {
                 variant="none"
                 className="p-0 me-2 d-flex align-items-center"
                 onClick={handleBack}
+                aria-label="Kembali ke halaman sebelumnya"
               >
                 <FaArrowLeft size={15} className="me-1" />
               </Button>
