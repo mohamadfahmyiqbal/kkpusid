@@ -87,7 +87,6 @@ export default function ProfileScreen() {
                     {user ? (
                       <Row className="border-bottom">
                         <Col xs={4} className="text-start mb-3">
-                          {console.log(user)}
                           <img
                             src={getFotoSrc(user?.fotoImg)}
                             alt="user"

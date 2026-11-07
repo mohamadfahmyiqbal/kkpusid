@@ -73,9 +73,7 @@ export default function ProgramScreen() {
     setLoading(true);
     try {
       const res = await URequest.getRequestByNik({ type: "JB" });
-      console.log(res);
     } catch (error) {
-      console.log(error);
     }
   }, []);
 
@@ -109,9 +107,8 @@ export default function ProgramScreen() {
           <Row className="mt-4">
             <Col xs={12}>
               <Card
-                className={`text-white text-center ${
-                  JBData.length > 0 ? "bg-blue700" : "bg-danger"
-                }`}
+                className={`text-white text-center ${JBData.length > 0 ? "bg-blue700" : "bg-danger"
+                  }`}
               >
                 <CardBody>
                   <CardTitle>Informasi Tagihan</CardTitle>
