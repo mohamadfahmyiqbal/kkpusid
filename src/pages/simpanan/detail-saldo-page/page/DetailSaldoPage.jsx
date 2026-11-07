@@ -6,10 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../../utils/helpers";
 import InformasiRekeningCard from "../../SimpananPage/components/InformasiRekeningCard";
 import useDetailSaldo from "../hooks/useDetailSaldo";
-import SummaryCard from "../component/SummaryCard";
-import FilterControls from "../component/FilterControls";
-import TransactionTable from "../component/TransactionTable";
-import ActionButtons from "../component/ActionButtons";
+import SummaryCard from "../components/SummaryCard";
+import FilterControls from "../components/FilterControls";
+import TransactionTable from "../components/TransactionTable";
+import ActionButtons from "../components/ActionButtons";
 import Alert from "../../../../components/ui/SwalAlert";
 
 

@@ -18,7 +18,7 @@ import Button from "../../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import { FaKaaba, FaGraduationCap, FaUtensils, FaExclamationTriangle } from "react-icons/fa";
-import { TabunganService } from "../../../services/tabungan.service";
+import { TabunganService } from "../../../services/tabunganService";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "../../../components/layout/contexts";
 import "./FormPengajuanTabungan.css";

@@ -12,7 +12,7 @@ import {
   Tab} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../utils/helpers";
-import TrainingService from "../../services/training.service";
+import TrainingService from "../../services/trainingService";
 import {
   FaChalkboardTeacher,
   FaBook,

@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdSavings, MdAccountBalanceWallet, MdSchool, MdPets } from "react-icons/md";
 import { FaShieldAlt } from "react-icons/fa";
-import TabunganService from "../../services/tabungan.service";
+import TabunganService from "../../services/tabunganService";
 
 import ProgramStatusCard from "../../components/program/ProgramStatusCard";
 import { jwtEncode } from "../../utils/helpers";

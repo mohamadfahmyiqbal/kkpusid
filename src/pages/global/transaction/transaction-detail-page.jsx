@@ -9,7 +9,7 @@ import USimpanan from "../../../utils/api/USimpanan";
 import { useSocket } from "../../../components/layout/contexts";
 import UJualBeli from "../../../utils/api/UJualBeli";
 import api from "../../../utils/api/common";
-import TabunganService from "../../../services/tabungan.service";
+import TabunganService from "../../../services/tabunganService";
 
 import MemberInfoSection from "./components/MemberInfoSection";
 import ApprovalSection from "./components/ApprovalSection";

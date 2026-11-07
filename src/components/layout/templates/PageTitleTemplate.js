@@ -25,16 +25,15 @@ export default withPageTitle('namaHalaman')(NamaKomponen);
 
 // Daftar halaman yang perlu diupdate:
 const PAGES_TO_UPDATE = [
-  'src/pages/anggota/AccountPage.jsx',
-  'src/pages/global/transaction/TransactionDetailPage.jsx',
-  'src/pages/global/registration/RegistrationPage.jsx',
-  'src/pages/global/registration/RegistrationFormDetail.jsx',
-  'src/pages/simpanan/SimpananPage.jsx',
+  'src/pages/anggota/account-page/AccountPage.jsx',
+  'src/pages/global/transaction/transaction-detail-page.jsx',
+  'src/pages/anggota/registration-page/RegistrationPage.jsx',
+  'src/pages/anggota/registration-form-detail/RegistrationFormDetail.jsx',
+  'src/pages/simpanan/detail-saldo-page/DetailSaldoPage.jsx',
   'src/pages/simpanan/PenarikanSimpananPage/PenarikanSimpananPage.jsx',
-  'src/pages/transaksi/TransaksiDashboardPage.jsx',
-  'src/pages/transaksi/FormPengajuanTransaksi.jsx',
-  'src/pages/investasi/InvestasiPage.jsx',
-  'src/pages/training/TrainingPage.jsx'
+  'src/pages/global/billing/pages/BillingPage.jsx',
+  'src/pages/global/invoice/pages/InvoicePage.jsx',
+  'src/pages/training/TrainingDashboardPage.jsx'
 ];
 
 

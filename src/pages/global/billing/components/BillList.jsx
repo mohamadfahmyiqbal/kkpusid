@@ -1,4 +1,4 @@
-// 📁 src/pages/global/BillingPage/components/BillList.jsx
+// 📁 src/pages/global/billing/components/BillList.jsx
 import React, { useCallback, useMemo, useState } from "react";
 import { Card, ListGroup, Form, Button, Spinner } from "react-bootstrap";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";

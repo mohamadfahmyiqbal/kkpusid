@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/training.service";
+import TrainingService from "../../../services/trainingService";
 import { FaCheckCircle } from "react-icons/fa";
 import DOMPurify from "dompurify";
 import "./BacaMateri.css";

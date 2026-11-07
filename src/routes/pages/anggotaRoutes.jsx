@@ -1,23 +1,23 @@
 import { lazy } from "react";
 const anggotaRoutes = {
   accountPage: {
-    component: lazy(() => import("../../pages/anggota/AccountPage/AccountPage")),
+    component: lazy(() => import("../../pages/anggota/account-page/AccountPage")),
     isProtected: true,
   },
   registrationPage: {
-    component: lazy(() => import("../../pages/anggota/RegistrationPage/pages/RegistrationPage")),
+    component: lazy(() => import("../../pages/anggota/registration-page/RegistrationPage")),
     isProtected: true,
   },
   registrationFormDetail: {
-    component: lazy(() => import("../../pages/anggota/RegistrationFormDetail/pages/RegistrationFormDetail")),
+    component: lazy(() => import("../../pages/anggota/registration-form-detail/RegistrationFormDetail")),
     isProtected: true,
   },
   registrationSummary: {
-    component: lazy(() => import("../../pages/anggota/RegistrationSummary")),
+    component: lazy(() => import("../../pages/anggota/registration-summary/RegistrationSummary")),
     isProtected: true,
   },
   resignationCheck: {
-    component: lazy(() => import("../../pages/anggota/ResignationCheckPage/ResignationCheckPage")),
+    component: lazy(() => import("../../pages/anggota/resignation-check-page/ResignationCheckPage")),
     isProtected: true,
   },
   detailPendaftaranAnggota: {
