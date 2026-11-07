@@ -10,7 +10,7 @@ import {
   Table} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/training.service";
+import TrainingService from "../../../services/trainingService";
 import { FaTrophy, FaMedal, FaArrowLeft, FaUser, FaStar } from "react-icons/fa";
 import LoadingState from "../../../components/ui/LoadingState";
 import "./Ranking.css";

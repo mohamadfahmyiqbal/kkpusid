@@ -1,4 +1,4 @@
-// pages/global/ReceiptPage/ReceiptPage.jsx
+// pages/global/receipt/ReceiptPage.jsx
 // Halaman Resi Pembayaran / Penarikan
 
 import React, { useState, useEffect, useRef, useCallback } from "react";

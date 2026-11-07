@@ -11,7 +11,7 @@ import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../../components/layout/contexts/ProfileContext";
 import { useDashboardRole } from "../hooks/useDashboardRole";
-import useRegistrationStatus from "../../../pages/anggota/RegistrationPage/hooks/useRegistrationStatus";
+import useRegistrationStatus from "../../../pages/anggota/registration-page/hooks/useRegistrationStatus";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import DateTimeCard from "../components/DateTimeCard";
 import MainMenuSection from "../components/MainMenuSection";

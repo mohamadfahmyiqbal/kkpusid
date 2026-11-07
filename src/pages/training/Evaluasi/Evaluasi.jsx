@@ -9,7 +9,7 @@ import {
   ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/training.service";
+import TrainingService from "../../../services/trainingService";
 import { FaCheckCircle, FaArrowLeft, FaTrophy, FaChevronRight, FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
 import "./Evaluasi.css";
 import Alert from "../../../components/ui/SwalAlert";

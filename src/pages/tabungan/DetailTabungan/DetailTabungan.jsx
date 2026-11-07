@@ -85,7 +85,7 @@ const DetailTabungan = () => {
       }
       try {
         setLoading(true);
-        const { default: TabunganService } = await import("../../../services/tabungan.service");
+        const { default: TabunganService } = await import("../../../services/tabunganService");
         const res = await TabunganService.getTabunganDetail(currentId);
         const data = res?.data?.data || res?.data;
         if (data) {

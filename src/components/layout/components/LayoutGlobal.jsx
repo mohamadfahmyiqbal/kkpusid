@@ -7,7 +7,7 @@ import { usePageConfig } from "../../../hooks/usePageConfig";
 
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import Footer from "./Footer";
+import AppFooter from "../AppFooter";
 import EnhancedErrorBoundary from "../../ui/EnhancedErrorBoundary";
 import { DashboardSkeleton } from "../../ui/AdvancedSkeleton";
 import PageTitle from "./PageTitle";
@@ -173,7 +173,7 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
             </EnhancedErrorBoundary>
           )}
         </main>
-        <Footer />
+        <AppFooter />
       </div>
     </div>
   );

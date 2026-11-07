@@ -1,4 +1,4 @@
-// 📁 src/pages/global/BillingPage/pages/BillingPage.jsx
+// 📁 src/pages/global/billing/pages/BillingPage.jsx
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {  Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";

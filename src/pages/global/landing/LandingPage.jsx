@@ -1,16 +1,16 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
-import LandingHeader from "./component/LandingHeader";
-import HeroSection from "./component/HeroSection";
+import LandingHeader from "./components/LandingHeader";
+import HeroSection from "./components/HeroSection";
 import api from "../../../utils/api/common";
 import "./LandingPage.css";
 
-const ServicesSection = lazy(() => import("./component/ServicesSection"));
-const StatsSection = lazy(() => import("./component/StatsSection"));
-const AboutUsSection = lazy(() => import("./component/AboutUsSection"));
-const HowItWorksSection = lazy(() => import("./component/HowItWorksSection"));
-const ArticleSection = lazy(() => import("./component/ArticleSection"));
-const CallToActionSection = lazy(() => import("./component/CallToActionSection"));
-const LandingFooter = lazy(() => import("./component/LandingFooter"));
+const ServicesSection = lazy(() => import("./components/ServicesSection"));
+const StatsSection = lazy(() => import("./components/StatsSection"));
+const AboutUsSection = lazy(() => import("./components/AboutUsSection"));
+const HowItWorksSection = lazy(() => import("./components/HowItWorksSection"));
+const ArticleSection = lazy(() => import("./components/ArticleSection"));
+const CallToActionSection = lazy(() => import("./components/CallToActionSection"));
+const LandingFooter = lazy(() => import("./components/LandingFooter"));
 
 export default function LandingPage() {
   const [services, setServices] = useState([]);

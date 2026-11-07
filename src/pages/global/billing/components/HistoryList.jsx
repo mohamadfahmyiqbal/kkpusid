@@ -1,4 +1,4 @@
-// 📁 src/pages/global/BillingPage/components/HistoryList.jsx
+// 📁 src/pages/global/billing/components/HistoryList.jsx
 import React from "react";
 import { Card, Badge } from "react-bootstrap";
 import { FaCheckCircle, FaHistory } from "react-icons/fa";
