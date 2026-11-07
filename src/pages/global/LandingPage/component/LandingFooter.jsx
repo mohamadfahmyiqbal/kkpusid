@@ -5,21 +5,6 @@ import { FaPhoneAlt, FaEnvelope, FaMapMarkedAlt } from "react-icons/fa";
 const LandingFooter = ({ contact = null }) => {
   if (!contact) return null;
 
-  const handlePhoneClick = () => {
-    window.location.href = `tel:${contact.phone.replace(/[-\s]/g, "")}`;
-  };
-
-  const handleEmailClick = () => {
-    window.location.href = `mailto:${contact.email}`;
-  };
-
-  const handleMapClick = () => {
-    window.open(
-      `https://maps.google.com/?q=${encodeURIComponent(contact.address)}`,
-      "_blank",
-    );
-  };
-
   const handleScrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -40,37 +25,50 @@ const LandingFooter = ({ contact = null }) => {
 
           <Col xs={12} md={6} lg={4}>
             <h6 className="text-white">Layanan</h6>
-            <p
-              style={{ cursor: "pointer" }}
-              onClick={() => handleScrollToSection("layanan")}
+            <a
+              href="#layanan"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("layanan");
+              }}
             >
               Pinjaman Lunak
-            </p>
-            <p
-              style={{ cursor: "pointer" }}
-              onClick={() => handleScrollToSection("layanan")}
+            </a>
+            <a
+              href="#layanan"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("layanan");
+              }}
             >
               Pelatihan Usaha
-            </p>
-            <p
-              style={{ cursor: "pointer" }}
-              onClick={() => handleScrollToSection("layanan")}
+            </a>
+            <a
+              href="#layanan"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToSection("layanan");
+              }}
             >
               Kemitraan Produk
-            </p>
+            </a>
           </Col>
 
           <Col xs={12} md={6} lg={4}>
             <h6 className="text-white">Hubungi Kami</h6>
-            <p style={{ cursor: "pointer" }} onClick={handlePhoneClick}>
+            <a href={`tel:${contact.phone.replace(/[-\s]/g, "")}`}>
               <FaPhoneAlt /> {contact.phone}
-            </p>
-            <p style={{ cursor: "pointer" }} onClick={handleEmailClick}>
+            </a>
+            <a href={`mailto:${contact.email}`}>
               <FaEnvelope /> {contact.email}
-            </p>
-            <p style={{ cursor: "pointer" }} onClick={handleMapClick}>
+            </a>
+            <a
+              href={`https://maps.google.com/?q=${encodeURIComponent(contact.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <FaMapMarkedAlt /> {contact.address}
-            </p>
+            </a>
           </Col>
         </Row>
 

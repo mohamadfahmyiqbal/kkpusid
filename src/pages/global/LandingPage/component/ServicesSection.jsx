@@ -57,13 +57,13 @@ const ServicesSection = ({ services = [] }) => {
                     <h5>{item.title}</h5>
                     <p>{item.description || item.desc}</p>
                     <a
-                      href="#"
+                      href="#kontak"
                       onClick={(e) => {
                         e.preventDefault();
                         handleServiceClick(item.title);
                       }}
                     >
-                      Selengkapnya →
+                      Ajukan Konsultasi →
                     </a>
                   </Card.Body>
                 </Card>

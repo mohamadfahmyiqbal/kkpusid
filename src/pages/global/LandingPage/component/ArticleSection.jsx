@@ -125,7 +125,11 @@ const ArticleSection = () => {
                   <Card.Text className="flex-grow-1">
                     {card.text}
                   </Card.Text>
-                  <a href="#" className="article-btn-link" onClick={(e) => e.preventDefault()}>
+                  <a
+                    href={`/artikel/${index}`}
+                    className="article-btn-link"
+                    onClick={(e) => e.preventDefault()}
+                  >
                     Selengkapnya <span>→</span>
                   </a>
                 </CardBody>
