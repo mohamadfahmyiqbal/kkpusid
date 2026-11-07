@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { autoResetStaleResources } from "./utils/autoReset";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const APP_VERSION = "1.0.1"; // Ubah versi ini setiap kali ada update besar
@@ -18,6 +19,13 @@ if (localStorage.getItem("appVersion") !== APP_VERSION) {
   localStorage.setItem("appVersion", APP_VERSION);
   window.location.reload(true);
 }
+
+// --- AUTO RESET STALE RESOURCES ---
+// Otomatis hapus cache & cookie usang tanpa merusak token/userData.
+// Skip dengan ?noclear=1 (development debugging).
+autoResetStaleResources().catch((err) => {
+  console.error("[autoReset] Gagal:", err);
+});
 
 // --- SERVICE WORKER ---
 if ("serviceWorker" in navigator) {
