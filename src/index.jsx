@@ -34,7 +34,24 @@ if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
+          // Cek versi SW baru saat setiap load agar tidak perlu hard refresh manual
+          reg.update();
 
+          reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            if (!installingWorker) return;
+
+            installingWorker.onstatechange = () => {
+              if (
+                installingWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                // SW baru ter-install dan menggantikan lama — muat ulang halaman
+                // agar aset baru (JS/CSS) diambil dari SW versi terbaru
+                window.location.reload();
+              }
+            };
+          };
         })
         .catch((err) => {
           console.error("Registrasi Service Worker gagal:", err);
