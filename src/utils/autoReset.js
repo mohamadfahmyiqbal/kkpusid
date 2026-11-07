@@ -10,9 +10,24 @@
  * Gunakan query param ?noclear=1 untuk skip (development debugging).
  */
 
+const SW_VERSION = 'v2.0.0';
+
 const shouldSkipClear = () =>
   window.location.search.includes('noclear=1') ||
   window.location.search.includes('no-clear=1');
+
+/**
+ * Cek apakah SW versi baru belum pernah di-reset di localStorage ini.
+ * Setiap kali SW versi berubah (deploy baru), autoReset berjalan lagi.
+ */
+const isNewSwVersion = () => {
+  try {
+    const stored = localStorage.getItem('pus_sw_version');
+    return stored !== SW_VERSION;
+  } catch {
+    return true;
+  }
+};
 
 /**
  * Hapus seluruh cache service-worker (termasuk current version).
