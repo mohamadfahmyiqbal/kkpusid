@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Nav, Spinner } from 'react-bootstrap';
 import { FaHistory, FaExclamationCircle } from 'react-icons/fa';
 import UBilling from '../../../../utils/api/UBilling';
-import BillList from '../../../global/BillingPage/components/BillList';
-import HistoryList from '../../../global/BillingPage/components/HistoryList';
+import BillList from '../../../global/billing/components/BillList';
+import HistoryList from '../../../global/billing/components/HistoryList';
 
 const SimpananBillingTabs = ({ activeType }) => {
   const [activeTab, setActiveTab] = useState('pending');

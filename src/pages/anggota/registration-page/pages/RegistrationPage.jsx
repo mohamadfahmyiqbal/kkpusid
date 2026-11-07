@@ -14,7 +14,7 @@ import usePaymentHandler from "../../../../hooks/usePaymentHandler";
 import "./RegistrationPage.css";
 
 // Lazy load component yang berat
-const RegistrationSummary = lazy(() => import("../../../../pages/anggota/RegistrationSummary"));
+const RegistrationSummary = lazy(() => import("../../../../pages/anggota/registration-summary/pages/RegistrationSummary"));
 
 const REQUIREMENTS = [
   "Warga Negara Indonesia",
