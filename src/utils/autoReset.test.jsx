@@ -6,6 +6,7 @@ describe('autoReset utility', () => {
   const originalCaches = window.caches;
   const originalNavigator = navigator;
   const originalSessionStorage = window.sessionStorage;
+  let mockReload;
 
   beforeEach(() => {
     // Reset document.cookie
@@ -35,17 +36,21 @@ describe('autoReset utility', () => {
       writable: true,
       configurable: true,
     });
-    // Mock location.reload
+    // Mock location.reload - Vitest properly mocks window.location in jsdom
+    mockReload = vi.fn();
     Object.defineProperty(window, 'location', {
-      ...originalLocation,
-      reload: vi.fn(),
-      search: '',
-      hostname: 'localhost',
+      get: () => ({
+        ...originalLocation,
+        reload: mockReload,
+        search: '',
+        hostname: 'localhost',
+      }),
     });
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    // Reset location mock
+    Object.defineProperty(window, 'location', { value: originalLocation });
     window.caches = originalCaches;
     Object.defineProperty(navigator, 'serviceWorker', {
       value: originalNavigator.serviceWorker,
@@ -77,8 +82,8 @@ describe('autoReset utility', () => {
 
     expect(res.serviceWorkers).toBe(true);
     expect(navigator.serviceWorker.getRegistrations).toHaveBeenCalled();
-    // Reload dipicu setelah unregister
-    expect(window.location.reload).toHaveBeenCalled();
+    // Reload dipicu setelah unregister - menggunakan mockReload
+    expect(mockReload).toHaveBeenCalled();
   });
 
   it('dapat di-skip menggunakan query param ?noclear=1', async () => {
