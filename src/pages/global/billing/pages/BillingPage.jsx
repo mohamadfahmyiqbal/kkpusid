@@ -14,6 +14,7 @@ import PaymentHistoryTab from "../components/PaymentHistoryTab";
 import RingkasanTab from "../components/RingkasanTab";
 import BillingSidebar from "../components/BillingSidebar";
 import SukarelaForm from "../components/SukarelaForm";
+import { formatInvoiceNumber, formatIDR, formatDate } from "../components/utils";
 
 import "./BillingPage.css";
 import Alert from "../../../../components/ui/SwalAlert";
@@ -29,12 +30,14 @@ const BillingPage = ({ decodedToken }) => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
-  const { bills, history, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, displayName } = useBillingData(decodedToken);
+  const { bills, history, pendingApproval, tabunganDetail, loadingData, registrationId, isSukarela, categoryName, displayName } = useBillingData(decodedToken);
   const { userData } = useProfile();
   const bankInfo = userData?.bank_info || decodedToken?.bankInfo || null;
 
   const safeBills = Array.isArray(bills) ? bills : [];
+  const safePendingApproval = Array.isArray(pendingApproval) ? pendingApproval : [];
   const pendingCount = safeBills.length;
+  const pendingApprovalCount = safePendingApproval.length;
   const historyCount = Array.isArray(history) ? history.length : 0;
 
   const tabs = useMemo(
@@ -237,7 +240,7 @@ const BillingPage = ({ decodedToken }) => {
       {/* ── Tab Navigation ── */}
       <div className="bp-tabs">
         {tabs.map((tab) => {
-          const count = tab.badgeKey === "pendingCount" ? pendingCount : tab.badgeKey === "historyCount" ? historyCount : 0;
+          const count = tab.badgeKey === "pendingCount" ? pendingCount + pendingApprovalCount : tab.badgeKey === "historyCount" ? historyCount : 0;
           return (
             <button key={tab.key} className={`bp-tab ${activeTab === tab.key ? "active" : ""}`} onClick={() => setActiveTab(tab.key)}>
               {tab.icon}
@@ -288,16 +291,78 @@ const BillingPage = ({ decodedToken }) => {
                       />
                     </div>
                   ) : (
-                    <PendingBillsTab
-                      title={`Tagihan ${displayName}`}
-                      bills={bills}
-                      selectedBills={selectedBills}
-                      setSelectedBills={setSelectedBills}
-                      disabledBills={mandatoryBills.map((b) => b.bill_item_id)}
-                      handlePay={handlePay}
-                      isSubmitting={isSubmitting}
-                      onViewInvoice={handleViewInvoice}
-                    />
+                    <>
+                      <PendingBillsTab
+                        title={`Tagihan ${displayName}`}
+                        bills={bills}
+                        selectedBills={selectedBills}
+                        setSelectedBills={setSelectedBills}
+                        disabledBills={mandatoryBills.map((b) => b.bill_item_id)}
+                        handlePay={handlePay}
+                        isSubmitting={isSubmitting}
+                        onViewInvoice={handleViewInvoice}
+                      />
+
+                      {pendingApprovalCount > 0 && (
+                        <div className="bp-card mt-3">
+                          <div className="bp-card-header">
+                            <div>
+                              <div className="bp-card-title">Menunggu Persetujuan</div>
+                              <div className="bp-card-sub">Pengajuan pembayaran yang telah dikirim dan sedang menunggu verifikasi oleh Bendahara.</div>
+                            </div>
+                          </div>
+                          <div className="bp-table-wrap">
+                            <table className="bp-table">
+                              <thead>
+                                <tr>
+                                  <th style={{ width: 36 }}></th>
+                                  <th>No. Referensi</th>
+                                  <th>Deskripsi</th>
+                                  <th>Tanggal Pengajuan</th>
+                                  <th>Jumlah</th>
+                                  <th>Status</th>
+                                  <th>Aksi</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {safePendingApproval.map((item) => {
+                                  const txDate = item.createdAt || item.created_at || item.updated_at || item.due_date;
+                                  return (
+                                    <tr key={item.bill_item_id}>
+                                      <td style={{ width: 36 }}>
+                                        <div className="bp-inv-number">
+                                          {item.order_id ? item.order_id : formatInvoiceNumber(item.bill_item_id, item.createdAt)}
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <div style={{ fontSize: 13, fontWeight: 500 }}>{item.description || "-"}</div>
+                                      </td>
+                                      <td style={{ fontSize: 12, color: "#6b7280" }}>{txDate ? formatDate(txDate) : "-"}</td>
+                                      <td style={{ fontWeight: 700 }}>{formatIDR(item.amount)}</td>
+                                      <td>
+                                        <span className="bp-badge bp-badge-pending" style={{ background: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" }}>
+                                          Menunggu Persetujuan
+                                        </span>
+                                      </td>
+                                      <td onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                          className="bp-btn-pay"
+                                          onClick={() => {
+                                            handleViewInvoice(item.bill_item_id);
+                                          }}
+                                        >
+                                          Detail
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

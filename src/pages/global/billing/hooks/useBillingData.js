@@ -44,6 +44,7 @@ export const useBillingData = (decodedToken) => {
   // --- STATE MANAGEMENT ---
   const [bills, setBills] = useState([]);
   const [history, setHistory] = useState([]);
+  const [pendingApproval, setPendingApproval] = useState([]);
   const [tabunganDetail, setTabunganDetail] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -67,14 +68,15 @@ export const useBillingData = (decodedToken) => {
 
       const tIdFetch = decodedToken?.tabungan_id || decodedToken?.tabunganId;
 
-      const [resPending, resHistory, resTabungan] = await Promise.all([
+      const [resPending, resHistory, resTabungan, resPendingVerif] = await Promise.all([
         (!isSukarela || categoryName === "TABUNGAN_DEPOSIT")
           ? UBilling.getPendingBills(fetchFilter)
           : Promise.resolve({ data: { status: true, data: [] } }),
         UBilling.getBillingHistory(fetchFilter),
         (categoryName === "TABUNGAN_DEPOSIT" && tIdFetch)
           ? TabunganService.getTabunganDetail(tIdFetch)
-          : Promise.resolve({ data: null })
+          : Promise.resolve({ data: null }),
+        UBilling.getPendingVerificationPayments(fetchFilter),
       ]);
       
       if (resTabungan && resTabungan.data && resTabungan.data.data) {
@@ -179,6 +181,31 @@ export const useBillingData = (decodedToken) => {
         setBills([]);
       }
 
+      if (resPendingVerif.data?.status) {
+        const rawPendingVerif = Array.isArray(resPendingVerif.data.data) ? resPendingVerif.data.data : [];
+        // Map verification transactions to bill-like shape for UI consistency
+        const mappedPendingVerif = rawPendingVerif.map((tx) => ({
+          bill_item_id: tx.transaction_id || tx.id,
+          id: tx.transaction_id || tx.id,
+          description: tx.description || tx.sender_name || "Pembayaran Manual",
+          amount: parseFloat(tx.amount) || 0,
+          status: "PENDING_VERIFICATION",
+          category_code: tx.tx_category || tx.category_code || "MANUAL_PAYMENT",
+          due_date: tx.created_at || tx.updated_at || tx.sent_datetime || new Date().toISOString(),
+          createdAt: tx.created_at || tx.updated_at || tx.sent_datetime,
+          updated_at: tx.updated_at || tx.created_at || tx.sent_datetime,
+          type: { type_name: "Pembayaran Manual", category_map: tx.tx_category },
+          bill: { status: tx.status, updated_at: tx.updated_at },
+          transaction: tx,
+          sender_name: tx.sender_name,
+          proof_of_transfer: tx.proof_of_transfer,
+          order_id: tx.midtrans_order_id || tx.order_id,
+        }));
+        setPendingApproval(mappedPendingVerif);
+      } else {
+        setPendingApproval([]);
+      }
+
       setHistory(filteredHistory);
     } catch (err) {
       console.error("Gagal memuat data billing:", err);
@@ -219,6 +246,7 @@ export const useBillingData = (decodedToken) => {
   return {
     bills,
     history,
+    pendingApproval,
     tabunganDetail,
     loadingData,
     loadInitialData,
