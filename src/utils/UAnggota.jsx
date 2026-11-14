@@ -66,7 +66,7 @@ class UAnggota {
   }
 
   daftarAnggota(fields) {
-    return this.postFormData("/daftarAnggota", fields);
+    return this.postFormData("/anggota/pendaftaran", fields);
   }
 
   AnnggotaDetailByNIK(fields) {
