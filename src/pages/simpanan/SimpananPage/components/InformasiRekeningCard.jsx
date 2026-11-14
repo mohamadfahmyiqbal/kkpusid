@@ -77,26 +77,40 @@ const InformasiRekeningCard = memo(
 
       const memberId = userData?.member_id;
       const socket = getSocket();
-      
+
+      // Selalu ambil saldo otoritatif dari server. Jangan pernah menimpa saldo
+      // dengan payload socket (mis. `data.balance` yang berisi nominal pembayaran,
+      // bukan saldo total) karena dapat membuat saldo tampil salah / 0 sampai reload.
+      const handleBalanceUpdate = (data) => {
+        if (!isMounted) return;
+        // Ambil saldo otoritatif dari server, jangan pakai payload socket.
+        fetchDetail(true);
+        if (data?.category === activeType) {
+          Swal.fire({
+            title: `Saldo ${displayName} diperbarui`,
+            icon: "info",
+            toast: true,
+            position: "bottom",
+            timer: 3000,
+            showConfirmButton: false
+          });
+        }
+      };
+
+      const handleRefreshSavings = () => {
+        if (isMounted) fetchDetail(true);
+      };
+
       if (memberId && socket) {
-        socket.on("savings:balance:update", (data) => {
-          if (data.category === activeType && isMounted) {
-            setDetails((prev) => ({ ...prev, saldo: data.balance }));
-            Swal.fire({
-              title: `Saldo ${displayName} diperbarui: Rp ${data.balance.toLocaleString("id-ID")}`,
-              icon: "info",
-              toast: true,
-              position: "bottom",
-              timer: 3000,
-              showConfirmButton: false
-            });
-          }
-        });
+        socket.on("savings:balance:update", handleBalanceUpdate);
       }
+      // `savings:update` dari App.jsx memicu event global ini.
+      window.addEventListener("REFRESH_SAVINGS_DATA", handleRefreshSavings);
 
       return () => {
         isMounted = false;
-        if (socket) socket.off("savings:balance:update");
+        if (socket) socket.off("savings:balance:update", handleBalanceUpdate);
+        window.removeEventListener("REFRESH_SAVINGS_DATA", handleRefreshSavings);
       };
     }, [fetchDetail, activeType, displayName, userData]);
 
