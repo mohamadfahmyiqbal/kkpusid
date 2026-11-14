@@ -68,17 +68,16 @@ export const useBillingData = (decodedToken) => {
 
       const tIdFetch = decodedToken?.tabungan_id || decodedToken?.tabunganId;
 
-      const [resPending, resHistory, resTabungan, resPendingVerif] = await Promise.all([
+      const [resPending, resHistory, resTabungan] = await Promise.all([
         (!isSukarela || categoryName === "TABUNGAN_DEPOSIT")
           ? UBilling.getPendingBills(fetchFilter)
           : Promise.resolve({ data: { status: true, data: [] } }),
         UBilling.getBillingHistory(fetchFilter),
         (categoryName === "TABUNGAN_DEPOSIT" && tIdFetch)
           ? TabunganService.getTabunganDetail(tIdFetch)
-          : Promise.resolve({ data: null }),
-        UBilling.getPendingVerificationPayments(fetchFilter),
+          : Promise.resolve({ data: null })
       ]);
-      
+
       if (resTabungan && resTabungan.data && resTabungan.data.data) {
         setTabunganDetail(resTabungan.data.data);
       } else {
@@ -181,28 +180,35 @@ export const useBillingData = (decodedToken) => {
         setBills([]);
       }
 
-      if (resPendingVerif.data?.status) {
-        const rawPendingVerif = Array.isArray(resPendingVerif.data.data) ? resPendingVerif.data.data : [];
-        // Map verification transactions to bill-like shape for UI consistency
-        const mappedPendingVerif = rawPendingVerif.map((tx) => ({
-          bill_item_id: tx.transaction_id || tx.id,
-          id: tx.transaction_id || tx.id,
-          description: tx.description || tx.sender_name || "Pembayaran Manual",
-          amount: parseFloat(tx.amount) || 0,
-          status: "PENDING_VERIFICATION",
-          category_code: tx.tx_category || tx.category_code || "MANUAL_PAYMENT",
-          due_date: tx.created_at || tx.updated_at || tx.sent_datetime || new Date().toISOString(),
-          createdAt: tx.created_at || tx.updated_at || tx.sent_datetime,
-          updated_at: tx.updated_at || tx.created_at || tx.sent_datetime,
-          type: { type_name: "Pembayaran Manual", category_map: tx.tx_category },
-          bill: { status: tx.status, updated_at: tx.updated_at },
-          transaction: tx,
-          sender_name: tx.sender_name,
-          proof_of_transfer: tx.proof_of_transfer,
-          order_id: tx.midtrans_order_id || tx.order_id,
-        }));
-        setPendingApproval(mappedPendingVerif);
-      } else {
+      // Pending verification payments (member-only view). Non-fatal if 403.
+      try {
+        const resPendingVerif = await UBilling.getPendingVerificationPayments(fetchFilter);
+        if (resPendingVerif.data?.status) {
+          const rawPendingVerif = Array.isArray(resPendingVerif.data.data) ? resPendingVerif.data.data : [];
+          const mappedPendingVerif = rawPendingVerif.map((tx) => ({
+            bill_item_id: tx.transaction_id || tx.id,
+            id: tx.transaction_id || tx.id,
+            description: tx.description || tx.sender_name || "Pembayaran Manual",
+            amount: parseFloat(tx.amount) || 0,
+            status: "PENDING_VERIFICATION",
+            category_code: tx.tx_category || tx.category_code || "MANUAL_PAYMENT",
+            due_date: tx.created_at || tx.updated_at || tx.sent_datetime || new Date().toISOString(),
+            createdAt: tx.created_at || tx.updated_at || tx.sent_datetime,
+            updated_at: tx.updated_at || tx.created_at || tx.sent_datetime,
+            type: { type_name: "Pembayaran Manual", category_map: tx.tx_category },
+            bill: { status: tx.status, updated_at: tx.updated_at },
+            transaction: tx,
+            sender_name: tx.sender_name,
+            proof_of_transfer: tx.proof_of_transfer,
+            order_id: tx.midtrans_order_id || tx.order_id,
+          }));
+          setPendingApproval(mappedPendingVerif);
+        } else {
+          setPendingApproval([]);
+        }
+      } catch (verifErr) {
+        // 403 Forbidden atau error lainnya — abaikan, tampilkan kosong
+        console.warn("Gagal memuat pending verification (mungkin bukan admin/bendahara):", verifErr.message);
         setPendingApproval([]);
       }
 
