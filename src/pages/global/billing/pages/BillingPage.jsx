@@ -118,17 +118,22 @@ const BillingPage = ({ decodedToken }) => {
   }, [selectedBills, customAmount, error]);
 
   /* handle view invoice — navigate to invoice page for a specific bill item */
-  const handleViewInvoice = useCallback((billItemId) => {
-    if (!billItemId) return;
-    navigate(`/${jwtEncode({
+  const handleViewInvoice = useCallback((billItemId, billId) => {
+    if (!billItemId && !billId) return;
+    const payload = {
       page: "invoicePage",
-      billItemIds: [billItemId],
       return: "billingPage",
       originalReturn: decodedToken?.return,
       category: categoryName,
       financingId: decodedToken?.financingId || decodedToken?.financing_id,
       productName: decodedToken?.productName,
-    })}`);
+    };
+    if (billId) {
+      payload.billId = billId;
+    } else {
+      payload.billItemIds = [billItemId];
+    }
+    navigate(`/${jwtEncode(payload)}`);
   }, [navigate, decodedToken, categoryName]);
 
   /* pay handler — always resets isSubmitting */
@@ -315,7 +320,6 @@ const BillingPage = ({ decodedToken }) => {
                             <table className="bp-table">
                               <thead>
                                 <tr>
-                                  <th style={{ width: 36 }}></th>
                                   <th>No. Referensi</th>
                                   <th>Deskripsi</th>
                                   <th>Tanggal Pengajuan</th>
@@ -329,9 +333,9 @@ const BillingPage = ({ decodedToken }) => {
                                   const txDate = item.createdAt || item.created_at || item.updated_at || item.due_date;
                                   return (
                                     <tr key={item.bill_item_id}>
-                                      <td style={{ width: 36 }}>
+                                      <td>
                                         <div className="bp-inv-number">
-                                          {item.order_id ? item.order_id : formatInvoiceNumber(item.bill_item_id, item.createdAt)}
+                                          {item.order_id || formatInvoiceNumber(item.bill_item_id, item.createdAt)}
                                         </div>
                                       </td>
                                       <td>
@@ -348,7 +352,11 @@ const BillingPage = ({ decodedToken }) => {
                                         <button
                                           className="bp-btn-pay"
                                           onClick={() => {
-                                            handleViewInvoice(item.bill_item_id);
+                                            if (item.bill_id) {
+                                              handleViewInvoice(null, item.bill_id);
+                                            } else {
+                                              handleViewInvoice(item.bill_item_id);
+                                            }
                                           }}
                                         >
                                           Detail
