@@ -187,6 +187,7 @@ export const useBillingData = (decodedToken) => {
           const rawPendingVerif = Array.isArray(resPendingVerif.data.data) ? resPendingVerif.data.data : [];
           const mappedPendingVerif = rawPendingVerif.map((tx) => ({
             bill_item_id: tx.transaction_id || tx.id,
+            bill_id: tx.bill_id || null,
             id: tx.transaction_id || tx.id,
             description: tx.description || tx.sender_name || "Pembayaran Manual",
             amount: parseFloat(tx.amount) || 0,
