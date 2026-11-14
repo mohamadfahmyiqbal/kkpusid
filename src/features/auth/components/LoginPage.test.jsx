@@ -1,42 +1,29 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import LoginPage from './LoginPage';
-import { AuthProvider } from '../../contexts/AuthContext';
+import LoginPage from '../login/page/LoginPage';
+import { AUTH_CONSTANTS } from '../constants/authConstants';
 
-// Mock auth context
-vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    login: vi.fn(),
-    isAuthenticated: false,
-  }),
-  AuthProvider: ({ children }) => <div>{children}</div>,
+// Mock react-router-dom
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
 }));
 
 describe('LoginPage', () => {
   it('renders login form with email and password inputs', () => {
-    render(
-      <AuthProvider>
-        <LoginPage />
-      </AuthProvider>
-    );
+    render(<LoginPage />);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/kata sandi/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /masuk/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(AUTH_CONSTANTS.PLACEHOLDERS.EMAIL_OR_PHONE)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(AUTH_CONSTANTS.PLACEHOLDERS.LOGIN_PASSWORD)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /masuk sekarang/i })).toBeInTheDocument();
   });
 
   it('shows error message when form is submitted with empty fields', async () => {
-    render(
-      <AuthProvider>
-        <LoginPage />
-      </AuthProvider>
-    );
+    render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: /masuk/i }));
+    fireEvent.click(screen.getByRole('button', { name: /masuk sekarang/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/email wajib diisi/i)).toBeInTheDocument();
-      expect(screen.getByText(/kata sandi wajib diisi/i)).toBeInTheDocument();
+      expect(screen.getByText(AUTH_CONSTANTS.ERROR_MESSAGES.EMAIL_OR_PHONE_REQUIRED)).toBeInTheDocument();
     });
   });
 });

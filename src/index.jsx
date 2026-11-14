@@ -34,11 +34,11 @@ if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
-          // Cek versi SW baru saat setiap load agar tidak perlu hard refresh manual
-          try {
-            reg.update();
-          } catch (e) {
-            console.warn('Service Worker: Gagal memeriksa update:', e.message);
+          // Cek versi SW baru saat setiap load jika worker aktif
+          if (reg && typeof reg.update === "function") {
+            reg.update().catch((e) => {
+              console.warn("Service Worker: Gagal memeriksa update:", e?.message || e);
+            });
           }
 
           reg.onupdatefound = () => {
@@ -74,8 +74,12 @@ if ("serviceWorker" in navigator) {
         .register("/sw.js")
         .then((reg) => {
 
-          // Paksa update service worker agar perubahan bypass cache langsung aktif
-          reg.update();
+          // Update service worker di development dengan aman
+          if (reg && typeof reg.update === "function") {
+            reg.update().catch((e) => {
+              console.warn("Service Worker dev update error:", e?.message || e);
+            });
+          }
         })
         .catch((err) => {
           console.error("Registrasi Service Worker gagal di development:", err);
