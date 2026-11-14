@@ -79,12 +79,9 @@ self.addEventListener('activate', (event) => {
           })
         );
       })
-      .then(() => {
-        try {
-          self.clients.claim();
-        } catch (e) {
-          console.warn('Service Worker: Tidak dapat claim clients:', e.message);
-        }
+      .then(() => self.clients.claim())
+      .catch((e) => {
+        console.warn('Service Worker: Tidak dapat claim clients:', e.message);
       })
   );
 });
