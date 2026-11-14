@@ -85,6 +85,11 @@ const clearExpiredCookies = () => {
       if (!name) return;
 
       const lower = name.toLowerCase();
+      // Jangan hapus cookie CSRF / XSRF
+      if (lower.includes('xsrf') || lower.includes('csrf')) {
+        return;
+      }
+
       if (
         !lower.includes('pus') &&
         lower !== 'token' &&
