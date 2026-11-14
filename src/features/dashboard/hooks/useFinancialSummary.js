@@ -57,8 +57,10 @@ export const useFinancialSummary = (userData) => {
           .filter(d => d.name?.toLowerCase().includes(keyword))
           .reduce((acc, curr) => acc + (curr.balance || 0), 0);
 
+        // totalSavings dari backend adalah sumber kebenaran (authoritative).
+        // Fallback ke totalSimpanan jika backend tidak menyediakan totalSavings.
         setData({
-          balance: totalSimpanan,
+          balance: res.data.data.totalSavings ?? totalSimpanan,
           tabunganDetails: tDetails,
           tabunganBalance,
           tabunganSubItemsData: {
