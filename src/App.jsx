@@ -102,7 +102,8 @@ const App = () => {
         socket.on('SAVINGS_WITHDRAWALS_UPDATED', handleWithdrawalSocketUpdate);
 
         socket.on('savings:update', (_data) => {
-          // Refresh data tanpa menampilkan toast
+          // Trigger refresh data simpanan di seluruh halaman anggota
+          window.dispatchEvent(new CustomEvent("REFRESH_SAVINGS_DATA"));
         });
 
         const handleFinancingSocketUpdate = (data) => {

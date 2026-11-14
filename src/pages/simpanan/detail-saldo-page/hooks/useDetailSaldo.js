@@ -62,7 +62,15 @@ export const useDetailSaldo = (decodedToken) => {
     const controller = new AbortController();
     fetchData(controller.signal);
 
+    const handleRefreshSavings = () => {
+      const refreshController = new AbortController();
+      fetchData(refreshController.signal);
+    };
+
+    window.addEventListener("REFRESH_SAVINGS_DATA", handleRefreshSavings);
+
     return () => {
+      window.removeEventListener("REFRESH_SAVINGS_DATA", handleRefreshSavings);
       controller.abort();
     };
   }, [fetchData]);
