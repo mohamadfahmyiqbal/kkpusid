@@ -114,7 +114,7 @@ export default function FormPendaftaranAnggota() {
     switch (step) {
       case 1:
         return (
-          <div>
+          <>
             <h4 className="mb-3">Personal Info</h4>
             <Row>
               <Col xs={12} md={6}>
@@ -194,7 +194,7 @@ export default function FormPendaftaranAnggota() {
                 </Col>
               ))}
             </Row>
-          </div>
+          </>
         );
 
       case 2:
@@ -214,9 +214,10 @@ export default function FormPendaftaranAnggota() {
                   type: "textarea",
                 },
               ].map((f) => (
-                <Col xs={12} md={6} key={f.name}>
+                <Col xs={12} md={6}>
                   <Form.Group
                     as={Row}
+                    key={f.name}
                     className="mb-2 align-items-center"
                   >
                     <Form.Label column md={2}>
@@ -239,7 +240,7 @@ export default function FormPendaftaranAnggota() {
 
       case 4:
         return (
-          <div>
+          <>
             <h4 className="mb-3">Bank Info</h4>
             <Row>
               {[
@@ -247,9 +248,10 @@ export default function FormPendaftaranAnggota() {
                 { label: "No Rekening", name: "no_rekening" },
                 { label: "Nama Nasabah", name: "nama_nasabah" },
               ].map((f) => (
-                <Col xs={12} md={6} key={f.name}>
+                <Col xs={12} md={6}>
                   <Form.Group
                     as={Row}
+                    key={f.name}
                     className="mb-2 align-items-center"
                   >
                     <Form.Label column md={2}>
@@ -266,7 +268,7 @@ export default function FormPendaftaranAnggota() {
                 </Col>
               ))}
             </Row>
-          </div>
+          </>
         );
 
       case 5:

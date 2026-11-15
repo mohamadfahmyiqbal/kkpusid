@@ -27,13 +27,6 @@ class UBilling {
   }
 
   /**
-   * Mengambil daftar transaksi pembayaran manual yang menunggu verifikasi bendahara
-   */
-  getPendingVerificationPayments(params = {}) {
-    return http.get("/billing/manual-verifications", { params });
-  }
-
-  /**
    * KHUSUS SUKARELA:
    * Membuat item tagihan (bill_item) baru berdasarkan nominal input user.
    * Digunakan sebelum redirect ke halaman invoice.

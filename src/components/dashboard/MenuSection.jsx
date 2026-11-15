@@ -26,6 +26,4 @@ const MenuSection = memo(() => (
   </Card>
 ));
 
-MenuSection.displayName = "MenuSection";
-
 export default MenuSection;

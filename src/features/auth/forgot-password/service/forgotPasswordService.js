@@ -7,8 +7,12 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async sendOtp(data) {
-    const response = await apiClient.post("/auth/forgot-password/send-otp", data);
-    return response.data;
+    try {
+      const response = await apiClient.post("/auth/forgot-password/send-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -17,32 +21,43 @@ class ForgotPasswordService {
    * @returns {Promise} Response dari API
    */
   async verifyOtp(data) {
-    const response = await apiClient.post("/auth/forgot-password/verify-otp", data);
-    return response.data;
+    try {
+      const response = await apiClient.post("/auth/forgot-password/verify-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
-   * Reset password dengan token
+   * Reset password
    * @param {Object} data - Data reset password {resetToken, newPassword}
    * @returns {Promise} Response dari API
    */
   async resetPassword(data) {
-    const response = await apiClient.post("/auth/forgot-password/reset", data);
-    return response.data;
+    try {
+      const response = await apiClient.post("/auth/forgot-password/reset", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
-   * Resend OTP
-   * @param {Object} data - Data resend {sessionId}
+   * Kirim ulang OTP
+   * @param {Object} data - Data resend OTP {sessionId}
    * @returns {Promise} Response dari API
    */
   async resendOtp(data) {
-    const response = await apiClient.post("/auth/forgot-password/resend-otp", data);
-    return response.data;
+    try {
+      const response = await apiClient.post("/auth/forgot-password/resend-otp", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
 const forgotPasswordService = new ForgotPasswordService();
 
 export default forgotPasswordService;
-

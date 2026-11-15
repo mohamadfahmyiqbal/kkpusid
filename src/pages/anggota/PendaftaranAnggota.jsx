@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -19,64 +19,19 @@ import Sidebar from "../../comp/global/Sidebar";
 import Footer from "../../comp/global/Footer";
 
 import { jwtEncode } from "../../routes/helpers";
-import UAnggota from "../../utils/UAnggota";
+// import UAnggota from "../../utils/UAnggota"; // (Tidak dipakai)
+import UApproval from "../../utils/UApproval";
 import { FaArrowLeft } from "react-icons/fa";
 
 export default function PendaftaranAnggota() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // State untuk pengecekan status pendaftaran
-  const [regStatus, setRegStatus] = useState(null);
-  const [regLoading, setRegLoading] = useState(true);
-  const [regChecked, setRegChecked] = useState(false);
-
   const navigate = useNavigate();
 
   const handleUserChange = useCallback((newUser) => {
     setUser(newUser);
   }, []);
-
-  /**
-   * Cek apakah user sudah memiliki pendaftaran anggota
-   * Jika sudah, alihkan ke halaman detail pendaftaran
-   */
-  const checkRegistrationStatus = useCallback(async () => {
-    const nik = user?.nik;
-    if (!nik) {
-      setRegLoading(false);
-      setRegChecked(true);
-      return;
-    }
-
-    try {
-      setRegLoading(true);
-      const res = await UAnggota.cekPendaftaranAnggota({ nik });
-
-      if (res.data?.success && res.data?.exists) {
-        // Sudah ada pendaftaran, alihkan ke halaman detail
-        const data = res.data.data || {};
-        navigate(`/${jwtEncode({ page: "detailPendaftaranAnggota" })}`, {
-          state: {
-            back: "pendaftaranAnggota",
-            jenis: "pendaftaranAnggota",
-            ...data,
-          },
-        });
-      }
-    } catch (err) {
-      console.error("Gagal memeriksa status pendaftaran:", err);
-      // Jika gagal cek, tetap izinkan akses ke form (fail-open)
-    } finally {
-      setRegLoading(false);
-      setRegChecked(true);
-    }
-  }, [user?.nik, navigate]);
-
-  useEffect(() => {
-    checkRegistrationStatus();
-  }, [checkRegistrationStatus]);
 
   const handleNavigateEncrypted = useCallback(async () => {
     if (!user?.nik) {
@@ -91,27 +46,6 @@ export default function PendaftaranAnggota() {
       },
     });
   }, [user?.nik, navigate]);
-
-  // Jika masih sedang mengecek status, tampilkan loading
-  if (regLoading) {
-    return (
-      <div id="main-wrapper">
-        <Header onUserChange={handleUserChange} />
-        <Sidebar user={user} />
-        <div className="page-wrapper">
-          <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-            <Spinner animation="border" role="status" className="text-primary" />
-            <span className="ms-2">Memeriksa status pendaftaran...</span>
-          </Container>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Jika sudah dicek dan ada pendaftaran, sudah di-redirect di useEffect di atas
-  // Tidak perlu render form lagi (sudah navigate)
-  // Namun jika regChecked true dan tidak ada redirect (mis. exists false), tampilkan form
 
   return (
     <div id="main-wrapper">

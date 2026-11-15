@@ -53,7 +53,16 @@ const JualBeliDashboardPage = () => {
 
   const handleGoToPelunasan = () => {
     const fid = approvedFinancing?.financing_id || approvedFinancing?.id;
-    navigate(`/${jwtEncode({ page: "pelunasanPage", financingId: fid, return: "jualBeliPage" })}`);
+    const pendingPelunasan = transactions.find(t => 
+      ["PENDING", "WAITING_PAYMENT", "READY_TO_PAY", "APPROVED"].includes(t.status) &&
+      (t.category?.toLowerCase().includes('pelunasan') || t.keterangan?.includes(`PELUNASAN_REF:${fid}`))
+    );
+
+    if (pendingPelunasan) {
+      navigate(`/${jwtEncode({ page: "transactionDetailPage", financingId: pendingPelunasan.financing_id || pendingPelunasan.id, return: "jualBeliPage" })}`);
+    } else {
+      navigate(`/${jwtEncode({ page: "pelunasanPage", financingId: fid, return: "jualBeliPage" })}`);
+    }
   };
 
   const handleGoToFormPembelian = () => {

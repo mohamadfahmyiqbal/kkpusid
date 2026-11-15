@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -52,9 +52,14 @@ export default function ResiScreen() {
 
   const handleClick = async () => {
     try {
-      await USimpanan.reqPencairanSimpanan(selected);
-    } catch (_error) {
-      // Keep silent in production
+      const payload = {
+        selected,
+        token,
+      };
+      const res = await USimpanan.reqPencairanSimpanan(selected);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
     }
   };
   return (
@@ -71,7 +76,6 @@ export default function ResiScreen() {
                 variant="none"
                 className="p-0 me-2 d-flex align-items-center"
                 onClick={handleBack}
-                aria-label="Kembali ke halaman sebelumnya"
               >
                 <FaArrowLeft size={15} className="me-1" />
               </Button>

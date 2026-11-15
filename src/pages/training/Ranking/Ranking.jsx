@@ -5,12 +5,13 @@ import {
   Col,
   Card,
   Button,
+  Spinner,
   
   Badge,
   Table} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/trainingService";
+import TrainingService from "../../../services/training.service";
 import { FaTrophy, FaMedal, FaArrowLeft, FaUser, FaStar } from "react-icons/fa";
 import LoadingState from "../../../components/ui/LoadingState";
 import "./Ranking.css";
@@ -79,7 +80,6 @@ const Ranking = () => {
     return <span className="fw-bold">#{rank}</span>;
   };
 
-  // eslint-disable-next-line no-unused-vars
   const getRankBadge = (rank) => {
     if (rank === 1)
       return (

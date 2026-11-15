@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-imports */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -46,10 +45,6 @@ export default function TestDataScreen() {
       },
     ],
   });
-
-  if (process.env.NODE_ENV === "production") {
-    return null;
-  }
 
   const handleTestInvoice = () => {
     const token = jwtEncode({ page: "invoice" });

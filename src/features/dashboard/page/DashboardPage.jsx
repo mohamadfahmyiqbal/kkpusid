@@ -11,7 +11,7 @@ import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../../components/layout/contexts/ProfileContext";
 import { useDashboardRole } from "../hooks/useDashboardRole";
-import useRegistrationStatus from "../../../pages/anggota/registration-page/hooks/useRegistrationStatus";
+import useRegistrationStatus from "../../../pages/anggota/RegistrationPage/hooks/useRegistrationStatus";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import DateTimeCard from "../components/DateTimeCard";
 import MainMenuSection from "../components/MainMenuSection";
@@ -212,7 +212,7 @@ export default function DashboardPage() {
           <Col xs={12} lg={8}>
             <Card className="dc-hero border-0 h-100">
               <Card.Body className="p-0">
-                <h1>Assalamu&apos;alaikum, {safeGreetingName}!</h1>
+                <h1>Assalamu'alaikum, {safeGreetingName}!</h1>
                 <p>Selamat datang di Paguyuban Usaha Sukses.</p>
                 <p>
                   {isCandidate

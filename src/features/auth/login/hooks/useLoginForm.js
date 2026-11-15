@@ -17,9 +17,6 @@ export const useLoginForm = () => {
   const [emailHpInvalid, setEmailHpInvalid] = useState(false);
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const navigate = useNavigate();
-  // Token dan data pengguna disimpan in-memory state, bukan localStorage
-  const [token, setToken] = useState(null);
-  const [userData, setUserData] = useState(null);
 
   /**
    * Validasi format email/phone
@@ -74,13 +71,9 @@ export const useLoginForm = () => {
       });
 
       if (response.status === 200 && response.data.success) {
-        const authToken = response.data.data.token;
-        const user = response.data.data.user;
-        // Simpan token dan data pengguna ke storage agar dapat diakses oleh interceptor API
-        localStorage.setItem("token", authToken);
+        const { token, user } = response.data.data;
+        localStorage.setItem("token", token);
         localStorage.setItem("userData", JSON.stringify(user));
-        setToken(authToken);
-        setUserData(user);
         window.dispatchEvent(new Event("storage_sync"));
 
         // Reset form setelah sukses
@@ -114,7 +107,5 @@ export const useLoginForm = () => {
     setShowPassword,
     handleLogin,
     resetForm,
-    token,
-    userData,
   };
 };

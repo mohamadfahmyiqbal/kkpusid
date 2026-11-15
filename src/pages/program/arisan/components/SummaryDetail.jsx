@@ -71,6 +71,4 @@ const SummaryDetail = React.memo(({ summaryData }) => {
   );
 });
 
-SummaryDetail.displayName = "SummaryDetail";
-
 export default SummaryDetail;

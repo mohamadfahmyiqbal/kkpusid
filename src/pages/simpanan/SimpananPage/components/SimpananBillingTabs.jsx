@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Nav, Spinner } from 'react-bootstrap';
 import { FaHistory, FaExclamationCircle } from 'react-icons/fa';
 import UBilling from '../../../../utils/api/UBilling';
-import BillList from '../../../global/billing/components/BillList';
-import HistoryList from '../../../global/billing/components/HistoryList';
+import BillList from '../../../global/BillingPage/components/BillList';
+import HistoryList from '../../../global/BillingPage/components/HistoryList';
 
 const SimpananBillingTabs = ({ activeType }) => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -31,22 +31,12 @@ const SimpananBillingTabs = ({ activeType }) => {
       const processBills = (res) => {
         if (res.data?.status) {
           let rawData = Array.isArray(res.data.data) ? res.data.data : [];
-          const activeUpper = (activeType || "").toUpperCase();
           // Filter by activeType just in case the backend returns too much
           return rawData.filter(bill => {
-            const billCat = (bill.category_code || "").toUpperCase();
-            if (billCat && (billCat === activeUpper || activeUpper.includes(billCat) || billCat.includes(activeUpper))) {
-              return true;
-            }
+            if (bill.category_code) return bill.category_code === activeType || bill.category_code.includes(activeType);
             if (bill.items && Array.isArray(bill.items)) {
-              return bill.items.some(item => {
-                const itemCat = (item.category_code || "").toUpperCase();
-                return itemCat && (itemCat === activeUpper || activeUpper.includes(itemCat) || itemCat.includes(activeUpper));
-              });
+              return bill.items.some(item => item.category_code === activeType || item.category_code?.includes(activeType));
             }
-            if (activeUpper.includes("POKOK") && (billCat.includes("POKOK") || bill.description?.toUpperCase().includes("POKOK"))) return true;
-            if (activeUpper.includes("WAJIB") && (billCat.includes("WAJIB") || bill.description?.toUpperCase().includes("WAJIB"))) return true;
-            if (activeUpper.includes("SUKARELA") && (billCat.includes("SUKARELA") || bill.description?.toUpperCase().includes("SUKARELA"))) return true;
             return false;
           });
         }

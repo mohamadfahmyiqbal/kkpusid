@@ -26,10 +26,10 @@ const FinancialSection = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const {
-    balance, tabunganBalance, tabunganSubItemsData,
+    balance, tabunganDetails, tabunganBalance, tabunganSubItemsData,
     jualBeliBalance, jualBeliSisaCicilan, jualBeliBelumDibayar, jualBeliTerbayar,
-    pinjamanNominalCicilan, pinjamanTerbayar, pinjamanTagihan, pinjamanSisaCicilan,
-    simpananPokok, simpananWajib, simpananSukarela,
+    pinjamanNominal, pinjamanNominalCicilan, pinjamanTerbayar, pinjamanTagihan, pinjamanSisaCicilan,
+    simpananPokok, simpananWajib, simpananSukarela, simpananDeposit,
     arisanTagihan, arisanDiikutiCount, arisanSisaCicilan, arisanTerbayar,
     totalInvestasi, totalPendanaanSyariah,
     details, loading, isRefreshing, refresh

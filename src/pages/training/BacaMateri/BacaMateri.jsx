@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/trainingService";
+import TrainingService from "../../../services/training.service";
 import { FaCheckCircle } from "react-icons/fa";
 import DOMPurify from "dompurify";
 import "./BacaMateri.css";
@@ -92,7 +92,7 @@ const BacaMateri = ({ decodedToken }) => {
             <Card className="materi-content-card p-4 p-md-5 mb-5">
               <div 
                 className="materi-body"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(materi?.content || "") }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(materi.content) }}
               />
 
               <footer className="mt-5 pt-4 border-top">

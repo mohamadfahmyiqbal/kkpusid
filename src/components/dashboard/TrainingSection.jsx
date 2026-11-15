@@ -17,6 +17,4 @@ const TrainingSection = memo(() => (
   </Card>
 ));
 
-TrainingSection.displayName = "TrainingSection";
-
 export default TrainingSection;

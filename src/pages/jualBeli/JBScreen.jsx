@@ -9,16 +9,18 @@ import {
   Col,
   Container,
   Row,
-  Image
+  Image,
+ Form
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
-import Header from "../../components/layout/components/Header";
-import Sidebar from "../../components/layout/components/Sidebar";
+import Header from "../../comp/global/header/Header";
+import Sidebar from "../../comp/global/Sidebar";
+import CardSimpanan from "../../comp/simpanan/CardSimpanan";
+
 import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
-
-const CardSimpanan = () => null;
+import URequest from "../../utils/URequest";
 
 export default function JBScreen() {
   const navigate = useNavigate();

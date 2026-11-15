@@ -18,7 +18,7 @@ import Button from "../../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
 import { FaKaaba, FaGraduationCap, FaUtensils, FaExclamationTriangle } from "react-icons/fa";
-import { TabunganService } from "../../../services/tabunganService";
+import { TabunganService } from "../../../services/tabungan.service";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "../../../components/layout/contexts";
 import "./FormPengajuanTabungan.css";
@@ -151,6 +151,10 @@ const FormPengajuanTabungan = () => {
       if (setoran <= 0) {
         newErrors.monthly_deposit = "Setoran bulanan harus lebih dari 0";
       }
+    }
+
+    if (term <= 0) {
+      newErrors.term_months = "Durasi harus lebih dari 0";
     }
 
     if (term <= 0) {

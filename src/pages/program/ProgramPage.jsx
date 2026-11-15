@@ -46,6 +46,7 @@ export default function ProgramPage() {
     pinjaman: null,
     arisan: null,
   });
+  const [availableArisan, setAvailableArisan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -84,7 +85,10 @@ export default function ProgramPage() {
 
   const fetchAvailableArisan = useCallback(async () => {
     try {
-      await api.get("/program/arisan/available");
+      const response = await api.get("/program/arisan/available");
+      if (response.data?.success) {
+        setAvailableArisan(response.data.data || []);
+      }
     } catch (err) {
       console.error("Error fetching available arisan:", err);
     }

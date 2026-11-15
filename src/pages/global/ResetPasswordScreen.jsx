@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import {
   Container,
   Row,
@@ -46,25 +45,18 @@ const validate = ({ password, rePassword }) => {
 };
 
 export default function ResetPasswordScreen() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
 
-  // Ambil OTP dari router state terlebih dahulu, fallback aman ke sessionStorage
+  // Ambil OTP dari sessionStorage saat komponen mount
   useEffect(() => {
-    const otpFromState = location.state?.otp;
-    if (otpFromState) {
-      setOtp(otpFromState);
-      return;
-    }
     if (typeof window !== "undefined") {
       const otpFromSession = sessionStorage.getItem("otp") || "";
       setOtp(otpFromSession);
     }
-  }, [location.state]);
+  }, []);
 
   // Tidak ada pembatasan karakter, hanya batasi panjang maksimal 32 karakter
   const handleChange = useCallback((e) => {
@@ -110,15 +102,15 @@ export default function ResetPasswordScreen() {
           sessionStorage.removeItem("otp");
         }
         setTimeout(() => {
-          navigate("/login");
-        }, 1500);
+          window.location.assign("/login");
+        }, 2000);
       } catch (error) {
         Notification(error?.response || error);
       } finally {
         setLoading(false);
       }
     },
-    [formData, loading, otp, navigate]
+    [formData, loading, otp]
   );
 
   // Password minimal 6 karakter, tidak harus angka, boleh huruf/simbol
@@ -159,11 +151,11 @@ export default function ResetPasswordScreen() {
                 size={32}
                 title="Sign In"
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate("/login")}
+                onClick={() => window.location.assign("/login")}
                 tabIndex={0}
                 onKeyPress={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    navigate("/login");
+                    window.location.assign("/login");
                   }
                 }}
                 aria-label="Sign In"

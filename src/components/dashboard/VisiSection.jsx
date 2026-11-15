@@ -10,6 +10,4 @@ const VisiSection = memo(() => (
   </Card>
 ));
 
-VisiSection.displayName = "VisiSection";
-
 export default VisiSection;
