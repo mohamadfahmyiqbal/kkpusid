@@ -81,7 +81,7 @@ const SetoranTabungan = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { default: TabunganService } = await import("../../../services/tabunganService");
+        const { default: TabunganService } = await import("../../../services/tabungan.service");
         const accountRes = await TabunganService.checkAccountStatus(currentProduct);
         
         if (accountRes?.data?.hasAccount) {
@@ -143,7 +143,7 @@ const SetoranTabungan = () => {
     setError(null);
 
     try {
-      const { default: TabunganService } = await import("../../../services/tabunganService");
+      const { default: TabunganService } = await import("../../../services/tabungan.service");
       const paymentAmount = flexibleAmount ? parseFloat(flexibleAmount) : selectedTagihan.amount;
       
       const paymentData = {

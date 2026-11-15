@@ -5,32 +5,28 @@ class USimpanan {
   /**
    * Mengambil detail rekening simpanan member berdasarkan kategori (product_code)
    * Digunakan untuk sinkronisasi saldo real-time di halaman penarikan.
-   * @param {string|Object} params - Contoh: 'SS_SUKARELA' atau { category: 'SS_SUKARELA' }
-   * @param {Object} [config] - Konfigurasi axios seperti signal
+   * @param {string} category - Contoh: 'SS_SUKARELA' atau 'SW_POKOK'
    */
-  getAccountDetail(params, config = {}) {
-    const finalParams = typeof params === "string" ? { category: params } : params;
-    return http.get("/simpanan/account-detail", { params: finalParams, ...config });
+  getAccountDetail(params) {
+    // Menyesuaikan dengan backend yang membutuhkan query params 'category'
+    return http.get("/simpanan/account-detail", { params });
   }
 
   /**
    * Mengambil riwayat pengajuan penarikan (Withdrawals)
    * Digunakan untuk list riwayat di bagian bawah PenarikanSimpananPage.
    * @param {Object} params - Contoh: { category: 'SS_SUKARELA' }
-   * @param {Object} [config] - Konfigurasi axios seperti signal
    */
-  getWithdrawalHistory(params, config = {}) {
-    return http.get("/simpanan/penarikan/history", { params, ...config });
+  getWithdrawalHistory(params) {
+    return http.get("/simpanan/penarikan/history", { params });
   }
 
   /**
    * Mengambil riwayat transaksi simpanan (General/Setoran)
-   * @param {string|Object} params - { category: "Simpanan Pokok" } atau "SS_SUKARELA"
-   * @param {Object} [config] - Konfigurasi axios seperti signal
+   * @param {Object} params - { category: "Simpanan Pokok" }
    */
-  getSavingsHistory(params, config = {}) {
-    const finalParams = typeof params === "string" ? { category: params } : params;
-    return http.get("/simpanan/riwayat", { params: finalParams, ...config });
+  getSavingsHistory(params) {
+    return http.get("/simpanan/riwayat", { params });
   }
 
   /**

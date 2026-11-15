@@ -2,8 +2,8 @@ import globalRoutes from "./pages/globalRoutes";
 import authRoutes from "./pages/authRoutes";
 import anggotaRoutes from "./pages/anggotaRoutes";
 import simpananRoutes from "./pages/simpananRoutes";
-import jualBeliRoutes from "./pages/jualBeliRoutes";
-import programRoutes from "./pages/programRoutes";
+import jualbeliRoutes from "./pages/jualbeliRoutes";
+import programRoutes from "./pages/ProgramRoutes";
 import tabunganRoutes from "./pages/tabunganRoutes";
 import investasiRoutes from "./pages/investasiRoutes";
 import trainingRoutes from "./pages/trainingRoutes";
@@ -13,7 +13,7 @@ const PAGE_COMPONENTS = {
   ...authRoutes,
   ...anggotaRoutes,
   ...simpananRoutes,
-  ...jualBeliRoutes,
+  ...jualbeliRoutes,
   ...programRoutes,
   ...tabunganRoutes,
   ...investasiRoutes,

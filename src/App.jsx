@@ -6,7 +6,7 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import routerConfig from "./routes/RouterConfig";
 // Notifikasi Toast
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Swal from "sweetalert2";
@@ -41,11 +41,11 @@ const App = () => {
         registerMember(memberId);
 
         // Event listeners untuk update real-time
-        socket.on('notifications:update', (_data) => {
+        socket.on('notifications:update', (data) => {
           // Handled via socket & components
         });
 
-        socket.on('profile:update', (_data) => {
+        socket.on('profile:update', (data) => {
           // Silent profile update
         });
 
@@ -101,9 +101,8 @@ const App = () => {
         socket.on('SAVINGS_WITHDRAWAL_UPDATED', handleWithdrawalSocketUpdate);
         socket.on('SAVINGS_WITHDRAWALS_UPDATED', handleWithdrawalSocketUpdate);
 
-        socket.on('savings:update', (_data) => {
-          // Trigger refresh data simpanan di seluruh halaman anggota
-          window.dispatchEvent(new CustomEvent("REFRESH_SAVINGS_DATA"));
+        socket.on('savings:update', (data) => {
+          // Refresh data tanpa menampilkan toast
         });
 
         const handleFinancingSocketUpdate = (data) => {
@@ -129,7 +128,7 @@ const App = () => {
         socket.on('FINANCING_APPLICATIONS_UPDATED', handleFinancingSocketUpdate);
         socket.on('FINANCING_APPLICATION_UPDATED', handleFinancingSocketUpdate);
 
-        const handleRegistrationUpdate = (_data) => {
+        const handleRegistrationUpdate = (data) => {
           // Selalu trigger refresh global untuk memastikan state sinkron dengan DB
           window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
           

@@ -2,7 +2,7 @@ import { lazy } from "react";
 
 const simpananRoutes = {
   simpananDetailSaldo: {
-    component: lazy(() => import("../../pages/simpanan/detail-saldo-page/page/DetailSaldoPage")),
+    component: lazy(() => import("../../pages/simpanan/DetailSaldoPage/page/DetailSaldoPage")),
     isProtected: true,
   },
   simpananPage: {

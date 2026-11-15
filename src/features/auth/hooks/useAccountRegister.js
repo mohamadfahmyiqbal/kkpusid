@@ -11,6 +11,7 @@ const LOGIN_PATH = `/${jwtEncode({ page: "authLogin" })}`;
 const {
   PASSWORD_MIN_LENGTH,
   NAME_MIN_LENGTH,
+  REDIRECT_DELAY_MS,
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
 } = AUTH_CONSTANTS;
@@ -36,7 +37,7 @@ const useAccountRegister = () => {
 
   // Gunakan hooks notifikasi dan push subscription
   const { notifPermission, vapidPublicKey } = useNotificationPermission();
-  usePushSubscription(vapidPublicKey);
+  const handlePushSubscription = usePushSubscription(vapidPublicKey);
 
   /**
    * Reset form data

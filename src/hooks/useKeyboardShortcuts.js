@@ -14,7 +14,8 @@ export const useKeyboardShortcuts = ({ onToggleSidebar, onLogout }) => {
 
     if (isInputElement) return;
 
-    const { key, ctrlKey, altKey, shiftKey } = event;
+    const { key, ctrlKey, metaKey, altKey, shiftKey } = event;
+    const isCtrl = ctrlKey || metaKey;
 
     // Prevent default for handled shortcuts
     let handled = false;

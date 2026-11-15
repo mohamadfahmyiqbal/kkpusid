@@ -1,7 +1,9 @@
-import { useCallback, useState } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { useCallback, useEffect, useState } from "react";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jwtEncode } from "../../routes/helpers";
+import UMenu from "../../utils/UMenu";
+import notification from "../../comp/global/Notification";
 import Header from "../../comp/global/header/Header";
 import Sidebar from "../../comp/global/Sidebar";
 import { FaArrowLeft } from "react-icons/fa";
@@ -11,13 +13,12 @@ export default function TagihanScreen() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const { back } = location.state || {};
+  const { back, jenis } = location.state;
 
   const handleUserChange = useCallback((newUser) => setUser(newUser), []);
 
   const handleClick = useCallback(() => {
-    const targetPage = back || "dashboard";
-    navigate(`/${jwtEncode({ page: targetPage })}`);
+    navigate(`/${jwtEncode({ page: "dashboard" })}`);
   }, [navigate, back]);
 
   return (
@@ -33,7 +34,6 @@ export default function TagihanScreen() {
                 variant="none"
                 className="p-0 me-2 d-flex align-items-center"
                 onClick={handleClick}
-                aria-label="Kembali ke halaman sebelumnya"
               >
                 <FaArrowLeft size={15} className="me-1" />
               </Button>

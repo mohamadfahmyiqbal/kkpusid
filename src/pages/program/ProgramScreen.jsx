@@ -13,14 +13,13 @@ import {
 } from "react-bootstrap";
 import { FaArrowLeft } from "react-icons/fa";
 
-import Header from "../../components/layout/components/Header";
-import Sidebar from "../../components/layout/components/Sidebar";
+import Header from "../../comp/global/header/Header";
+import Sidebar from "../../comp/global/Sidebar";
+import CardSimpanan from "../../comp/simpanan/CardSimpanan";
 
-import { jwtEncode } from "../../utils/helpers";
+import { jwtEncode } from "../../routes/helpers";
 import UTransaksi from "../../utils/UTransaksi";
 import URequest from "../../utils/URequest";
-
-const CardSimpanan = () => null;
 
 export default function ProgramScreen() {
   const navigate = useNavigate();
@@ -56,6 +55,7 @@ export default function ProgramScreen() {
     [navigate]
   );
 
+  /** Ambil data transaksi Jual Beli */
   const getTransaksi = useCallback(async () => {
     setLoading(true);
     try {
@@ -72,16 +72,18 @@ export default function ProgramScreen() {
   const getRequest = useCallback(async () => {
     setLoading(true);
     try {
-      await URequest.getRequestByNik({ type: "JB" });
+      const res = await URequest.getRequestByNik({ type: "JB" });
+      console.log(res);
     } catch (error) {
-      console.error("Gagal mengambil request:", error);
+      console.log(error);
+
+      console.log(error);
     }
-  }, []);
+  });
 
   useEffect(() => {
     getRequest();
-    getTransaksi();
-  }, [getRequest, getTransaksi]);
+  }, [getRequest]);
 
   return (
     <div id="main-wrapper">
@@ -108,8 +110,9 @@ export default function ProgramScreen() {
           <Row className="mt-4">
             <Col xs={12}>
               <Card
-                className={`text-white text-center ${JBData.length > 0 ? "bg-blue700" : "bg-danger"
-                  }`}
+                className={`text-white text-center ${
+                  JBData.length > 0 ? "bg-blue700" : "bg-danger"
+                }`}
               >
                 <CardBody>
                   <CardTitle>Informasi Tagihan</CardTitle>

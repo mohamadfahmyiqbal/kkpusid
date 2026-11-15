@@ -10,6 +10,4 @@ const ContactSection = memo(() => (
   </Card>
 ));
 
-ContactSection.displayName = "ContactSection";
-
 export default ContactSection;

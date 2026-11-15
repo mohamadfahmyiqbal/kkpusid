@@ -98,7 +98,7 @@ const SidebarMenuItem = memo(
             className={`sidebar-link-btn ${isActive ? "active" : ""}`}
             aria-current={isActive && "page"}
             aria-label={item.ariaLabel || item.label}
-            onClick={() => {
+            onClick={(e) => {
               if (!isDesktop && onClose) {
                 onClose();
               }
@@ -112,10 +112,8 @@ const SidebarMenuItem = memo(
         )}
       </li>
     );
-  }
+  },
 );
-
-SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const hasActiveChild = (item, currentPage) => {
   if (item.href === currentPage) return true;
@@ -125,7 +123,7 @@ const hasActiveChild = (item, currentPage) => {
   return false;
 };
 
-function Sidebar({ user, onNavigate: _onNavigate, onClose, isDesktop, isSidebarOpen }) {
+export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [openKeys, setOpenKeys] = useState({});
@@ -349,6 +347,3 @@ function Sidebar({ user, onNavigate: _onNavigate, onClose, isDesktop, isSidebarO
     </aside>
   );
 }
-
-Sidebar.displayName = "Sidebar";
-export default Sidebar;

@@ -5,10 +5,6 @@ class UJualBeli {
     return http.post("/jualbeli/create", data);
   }
 
-  createTransaction(data) {
-    return this.createJualBeli(data);
-  }
-
   getJualBeliHistory(params) {
     return http.get("/jualbeli/history", { params });
   }

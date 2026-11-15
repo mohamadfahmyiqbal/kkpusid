@@ -4,7 +4,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import FinancialScrollButtons from "./financial/FinancialScrollButtons";
 
 const StepItem = React.memo(({ item, onNavigate }) => {
-  const handleClick = useCallback((_) => {
+  const handleClick = useCallback((e) => {
     if (item.status === "pending") return;
     onNavigate("registrationPage");
   }, [item.status, onNavigate]);
@@ -61,8 +61,6 @@ const StepItem = React.memo(({ item, onNavigate }) => {
     </div>
   );
 });
-
-StepItem.displayName = "StepItem";
 
 const CandidateStepsCard = ({ steps, onNavigate }) => {
   const scrollContainerRef = useRef(null);

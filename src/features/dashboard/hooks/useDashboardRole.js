@@ -1,13 +1,5 @@
 import { useMemo } from "react";
-import {
-  isCandidate,
-  isCandidateByType,
-  isFullMember,
-  isALB,
-  isPengawas,
-  isKetua,
-  isBendahara,
-} from "../constants/roles";
+import { isCandidate, isFullMember, isALB, isPengawas, isKetua, isBendahara } from "../constants/roles";
 
 // Cache untuk role configurations dengan limit size
 const MAX_CACHE_SIZE = 50;
@@ -22,18 +14,12 @@ const manageCacheSize = () => {
   }
 };
 
-const getRoleConfig = (statusId, memberType) => {
+const getRoleConfig = (statusId) => {
   const roleId = String(statusId);
-
-  // Calon Anggota ditentukan dari status_id == '1' ATAU member_type mengandung "calon".
-  // Di DB, status_id untuk "Calon Anggota" bisa berupa numeric string ('1') atau UUID,
-  // sedangkan status_id "AKTIF" (UUID) jangan dianggap calon.
-  const candidateByStatus = isCandidate(roleId);
-  const candidateByType = isCandidateByType(memberType);
 
   return {
     roleId,
-    isCandidate: candidateByStatus || candidateByType,
+    isCandidate: isCandidate(roleId),
     isFullMember: isFullMember(roleId),
     isALB: isALB(roleId),
     isPengawas: isPengawas(roleId),
@@ -46,20 +32,21 @@ export const useDashboardRole = (userData) => {
   return useMemo(() => {
     if (!userData) return null;
 
-    const cacheKey = `${userData.status_id}::${userData.member_type || ""}`;
+    const cacheKey = userData.status_id;
 
     // Check cache first
     if (roleCache.has(cacheKey)) {
       return roleCache.get(cacheKey);
     }
 
-    const roleConfig = getRoleConfig(userData.status_id, userData.member_type);
+    const roleConfig = getRoleConfig(userData.status_id);
 
     // Manage cache size sebelum menambah entry baru
     manageCacheSize();
-
+    
     // Cache the result
     roleCache.set(cacheKey, roleConfig);
+
     return roleConfig;
   }, [userData]);
 };

@@ -9,7 +9,7 @@ import {
   ProgressBar} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { jwtDecodePage, jwtEncode } from "../../../utils/helpers";
-import TrainingService from "../../../services/trainingService";
+import TrainingService from "../../../services/training.service";
 import { FaCheckCircle, FaArrowLeft, FaTrophy, FaChevronRight, FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
 import "./Evaluasi.css";
 import Alert from "../../../components/ui/SwalAlert";
@@ -105,10 +105,11 @@ const Evaluasi = () => {
     setError(null);
 
     try {
-      // Send selected option to server for secure server-side grade calculation
+      // Map answers to the format expected by backend
       const formattedAnswers = questions.map(q => ({
         question_id: q.id,
-        selected_option: answers[q.id]
+        selected_option: answers[q.id],
+        is_correct: answers[q.id] === q.correctAnswer
       }));
 
       const response = await TrainingService.submitEvaluation(materiData.id, formattedAnswers);

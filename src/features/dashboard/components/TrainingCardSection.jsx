@@ -97,8 +97,6 @@ const TrainingItem = React.memo(({ item, onViewMateri, onStartEvaluasi }) => {
   );
 });
 
-TrainingItem.displayName = "TrainingItem";
-
 const TrainingCardSection = ({
   trainingData,
   onSeeAll,
