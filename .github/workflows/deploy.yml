@@ -2,12 +2,74 @@ name: CI/CD Vite React to VPS (kkpus.id)
 
 on:
   push:
-    branches: [ "master", "main", "feat/cicd-setup" ]
+    branches: [ "master", "main", "rollback/**" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
-  deploy:
+  # ============================================
+  # CI STAGE: Lint, Test, Audit, Security
+  # ============================================
+  ci:
+    name: CI - Lint, Test, Audit, Security
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for gitleaks
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies (ci)
+        run: npm ci
+
+      - name: Run ESLint
+        run: |
+          # Lint is non-blocking for pre-existing issues (tracked in M6)
+          npm run lint 2>&1 || true
+
+      - name: Run Tests
+        run: npm run test:ci
+        env:
+          NODE_ENV: test
+
+      - name: Run npm audit (non-blocking - tracked in M5)
+        run: |
+          echo "⚠️ npm audit results (non-blocking until M5):"
+          npm audit --audit-level=high 2>&1 || true
+
+      - name: Secret Scanning (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config: .gitleaks.toml
+          args: '--verbose'
+
+      - name: Upload coverage (if tests pass)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ============================================
+  # DEPLOY STAGE: Only on branch push (not PR)
+  # ============================================
+  deploy:
+    name: Deploy to VPS
+    needs: ci
+    if: github.event_name == 'push' && github.repository == 'mohamadfahmyiqbal/kkpusid'
+    runs-on: ubuntu-latest
+    environment:
+      name: VPS_KKPUSID
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -15,7 +77,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,4 +98,20 @@ jobs:
 
       - name: Deploy build to VPS
         run: |
+          BRANCH="${GITHUB_REF##*/}"
+          echo "Deploying branch: $BRANCH"
           rsync -avz --delete -e "ssh -p 2222" build/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/kkpus.id/
+
+          # Post-deploy healthcheck
+          echo "Running post-deploy smoke test..."
+          sleep 3
+          ssh -p 2222 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            # Check if nginx is serving the new build
+            if curl -sf http://localhost/health > /dev/null 2>&1; then
+              echo "✅ Healthcheck passed"
+            else
+              echo "❌ Healthcheck failed"
+              exit 1
+            fi
+          EOF
+
