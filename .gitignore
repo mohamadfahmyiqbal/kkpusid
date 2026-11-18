@@ -3,6 +3,8 @@ node_modules
 .env
 .env.*
 !.env.sample
+!.env.development.sample
+!.env.production.sample
 build/
 dist/
 *.log
