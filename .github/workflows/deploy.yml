@@ -96,16 +96,21 @@ jobs:
           echo "Deploying branch: $BRANCH"
           rsync -avz --delete -e "ssh -p 2222" build/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/kkpus.id/
 
-          # Post-deploy healthcheck
+          # Post-deploy healthcheck (static site — verify index.html is served)
           echo "Running post-deploy smoke test..."
-          sleep 3
           ssh -p 2222 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            # Check if nginx is serving the new build
-            if curl -sf http://localhost/health > /dev/null 2>&1; then
-              echo "✅ Healthcheck passed"
-            else
-              echo "❌ Healthcheck failed"
-              exit 1
-            fi
+            set -e
+            # Static PWA served by nginx: poll index.html until it returns 200 (max ~30s)
+            for i in $(seq 1 15); do
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/index.html || true)
+              if [ "$HTTP_CODE" = "200" ]; then
+                echo "✅ Healthcheck passed (HTTP $HTTP_CODE)"
+                exit 0
+              fi
+              echo "Waiting for nginx... ($i/15) - HTTP $HTTP_CODE"
+              sleep 2
+            done
+            echo "❌ Healthcheck failed: index.html did not return 200"
+            exit 1
           EOF
 
