@@ -36,8 +36,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ci": "vitest run",
-    "lint": "eslint src --ext .js,.jsx",
-    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx --report-unused-disable-directives",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "eject": "react-scripts eject"
