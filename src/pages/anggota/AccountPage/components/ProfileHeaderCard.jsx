@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Button } from "react-bootstrap";
 import { FaCamera, FaIdCard, FaShieldAlt } from "react-icons/fa";
+import { getFotoSrc } from "../../../../utils/fotoHelper";
 
 // Helper untuk format tanggal Indonesia
 const formatDate = (dateStr) => {
@@ -54,15 +55,8 @@ const getAvatarGradient = (name) => {
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 };
 
-const getFotoSrc = (foto) => {
-  if (!foto) return "";
-  return foto.startsWith("data:image")
-    ? foto
-    : `data:image/jpeg;base64,${foto}`;
-};
-
 export default function ProfileHeaderCard({ userProfile, onEditPhoto }) {
-  const fotoSrc = getFotoSrc(userProfile?.foto);
+  const fotoSrc = getFotoSrc(userProfile?.fotoImg, "");
   const initials = getInitials(userProfile?.nama);
   const [gradFrom, gradTo] = getAvatarGradient(userProfile?.nama);
 

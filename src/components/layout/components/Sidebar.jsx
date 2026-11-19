@@ -7,6 +7,7 @@ import React, {
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { jwtEncode, jwtDecodePage } from "../../../utils/helpers";
 import masjidImage from "../../../assets/images/masjid.png";
+import { getFotoSrc } from "../../../utils/fotoHelper";
 import {
   MdDashboard,
   MdAccountBalance,
@@ -324,9 +325,9 @@ export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSideba
                 className="rounded-circle bg-white border d-flex align-items-center justify-content-center shadow-sm"
                 style={{ width: 42, height: 42, overflow: 'hidden' }}
               >
-                {user.foto ? (
+                {user.fotoImg ? (
                   <img 
-                    src={user.foto.startsWith('data:') ? user.foto : `data:image/jpeg;base64,${user.foto}`} 
+                    src={getFotoSrc(user.fotoImg)} 
                     alt="User" 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />
