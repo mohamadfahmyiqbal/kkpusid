@@ -94,4 +94,6 @@ const ArticleCardSection = ({ articleData, onSeeAll, onReadArticle }) => {
   );
 };
 
+ArticleItem.displayName = "ArticleItem";
+
 export default React.memo(ArticleCardSection);

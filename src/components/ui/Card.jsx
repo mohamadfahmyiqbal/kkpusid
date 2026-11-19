@@ -10,7 +10,7 @@ export const Card = ({
   ...props
 }) => {
   let customClass = 'border-0 shadow-sm';
-  let customStyle = { ...style };
+  const customStyle = { ...style };
   let renderExtras = null;
 
   if (variant === 'premium') {

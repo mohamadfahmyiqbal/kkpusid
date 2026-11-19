@@ -11,7 +11,7 @@ export const useInvoiceData = () => {
   // 1. Dekode data dari JWT
   const params = useMemo(() => {
     const payload = token ? jwtDecodePage(token) : {};
-    let ids = payload.billItemIds || payload.billIds || [];
+    const ids = payload.billItemIds || payload.billIds || [];
     return {
       billItemIds: Array.isArray(ids) ? ids : [ids],
       billId: payload.billId || null,

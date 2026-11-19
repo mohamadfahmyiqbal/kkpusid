@@ -198,7 +198,7 @@ export const FormSkeleton = () => (
 
 // Add shimmer animation to global styles
 export const SkeletonStyles = () => (
-  <style jsx>{`
+  <style>{`
     @keyframes shimmer {
       0% {
         background-position: -200% 0;

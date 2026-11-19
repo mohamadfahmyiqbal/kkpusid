@@ -12,7 +12,7 @@ export const STEP_LABELS = [
 ];
 
 export const validateStep = (currentStep, data) => {
-  let stepErrors = {};
+  const stepErrors = {};
   if (currentStep === 1) {
     if (!data.nik_ktp || data.nik_ktp.length !== 16)
       stepErrors.nik_ktp = "NIK harus 16 digit.";

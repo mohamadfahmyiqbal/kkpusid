@@ -117,4 +117,6 @@ Header.propTypes = {
   isDesktop: PropTypes.bool.isRequired,
 };
 
+Header.displayName = "Header";
+
 export default Header;

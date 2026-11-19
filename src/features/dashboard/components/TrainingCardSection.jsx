@@ -140,4 +140,6 @@ const TrainingCardSection = ({
   );
 };
 
+TrainingItem.displayName = "TrainingItem";
+
 export default React.memo(TrainingCardSection);
