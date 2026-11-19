@@ -51,7 +51,7 @@ const HeaderLoadingFallback = () => {
         </div>
       </nav>
 
-      <style jsx>{`
+      <style>{`
         .skeleton-loader {
           background: linear-gradient(
             90deg,

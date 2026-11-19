@@ -30,7 +30,7 @@ const SimpananBillingTabs = ({ activeType }) => {
 
       const processBills = (res) => {
         if (res.data?.status) {
-          let rawData = Array.isArray(res.data.data) ? res.data.data : [];
+          const rawData = Array.isArray(res.data.data) ? res.data.data : [];
           // Filter by activeType just in case the backend returns too much
           return rawData.filter(bill => {
             if (bill.category_code) return bill.category_code === activeType || bill.category_code.includes(activeType);

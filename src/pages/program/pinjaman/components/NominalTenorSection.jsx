@@ -48,7 +48,7 @@ function angkaToTerbilang(num) {
   const result = terbilang(num).replace(/\s+/g, " ").trim();
   if (!result) return "";
 
-  let formatted = result.replace("Satu Ratus", "Seratus").replace("Satu Ribu", "Seribu");
+  const formatted = result.replace("Satu Ratus", "Seratus").replace("Satu Ribu", "Seribu");
 
   return formatted + " Rupiah";
 }

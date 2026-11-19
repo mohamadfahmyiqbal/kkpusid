@@ -142,7 +142,7 @@ export const useBillingData = (decodedToken) => {
       const filteredHistory = resHistory.data?.status ? filterContextBills(resHistory.data.data) : [];
 
       if (resPending.data?.status) {
-        let rawData = filterContextBills(resPending.data.data);
+        const rawData = filterContextBills(resPending.data.data);
 
         // Pastikan DP / Uang Tanda Keseriusan muncul di daftar tagihan jika belum dibayar
         if (downPayment > 0) {

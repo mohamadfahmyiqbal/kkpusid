@@ -122,4 +122,6 @@ const CandidateStepsCard = ({ steps, onNavigate }) => {
   );
 };
 
+StepItem.displayName = "StepItem";
+
 export default React.memo(CandidateStepsCard);

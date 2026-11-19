@@ -31,10 +31,8 @@ jobs:
       - name: Install dependencies (ci)
         run: npm ci
 
-      - name: Run ESLint
-        run: |
-          # Lint is non-blocking for pre-existing issues (tracked in M6)
-          npm run lint 2>&1 || true
+      - name: Run ESLint (blocking)
+        run: npm run lint
 
       - name: Run Tests
         run: npm run test:ci

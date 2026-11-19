@@ -36,15 +36,6 @@ export default new (class UPinjaman {
       },
     });
   }
-  getMasterPinjamanLunak(fields) {
-    console.log(fields);
-
-    return http.post("/getMasterPinjamanLunak", fields, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  }
   getLaporanPinjamanLunak(fields) {
     return http.post("/getLaporanPinjamanLunak", fields, {
       headers: {

@@ -80,7 +80,7 @@ export default function LandingScreen() {
               <h1 className="fw-bold display-4">
                 Muamalah
                 <br />
-                Syar'i
+                Syar&apos;i
                 <br />
                 Berkah Hakiki
               </h1>

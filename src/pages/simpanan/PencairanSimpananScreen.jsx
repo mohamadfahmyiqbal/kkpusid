@@ -76,7 +76,7 @@ export default function PencairanSimpananScreen() {
           break;
 
         /** 🔴 Penarikan: koperasi membayar ke anggota */
-        case "withdraw":
+        case "withdraw": {
           if (!nominal || nominal < 50000) {
             alert("Minimal pencairan adalah Rp 50.000");
             return;
@@ -111,6 +111,7 @@ export default function PencairanSimpananScreen() {
             },
           });
           break;
+        }
 
         /** 📄 Lihat detail invoice */
         case "invoice":

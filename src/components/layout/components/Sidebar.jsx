@@ -123,6 +123,8 @@ const hasActiveChild = (item, currentPage) => {
   return false;
 };
 
+SidebarMenuItem.displayName = "SidebarMenuItem";
+
 export default function Sidebar({ user, onNavigate, onClose, isDesktop, isSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();

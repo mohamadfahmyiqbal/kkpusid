@@ -180,4 +180,6 @@ const TagihanSection = () => {
   );
 };
 
+BillingCard.displayName = "BillingCard";
+
 export default TagihanSection;

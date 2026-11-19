@@ -4,7 +4,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 export const logger = {
   log: (...args) => {
     if (isDevelopment) {
-
+      // no-op: logging intentionally suppressed (kept for API parity)
     }
   },
   warn: (...args) => {
