@@ -11,6 +11,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import UAnggota from "../../utils/UAnggota";
+import { getFotoSrc } from "../../utils/fotoHelper";
 import { toast } from "react-toastify";
 import { FaIdCard } from "react-icons/fa";
 
@@ -40,14 +41,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     getUser();
   }, []);
-
-  // Fungsi untuk memastikan foto base64 bisa tampil
-  const getFotoSrc = (foto) => {
-    if (!foto) return "/assets/icons/default-user.png"; // fallback
-    return foto.startsWith("data:image")
-      ? foto
-      : `data:image/jpeg;base64,${foto}`;
-  };
 
   return (
     <div
