@@ -23,6 +23,7 @@ import { jwtEncode } from "../../utils/helpers";
 import { useProfile } from "../../components/layout/contexts";
 import UJualBeli from "../../utils/api/UJualBeli";
 import { formatRupiah, parseRawNumber } from "../../utils/helper/formatRupiah";
+import { maxZero, subtractAmounts, toDecimal, toNumber } from "../../utils/money";
 import Alert from "../../components/ui/SwalAlert";
 
 
@@ -133,37 +134,37 @@ function FormPengajuanJualBeli() {
   }, []);
 
   const nominalKredit = useMemo(
-    () => Math.max(0, Number(nominalHarga) - Number(nominalDP)),
+    () => toNumber(maxZero(subtractAmounts(nominalHarga, nominalDP))),
     [nominalHarga, nominalDP],
   );
   const { estimasiAngsuran, totalTagihan, marginPercent, keuntunganKoperasi } = useMemo(() => {
-    const harga = Number(nominalHarga) || 0;
-    const dp = Number(nominalDP) || 0;
-    
-    if (harga <= 0 || !tenorDipilih) {
+    const harga = toDecimal(nominalHarga);
+    const dp = toDecimal(nominalDP);
+
+    if (harga.lte(0) || !tenorDipilih) {
       return { estimasiAngsuran: 0, totalTagihan: 0, marginPercent: 0, keuntunganKoperasi: 0 };
     }
-    
+
     const tenorMonths = parseInt(tenorDipilih);
     const selectedTerm = terms.find((t) => String(t.value) === String(tenorDipilih));
-    
-    let margin = 0;
+
+    let margin = toDecimal(0);
     if (selectedTerm && selectedTerm.persentase_anggota !== undefined) {
       const isAnggota = userData?.role_id && Number(userData.role_id) !== 1;
-      margin = isAnggota 
-        ? Number(selectedTerm.persentase_anggota) 
-        : Number(selectedTerm.persentase_reguler);
+      margin = toDecimal(
+        isAnggota ? selectedTerm.persentase_anggota : selectedTerm.persentase_reguler,
+      );
     }
-    
-    const profit = harga * (margin / 100);
-    const totalUtang = harga + profit;
-    const sisaCicilan = Math.max(0, totalUtang - dp);
-    
+
+    const profit = harga.times(margin).dividedBy(100);
+    const totalUtang = harga.plus(profit);
+    const sisaCicilan = maxZero(totalUtang.minus(dp));
+
     return {
-      estimasiAngsuran: Math.ceil(sisaCicilan / tenorMonths),
-      totalTagihan: totalUtang,
-      marginPercent: margin,
-      keuntunganKoperasi: profit
+      estimasiAngsuran: Math.ceil(toNumber(sisaCicilan.dividedBy(tenorMonths))),
+      totalTagihan: toNumber(totalUtang),
+      marginPercent: toNumber(margin),
+      keuntunganKoperasi: toNumber(profit),
     };
   }, [nominalHarga, nominalDP, tenorDipilih, terms, userData]);
 

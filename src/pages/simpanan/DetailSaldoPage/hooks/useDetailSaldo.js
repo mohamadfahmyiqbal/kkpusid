@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import moment from "moment";
 import USimpanan from "../../../../utils/api/USimpanan";
+import { sumAmounts, toNumber } from "../../../../utils/money";
 
 export const useDetailSaldo = (decodedToken) => {
   const abortControllerRef = useRef(new AbortController());
@@ -89,18 +90,16 @@ export const useDetailSaldo = (decodedToken) => {
   }, [transactions, searchTerm, transactionType]);
 
   const summary = useMemo(() => {
-    let totalDeposit = 0;
-    let totalWithdrawal = 0;
-
-    transactions.forEach((transaction) => {
-      if (transaction.type === "DEPOSIT") {
-        totalDeposit += parseFloat(transaction.amount || 0);
-      } else if (transaction.type === "WITHDRAWAL") {
-        totalWithdrawal += parseFloat(transaction.amount || 0);
-      }
-    });
-
-    return { totalDeposit, totalWithdrawal };
+    const deposit = sumAmounts(
+      transactions.filter((t) => t.type === "DEPOSIT").map((t) => t.amount),
+    );
+    const withdrawal = sumAmounts(
+      transactions.filter((t) => t.type === "WITHDRAWAL").map((t) => t.amount),
+    );
+    return {
+      totalDeposit: toNumber(deposit),
+      totalWithdrawal: toNumber(withdrawal),
+    };
   }, [transactions]);
 
   return {
