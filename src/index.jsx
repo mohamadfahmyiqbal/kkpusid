@@ -1,3 +1,19 @@
+// B1: Env guard — pastikan VITE_API_ORIGIN tersedia di produksi
+if (import.meta.env.PROD && !import.meta.env.VITE_API_ORIGIN) {
+  console.error(
+    "[ENV ERROR] VITE_API_ORIGIN is required in production. " +
+    "Set it via .env.production or deployment environment."
+  );
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui">
+      <div style="text-align:center;padding:2rem">
+        <h1 style="color:#dc3545">⚠️ Konfigurasi Error</h1>
+        <p>VITE_API_ORIGIN belum diset. Hubungi administrator sistem.</p>
+      </div>
+    </div>`;
+  throw new Error("VITE_API_ORIGIN is required in production");
+}
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
