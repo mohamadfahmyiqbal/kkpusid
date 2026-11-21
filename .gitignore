@@ -14,3 +14,5 @@ dist/
 
 _unused/
 cert/
+src/cert/
+src/localhost/
