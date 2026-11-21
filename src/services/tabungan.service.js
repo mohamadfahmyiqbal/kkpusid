@@ -116,7 +116,6 @@ export const TabunganService = {
    */
   processPayment: async (data) => {
     try {
-      // Endpoint ini mengarah ke billing API (midtrans)
       const response = await apiClient.post("/billing/process-payment", data);
       return response.data;
     } catch (error) {

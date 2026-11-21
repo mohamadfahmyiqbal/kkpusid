@@ -48,10 +48,6 @@ const useSocketListener = (callback) => {
         // Handle khusus untuk PAYMENT_SUCCESS
         if (data.type === "PAYMENT_SUCCESS") {
 
-          
-          // Trigger event untuk menutup Snap popup
-          window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));
-          
           // Trigger refresh status registrasi
           window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
           

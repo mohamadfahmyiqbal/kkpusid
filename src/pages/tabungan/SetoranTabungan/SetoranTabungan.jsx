@@ -155,7 +155,7 @@ const SetoranTabungan = () => {
       
       const response = await TabunganService.processPayment(paymentData);
 
-      if (response?.data?.snapToken || response?.data?.billId) {
+      if (response?.data?.billId) {
         const token = jwtEncode({
           page: "invoicePage",
           billItemIds: [selectedTagihan.id],
@@ -166,20 +166,8 @@ const SetoranTabungan = () => {
           id: accountData.member_saving_target_id,
         });
         navigate(`/${token}`);
-      } else if (response?.data?.redirect_url) {
-        window.location.href = response.data.redirect_url;
       } else {
-        // Fallback
-        const token = jwtEncode({
-          page: "invoicePage",
-          billItemIds: [selectedTagihan.id],
-          billId: response?.data?.billId,
-          status: "success",
-          return: "setoranTabungan",
-          product: productType,
-          id: accountData.member_saving_target_id,
-        });
-        navigate(`/${token}`);
+        setError("Gagal membuat tagihan pembayaran. Silakan coba lagi.");
       }
     } catch (err) {
       setError(err?.response?.data?.message || "Gagal memproses pembayaran");
