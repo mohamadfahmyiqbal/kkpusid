@@ -25,7 +25,7 @@ export default function RegistrationSummary({
   // State lokal untuk mendukung update real-time via Socket
   const [data, setData] = useState(initialData);
 
-  // Handle payment success untuk menutup Snap dan update UI
+  // Handle payment success untuk update UI registrasi
   const { paymentSuccess, paymentData } = usePaymentHandler();
 
   // Sinkronisasi jika parent component melakukan re-fetch

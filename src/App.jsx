@@ -157,8 +157,7 @@ const App = () => {
           const isPaymentSuccess = data?.type === 'PAYMENT_SUCCESS' || titleLower.includes('pembayaran');
 
           if (isPaymentSuccess) {
-            // Trigger event untuk menutup Snap popup & refresh status
-            window.dispatchEvent(new CustomEvent("CLOSE_SNAP_POPUP"));
+            // Trigger event untuk refresh status (pembayaran manual diverifikasi bendahara)
             window.dispatchEvent(new CustomEvent("REFRESH_REGISTRATION_STATUS"));
             window.dispatchEvent(new CustomEvent("PAYMENT_SUCCESSFUL", { detail: data }));
           } else if (isApproval) {

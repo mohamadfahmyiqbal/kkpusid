@@ -37,14 +37,6 @@ class UBilling {
   }
 
   /**
-   * Membuat transaksi Midtrans (Mendapatkan Snap Token)
-   * Data payload: { bill_item_ids: [1, 2], tx_category: "SIMPANAN" }
-   */
-  createMidtransTransaction(data) {
-    return http.post("/billing/process-payment", data);
-  }
-
-  /**
    * Mengambil daftar rekening resmi Koperasi untuk pembayaran transfer manual
    */
   getCooperativeBanks() {
@@ -72,13 +64,6 @@ class UBilling {
    */
   processSavingsPayment(payload) {
     return http.post("/billing/process-savings", payload);
-  }
-
-  /**
-   * Menarik paksa status transaksi dari Midtrans (berguna di localhost / webhook gagal)
-   */
-  syncMidtransStatus(orderId) {
-    return http.post("/billing/sync-status", { order_id: orderId });
   }
 
   /**
