@@ -196,9 +196,9 @@
 }
 
 .stat-label {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  color: #94a3b8 !important;
+  color: #64748b !important;
   letter-spacing: 0.5px;
 }
 
@@ -282,7 +282,7 @@
 
 .tab-badge {
   background: rgba(0, 0, 0, 0.05);
-  font-size: 9px;
+  font-size: 12px;
   padding: 1px 6px;
   border-radius: 99px;
   font-weight: 700;
@@ -357,7 +357,7 @@
 
 .dc-trans-date {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -463,7 +463,7 @@
   }
 
   .stat-label {
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .stat-val {
@@ -546,7 +546,7 @@
 }
 
 .card-product-label {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.5px;
 }
 
@@ -556,7 +556,7 @@
 }
 
 .card-grid-label {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 1px;
 }
 
@@ -814,7 +814,7 @@
   }
 
   .stepper-label {
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .stepper-node {

@@ -26,7 +26,7 @@ const BillingCard = React.memo(({ item, onPay }) => {
 
   return (
     <div className="dc-bill-item-wrapper">
-      <div className="dc-bill-card" onClick={() => onPay(item.bill_id)}>
+      <button type="button" className="dc-bill-card" onClick={() => onPay(item.bill_id)} aria-label={`Bayar tagihan ${item.description || item.tx_type || "tagihan"}`}>
         <div className="dc-bill-card-header">
           <div className="dc-bill-icon-bg">
             <MdReceiptLong size={18} />
@@ -43,7 +43,7 @@ const BillingCard = React.memo(({ item, onPay }) => {
           <span className="dc-bill-action-text">Bayar Sekarang</span>
           <MdChevronRight size={18} />
         </div>
-      </div>
+      </button>
     </div>
   );
 });

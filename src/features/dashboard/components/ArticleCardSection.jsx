@@ -22,7 +22,7 @@ const ArticleItem = React.memo(({ item, index, onReadArticle }) => {
   }, [item.id, onReadArticle]);
 
   return (
-    <div className="dc-article-row-v2" onClick={handleClick}>
+    <button type="button" className="dc-article-row-v2" onClick={handleClick} aria-label={`Baca artikel: ${item.title}`}>
       <div 
         className="dc-article-thumb"
         style={{ background: gradients[index % gradients.length] }}
@@ -47,7 +47,7 @@ const ArticleItem = React.memo(({ item, index, onReadArticle }) => {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 });
 

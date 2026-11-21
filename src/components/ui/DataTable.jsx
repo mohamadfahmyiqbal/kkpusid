@@ -44,6 +44,10 @@ export const DataTable = ({
                 <tr 
                   key={row.id || rowIndex} 
                   onClick={() => onRowClick && onRowClick(row)}
+                  role={onRowClick ? "button" : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(row); } } : undefined}
+                  aria-label={onRowClick ? "Lihat detail baris" : undefined}
                   style={{ cursor: onRowClick ? "pointer" : "default" }}
                   className={onRowClick ? "hover-bg-light" : ""}
                 >

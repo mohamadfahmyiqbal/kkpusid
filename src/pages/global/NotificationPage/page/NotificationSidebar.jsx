@@ -21,7 +21,7 @@ export default function NotificationSidebar({
       <div className="np-sidebar-card">
         <h5 className="np-sidebar-title">Ringkasan</h5>
 
-        <div className="np-summary-row" onClick={() => onTabChange("all")}>
+        <button type="button" className="np-summary-row" onClick={() => onTabChange("all")} aria-label="Filter notifikasi: semua">
           <div className="np-summary-left">
             <FaBell className="np-summary-icon text-primary" />
             <span className="np-summary-label">Total Notifikasi</span>
@@ -30,9 +30,9 @@ export default function NotificationSidebar({
             <span className="np-summary-count">{stats.total}</span>
             <FaChevronRight className="np-summary-chevron" />
           </div>
-        </div>
+        </button>
 
-        <div className="np-summary-row" onClick={() => onTabChange("unread")}>
+        <button type="button" className="np-summary-row" onClick={() => onTabChange("unread")} aria-label="Filter notifikasi: belum dibaca">
           <div className="np-summary-left">
             <FaEnvelope className="np-summary-icon text-warning" />
             <span className="np-summary-label">Belum Dibaca</span>
@@ -41,9 +41,9 @@ export default function NotificationSidebar({
             <span className="np-summary-count">{stats.unread}</span>
             <FaChevronRight className="np-summary-chevron" />
           </div>
-        </div>
+        </button>
 
-        <div className="np-summary-row" onClick={() => onTabChange("read")}>
+        <button type="button" className="np-summary-row" onClick={() => onTabChange("read")} aria-label="Filter notifikasi: sudah dibaca">
           <div className="np-summary-left">
             <FaCheckCircle className="np-summary-icon text-success" />
             <span className="np-summary-label">Sudah Dibaca</span>
@@ -52,7 +52,7 @@ export default function NotificationSidebar({
             <span className="np-summary-count">{stats.read}</span>
             <FaChevronRight className="np-summary-chevron" />
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Pengaturan Notifikasi Card */}

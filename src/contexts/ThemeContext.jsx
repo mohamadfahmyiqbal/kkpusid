@@ -3,6 +3,7 @@ import React, { createContext, useContext } from "react";
 const ThemeContext = createContext({
   theme: "light",
   isDark: false,
+  dataTheme: "light",
 });
 
 export const useTheme = () => {
@@ -17,6 +18,7 @@ export const ThemeProvider = ({ children }) => {
   const value = {
     theme: "light",
     isDark: false,
+    dataTheme: "light",
   };
 
   return (

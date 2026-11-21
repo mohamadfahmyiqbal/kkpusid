@@ -118,9 +118,10 @@ export default function NotificationScreen() {
                     </div>
                   )}
                   {!loading && (
-                    <Table>
-                      <tbody>
-                        {notifikasi?.map((ntf, idx) => (
+                    <div className="table-responsive">
+                      <Table>
+                        <tbody>
+                          {notifikasi?.map((ntf, idx) => (
                           <tr key={idx}>
                             <td>
                               <Button
@@ -138,6 +139,7 @@ export default function NotificationScreen() {
                         ))}
                       </tbody>
                     </Table>
+                    </div>
                   )}
                 </CardBody>
               </Card>

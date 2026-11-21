@@ -15,7 +15,7 @@
   --dc-border-hover: #cbd5e1;
   --dc-text-title: #0f172a;
   --dc-text-body: #64748b;
-  --dc-text-muted: #94a3b8;
+  --dc-text-muted: #64748b;
   --dc-radius-lg: 24px;
   --dc-radius-md: 16px;
   --dc-radius-sm: 12px;
@@ -772,7 +772,7 @@
 }
 
 .dc-bill-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #64748b;
 }
 
 .dc-bill-scroll-content {
@@ -827,7 +827,7 @@
 .dc-bill-type {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -983,7 +983,7 @@
 .dc-train-code {
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #64748b;
   letter-spacing: 0.3px;
 }
 
@@ -1098,7 +1098,7 @@
 
 .dc-article-meta {
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 500;
 }
 

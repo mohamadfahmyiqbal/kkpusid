@@ -31,7 +31,7 @@ export default function SecurityAndActivitySection({
       <Row className="g-3 mb-4">
         {/* Card 1: Reset Password */}
         <Col lg={3} md={6} sm={12}>
-          <div className="ap-quick-card" onClick={onOpenPasswordModal}>
+          <button type="button" className="ap-quick-card" onClick={onOpenPasswordModal} aria-label="Reset Password - Ubah password berkala">
             <div className="d-flex align-items-center gap-3">
               <div
                 className="ap-quick-icon-wrapper"
@@ -47,16 +47,18 @@ export default function SecurityAndActivitySection({
               </div>
             </div>
             <FaArrowRight className="ap-quick-arrow" />
-          </div>
+          </button>
         </Col>
 
         {/* Card 2: Verifikasi Akun */}
         <Col lg={3} md={6} sm={12}>
-          <div
+          <button
+            type="button"
             className="ap-quick-card"
             onClick={() =>
               onShowNotification("Akun Anda telah terverifikasi sebagai anggota.", "success")
             }
+            aria-label="Verifikasi Akun - Akun Anda telah terverifikasi sebagai anggota"
           >
             <div className="d-flex align-items-center gap-3">
               <div
@@ -73,16 +75,18 @@ export default function SecurityAndActivitySection({
               </div>
             </div>
             <FaArrowRight className="ap-quick-arrow" />
-          </div>
+          </button>
         </Col>
 
         {/* Card 3: Pengaturan Notifikasi */}
         <Col lg={3} md={6} sm={12}>
-          <div
+          <button
+            type="button"
             className="ap-quick-card"
             onClick={() =>
               onShowNotification("Preferensi notifikasi default telah aktif.", "success")
             }
+            aria-label="Pengaturan Notifikasi - Preferensi notifikasi default telah aktif"
           >
             <div className="d-flex align-items-center gap-3">
               <div
@@ -99,14 +103,16 @@ export default function SecurityAndActivitySection({
               </div>
             </div>
             <FaArrowRight className="ap-quick-arrow" />
-          </div>
+          </button>
         </Col>
 
         {/* Card 4: Riwayat Aktivitas */}
         <Col lg={3} md={6} sm={12}>
-          <div
+          <button
+            type="button"
             className="ap-quick-card"
             onClick={() => onShowNotification("Semua aktivitas telah ditampilkan.", "success")}
+            aria-label="Riwayat Aktivitas - Semua aktivitas telah ditampilkan"
           >
             <div className="d-flex align-items-center gap-3">
               <div
@@ -123,7 +129,7 @@ export default function SecurityAndActivitySection({
               </div>
             </div>
             <FaArrowRight className="ap-quick-arrow" />
-          </div>
+          </button>
         </Col>
       </Row>
 
