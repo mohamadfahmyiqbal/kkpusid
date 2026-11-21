@@ -15,10 +15,10 @@
   <meta http-equiv="Expires" content="0" />
   
   <!-- Content Security Policy & Referrer-Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; form-action 'self';" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
-  <script type="text/javascript" src="https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
   <title>PUS</title>
 </head>
 

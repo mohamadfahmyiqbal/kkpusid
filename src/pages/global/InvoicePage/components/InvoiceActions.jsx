@@ -286,7 +286,7 @@ const InvoiceActions = ({
                   Nomor Referensi Transaksi
                 </td>
                 <td className="fw-bold text-primary font-monospace">
-                  {txData?.order_id || txData?.midtrans_order_id || "-"}
+                  {txData?.order_id || txData?.transaction_reference || "-"}
                 </td>
               </tr>
               <tr>
