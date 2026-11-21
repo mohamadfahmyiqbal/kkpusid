@@ -12,3 +12,5 @@ dist/
 
 # Audit/QA report docs (local only)
 
+_unused/
+cert/
