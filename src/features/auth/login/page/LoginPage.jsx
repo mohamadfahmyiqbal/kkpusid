@@ -159,6 +159,9 @@ export default function LoginPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="alert alert-danger mb-4 p-3 d-flex align-items-center gap-3 border-0 rounded-4 pbs-login-error-alert"
+                        role="alert"
+                        aria-live="assertive"
+                        aria-atomic="true"
                       >
                         <div className="bg-danger bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center pbs-login-error-icon-wrap">
                           <span className="fw-bold">!</span>
@@ -170,16 +173,21 @@ export default function LoginPage() {
                     <Form onSubmit={handleLogin} noValidate>
                       <Row className="g-4">
                         <Col md={12}>
-                          <Form.Label>Email atau Nomor WhatsApp</Form.Label>
+                          <Form.Label htmlFor="login-email-phone" className="form-label">Email atau Nomor WhatsApp</Form.Label>
                           <InputGroup>
                             <InputGroup.Text><FaUser /></InputGroup.Text>
                             <Form.Control
+                              id="login-email-phone"
                               value={emailHp}
                               onChange={(e) => setEmailHp(e.target.value)}
                               isInvalid={emailHpInvalid}
+                              aria-invalid={!!emailHpInvalid}
+                              aria-describedby={emailHpInvalid ? "email-error" : undefined}
                               placeholder={AUTH_CONSTANTS.PLACEHOLDERS.EMAIL_OR_PHONE}
+                              required
+                              aria-required="true"
                             />
-                            <Form.Control.Feedback type="invalid">
+                            <Form.Control.Feedback type="invalid" id="email-error">
                               {AUTH_CONSTANTS.ERROR_MESSAGES.EMAIL_OR_PHONE_INVALID}
                             </Form.Control.Feedback>
                           </InputGroup>
@@ -187,7 +195,7 @@ export default function LoginPage() {
 
                         <Col md={12}>
                           <div className="d-flex justify-content-between align-items-center mb-2">
-                            <Form.Label className="mb-0">Password</Form.Label>
+                            <Form.Label htmlFor="login-password" className="mb-0">Password</Form.Label>
                             <a href={FORGOT_PASSWORD_PATH} className="pbs-forgot-link">
                               Lupa Password?
                             </a>
@@ -195,20 +203,29 @@ export default function LoginPage() {
                           <InputGroup>
                             <InputGroup.Text><FaLock /></InputGroup.Text>
                             <Form.Control
+                              id="login-password"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               isInvalid={passwordInvalid}
                               type={showPassword ? "text" : "password"}
+                              aria-invalid={!!passwordInvalid}
+                              aria-describedby={passwordInvalid ? "password-error" : undefined}
                               placeholder={AUTH_CONSTANTS.PLACEHOLDERS.LOGIN_PASSWORD}
+                              required
+                              aria-required="true"
                             />
                             <Button
+                              type="button"
                               variant="light"
                               className="border border-start-0 text-muted pbs-password-eye-btn"
                               onClick={() => setShowPassword(!showPassword)}
+                              aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                              aria-pressed={showPassword}
+                              aria-controls="login-password"
                             >
                               {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </Button>
-                            <Form.Control.Feedback type="invalid">
+                            <Form.Control.Feedback type="invalid" id="password-error">
                               {AUTH_CONSTANTS.ERROR_MESSAGES.PASSWORD_REQUIRED}
                             </Form.Control.Feedback>
                           </InputGroup>

@@ -83,7 +83,7 @@
   margin-right: -10px;
 }
 .calc-row:last-of-type { border-bottom: none; }
-.detail-label { font-size: 13.5px; color: #94a3b8; font-weight: 500; }
+.detail-label { font-size: 13.5px; color: #64748b; font-weight: 500; }
 .detail-val { font-size: 14px; font-weight: 600; color: #f8fafc; }
 .val-highlight { color: #38bdf8; font-weight: 700; }
 .section-divider { border: 0; border-top: 1px dashed #cbd5e1; margin: 1.5rem 0; opacity: 0.5; }

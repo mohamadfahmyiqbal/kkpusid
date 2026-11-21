@@ -163,9 +163,9 @@
 
 .rp-step-dot.done   { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
 .rp-step-dot.active { background: var(--rp-primary); color: #fff; border: 1.5px solid var(--rp-primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.15); }
-.rp-step-dot.pending{ background: #f8fafc; color: #94a3b8; border: 1.5px solid #e2e8f0; }
+.rp-step-dot.pending{ background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; }
 
-.rp-step-label        { font-size: 11px; font-weight: 600; color: #94a3b8; text-align: center; }
+.rp-step-label        { font-size: 11px; font-weight: 600; color: #64748b; text-align: center; }
 .rp-step-label.done   { color: #1e293b; }
 .rp-step-label.active { color: var(--rp-primary); font-weight: 700; }
 

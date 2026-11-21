@@ -1,5 +1,6 @@
 import React, { useCallback, lazy, Suspense } from "react";
 import { useProfile } from "../contexts";
+import { useTheme } from "../../../contexts/ThemeContext";
 import { useKeyboardShortcuts } from "../../../hooks/useKeyboardShortcuts";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLayoutState } from "../../../hooks/useLayoutState";
@@ -55,6 +56,8 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
   const location = useLocation();
   const { userData, loading, error, logout } = useProfile();
 
+  const { dataTheme } = useTheme();
+
   const {
     isSidebarOpen,
     isDesktop,
@@ -101,6 +104,9 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
 
   return (
     <div id="main-wrapper" className={wrapperClass}>
+      <a href="#main-content" className="skip-link">
+        Lewati ke konten utama
+      </a>
       <Header
         user={userData}
         logout={handleLogout}
@@ -142,7 +148,10 @@ const LayoutGlobal = ({ children, pageName: propPageName, title }) => {
         }}
       >
         <main
+          id="main-content"
           className={`container-fluid flex-grow-1 fade-in px-2 px-md-3 ${isTransitioning ? "page-transitioning" : ""}`}
+          data-theme={dataTheme}
+          tabIndex={-1}
           aria-label={ACCESSIBILITY_LABELS.MAIN_CONTENT}
         >
           {showPageNavigation && (

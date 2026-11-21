@@ -55,7 +55,7 @@ const NotificationItem = ({ notif, onClick }) => {
         {isUnread ? (
           <FaBell size={14} color="#ffffff" />
         ) : (
-          <FaCheckDouble size={14} color="#94a3b8" />
+          <FaCheckDouble size={14} color="#64748b" />
         )}
       </div>
 
@@ -88,7 +88,7 @@ const NotificationItem = ({ notif, onClick }) => {
         >
           {sanitizeText(notif.body)}
         </div>
-        <div style={{ fontSize: "11px", color: "#94a3b8" }}>
+        <div style={{ fontSize: "11px", color: "#64748b" }}>
           {safeDateFormat(notif.sent_at)}
         </div>
       </div>

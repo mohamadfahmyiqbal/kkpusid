@@ -393,7 +393,7 @@
 .dc-arisan-info-item small {
   display: block;
   color: #64748b;
-  font-size: 9px;
+  font-size: 12px;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -462,7 +462,7 @@
     font-size: 11px;
   }
   .benefit-desc {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 
@@ -478,7 +478,7 @@
     margin-top: 20px;
   }
   .stepper-label {
-    font-size: 8px;
+    font-size: 12px;
   }
   .stepper-node {
     width: 24px;
