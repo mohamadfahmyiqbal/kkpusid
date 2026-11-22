@@ -83,6 +83,18 @@ export default defineConfig(({ mode }) => {
               if (id.includes('xstate') || id.includes('@xstate')) {
                 return 'vendor-xstate';
               }
+              // Heavy print/export libs — split into own chunks so they are NOT
+              // forced into the initial 'vendor' chunk. Only the lazy ReceiptPage
+              // (and similar) load them, keeping first-load JS lean (TEST-034).
+              if (id.includes('html2pdf') || id.includes('html2canvas') || id.includes('jspdf') || id.includes('canvg') || id.includes('dompurify')) {
+                return 'vendor-print';
+              }
+              if (id.includes('moment')) {
+                return 'vendor-moment';
+              }
+              if (id.includes('react-webcam')) {
+                return 'vendor-webcam';
+              }
               return 'vendor';
             }
           }
