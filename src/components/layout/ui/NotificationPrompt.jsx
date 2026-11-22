@@ -19,7 +19,19 @@ export default function NotificationPrompt({ memberId }) {
       const timer = setTimeout(() => setShowPrompt(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, []);
+
+    // Jika izin sudah diberikan, rekonsiliasi subscription (mis. setelah rotasi
+    // VAPID / subscription lama tidak berlaku) — subscribeUser akan unsubscribe
+    // & subscribe ulang bila VAPID berubah, atau no-op bila sudah sinkron.
+    if (
+      "Notification" in window &&
+      "serviceWorker" in navigator &&
+      Notification.permission === "granted" &&
+      memberId
+    ) {
+      subscribeUser(memberId);
+    }
+  }, [memberId]);
 
   const handleEnable = async () => {
     setShowPrompt(false);
