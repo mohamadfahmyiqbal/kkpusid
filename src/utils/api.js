@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
@@ -12,6 +13,23 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
+    // SCR-024: Blokir aksi transaksi (mutasi) saat offline dengan penjelasan.
+    const method = (config.method || 'get').toUpperCase();
+    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+    if (isMutation && typeof navigator !== 'undefined' && navigator.onLine === false) {
+      const message = 'Tidak ada koneksi internet. Transaksi tidak dapat diproses saat offline.';
+      try {
+        toast.error(message);
+      } catch {
+        // toast belum siap — abaikan, error tetap dilempar ke pemanggil
+      }
+      return Promise.reject({
+        isOffline: true,
+        message,
+        config,
+        request: {},
+      });
+    }
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

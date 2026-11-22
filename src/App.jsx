@@ -15,6 +15,7 @@ import Swal from "sweetalert2";
 import { ProfileProvider } from "./components/layout/contexts";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import EnhancedErrorBoundary from "./components/ui/EnhancedErrorBoundary";
+import OfflineIndicator from "./components/pwa/OfflineIndicator";
 
 // Socket.io
 import { initSocket, registerMember, disconnectSocket } from "./utils/socket";
@@ -214,6 +215,8 @@ const App = () => {
             pauseOnHover
             theme="colored"
           />
+
+          <OfflineIndicator />
 
           <RouterProvider
             router={routerConfig}
