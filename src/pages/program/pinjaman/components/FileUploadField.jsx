@@ -39,6 +39,15 @@ export default function FileUploadField({
       </Form.Label>
       <div
         className={`premium-upload-zone ${isDragging ? "dragging" : ""}`}
+        role="button"
+        tabIndex={0}
+        aria-label="Unggah dokumen pendukung. Klik atau tekan Enter untuk memilih file."
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            document.getElementById("file-upload").click();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
