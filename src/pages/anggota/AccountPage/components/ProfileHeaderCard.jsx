@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Card, Button } from "react-bootstrap";
-import { FaCamera, FaIdCard, FaShieldAlt } from "react-icons/fa";
-import { getFotoSrc } from "../../../../utils/fotoHelper";
+import { FaCamera, FaIdCard, FaShieldAlt, FaSpinner } from "react-icons/fa";
+import { getFotoSrc, resizeImageToBase64 } from "../../../../utils/fotoHelper";
 
 // Helper untuk format tanggal Indonesia
 const formatDate = (dateStr) => {
@@ -55,10 +55,39 @@ const getAvatarGradient = (name) => {
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 };
 
-export default function ProfileHeaderCard({ userProfile, onEditPhoto }) {
+export default function ProfileHeaderCard({ userProfile, onEditPhoto, isUploadingPhoto = false }) {
+  const fileInputRef = useRef(null);
   const fotoSrc = getFotoSrc(userProfile?.fotoImg, "");
   const initials = getInitials(userProfile?.nama);
   const [gradFrom, gradTo] = getAvatarGradient(userProfile?.nama);
+
+  const handleCameraClick = () => {
+    if (isUploadingPhoto) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    // Reset input agar file yang sama bisa dipilih ulang.
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      onEditPhoto?.(null, "Berkas harus berupa gambar (JPG/PNG).");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      onEditPhoto?.(null, "Ukuran gambar terlalu besar (maks 10MB sebelum kompresi).");
+      return;
+    }
+
+    try {
+      const dataUrl = await resizeImageToBase64(file);
+      onEditPhoto?.(dataUrl);
+    } catch (err) {
+      onEditPhoto?.(null, err?.message || "Gagal memproses gambar.");
+    }
+  };
 
   return (
     <Card className="ap-profile-header-card mb-4">
@@ -83,12 +112,20 @@ export default function ProfileHeaderCard({ userProfile, onEditPhoto }) {
                 {initials}
               </div>
             )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/jpg"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
             <button
               className="ap-avatar-edit-btn"
-              onClick={onEditPhoto}
+              onClick={handleCameraClick}
               title="Ubah Foto Profil"
+              disabled={isUploadingPhoto}
             >
-              <FaCamera />
+              {isUploadingPhoto ? <FaSpinner className="fa-spin" /> : <FaCamera />}
             </button>
           </div>
 

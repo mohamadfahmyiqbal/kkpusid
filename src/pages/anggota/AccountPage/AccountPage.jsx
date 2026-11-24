@@ -36,6 +36,10 @@ export default function AccountPage() {
     city_id: "",
     district_id: "",
     subdistrict_id: "",
+    province_name: "",
+    city_name: "",
+    district_name: "",
+    subdistrict_name: "",
     rt: "",
     rw: "",
     bank_name: "",
@@ -61,6 +65,9 @@ export default function AccountPage() {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // State upload foto profil
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
   // Helper sinkronisasi profile ke form data
   const syncProfileToFormData = useCallback((profile) => {
     if (!profile) return;
@@ -73,6 +80,10 @@ export default function AccountPage() {
       city_id: profile.city_id || "",
       district_id: profile.district_id || "",
       subdistrict_id: profile.subdistrict_id || "",
+      province_name: profile.province_name || "",
+      city_name: profile.city_name || "",
+      district_name: profile.district_name || "",
+      subdistrict_name: profile.subdistrict_name || "",
       rt: profile.rt || "",
       rw: profile.rw || "",
       bank_name: profile.bank_name && profile.bank_name !== "-" ? profile.bank_name : "",
@@ -254,6 +265,36 @@ export default function AccountPage() {
     navigate(`/${jwtEncode({ page: "resignationCheck" })}`);
   };
 
+  // Upload / ubah foto profil (avatar)
+  const handleEditPhoto = async (foto, errorMessage) => {
+    // foto === null → validasi di komponen gagal; tampilkan pesannya.
+    if (foto === null || foto === undefined) {
+      showNotification(errorMessage || "Tidak ada foto yang dipilih.", "warning");
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+      const response = await profileService.updateProfilePhoto(foto);
+      if (response.success) {
+        const newUrl = response.data?.profile_photo_path || "";
+        setUserProfile((prev) =>
+          prev
+            ? { ...prev, fotoImg: newUrl, profile_photo_path: newUrl }
+            : prev
+        );
+        showNotification("Foto profil berhasil diperbarui!", "success");
+      } else {
+        showNotification(response.message || "Gagal memperbarui foto profil", "danger");
+      }
+    } catch (err) {
+      console.error("Error updating profile photo:", err);
+      showNotification(err.message || "Terjadi kesalahan saat memperbarui foto profil", "danger");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   return (
     <div className="ap-container py-3 dash-fade-in">
       {loading ? (
@@ -271,9 +312,8 @@ export default function AccountPage() {
           {/* Header Profil */}
           <ProfileHeaderCard
             userProfile={userProfile}
-            onEditPhoto={() =>
-              showNotification("Fitur mengubah foto profil akan segera hadir!", "info")
-            }
+            onEditPhoto={handleEditPhoto}
+            isUploadingPhoto={isUploadingPhoto}
           />
 
           {/* Kartu Informasi & Data Registrasi */}

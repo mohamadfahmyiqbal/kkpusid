@@ -104,6 +104,30 @@ export const profileService = {
   },
 
   /**
+   * Update foto profil (avatar) anggota.
+   * @param {string} foto - data URL gambar (data:image/jpeg;base64,...) hasil resize
+   * @returns {Promise} Promise yang resolve dengan data yang diupdate
+   */
+  updateProfilePhoto: async (foto) => {
+    try {
+      const response = await apiClient.put("/anggota/profil/foto", { foto });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating profile photo:", error);
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data.message || "Foto tidak valid.");
+      }
+      if (error.response?.status === 404) {
+        throw new Error("Data anggota tidak ditemukan");
+      }
+      if (error.code === "ECONNABORTED") {
+        throw new Error("Timeout - Server tidak merespon");
+      }
+      throw new Error("Terjadi kesalahan saat memperbarui foto profil");
+    }
+  },
+
+  /**
    * Mapping data dari backend ke frontend format
    * @param {Object} backendData - Data dari backend API
    * @returns {Object} Data dalam format frontend
@@ -121,9 +145,21 @@ export const profileService = {
       city_id: backendData.city_id || "",
       district_id: backendData.district_id || "",
       subdistrict_id: backendData.subdistrict_id || "",
+      province_name: backendData.province_name || "",
+      city_name: backendData.city_name || "",
+      district_name: backendData.district_name || "",
+      subdistrict_name: backendData.subdistrict_name || "",
       rt: backendData.rt || "",
       rw: backendData.rw || "",
-      foto: backendData.photo || "",
+      // Foto profil (avatar) — utamakan profile_photo_path, fallback selfie lalu KTP
+      profile_photo_path: backendData.profile_photo_path || "",
+      fotoImg:
+        backendData.profile_photo_path ||
+        backendData.selfie_photo_path ||
+        backendData.ktp_photo_path ||
+        "",
+      foto_ktp: backendData.ktp_photo_path || "",
+      foto_swafoto: backendData.selfie_photo_path || "",
       status_id: backendData.status_id || 1,
       member_type: backendData.member_type || "Anggota Aktif",
       gender: backendData.gender || "-",
@@ -164,6 +200,11 @@ export const profileService = {
       subdistrict_id: frontendData.subdistrict_id || null,
       rt: frontendData.rt?.trim() || "",
       rw: frontendData.rw?.trim() || "",
+      // Nama wilayah (untuk update ke tabel members)
+      province_name: frontendData.province_name?.trim() || "",
+      city_name: frontendData.city_name?.trim() || "",
+      district_name: frontendData.district_name?.trim() || "",
+      subdistrict_name: frontendData.subdistrict_name?.trim() || "",
       // Bank
       bank_name: frontendData.bank_name?.trim() || "",
       bank_account_no: frontendData.bank_account_no?.trim() || "",

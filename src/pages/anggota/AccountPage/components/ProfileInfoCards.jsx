@@ -3,6 +3,7 @@ import { Card, Button, Row, Col } from "react-bootstrap";
 import {
   FaUser,
   FaEdit,
+  FaIdCard,
   FaUniversity,
   FaBriefcase,
   FaUserFriends,
@@ -75,16 +76,23 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
                       RT {userProfile?.rt || "-"} / RW {userProfile?.rw || "-"}
                     </span>
                   )}
+                  {/* Nama Wilayah */}
+                  {(userProfile?.province_name || userProfile?.city_name || userProfile?.district_name || userProfile?.subdistrict_name) && (
+                    <span className="d-block text-muted small">
+                      {[
+                        userProfile?.province_name,
+                        userProfile?.city_name,
+                        userProfile?.district_name,
+                        userProfile?.subdistrict_name,
+                      ].filter(Boolean).join(", ")}
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
 
             {/* Kolom 2 */}
             <div className="ap-grid-item">
-              <div className="ap-info-item">
-                <span className="ap-info-label">Jenis Kelamin</span>
-                <span className="ap-info-value">{userProfile?.gender || "-"}</span>
-              </div>
               <div className="ap-info-item">
                 <span className="ap-info-label">Tanggal Bergabung</span>
                 <span className="ap-info-value">
@@ -114,7 +122,53 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
         </Card.Body>
       </Card>
 
-      {/* 2. Card Data Pendaftaran: Rekening Bank, Pekerjaan, Kontak Darurat */}
+      {/* 2. Card Foto KTP & Swafoto */}
+      <Card className="ap-info-card mb-4">
+        <div className="card-header ap-card-header py-3 px-4">
+          <div className="ap-header-title">
+            <FaIdCard className="ap-header-icon" />
+            <span>Dokumen Identitas</span>
+          </div>
+        </div>
+        <Card.Body className="p-4">
+          <Row className="g-4">
+            {/* Foto KTP */}
+            <Col md={6} className="text-center">
+              <div className="ap-photo-wrapper">
+                <span className="ap-photo-label">Foto KTP</span>
+                {userProfile?.foto_ktp ? (
+                  <img
+                    src={userProfile.foto_ktp}
+                    alt="Foto KTP"
+                    className="ap-photo-img"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="ap-photo-placeholder">Belum tersedia</div>
+                )}
+              </div>
+            </Col>
+            {/* Swafoto */}
+            <Col md={6} className="text-center">
+              <div className="ap-photo-wrapper">
+                <span className="ap-photo-label">Swafoto (Selfie + KTP)</span>
+                {userProfile?.foto_swafoto ? (
+                  <img
+                    src={userProfile.foto_swafoto}
+                    alt="Swafoto"
+                    className="ap-photo-img"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="ap-photo-placeholder">Belum tersedia</div>
+                )}
+              </div>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
+      {/* 3. Card Data Pendaftaran: Rekening Bank, Pekerjaan, Kontak Darurat */}
       <Row className="g-4 mb-4">
         {/* Card Rekening Bank */}
         <Col lg={4} md={6} sm={12}>

@@ -84,6 +84,12 @@
   color: #2563eb;
 }
 
+.ap-avatar-edit-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+}
+
 .ap-role-badge {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -537,6 +543,46 @@
   }
 }
 
+/* Foto Identitas */
+.ap-photo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ap-photo-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ap-photo-img {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  object-fit: cover;
+}
+
+.ap-photo-placeholder {
+  width: 100%;
+  max-width: 200px;
+  height: 150px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
 @media (max-width: 576px) {
   .ap-grid-container {
     grid-template-columns: 1fr;
@@ -551,13 +597,13 @@
     align-items: center;
     gap: 16px;
   }
-
+  
   .ap-modal-tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
     padding-bottom: 4px;
   }
-
+  
   .ap-modal-tab-btn {
     white-space: nowrap;
     font-size: 13px;
