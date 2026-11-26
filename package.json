@@ -42,7 +42,19 @@
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "e2e": "npx playwright test e2e/modules/user-workflow/",
+    "e2e:headed": "npx playwright test e2e/modules/user-workflow/ --headed",
+    "e2e:mobile": "npx playwright test e2e/modules/user-workflow/ --project=mobile",
+    "e2e:public": "npx playwright test e2e/modules/user-workflow/ --grep 'Flow 1'",
+    "e2e:batch1": "npx playwright test e2e/modules/user-workflow/ --grep 'Flow 1'",
+    "e2e:batch2": "npx playwright test e2e/modules/user-workflow/ --grep 'Flow 1'",
+    "e2e:batch3": "npx playwright test e2e/modules/user-workflow/ --grep 'Flow 2'",
+    "e2e:batch4": "npx playwright test e2e/modules/user-workflow/",
+    "e2e:batch5": "npx playwright test e2e/modules/user-workflow/",
+    "e2e:login": "TEST_EMAIL=user@example.com TEST_PASSWORD=P@ssw0rd123! npx playwright test e2e/modules/user-workflow/",
+    "e2e:screenshot": "npx playwright test e2e/modules/user-workflow/ --screenshot=on",
+    "e2e:html": "npx playwright show-report"
   },
   "engines": {
     "node": ">=18 <23",
@@ -84,6 +96,7 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -96,6 +109,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jsdom": "^29.1.1",
+    "nodemon": "^3.1.14",
     "prettier": "^3.6.2",
     "vite": "^8.0.14",
     "vite-plugin-image-optimizer": "^2.0.3",
