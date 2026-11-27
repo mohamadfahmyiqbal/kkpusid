@@ -97,13 +97,14 @@ const useAccountRegister = () => {
 
     // 3. Password
     const passwordVal = formData.password || "";
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+    // Regex: minimal 8 karakter, huruf kecil, huruf besar, angka, dan setidaknya 1 karakter non-alphanumeric (karakter khusus)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
     if (!passwordVal) {
       newErrors.password = ERROR_MESSAGES.PASSWORD_REQUIRED || "Password wajib diisi.";
     } else if (passwordVal.length < PASSWORD_MIN_LENGTH) {
       newErrors.password = ERROR_MESSAGES.PASSWORD_MIN_LENGTH || `Password minimal ${PASSWORD_MIN_LENGTH} karakter.`;
     } else if (!passwordRegex.test(passwordVal)) {
-      newErrors.password = ERROR_MESSAGES.PASSWORD_STRENGTH || "Password harus mengandung huruf besar, kecil, dan angka.";
+      newErrors.password = ERROR_MESSAGES.PASSWORD_STRENGTH || "Password harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus/simbol.";
     }
 
     // 4. Konfirmasi Password
