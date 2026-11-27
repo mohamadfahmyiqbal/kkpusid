@@ -1,0 +1,16 @@
+# Gitleaks ignore — kkpusid
+# Dokumen acuan: REKAPITULASI_AUDIT.md §B1 (secret scanning)
+#
+# Format: satu fingerprint per baris (file:rule:line). Hanya untuk
+# false-positive terverifikasi. Token di bawah adalah fixture/test e2e
+# (JWT alg=none untuk routing & token login pada log uji), BUKAN secret
+# produksi. Lihat juga allowlist path di .gitleaks.toml.
+
+# e2e/manual-login.mjs — JWT alg=none (token routing test), bukan secret
+e2e/manual-login.mjs:jwt:32
+e2e/manual-login.mjs:jwt:74
+
+# e2e/test-run-log.txt — token login pada log keluaran uji (bukan kredensial nyata)
+e2e/test-run-log.txt:generic-api-key:58
+e2e/test-run-log.txt:generic-api-key:70
+e2e/test-run-log.txt:generic-api-key:221
