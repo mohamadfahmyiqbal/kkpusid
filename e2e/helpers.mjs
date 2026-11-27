@@ -20,7 +20,7 @@ const TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
 
 function encodeBase64URL(obj) {
   const jsonString = JSON.stringify(obj);
-  const uriEncoded = encodeURIComponent(jsonString);
+  const uriEncoded = encodeURIComponent(jsonString, "utf8");
   const base64 = Buffer.from(uriEncoded, "utf8").toString("base64");
   return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
@@ -94,19 +94,14 @@ export function navigateTo(page, pageName, extra = {}, waitMs = 2000) {
 /**
  * Tentukan subfolder screenshot berdasarkan nama screenshot/page.
  * Struktur: e2e/screenshots/<folder>/<name>.png
- * 
+ *
  * Untuk user workflow E2E, screenshot disimpan di e2e/screenshots/user-workflow/
  */
 function getScreenshotFolder(name) {
-  // Prioritas utama: tentukan folder dari path file spec yang sedang berjalan
-  // (e.g. e2e/modules/user-workflow/user-workflow.spec.mjs → "user-workflow")
-  try {
-    const file = test.info().file || "";
-    const m = file.match(/modules[\\/]([^/\\]+)[\\/]/);
-    if (m) return m[1];
-  } catch {
-    // Di luar konteks test (mis. skrip capture) → pakai fallback nama.
-  }
+  // Prioritas 1: Fallback berdasarkan nama screenshot (paling spesifik).
+  // Simpanan memiliki sub-modul (pokok/wajib/sukarela), jadi mapping nama
+  // harus dicek SEBELUM path detection agar screenshot masuk ke subfolder
+  // yang benar (e.g. 06-simpanan/simpanan-pokok/), bukan parent folder (06-simpanan/).
 
   // Fallback: semua nama screenshot dimulai dengan "wf-" atau "16-" → user-workflow
   if (name.startsWith("wf-") || name.startsWith("16-")) {
@@ -129,9 +124,9 @@ function getScreenshotFolder(name) {
   if (name.includes("dashboard") || name.startsWith("flow-")) {
     return "05-dashboard";
   }
-  if (name.startsWith("simpanan-pokok")) return "06-simpanan-pokok";
-  if (name.startsWith("simpanan-wajib")) return "06-simpanan-wajib";
-  if (name.startsWith("simpanan-sukarela")) return "06-simpanan-sukarela";
+  if (name.startsWith("simpanan-pokok")) return "06-simpanan/simpanan-pokok";
+  if (name.startsWith("simpanan-wajib")) return "06-simpanan/simpanan-wajib";
+  if (name.startsWith("simpanan-sukarela")) return "06-simpanan/simpanan-sukarela";
   if (name.includes("simpanan") || name.includes("penarikan")) return "06-simpanan";
   if (name.includes("tabungan")) return "07-tabungan";
   if (name.includes("pinjaman") || name.includes("program")) return "08-pinjaman";
@@ -143,33 +138,126 @@ function getScreenshotFolder(name) {
   if (name.includes("akun") || name.includes("profil") || name.includes("account") || name.includes("registrationPage") || name.includes("resign") || name.includes("terminasi")) return "14-akun-profil";
   if (name.includes("logout")) return "15-logout";
 
+  // Prioritas 2: Tentukan folder dari path file spec yang sedang berjalan.
+  // (e.g. e2e/modules/user-workflow/user-workflow.spec.mjs → "user-workflow")
+  try {
+    const file = test.info().file || "";
+    const m = file.match(/modules[\\/]([^/\\]+)[\\/]/);
+    if (m) return m[1];
+  } catch {
+    // Di luar konteks test (mis. skrip capture) → pakai fallback nama.
+  }
+
   return "publik";
+}
+
+/**
+ * Generate auto-incremented step number for screenshot naming.
+ * Format: {module}-{step}-{description}-{platform}.png
+ *
+ * Example outputs:
+ *   01-01-splash-screen-mobile.png
+ *   06-02-tab-pokok-mobile.png
+ *   wf-01-01-splash-mobile.png
+ */
+const screenshotCounters = new Map();
+
+function getNextStepNumber(folder, baseName) {
+  const key = `${folder}/${baseName.split('-').slice(0, 2).join('-')}`;
+  const current = screenshotCounters.get(key) || 0;
+  screenshotCounters.set(key, current + 1);
+  return String(current + 1).padStart(2, '0');
+}
+
+/**
+ * Normalize screenshot name to follow naming convention.
+ * - Removes special characters
+ * - Converts to kebab-case
+ * - Ensures proper formatting
+ */
+function normalizeScreenshotName(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars
+    .replace(/\s+/g, '-')           // Spaces to hyphens
+    .replace(/-+/g, '-')            // Multiple hyphens to single
+    .replace(/^-|-$/g, '');         // Trim hyphens
 }
 
 /**
  * Take a full-page screenshot and save to e2e/screenshots/<folder>/<name>.png
  * Ensures directory exists. Waits for page to be ready before capturing.
  * Automatically adds "-mobile" suffix if viewport is mobile (width < 480).
+ *
+ * Naming convention: {module}-{step}-{description}-{platform}.png
+ *
+ * @param {Page} page - Playwright page object
+ * @param {string} name - Screenshot name (will be normalized)
+ * @param {Object} options - Optional settings
+ * @param {boolean} options.autoNumber - Auto-add step number (default: true)
+ * @param {string} options.category - Category prefix (e.g., 'form', 'detail')
  */
-export async function takeScreenshot(page, name) {
+export async function takeScreenshot(page, name, options = {}) {
   // Detect if running in mobile mode based on viewport width
   const viewport = await page.viewportSize();
   const isMobile = viewport && viewport.width < 480;
-  
-  const finalName = isMobile ? `${name}-mobile` : name;
+
+  // Normalize the name
+  let normalizedName = normalizeScreenshotName(name);
+
+  // Auto-number if enabled and name doesn't already have a number
+  if (options.autoNumber !== false && !/^\d+-/.test(normalizedName)) {
+    const folder = getScreenshotFolder(name);
+    const stepNum = getNextStepNumber(folder, normalizedName);
+    normalizedName = `${stepNum}-${normalizedName}`;
+  }
+
+  const finalName = isMobile ? `${normalizedName}-mobile` : normalizedName;
   const folder = getScreenshotFolder(name); // Use original name for folder mapping
   const dir = `${SCREENSHOT_DIR}/${folder}`;
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
   await waitForPageReady(page);
-  const path = `${dir}/${finalName}.png`;
+  const screenshotPath = `${dir}/${finalName}.png`;
   // Ensure page is at top before full-page capture to avoid fixed header offset
-await page.evaluate(() => window.scrollTo(0, 0));
-await page.waitForTimeout(200);
-await page.screenshot({ path, fullPage: true });
-  console.log(`[SCREENSHOT] ${path}`);
-  return path;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  console.log(`[SCREENSHOT] ${screenshotPath}`);
+  return screenshotPath;
+}
+
+/**
+ * Take screenshot with custom category prefix.
+ * Useful for grouping related screenshots.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {string} category - Category prefix (e.g., 'form', 'detail', 'error')
+ * @param {string} description - Description of the screenshot
+ *
+ * Example: takeCategoryScreenshot(page, 'form', 'data-pribadi')
+ * Output: 02-01-form-data-pribadi-mobile.png
+ */
+export async function takeCategoryScreenshot(page, category, description) {
+  const name = `${category}-${description}`;
+  return takeScreenshot(page, name, { autoNumber: true });
+}
+
+/**
+ * Reset screenshot counter for a specific folder.
+ * Useful when starting a new test run.
+ */
+export function resetScreenshotCounter(folder = null) {
+  if (folder) {
+    for (const key of screenshotCounters.keys()) {
+      if (key.startsWith(folder)) {
+        screenshotCounters.delete(key);
+      }
+    }
+  } else {
+    screenshotCounters.clear();
+  }
 }
 
 /**
@@ -191,7 +279,7 @@ export async function waitForLoginToken(page, timeoutMs = 30000) {
  * Returns true if token was set.
  */
 export async function attemptLogin(page, email, password) {
-  // Navigate ke halaman login
+  // Navigasi ke halaman login
   await navigateTo(page, "authLogin", {}, 1000);
 
   const emailField = page.locator("#login-email-phone, input[name='emailHp'], input[placeholder*='Email' i]");
@@ -303,9 +391,9 @@ export async function saveAuthState(page, filePath = AUTH_STATE_FILE) {
     token: localStorage.getItem('token'),
     userData: localStorage.getItem('userData')
   }));
-  
+
   console.log(`[AUTH] Checking storage: token=${storage.token ? 'exists' : 'null'}`);
-  
+
   if (storage.token) {
     try {
       const fullPath = path.join(process.cwd(), filePath);
@@ -330,7 +418,7 @@ export async function saveAuthState(page, filePath = AUTH_STATE_FILE) {
  */
 export async function loadAuthState(filePath = AUTH_STATE_FILE) {
   const fullPath = path.join(process.cwd(), filePath);
-  
+
   if (fs.existsSync(fullPath)) {
     const content = fs.readFileSync(fullPath, 'utf8');
     const storage = JSON.parse(content);

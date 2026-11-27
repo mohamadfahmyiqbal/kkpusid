@@ -8,6 +8,8 @@ node_modules
 build/
 dist/
 *.log
+e2e/.auth-state.json
+e2e/reports/
 
 
 # Audit/QA report docs (local only)

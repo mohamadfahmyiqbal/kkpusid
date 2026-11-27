@@ -1,0 +1,255 @@
+
+Running 84 tests using 1 worker
+
+[SCREENSHOT] e2e/screenshots/01-splash-landing/01-globalSplash-mobile.png
+  ok  1 [mobile] › e2e\modules\01-splash-landing\splash-landing.spec.mjs:26:3 › Flow 1 — Splash & Landing (@public) › 01-globalSplash: Splash Screen (3.8s)
+[SCREENSHOT] e2e/screenshots/01-splash-landing/02-landingPage-mobile.png
+  ok  2 [mobile] › e2e\modules\01-splash-landing\splash-landing.spec.mjs:52:3 › Flow 1 — Splash & Landing (@public) › 02-landingPage: Landing Page (18.2s)
+[SCREENSHOT] e2e/screenshots/01-splash-landing/02-landingPage-scrolled-mobile.png
+  ok  3 [mobile] › e2e\modules\01-splash-landing\splash-landing.spec.mjs:86:3 › Flow 1 — Splash & Landing (@public) › 02-landingPage: scroll dan load artikel (22.5s)
+[SCREENSHOT] e2e/screenshots/02-registrasi/04-register-page-mobile.png
+  ok  4 [mobile] › e2e\modules\02-registrasi\registrasi.spec.mjs:30:5 › Flow 2 — Registrasi Akun › Tahap 1 — Buat Akun Login › 04-register-page: form registrasi (14.9s)
+[SCREENSHOT] e2e/screenshots/02-registrasi/04-register-filled-mobile.png
+[SCREENSHOT] e2e/screenshots/02-registrasi/04-register-swalert-mobile.png
+[REG] Akun dibuat (pending): e2e.reg.1795652073122@kkpus.id
+[SCREENSHOT] e2e/screenshots/02-registrasi/04-register-success-mobile.png
+  ok  5 [mobile] › e2e\modules\02-registrasi\registrasi.spec.mjs:43:5 › Flow 2 — Registrasi Akun › Tahap 1 — Buat Akun Login › 04-register: daftar akun baru (28.6s)
+[SCREENSHOT] e2e/screenshots/03-login/03-login-page-mobile.png
+  ok  6 [mobile] › e2e\modules\03-login\login.spec.mjs:34:3 › Flow 3 — Login › 03-login-page: render login form (14.9s)
+[SCREENSHOT] e2e/screenshots/03-login/03-login-filled-mobile.png
+[LOGIN] Berhasil login sebagai e2e.test@kkpus.id
+[AUTH] Checking storage: token=exists
+[AUTH] Writing to: D:\kkpus\kkpusid\e2e\.auth-state.json
+[AUTH] ✓ Token saved to e2e/.auth-state.json
+[SCREENSHOT] e2e/screenshots/03-login/03-login-success-mobile.png
+  ok  7 [mobile] › e2e\modules\03-login\login.spec.mjs:50:3 › Flow 3 — Login › 03-login: login berhasil dengan kredensial valid (19.3s)
+[SCREENSHOT] e2e/screenshots/03-login/03-login-error-mobile.png
+  ok  8 [mobile] › e2e\modules\03-login\login.spec.mjs:84:3 › Flow 3 — Login › 03-login: error kredensial salah (17.9s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[API LOGIN] Berhasil login via API
+[SCREENSHOT] e2e/screenshots/03-login/03-login-api-mobile.png
+  ok  9 [mobile] › e2e\modules\03-login\login.spec.mjs:102:3 › Flow 3 — Login › 03-login: login via API (bypass UI) (8.3s)
+[SCREENSHOT] e2e/screenshots/04-lupa-password/05-forgot-password-mobile.png
+  ok 10 [mobile] › e2e\modules\04-lupa-password\forgot-password.spec.mjs:29:3 › Flow 4 — Lupa Password › 05-forgot-password: render form lupa password (15.7s)
+[SCREENSHOT] e2e/screenshots/04-lupa-password/05-forgot-password-filled-mobile.png
+[SCREENSHOT] e2e/screenshots/04-lupa-password/05-forgot-password-sent-mobile.png
+  ok 11 [mobile] › e2e\modules\04-lupa-password\forgot-password.spec.mjs:45:3 › Flow 4 — Lupa Password › 05-forgot-password: kirim OTP (backend nyata) → halaman OTP (22.1s)
+[APPROVAL] Akun calon anggota dibuat: e2e.approval.1795652191460@kkpus.id (da731a3b-827a-4a91-ad41-1d3ec121faf0)
+[APPROVAL] registration_id: e276a373-c5cd-400b-81f2-f6c9d82cead0
+[APPROVAL] Step 1 (Pengawas) APPROVED
+[APPROVAL] Step 2 (Ketua) APPROVED — tagihan awal diterbitkan
+[APPROVAL] 13 item tagihan, total Rp 3140000
+[APPROVAL] Bukti pembayaran diunggah (PENDING_VERIFICATION)
+[APPROVAL] Step 3 (Bendahara) APPROVED — anggota diaktifkan
+[APPROVAL] ✅ Selesai: e2e.approval.1795652191460@kkpus.id → Anggota Reguler
+  ok 12 [mobile] › e2e\modules\05-dashboard\approval-chain.spec.mjs:57:3 › Approval Chain — Pendaftaran Anggota (Tahap 3) › rantai approval lengkap: Pengawas → Ketua → bayar → Bendahara → APPROVED (11.3s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[DASHBOARD] Login berhasil sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/05-dashboard/dashboard-main-mobile.png
+  ok 13 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:70:3 › Flow 5 — Dashboard Calon Anggota › dashboard: tampilan lengkap calon anggota (status_id=1) (14.5s)
+[SCREENSHOT] e2e/screenshots/05-dashboard/dashboard-menu-disabled-mobile.png
+  ok 14 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:158:3 › Flow 5 — Dashboard Calon Anggota › dashboard: menu utama terkunci untuk calon anggota (13.7s)
+[SCREENSHOT] e2e/screenshots/05-dashboard/dashboard-notification-dropdown-mobile.png
+  ok 15 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:175:3 › Flow 5 — Dashboard Calon Anggota › dashboard: notifikasi bell dapat dibuka (14.8s)
+[SCREENSHOT] e2e/screenshots/05-dashboard/dashboard-lihat-detail-registration-mobile.png
+  ok 16 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:191:3 › Flow 5 — Dashboard Calon Anggota › dashboard: tombol 'Lihat Detail' (CandidateStepsCard) → registrationPage (15.8s)
+[AUTH] Token loaded from e2e/.auth-state.json
+[AUTH] Token loaded from e2e/.auth-state.json
+[AUTH] Menggunakan token tersimpan: eyJhbGciOiJIUzI1NiIs...
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-1-data-pribadi-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-2-akun-kontak-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-3-foto-ktp-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-4-swafoto-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-5-pekerjaan-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-6-kontak-darurat-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-7-rekening-bank-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/reg-step-8-ringkasan-mobile.png
+  ok 17 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:246:3 › Tahap 2 — Formulir Keanggotaan 8 Step › alur lengkap: isi form 8 step via UI (1.2m)
+[AUTH] Token loaded from e2e/.auth-state.json
+[AUTH] Token loaded from e2e/.auth-state.json
+[AUTH] Menggunakan token tersimpan: eyJhbGciOiJIUzI1NiIs...
+[SCREENSHOT] e2e/screenshots/05-dashboard/registration-status-mobile.png
+  ok 18 [mobile] › e2e\modules\05-dashboard\dashboard.spec.mjs:350:3 › Tahap 3 — Status Pendaftaran › registrationPage: status verifikasi (12.8s)
+[SUBMIT] Akun baru: e2e.submit.1795652344280@kkpus.id
+[SCREENSHOT] e2e/screenshots/05-dashboard/submit-step-8-ringkasan-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/submit-sweetalert-lihat-status-mobile.png
+[SCREENSHOT] e2e/screenshots/05-dashboard/submit-redirect-registration-status-mobile.png
+[SUBMIT] ✅ Kirim Sekarang → SweetAlert → registrationPage OK
+  ok 19 [mobile] › e2e\modules\05-dashboard\submit-redirect.spec.mjs:47:3 › Tahap 2 — Submit 'Kirim Sekarang' → Status Pendaftaran › klik Kirim Sekarang → SweetAlert → registrationPage (49.2s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-pokok-main-mobile.png
+  ok 20 [mobile] › e2e\modules\06-simpanan\simpanan-pokok\simpanan-pokok.spec.mjs:38:3 › Flow 6.1 — Simpanan Pokok › simpanan-pokok: halaman simpanan utama (12.5s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-pokok-detail-mobile.png
+  ok 21 [mobile] › e2e\modules\06-simpanan\simpanan-pokok\simpanan-pokok.spec.mjs:52:3 › Flow 6.1 — Simpanan Pokok › simpanan-pokok: pilih produk simpanan pokok (14.7s)
+  ok 22 [mobile] › e2e\modules\06-simpanan\simpanan-pokok\simpanan-pokok.spec.mjs:68:3 › Flow 6.1 — Simpanan Pokok › simpanan-pokok: setoran simpanan pokok (8.8s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-pokok-penarikan-main-mobile.png
+  ok 23 [mobile] › e2e\modules\06-simpanan\simpanan-pokok\simpanan-pokok.spec.mjs:90:3 › Flow 6.1 — Simpanan Pokok › simpanan-pokok: penarikan simpanan pokok (12.6s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-pokok-penarikan-form-mobile.png
+  ok 24 [mobile] › e2e\modules\06-simpanan\simpanan-pokok\simpanan-pokok.spec.mjs:104:3 › Flow 6.1 — Simpanan Pokok › simpanan-pokok: isi form penarikan simpanan pokok (12.7s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-sukarela-main-mobile.png
+  ok 25 [mobile] › e2e\modules\06-simpanan\simpanan-sukarela\simpanan-sukarela.spec.mjs:38:3 › Flow 6.3 — Simpanan Sukarela › simpanan-sukarela: halaman simpanan utama (13.6s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-sukarela-detail-mobile.png
+  ok 26 [mobile] › e2e\modules\06-simpanan\simpanan-sukarela\simpanan-sukarela.spec.mjs:52:3 › Flow 6.3 — Simpanan Sukarela › simpanan-sukarela: pilih produk simpanan sukarela (14.7s)
+  ok 27 [mobile] › e2e\modules\06-simpanan\simpanan-sukarela\simpanan-sukarela.spec.mjs:68:3 › Flow 6.3 — Simpanan Sukarela › simpanan-sukarela: setoran simpanan sukarela (8.8s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-sukarela-penarikan-main-mobile.png
+  ok 28 [mobile] › e2e\modules\06-simpanan\simpanan-sukarela\simpanan-sukarela.spec.mjs:90:3 › Flow 6.3 — Simpanan Sukarela › simpanan-sukarela: penarikan simpanan sukarela (12.6s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-sukarela-penarikan-form-mobile.png
+  ok 29 [mobile] › e2e\modules\06-simpanan\simpanan-sukarela\simpanan-sukarela.spec.mjs:104:3 › Flow 6.3 — Simpanan Sukarela › simpanan-sukarela: isi form penarikan simpanan sukarela (12.7s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-wajib-main-mobile.png
+  ok 30 [mobile] › e2e\modules\06-simpanan\simpanan-wajib\simpanan-wajib.spec.mjs:38:3 › Flow 6.2 — Simpanan Wajib › simpanan-wajib: halaman simpanan utama (13.0s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-wajib-detail-mobile.png
+  ok 31 [mobile] › e2e\modules\06-simpanan\simpanan-wajib\simpanan-wajib.spec.mjs:52:3 › Flow 6.2 — Simpanan Wajib › simpanan-wajib: pilih produk simpanan wajib (14.6s)
+  ok 32 [mobile] › e2e\modules\06-simpanan\simpanan-wajib\simpanan-wajib.spec.mjs:68:3 › Flow 6.2 — Simpanan Wajib › simpanan-wajib: setoran simpanan wajib (8.8s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-wajib-penarikan-main-mobile.png
+  ok 33 [mobile] › e2e\modules\06-simpanan\simpanan-wajib\simpanan-wajib.spec.mjs:90:3 › Flow 6.2 — Simpanan Wajib › simpanan-wajib: penarikan simpanan wajib (12.7s)
+[SCREENSHOT] e2e/screenshots/06-simpanan/simpanan-wajib-penarikan-form-mobile.png
+  ok 34 [mobile] › e2e\modules\06-simpanan\simpanan-wajib\simpanan-wajib.spec.mjs:104:3 › Flow 6.2 — Simpanan Wajib › simpanan-wajib: isi form penarikan simpanan wajib (12.6s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-main-mobile.png
+[TABUNGAN] Program tabungan ditemukan
+  ok 35 [mobile] › e2e\modules\07-tabungan\tabungan.spec.mjs:38:3 › Flow 7 — Tabungan Target › tabunganPage: daftar program tabungan (21.2s)
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-ajuan-mobile.png
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-ajuan-form-mobile.png
+  ok 36 [mobile] › e2e\modules\07-tabungan\tabungan.spec.mjs:58:3 › Flow 7 — Tabungan Target › formPengajuanTabungan: ajukan target (18.1s)
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-detail-mobile.png
+  ok 37 [mobile] › e2e\modules\07-tabungan\tabungan.spec.mjs:81:3 › Flow 7 — Tabungan Target › detailTabungan: detail & progres (12.4s)
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-setor-mobile.png
+  ok 38 [mobile] › e2e\modules\07-tabungan\tabungan.spec.mjs:96:3 › Flow 7 — Tabungan Target › setoranTabungan: bayar tagihan (12.1s)
+[SCREENSHOT] e2e/screenshots/07-tabungan/tabungan-penarikan-mobile.png
+  ok 39 [mobile] › e2e\modules\07-tabungan\tabungan.spec.mjs:111:3 › Flow 7 — Tabungan Target › penarikanTabunganPage: penarikan tabungan (12.5s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/08-pinjaman/pinjaman-main-mobile.png
+[PINJAMAN] Produk pinjaman ditemukan
+  ok 40 [mobile] › e2e\modules\08-pinjaman\pinjaman.spec.mjs:38:3 › Flow 8 — Pinjaman / Pembiayaan › programPage: daftar produk pinjaman (21.3s)
+  ok 41 [mobile] › e2e\modules\08-pinjaman\pinjaman.spec.mjs:58:3 › Flow 8 — Pinjaman / Pembiayaan › programPage: pilih produk pinjaman (9.9s)
+[SCREENSHOT] e2e/screenshots/08-pinjaman/pinjaman-form-mobile.png
+[SCREENSHOT] e2e/screenshots/08-pinjaman/pinjaman-form-filled-mobile.png
+  ok 42 [mobile] › e2e\modules\08-pinjaman\pinjaman.spec.mjs:74:3 › Flow 8 — Pinjaman / Pembiayaan › formPengajuanPinjaman: ajukan pinjaman (18.9s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/09-arisan/arisan-main-mobile.png
+[ARISAN] Batch arisan ditemukan
+  ok 43 [mobile] › e2e\modules\09-arisan\arisan.spec.mjs:38:3 › Flow 9 — Arisan › arisanPage: daftar batch arisan (13.2s)
+[SCREENSHOT] e2e/screenshots/09-arisan/arisan-gabung-mobile.png
+[SCREENSHOT] e2e/screenshots/09-arisan/arisan-gabung-form-mobile.png
+  ok 44 [mobile] › e2e\modules\09-arisan\arisan.spec.mjs:58:3 › Flow 9 — Arisan › arisanJoinPage: gabung batch (18.9s)
+  -  45 [mobile] › e2e\modules\09-arisan\arisan.spec.mjs:75:3 › Flow 9 — Arisan › arisanConfirmationPage: konfirmasi keikutsertaan
+[SCREENSHOT] e2e/screenshots/09-arisan/arisan-pengajuan-mobile.png
+[ARISAN] Form pengajuan ditemukan
+[SCREENSHOT] e2e/screenshots/09-arisan/arisan-pengajuan-form-mobile.png
+  ok 46 [mobile] › e2e\modules\09-arisan\arisan.spec.mjs:100:3 › Flow 9 — Arisan › formPengajuanArisan: pengajuan arisan (18.6s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/10-jual-beli/jual-beli-main-mobile.png
+[JUAL BELI] Opsi transaksi ditemukan
+  ok 47 [mobile] › e2e\modules\10-jual-beli\jual-beli.spec.mjs:38:3 › Flow 10 — Jual Beli › jualBeliPage: opsi transaksi (21.5s)
+[SCREENSHOT] e2e/screenshots/10-jual-beli/jual-beli-form-mobile.png
+[SCREENSHOT] e2e/screenshots/10-jual-beli/jual-beli-form-filled-mobile.png
+  ok 48 [mobile] › e2e\modules\10-jual-beli\jual-beli.spec.mjs:58:3 › Flow 10 — Jual Beli › formPengajuanTransaksi: ajukan jual beli (18.7s)
+[SCREENSHOT] e2e/screenshots/10-jual-beli/jual-beli-pelunasan-mobile.png
+  ok 49 [mobile] › e2e\modules\10-jual-beli\jual-beli.spec.mjs:87:3 › Flow 10 — Jual Beli › pelunasanPage: pelunasan tagihan (12.5s)
+[SCREENSHOT] e2e/screenshots/10-jual-beli/jual-beli-nota-mobile.png
+  ok 50 [mobile] › e2e\modules\10-jual-beli\jual-beli.spec.mjs:104:3 › Flow 10 — Jual Beli › receiptPage: nota pembayaran (27.4s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-main-mobile.png
+[INVESTASI] Produk investasi ditemukan
+  ok 51 [mobile] › e2e\modules\11-investasi\investasi.spec.mjs:38:3 › Flow 11 — Investasi › investasiPage: daftar produk investasi (13.1s)
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-halal-mobile.png
+  ok 52 [mobile] › e2e\modules\11-investasi\investasi.spec.mjs:58:3 › Flow 11 — Investasi › investasiHalal: produk halal (12.8s)
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-sukuk-mobile.png
+  ok 53 [mobile] › e2e\modules\11-investasi\investasi.spec.mjs:72:3 › Flow 11 — Investasi › detailSukuk: detail sukuk (12.3s)
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-pendanaan-mobile.png
+  ok 54 [mobile] › e2e\modules\11-investasi\investasi.spec.mjs:89:3 › Flow 11 — Investasi › pendanaanSyariah: pendanaan syariah (12.8s)
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-pendanaan-form-mobile.png
+[SCREENSHOT] e2e/screenshots/11-investasi/investasi-pendanaan-form-filled-mobile.png
+  ok 55 [mobile] › e2e\modules\11-investasi\investasi.spec.mjs:104:3 › Flow 11 — Investasi › formPendanaanSyariah: ajukan pendanaan (18.6s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/12-training/training-main-mobile.png
+[TRAINING] Materi training ditemukan
+  ok 56 [mobile] › e2e\modules\12-training\training.spec.mjs:38:3 › Flow 12 — Training & Evaluasi › trainingPage: daftar materi training (13.4s)
+[SCREENSHOT] e2e/screenshots/12-training/training-detail-mobile.png
+  ok 57 [mobile] › e2e\modules\12-training\training.spec.mjs:58:3 › Flow 12 — Training & Evaluasi › detailMateri: detail materi (12.4s)
+[SCREENSHOT] e2e/screenshots/12-training/training-baca-mobile.png
+[SCREENSHOT] e2e/screenshots/12-training/training-baca-scrolled-mobile.png
+  ok 58 [mobile] › e2e\modules\12-training\training.spec.mjs:75:3 › Flow 12 — Training & Evaluasi › bacaMateri: baca materi (20.9s)
+[SCREENSHOT] e2e/screenshots/12-training/training-evaluasi-mobile.png
+  ok 59 [mobile] › e2e\modules\12-training\training.spec.mjs:93:3 › Flow 12 — Training & Evaluasi › evaluasi: kuis / evaluasi (12.4s)
+[SCREENSHOT] e2e/screenshots/12-training/training-ranking-mobile.png
+[TRAINING] Leaderboard ditemukan
+  ok 60 [mobile] › e2e\modules\12-training\training.spec.mjs:110:3 › Flow 12 — Training & Evaluasi › ranking: peringkat anggota (12.4s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/13-notifikasi/notifikasi-main-mobile.png
+[NOTIFIKASI] Notifikasi ditemukan
+  ok 61 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:38:3 › Flow 13 — Notifikasi & Transaksi › notificationPage: daftar notifikasi (13.1s)
+[SCREENSHOT] e2e/screenshots/13-notifikasi/notifikasi-detail-mobile.png
+  ok 62 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:58:3 › Flow 13 — Notifikasi & Transaksi › notificationDetailPage: detail notifikasi (12.4s)
+[SCREENSHOT] e2e/screenshots/13-notifikasi/transaksi-detail-mobile.png
+  ok 63 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:75:3 › Flow 13 — Notifikasi & Transaksi › transactionDetailPage: timeline transaksi (12.4s)
+[SCREENSHOT] e2e/screenshots/13-notifikasi/transaksi-receipt-mobile.png
+  ok 64 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:92:3 › Flow 13 — Notifikasi & Transaksi › receiptPage: unduh nota (27.4s)
+[SCREENSHOT] e2e/screenshots/13-notifikasi/billing-main-mobile.png
+  ok 65 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:109:3 › Flow 13 — Notifikasi & Transaksi › billingPage: tagihan pending (12.7s)
+[SCREENSHOT] e2e/screenshots/13-notifikasi/billing-invoice-mobile.png
+  ok 66 [mobile] › e2e\modules\13-notifikasi\notifikasi.spec.mjs:126:3 › Flow 13 — Notifikasi & Transaksi › invoicePage: detail invoice (12.4s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-main-mobile.png
+  ok 67 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:38:3 › Flow 14 — Akun & Profil › accountPage: data profil lengkap (13.3s)
+  ok 68 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:58:3 › Flow 14 — Akun & Profil › accountPage: edit data diri (10.4s)
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-registrasi-mobile.png
+  ok 69 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:81:3 › Flow 14 — Akun & Profil › registrationPage: status verifikasi (12.7s)
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-form-detail-mobile.png
+  ok 70 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:98:3 › Flow 14 — Akun & Profil › registrationFormDetail: detail form (12.5s)
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-detail-registrasi-mobile.png
+  ok 71 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:109:3 › Flow 14 — Akun & Profil › detailPendaftaranAnggota: detail pendaftaran (12.3s)
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-resignasi-mobile.png
+  ok 72 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:126:3 › Flow 14 — Akun & Profil › resignationCheck: pengajuan keluar (12.5s)
+[SCREENSHOT] e2e/screenshots/14-akun-profil/akun-profil-terminasi-mobile.png
+  ok 73 [mobile] › e2e\modules\14-akun-profil\akun-profil.spec.mjs:140:3 › Flow 14 — Akun & Profil › termination_progress: progres terminasi (15.7s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/15-logout/logout-dashboard-mobile.png
+[LOGOUT] Tombol logout tidak ditemukan, simulating token removal
+[SCREENSHOT] e2e/screenshots/15-logout/logout-fallback-mobile.png
+[LOGOUT] Token sudah dihapus, user kembali ke landing
+  ok 74 [mobile] › e2e\modules\15-logout\logout.spec.mjs:38:3 › Flow 15 — Logout › 15-logout: full flow login → dashboard → logout → landing (22.8s)
+[SCREENSHOT] e2e/screenshots/15-logout/logout-unauthorized-access-mobile.png
+[LOGOUT] Halaman terproteksi mengarahkan ke login/landing
+  ok 75 [mobile] › e2e\modules\15-logout\logout.spec.mjs:86:3 › Flow 15 — Logout › 15-logout: akses halaman terproteksi tanpa login (15.4s)
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-1-splash-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-1-landing-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-1-login-mobile.png
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[16-1] Login berhasil, token: eyJhbGciOiJIUzI1NiIs...
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-1-dashboard-mobile.png
+  ok 76 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:35:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-1: Splash → Landing → Login → Dashboard (56.0s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-2-dashboard-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-2-simpanan-mobile.png
+  ok 77 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:64:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-2: Dashboard → Simpanan Page (25.0s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-3-simpanan-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-3-pokok-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-3-wajib-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-3-sukarela-mobile.png
+  ok 78 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:83:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-3: Simpanan - Pilih Produk (Pokok/Wajib/Sukarela) (34.2s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-4-setoran-wajib-mobile.png
+  ok 79 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:114:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-4: Simpanan - Setoran (Pokok/Wajib) (14.8s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+  ok 80 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:139:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-5: Simpanan - Penarikan Sukarela (7.3s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-6-tabungan-mobile.png
+  ok 81 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:164:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-6: Tabungan - Setoran (21.3s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-7-akun-mobile.png
+  ok 82 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:177:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-7: Akun & Profil - Edit Data (13.2s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-8-akun-mobile.png
+  ok 83 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:190:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 1: New Member Journey › 16-8: Logout (13.6s)
+[LOGIN API] Berhasil login sebagai e2e.test@kkpus.id
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-9-dashboard-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-9-simpanan-mobile.png
+[SCREENSHOT] e2e/screenshots/16-alur-penggunaan/16-9-penarikan-mobile.png
+  ok 84 [mobile] › e2e\modules\16-alur-penggunaan\alur-penggunaan.spec.mjs:213:5 › Flow 16 — Alur Penggunaan (@public) › User Flow 2: Returning Member Journey › 16-9: Login → Dashboard → Simpanan → Penarikan (37.0s)
+
+  1 skipped
+  83 passed (23.6m)
