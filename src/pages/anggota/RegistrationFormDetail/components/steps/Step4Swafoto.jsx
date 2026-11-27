@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { Form, Row, Col} from "react-bootstrap";
+import React from "react";
+import { Form, Row, Col } from "react-bootstrap";
 import {
   FaUserShield,
   FaCheckCircle,
@@ -8,25 +8,17 @@ import {
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
 
-
-
 /**
  * Komponen untuk mengambil Swafoto dengan KTP (Langkah 4).
  * Dioptimasi dengan panduan visual agar verifikasi wajah lebih akurat.
  */
-export default React.memo(function Step4Swafoto({ formData, setFormData, errors }) {
-  const handleSetCapturedImage = useCallback(
-    (fieldName, base64Image) => {
-      setFormData((prevData) => ({
-        ...prevData,
-        [fieldName]: base64Image,
-      }));
-    },
-    [setFormData],
-  );
-
+export default React.memo(function Step4Swafoto({
+  formData,
+  handleSetCapturedImage,
+  errors,
+}) {
   return (
-    <div className="p-2">
+    <div id="registration-foto_swafoto" className="p-2" tabIndex={-1}>
       {/* HEADER SEKSI */}
       <div className="d-flex align-items-center mb-4">
         <div className="icon-box bg-soft-primary text-primary me-3">
@@ -88,8 +80,6 @@ export default React.memo(function Step4Swafoto({ formData, setFormData, errors 
                 </span>
               </li>
             </ul>
-
-
 
             {/* Visual Placeholder Swafoto */}
 

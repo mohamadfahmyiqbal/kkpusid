@@ -2,7 +2,12 @@ import React from "react";
 import { Form, Row, Col, InputGroup } from "react-bootstrap";
 import { FaUniversity, FaCreditCard, FaUserCircle } from "react-icons/fa";
 
-export default React.memo(function Step7BankData({ formData, handleChange, errors }) {
+export default React.memo(function Step7BankData({
+  formData,
+  handleChange,
+  handleFieldBlur,
+  errors,
+}) {
   return (
     <div className="p-2">
       <div className="d-flex align-items-center mb-4">
@@ -33,6 +38,8 @@ export default React.memo(function Step7BankData({ formData, handleChange, error
                   name="bank_name"
                   value={formData.bank_name || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("bank_name")}
+                  id="registration-bank_name"
                   isInvalid={!!errors.bank_name}
                   className="border-0 py-2"
                   placeholder="Contoh: Bank Mandiri"
@@ -57,6 +64,8 @@ export default React.memo(function Step7BankData({ formData, handleChange, error
                   name="bank_account_no"
                   value={formData.bank_account_no || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("bank_account_no")}
+                  id="registration-bank_account_no"
                   isInvalid={!!errors.bank_account_no}
                   className="border-0 py-2"
                   placeholder="Masukkan Nomor Rekening"
@@ -84,6 +93,8 @@ export default React.memo(function Step7BankData({ formData, handleChange, error
                   name="account_holder"
                   value={formData.account_holder || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("account_holder")}
+                  id="registration-account_holder"
                   isInvalid={!!errors.account_holder}
                   className="border-0 py-2"
                   placeholder="Nama Pemilik Rekening Sesuai Buku Tabungan"

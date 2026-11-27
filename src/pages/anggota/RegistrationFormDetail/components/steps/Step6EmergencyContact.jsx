@@ -2,7 +2,12 @@ import React from "react";
 import { Form, Row, Col, InputGroup } from "react-bootstrap";
 import { FaUserFriends, FaPhoneAlt, FaLink } from "react-icons/fa";
 
-export default React.memo(function Step6EmergencyContact({ formData, handleChange, errors }) {
+export default React.memo(function Step6EmergencyContact({
+  formData,
+  handleChange,
+  handleFieldBlur,
+  errors,
+}) {
   return (
     <div className="p-2">
       <div className="d-flex align-items-center mb-4">
@@ -34,6 +39,8 @@ export default React.memo(function Step6EmergencyContact({ formData, handleChang
                   name="contact_name"
                   value={formData.contact_name || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("contact_name")}
+                  id="registration-contact_name"
                   isInvalid={!!errors.contact_name}
                   className="border-0 py-2"
                   placeholder="Nama Lengkap Kontak Darurat"
@@ -60,6 +67,8 @@ export default React.memo(function Step6EmergencyContact({ formData, handleChang
                   name="phone_number_emergency"
                   value={formData.phone_number_emergency || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("phone_number_emergency")}
+                  id="registration-phone_number_emergency"
                   isInvalid={!!errors.phone_number_emergency}
                   className="border-0 py-2"
                   placeholder="Contoh: 08123456789"
@@ -88,6 +97,8 @@ export default React.memo(function Step6EmergencyContact({ formData, handleChang
                   name="relation"
                   value={formData.relation || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("relation")}
+                  id="registration-relation"
                   isInvalid={!!errors.relation}
                   className="border-0 py-2"
                   placeholder="Contoh: Saudara Kandung, Suami/Istri, Teman"

@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { Form, Row, Col} from "react-bootstrap";
+import React from "react";
+import { Form, Row, Col } from "react-bootstrap";
 import {
   FaCamera,
   FaIdCard,
@@ -9,25 +9,17 @@ import {
 } from "react-icons/fa";
 import WebcamCaptureField from "../../../../../components/ui/WebcamCaptureField";
 
-
-
 /**
  * Komponen untuk mengambil foto KTP (Langkah 3).
  * Dioptimasi dengan panduan visual dan UI modern.
  */
-export default React.memo(function Step3CaptureKTP({ formData, setFormData, errors }) {
-  const handleSetCapturedImage = useCallback(
-    (fieldName, base64Image) => {
-      setFormData((prevData) => ({
-        ...prevData,
-        [fieldName]: base64Image,
-      }));
-    },
-    [setFormData],
-  );
-
+export default React.memo(function Step3CaptureKTP({
+  formData,
+  handleSetCapturedImage,
+  errors,
+}) {
   return (
-    <div className="p-2">
+    <div id="registration-foto_ktp" className="p-2" tabIndex={-1}>
       {/* HEADER SEKSI */}
       <div className="d-flex align-items-center mb-4">
         <div className="icon-box bg-soft-primary text-primary me-3">
@@ -90,8 +82,6 @@ export default React.memo(function Step3CaptureKTP({ formData, setFormData, erro
                 </span>
               </li>
             </ul>
-
-
 
             {/* Visual Placeholder KTP */}
             <div className="mt-4 text-center opacity-25">

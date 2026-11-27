@@ -54,6 +54,8 @@ export default function WebcamCaptureField({
         const rawImage = webcamRef.current.getScreenshot();
         const imageSrc = await compressDataUrl(rawImage);
 
+        if (!imageSrc) return;
+
         // Simpan gambar ke state parent
         setCapturedImage(fieldName, imageSrc);
 

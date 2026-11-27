@@ -12,13 +12,21 @@ import Select from "react-select";
  * Komponen untuk mengisi Account Info (Langkah 2).
  * Dioptimasi dengan UI modern dan class global dari App.css.
  */
-export default React.memo(function Step2Account({ formData, handleChange, errors }) {
+export default React.memo(function Step2Account({
+  formData,
+  handleChange,
+  handleFieldChange,
+  handleFieldBlur,
+  errors,
+}) {
   const selectStyles = {
     control: (base, state) => ({
       ...base,
       borderRadius: "12px",
       border: state.isFocused ? "1px solid #86b7fe" : "none",
-      boxShadow: state.isFocused ? "0 0 0 0.25rem rgba(13,110,253,.25)" : "0 .125rem .25rem rgba(0,0,0,.075)",
+      boxShadow: state.isFocused
+        ? "0 0 0 0.25rem rgba(13,110,253,.25)"
+        : "0 .125rem .25rem rgba(0,0,0,.075)",
       padding: "2px",
       backgroundColor: "#fff",
     }),
@@ -59,21 +67,32 @@ export default React.memo(function Step2Account({ formData, handleChange, errors
                 Tipe Anggota <span className="text-danger">*</span>
               </Form.Label>
               <Select
+                inputId="registration-tipeAnggota"
                 classNamePrefix="rs"
                 styles={selectStyles}
                 options={tipeAnggotaOptions}
                 placeholder="Pilih Tipe Anggota"
-                onChange={(opt) => handleChange({ target: { name: 'tipeAnggota', value: opt ? opt.value : '' } })}
-                value={tipeAnggotaOptions.find((o) => o.value === String(formData.tipeAnggota)) || null}
+                onChange={(opt) =>
+                  handleFieldChange("tipeAnggota", opt ? opt.value : "")
+                }
+                value={
+                  tipeAnggotaOptions.find(
+                    (o) => o.value === String(formData.tipeAnggota),
+                  ) || null
+                }
               />
-              <Form.Control.Feedback type="invalid">
-                {errors.tipeAnggota}
-              </Form.Control.Feedback>
+              {errors.tipeAnggota && (
+                <div
+                  id="registration-tipeAnggota-error"
+                  className="text-danger small mt-1"
+                  role="alert"
+                >
+                  {errors.tipeAnggota}
+                </div>
+              )}
               <div className="mt-2 small text-muted d-flex align-items-center">
                 <FaInfoCircle className="me-1 text-primary flex-shrink-0" />
-                <span>
-                  Anggota Luar Biasa untuk non-karyawan/mitra.
-                </span>
+                <span>Anggota Luar Biasa untuk non-karyawan/mitra.</span>
               </div>
             </Form.Group>
           </Col>
@@ -94,10 +113,21 @@ export default React.memo(function Step2Account({ formData, handleChange, errors
                   placeholder="Contoh: 08123456789"
                   value={formData.phone_number || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("phone_number")}
+                  id="registration-phone_number"
+                  aria-describedby={
+                    errors.phone_number
+                      ? "registration-phone_number-error"
+                      : undefined
+                  }
                   isInvalid={!!errors.phone_number}
                   className="border-0 py-2"
                 />
-                <Form.Control.Feedback type="invalid" tooltip>
+                <Form.Control.Feedback
+                  id="registration-phone_number-error"
+                  type="invalid"
+                  tooltip
+                >
                   {errors.phone_number}
                 </Form.Control.Feedback>
               </InputGroup>

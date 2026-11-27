@@ -8,7 +8,8 @@ const Step1PersonalData = ({
   formData,
   handleChange,
   errors,
-  setFormData,
+  handleFieldChange,
+  handleFieldBlur,
 }) => {
   const [provinces, setProvinces] = useState([]);
   const [regencies, setRegencies] = useState([]);
@@ -42,8 +43,7 @@ const Step1PersonalData = ({
   }, [formData.province_id, formData.city_id, formData.district_id]);
 
   const handleProvinceSelect = (opt) => {
-    setFormData({
-      ...formData,
+    handleFieldChange({
       province_id: opt?.value || "",
       provinsi: opt?.label || "",
       city_id: "",
@@ -64,8 +64,7 @@ const Step1PersonalData = ({
   };
 
   const handleRegencySelect = (opt) => {
-    setFormData({
-      ...formData,
+    handleFieldChange({
       city_id: opt?.value || "",
       kota_kab: opt?.label || "",
       district_id: "",
@@ -83,8 +82,7 @@ const Step1PersonalData = ({
   };
 
   const handleDistrictSelect = (opt) => {
-    setFormData({
-      ...formData,
+    handleFieldChange({
       district_id: opt?.value || "",
       kecamatan: opt?.label || "",
       subdistrict_id: "",
@@ -103,7 +101,9 @@ const Step1PersonalData = ({
       ...base,
       borderRadius: "12px",
       border: state.isFocused ? "1px solid #86b7fe" : "none",
-      boxShadow: state.isFocused ? "0 0 0 0.25rem rgba(13,110,253,.25)" : "0 .125rem .25rem rgba(0,0,0,.075)",
+      boxShadow: state.isFocused
+        ? "0 0 0 0.25rem rgba(13,110,253,.25)"
+        : "0 .125rem .25rem rgba(0,0,0,.075)",
       padding: "2px",
       backgroundColor: "#fff",
     }),
@@ -135,7 +135,9 @@ const Step1PersonalData = ({
           {/* NIK KTP */}
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-bold small mb-2">NIK KTP <span className="text-danger">*</span></Form.Label>
+              <Form.Label className="fw-bold small mb-2">
+                NIK KTP <span className="text-danger">*</span>
+              </Form.Label>
               <InputGroup className="shadow-sm rounded-12 overflow-hidden">
                 <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
                   <FaIdCard size={14} />
@@ -145,12 +147,21 @@ const Step1PersonalData = ({
                   name="nik_ktp"
                   value={formData.nik_ktp || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("nik_ktp")}
+                  id="registration-nik_ktp"
+                  aria-describedby={
+                    errors.nik_ktp ? "registration-nik_ktp-error" : undefined
+                  }
                   isInvalid={!!errors.nik_ktp}
                   maxLength={16}
                   className="border-0 py-2"
                   placeholder="Masukkan 16 digit NIK"
                 />
-                <Form.Control.Feedback type="invalid" tooltip>
+                <Form.Control.Feedback
+                  id="registration-nik_ktp-error"
+                  type="invalid"
+                  tooltip
+                >
                   {errors.nik_ktp}
                 </Form.Control.Feedback>
               </InputGroup>
@@ -160,7 +171,9 @@ const Step1PersonalData = ({
           {/* NAMA LENGKAP */}
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-bold small mb-2">Nama Lengkap <span className="text-danger">*</span></Form.Label>
+              <Form.Label className="fw-bold small mb-2">
+                Nama Lengkap <span className="text-danger">*</span>
+              </Form.Label>
               <InputGroup className="shadow-sm rounded-12 overflow-hidden">
                 <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
                   <FaUser size={14} />
@@ -170,11 +183,22 @@ const Step1PersonalData = ({
                   name="full_name"
                   value={formData.full_name || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("full_name")}
+                  id="registration-full_name"
+                  aria-describedby={
+                    errors.full_name
+                      ? "registration-full_name-error"
+                      : undefined
+                  }
                   isInvalid={!!errors.full_name}
                   placeholder="Nama lengkap sesuai KTP"
                   className="border-0 py-2"
                 />
-                <Form.Control.Feedback type="invalid" tooltip>
+                <Form.Control.Feedback
+                  id="registration-full_name-error"
+                  type="invalid"
+                  tooltip
+                >
                   {errors.full_name}
                 </Form.Control.Feedback>
               </InputGroup>
@@ -200,26 +224,37 @@ const Step1PersonalData = ({
         <Row className="mb-3 g-3">
           {/* PROVINSI */}
           <Col md={6}>
-            <Form.Label className="fw-bold small mb-2">Provinsi <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="fw-bold small mb-2">
+              Provinsi <span className="text-danger">*</span>
+            </Form.Label>
             <Select
+              inputId="registration-province_id"
               classNamePrefix="rs"
               styles={selectStyles}
               options={provinces}
               placeholder="Pilih Provinsi..."
               onChange={handleProvinceSelect}
               value={
-                provinces.find((p) => p.value === formData.province_id) ||
-                null
+                provinces.find((p) => p.value === formData.province_id) || null
               }
             />
             {errors.province_id && (
-              <div className="text-danger small mt-1">{errors.province_id}</div>
+              <div
+                id="registration-province_id-error"
+                className="text-danger small mt-1"
+                role="alert"
+              >
+                {errors.province_id}
+              </div>
             )}
           </Col>
           {/* KOTA / KABUPATEN */}
           <Col md={6}>
-            <Form.Label className="fw-bold small mb-2">Kota / Kabupaten <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="fw-bold small mb-2">
+              Kota / Kabupaten <span className="text-danger">*</span>
+            </Form.Label>
             <Select
+              inputId="registration-city_id"
               classNamePrefix="rs"
               styles={selectStyles}
               options={regencies}
@@ -231,7 +266,13 @@ const Step1PersonalData = ({
               }
             />
             {errors.city_id && (
-              <div className="text-danger small mt-1">{errors.city_id}</div>
+              <div
+                id="registration-city_id-error"
+                className="text-danger small mt-1"
+                role="alert"
+              >
+                {errors.city_id}
+              </div>
             )}
           </Col>
         </Row>
@@ -239,8 +280,11 @@ const Step1PersonalData = ({
         <Row className="mb-3 g-3">
           {/* KECAMATAN */}
           <Col md={6}>
-            <Form.Label className="fw-bold small mb-2">Kecamatan <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="fw-bold small mb-2">
+              Kecamatan <span className="text-danger">*</span>
+            </Form.Label>
             <Select
+              inputId="registration-district_id"
               classNamePrefix="rs"
               styles={selectStyles}
               options={districts}
@@ -248,37 +292,50 @@ const Step1PersonalData = ({
               isDisabled={!formData.city_id}
               onChange={handleDistrictSelect}
               value={
-                districts.find((d) => d.value === formData.district_id) ||
-                null
+                districts.find((d) => d.value === formData.district_id) || null
               }
             />
             {errors.district_id && (
-              <div className="text-danger small mt-1">{errors.district_id}</div>
+              <div
+                id="registration-district_id-error"
+                className="text-danger small mt-1"
+                role="alert"
+              >
+                {errors.district_id}
+              </div>
             )}
           </Col>
           {/* KELURAHAN */}
           <Col md={6}>
-            <Form.Label className="fw-bold small mb-2">Kelurahan <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="fw-bold small mb-2">
+              Kelurahan <span className="text-danger">*</span>
+            </Form.Label>
             <Select
+              inputId="registration-subdistrict_id"
               classNamePrefix="rs"
               styles={selectStyles}
               options={villages}
               placeholder="Pilih Kelurahan..."
               isDisabled={!formData.district_id}
-              onChange={(opt) =>
-                setFormData({
-                  ...formData,
+              onChange={(opt) => {
+                handleFieldChange({
                   subdistrict_id: opt?.value || "",
                   kelurahan: opt?.label || "",
-                })
-              }
+                });
+              }}
               value={
                 villages.find((v) => v.value === formData.subdistrict_id) ||
                 null
               }
             />
             {errors.subdistrict_id && (
-              <div className="text-danger small mt-1">{errors.subdistrict_id}</div>
+              <div
+                id="registration-subdistrict_id-error"
+                className="text-danger small mt-1"
+                role="alert"
+              >
+                {errors.subdistrict_id}
+              </div>
             )}
           </Col>
         </Row>
@@ -315,7 +372,8 @@ const Step1PersonalData = ({
           <Col xs={12}>
             <Form.Group>
               <Form.Label className="fw-bold small mb-2">
-                Alamat Lengkap (Jalan / Blok / No) <span className="text-danger">*</span>
+                Alamat Lengkap (Jalan / Blok / No){" "}
+                <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
                 as="textarea"
@@ -323,11 +381,21 @@ const Step1PersonalData = ({
                 name="alamat_ktp"
                 value={formData.alamat_ktp || ""}
                 onChange={handleChange}
+                onBlur={() => handleFieldBlur("alamat_ktp")}
+                id="registration-alamat_ktp"
+                aria-describedby={
+                  errors.alamat_ktp
+                    ? "registration-alamat_ktp-error"
+                    : undefined
+                }
                 isInvalid={!!errors.alamat_ktp}
                 className="rounded-12 border-0 shadow-sm py-3 px-4"
                 placeholder="Contoh: Jl. Sudirman No. 123, Blok A5"
               />
-              <Form.Control.Feedback type="invalid">
+              <Form.Control.Feedback
+                id="registration-alamat_ktp-error"
+                type="invalid"
+              >
                 {errors.alamat_ktp}
               </Form.Control.Feedback>
             </Form.Group>

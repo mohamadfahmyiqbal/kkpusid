@@ -2,7 +2,12 @@ import React from "react";
 import { Form, Row, Col, InputGroup } from "react-bootstrap";
 import { FaBriefcase, FaBuilding, FaMapMarkerAlt } from "react-icons/fa";
 
-export default React.memo(function Step5Employment({ formData, handleChange, errors }) {
+export default React.memo(function Step5Employment({
+  formData,
+  handleChange,
+  handleFieldBlur,
+  errors,
+}) {
   return (
     <div className="p-2">
       <div className="d-flex align-items-center mb-4">
@@ -34,6 +39,8 @@ export default React.memo(function Step5Employment({ formData, handleChange, err
                   name="occupation"
                   value={formData.occupation || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("occupation")}
+                  id="registration-occupation"
                   isInvalid={!!errors.occupation}
                   className="border-0 py-2"
                   placeholder="Contoh: Pegawai Swasta, Wiraswasta"
@@ -49,7 +56,8 @@ export default React.memo(function Step5Employment({ formData, handleChange, err
           <Col md={6}>
             <Form.Group>
               <Form.Label className="fw-bold small mb-2">
-                Nama Perusahaan / Tempat Bekerja <span className="text-danger">*</span>
+                Nama Perusahaan / Tempat Bekerja{" "}
+                <span className="text-danger">*</span>
               </Form.Label>
               <InputGroup className="shadow-sm rounded-12 overflow-hidden">
                 <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
@@ -60,6 +68,8 @@ export default React.memo(function Step5Employment({ formData, handleChange, err
                   name="employer_name"
                   value={formData.employer_name || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("employer_name")}
+                  id="registration-employer_name"
                   isInvalid={!!errors.employer_name}
                   className="border-0 py-2"
                   placeholder="Contoh: PT ABC Sentosa"
@@ -77,7 +87,8 @@ export default React.memo(function Step5Employment({ formData, handleChange, err
           <Col xs={12}>
             <Form.Group>
               <Form.Label className="fw-bold small mb-2">
-                Alamat Perusahaan / Tempat Bekerja <span className="text-danger">*</span>
+                Alamat Perusahaan / Tempat Bekerja{" "}
+                <span className="text-danger">*</span>
               </Form.Label>
               <InputGroup className="shadow-sm rounded-12 overflow-hidden align-items-start">
                 <InputGroup.Text className="bg-white border-0 py-3 ps-3 text-muted h-100">
@@ -89,6 +100,8 @@ export default React.memo(function Step5Employment({ formData, handleChange, err
                   name="employer_address"
                   value={formData.employer_address || ""}
                   onChange={handleChange}
+                  onBlur={() => handleFieldBlur("employer_address")}
+                  id="registration-employer_address"
                   isInvalid={!!errors.employer_address}
                   className="border-0 py-3 pe-4"
                   placeholder="Masukkan Alamat Lengkap Tempat Bekerja"

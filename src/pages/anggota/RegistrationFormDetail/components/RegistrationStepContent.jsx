@@ -14,6 +14,8 @@ export default function RegistrationStepContent({
   formData,
   errors,
   handleChange,
+  handleFieldChange,
+  handleFieldBlur,
   setFormData,
   handleSetCapturedImage,
   isCommitmentChecked,
@@ -23,8 +25,9 @@ export default function RegistrationStepContent({
   const commonProps = {
     formData,
     handleChange,
+    handleFieldChange,
+    handleFieldBlur,
     errors,
-    setFormData,
     handleSetCapturedImage,
   };
 

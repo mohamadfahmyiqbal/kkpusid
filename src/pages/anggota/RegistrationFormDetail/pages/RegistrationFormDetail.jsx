@@ -13,6 +13,9 @@ import {
   TOTAL_STEPS,
   STEP_LABELS,
   validateStep,
+  validateRegistration,
+  normalizeRegistrationData,
+  FIELD_STEP_MAP,
 } from "../components/registrationFormHelpers";
 import RegistrationProgressBar from "../components/RegistrationProgressBar";
 import RegistrationStepContent from "../components/RegistrationStepContent";
@@ -27,8 +30,13 @@ export default function RegistrationFormDetail() {
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem("temp_reg_data");
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem("temp_reg_data");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      localStorage.removeItem("temp_reg_data");
+      return {};
+    }
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +57,10 @@ export default function RegistrationFormDetail() {
       setFormData((prev) => {
         let updated = false;
         const next = { ...prev };
-        if (userData.phone_number && prev.phone_number !== userData.phone_number) {
+        if (
+          userData.phone_number &&
+          prev.phone_number !== userData.phone_number
+        ) {
           next.phone_number = userData.phone_number;
           updated = true;
         }
@@ -62,19 +73,27 @@ export default function RegistrationFormDetail() {
     }
   }, [userData]);
 
-  // Save to localStorage on data change
+  // Foto identitas tidak boleh bertahan di browser storage.
   useEffect(() => {
     try {
-      localStorage.setItem("temp_reg_data", JSON.stringify(formData));
+      const { foto_ktp, foto_swafoto, ...safeDraft } = formData;
+      localStorage.setItem("temp_reg_data", JSON.stringify(safeDraft));
     } catch (err) {
-      // Kuota localStorage dapat terlampaui bila foto base64 masih besar.
-      // Jangan gagalkan render — cukup catat peringatan.
       console.warn(
         "Gagal menyimpan draf pendaftaran ke localStorage:",
         err?.name || err,
       );
     }
   }, [formData]);
+
+  useEffect(() => {
+    const firstErrorField = Object.keys(errors)[0];
+    if (!firstErrorField) return undefined;
+    const timer = window.setTimeout(() => {
+      document.getElementById(`registration-${firstErrorField}`)?.focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [errors, step]);
 
   const handleBack = useCallback(() => {
     navigate(`/${jwtEncode({ page: "registrationPage" })}`);
@@ -83,13 +102,41 @@ export default function RegistrationFormDetail() {
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+      delete nextErrors[name];
+      return nextErrors;
+    });
   }, []);
 
-  const handleSetCapturedImage = useCallback((fieldName, base64Image) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: base64Image }));
-    setErrors((prev) => ({ ...prev, [fieldName]: undefined }));
+  const handleFieldChange = useCallback((name, value) => {
+    const updates = typeof name === "object" ? name : { [name]: value };
+    setFormData((prev) => ({ ...prev, ...updates }));
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+      Object.keys(updates).forEach((field) => {
+        delete nextErrors[field];
+      });
+      return nextErrors;
+    });
   }, []);
+
+  const handleFieldBlur = useCallback((name) => {
+    setFormData((currentData) => {
+      const fieldStep = FIELD_STEP_MAP[name];
+      if (!fieldStep) return currentData;
+      const fieldError = validateStep(fieldStep, currentData)[name];
+      setErrors((prev) => ({ ...prev, [name]: fieldError }));
+      return currentData;
+    });
+  }, []);
+
+  const handleSetCapturedImage = useCallback(
+    (fieldName, base64Image) => {
+      handleFieldChange(fieldName, base64Image);
+    },
+    [handleFieldChange],
+  );
 
   const nextStep = useCallback(() => {
     const currentErrors = validateStep(step, formData);
@@ -109,13 +156,13 @@ export default function RegistrationFormDetail() {
   const handleSubmit = useCallback(async () => {
     if (!isCommitmentChecked) return;
 
-    const finalErrors = {};
-    for (let i = 1; i < TOTAL_STEPS; i += 1) {
-      Object.assign(finalErrors, validateStep(i, formData));
-    }
+    const normalizedData = normalizeRegistrationData(formData);
+    const { errors: finalErrors, firstInvalidStep } =
+      validateRegistration(normalizedData);
     if (Object.keys(finalErrors).length > 0) {
       setErrors(finalErrors);
       setSubmitError("Masih ada data yang belum lengkap. Silakan cek kembali.");
+      setStep(firstInvalidStep);
       return;
     }
 
@@ -123,31 +170,32 @@ export default function RegistrationFormDetail() {
     setSubmitError(null);
 
     try {
-      const response = await AnggotaService.submitRegistration(formData);
+      const response = await AnggotaService.submitRegistration(normalizedData);
       if (response.data?.status === true) {
         localStorage.removeItem("temp_reg_data");
         const regLink = `/${jwtEncode({ page: "registrationPage" })}`;
         Swal.fire({
           icon: "success",
           title: "Berhasil",
-          html: `Pengajuan pendaftaran anggota berhasil dikirim.<br><br><a href="${regLink}" class="btn btn-primary btn-sm mt-2">Lihat Status Pendaftaran</a>`,
-          showConfirmButton: false,
-          showCloseButton: true,
+          text: "Pengajuan pendaftaran anggota berhasil dikirim.",
+          confirmButtonText: "Lihat Status Pendaftaran",
+        }).then(() => {
+          navigate(regLink);
         });
       } else {
         setSubmitError(
-          response.data?.message || "Gagal mengirim data permohonan."
+          response.data?.message || "Gagal mengirim data permohonan.",
         );
       }
     } catch (err) {
       setSubmitError(
         err?.response?.data?.message ||
-          "Terjadi kesalahan sistem saat pengiriman data."
+          "Terjadi kesalahan sistem saat pengiriman data.",
       );
     } finally {
       setIsSubmitting(false);
     }
-  }, [isCommitmentChecked, formData]);
+  }, [isCommitmentChecked, formData, navigate]);
 
   return (
     <div className="pb-5 dash-fade-in dashboard-shell">
@@ -182,6 +230,8 @@ export default function RegistrationFormDetail() {
                     formData={formData}
                     errors={errors}
                     handleChange={handleChange}
+                    handleFieldChange={handleFieldChange}
+                    handleFieldBlur={handleFieldBlur}
                     setFormData={setFormData}
                     handleSetCapturedImage={handleSetCapturedImage}
                     isCommitmentChecked={isCommitmentChecked}
