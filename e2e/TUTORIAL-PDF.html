@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Tutorial Penggunaan KKPU ID</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 15mm;
+  }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #333;
+    max-width: 180mm;
+    margin: 0 auto;
+  }
+  h1 {
+    color: #1a5276;
+    font-size: 24pt;
+    border-bottom: 3px solid #2980b9;
+    padding-bottom: 8px;
+    page-break-before: avoid;
+  }
+  h2 {
+    color: #2471a3;
+    font-size: 16pt;
+    margin-top: 25px;
+    border-left: 4px solid #3498db;
+    padding-left: 10px;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #2e86c1;
+    font-size: 13pt;
+    margin-top: 18px;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #3498db;
+    font-size: 11.5pt;
+    margin-top: 12px;
+    page-break-after: avoid;
+  }
+  p, li {
+    font-size: 11pt;
+  }
+  .cover {
+    text-align: center;
+    padding-top: 80px;
+    page-break-after: always;
+  }
+  .cover h1 {
+    border: none;
+    font-size: 36pt;
+    color: #1a5276;
+  }
+  .cover .subtitle {
+    font-size: 16pt;
+    color: #5d6d7e;
+    margin-top: 15px;
+  }
+  .cover .info {
+    margin-top: 60px;
+    font-size: 12pt;
+    color: #7f8c8d;
+  }
+  .toc {
+    page-break-after: always;
+  }
+  .toc h2 {
+    border-left: 4px solid #3498db;
+  }
+  .toc ol {
+    font-size: 12pt;
+    line-height: 2.2;
+  }
+  .toc a {
+    color: #2471a3;
+    text-decoration: none;
+  }
+  .flow-diagram {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 9pt;
+    white-space: pre;
+    line-height: 1.4;
+    page-break-inside: avoid;
+  }
+  .screenshot {
+    text-align: center;
+    margin: 15px 0;
+    page-break-inside: avoid;
+  }
+  .screenshot img {
+    max-width: 100%;
+    max-height: 500px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+  .screenshot .caption {
+    font-size: 9pt;
+    color: #7f8c8d;
+    font-style: italic;
+    margin-top: 5px;
+  }
+  .step {
+    background: #eaf2f8;
+    border-left: 4px solid #3498db;
+    padding: 10px 15px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+    page-break-inside: avoid;
+  }
+  .step .step-title {
+    font-weight: bold;
+    color: #2471a3;
+  }
+  .note {
+    background: #fef9e7;
+    border: 1px solid #f9e79f;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    page-break-inside: avoid;
+  }
+  .note::before {
+    content: "⚠️ ";
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #2980b9;
+    color: white;
+    padding: 8px;
+    text-align: left;
+  }
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  tr:nth-child(even) {
+    background: #f8f9fa;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  .module-header {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    page-break-after: avoid;
+  }
+  .module-header h2 {
+    color: white;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+  .module-header p {
+    color: #d4e6f1;
+    margin: 5px 0 0;
+    font-size: 10pt;
+  }
+  .badge {
+    display: inline-block;
+    background: #27ae60;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9pt;
+  }
+  .badge-blue {
+    background: #2980b9;
+  }
+  .badge-orange {
+    background: #e67e22;
+  }
+  ul, ol {
+    padding-left: 20px;
+  }
+  .footer {
+    text-align: center;
+    font-size: 9pt;
+    color: #95a5a6;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER PAGE ========== -->
+<div class="cover">
+  <h1>📖 Tutorial Penggunaan<br>KKPU ID</h1>
+  <div class="subtitle">Panduan Lengkap Alur Pengguna<br>Koperasi Digital</div>
+  <div class="info">
+    <p><strong>Versi:</strong> 1.0</p>
+    <p><strong>Tanggal:</strong> November 2026</p>
+    <p><strong>Platform:</strong> Mobile App (375px viewport)</p>
+    <p><strong>Screenshots:</strong> 205+ E2E Test Screenshots</p>
+  </div>
+  <div style="margin-top:80px; color:#bdc3c7; font-size:10pt;">
+    <p>Dokumen ini dihasilkan dari E2E Test Suite @kkpusid</p>
+    <p>Branch: rollback/2026-11-02</p>
+  </div>
+</div>
+
+<!-- ========== TABLE OF CONTENTS ========== -->
+<div class="toc">
+  <h2>📑 Daftar Isi</h2>
+  <ol>
+    <li><a href="#pendahuluan">Pendahuluan</a></li>
+    <li><a href="#alur-utama">Alur Utama Pengguna</a></li>
+    <li><a href="#registrasi">Registrasi Anggota Baru</a></li>
+    <li><a href="#login">Login & Autentikasi</a></li>
+    <li><a href="#lupa-password">Lupa Password</a></li>
+    <li><a href="#dashboard">Dashboard Anggota</a></li>
+    <li><a href="#form-8step">Formulir Keanggotaan 8 Langkah</a></li>
+    <li><a href="#approval">Proses Approval Berjenjang</a></li>
+    <li><a href="#pembayaran">Pembayaran Tagihan</a></li>
+    <li><a href="#simpanan">Simpanan (Pokok/Wajib/Sukarela)</a></li>
+    <li><a href="#tabungan">Tabungan Target</a></li>
+    <li><a href="#pinjaman">Pinjaman/Pembiayaan</a></li>
+    <li><a href="#arisan">Arisan</a></li>
+    <li><a href="#jualbeli">Jual Beli</a></li>
+    <li><a href="#investasi">Investasi</a></li>
+    <li><a href="#training">Training & Evaluasi</a></li>
+    <li><a href="#notifikasi">Notifikasi & Transaksi</a></li>
+    <li><a href="#akun">Akun & Profil</a></li>
+    <li><a href="#logout">Logout</a></li>
+    <li><a href="#tips">Tips & Troubleshooting</a></li>
+  </ol>
+</div>
+
+<!-- ========== 1. PENDAHULUAN ========== -->
+<h1 id="pendahuluan">1. Pendahuluan</h1>
+
+<p>KKPU ID adalah aplikasi koperasi digital yang menyediakan layanan keuangan dan sosial untuk anggota koperasi. Aplikasi ini dirancang untuk memudahkan anggota mengelola simpanan, tabungan, pinjaman, arisan, jual beli, investasi, dan training secara digital.</p>
+
+<h3>Layanan Utama</h3>
+<table>
+  <tr><th>Layanan</th><th>Deskripsi</th><th>Modul</th></tr>
+  <tr><td>Simpanan</td><td>Simpanan Pokok, Wajib, Sukarela</td><td>06</td></tr>
+  <tr><td>Tabungan Target</td><td>Haji, Umrah, Pendidikan, Qurban</td><td>07</td></tr>
+  <tr><td>Pinjaman/Pembiayaan</td><td>Ajukan pinjaman dengan berbagai produk</td><td>08</td></tr>
+  <tr><td>Arisan</td><td>Ikut arisan koperasi</td><td>09</td></tr>
+  <tr><td>Jual Beli</td><td>Transaksi jual beli antar anggota</td><td>10</td></tr>
+  <tr><td>Investasi</td><td>Investasi halal/syariah, sukuk, pendanaan</td><td>11</td></tr>
+  <tr><td>Training</td><td>Materi edukasi & evaluasi</td><td>12</td></tr>
+  <tr><td>Notifikasi</td><td>Notifikasi & riwayat transaksi</td><td>13</td></tr>
+  <tr><td>Akun & Profil</td><td>Kelola profil, resignasi, terminasi</td><td>14</td></tr>
+</table>
+
+<div class="note">
+  Aplikasi KKPU ID menggunakan sistem approval berjenjang untuk menjaga keamanan dan transparansi. Setiap pengajuan akan melalui proses verifikasi oleh Pengawas, Ketua, dan Bendahara.
+</div>
+
+<!-- ========== 2. ALUR UTAMA ========== -->
+<h1 id="alur-utama" class="page-break">2. Alur Utama Pengguna</h1>
+
+<h2>2.1 Alur Pengguna Baru (New Member Journey)</h2>
+
+<div class="flow-diagram">┌─────────────────────────────────────────────────────────────────┐
+│                    ALUR PENGGUNA BARU                            │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────┐
+  │  SPLASH  │───▶│ LANDING  │───▶│ REGISTRASI│───▶│  APPROVAL    │
+  │  (5 detik)│    │   PAGE   │    │ 8-STEP   │    │  BERJENJANG  │
+  └──────────┘    └──────────┘    └──────────┘    └──────────────┘
+                       │                                 │
+                       │                                 ▼
+                       │                          ┌──────────────┐
+                       │                          │  PEMBAYARAN  │
+                       │                          │  (Bendahara) │
+                       │                          └──────────────┘
+                       │                                 │
+                       ▼                                 ▼
+                 ┌──────────┐                    ┌──────────────┐
+                 │  LOGIN   │◀───────────────────│   DASHBOARD  │
+                 │  PAGE    │                    │   ANGGOTA    │
+                 └──────────┘                    └──────────────┘
+                                                      │
+                                                      ▼
+                 ┌─────────────────────────────────────────────┐
+                 │           MENU ANGGOTA (UNLOCKED)            │
+                 ├─────────────────────────────────────────────┤
+                 │  • Simpanan (Pokok/Wajib/Sukarela)          │
+                 │  • Tabungan Target                          │
+                 │  • Pinjaman/Pembiayaan                      │
+                 │  • Arisan                                   │
+                 │  • Jual Beli                                │
+                 │  • Investasi                                │
+                 │  • Training & Evaluasi                      │
+                 │  • Notifikasi                               │
+                 │  • Akun & Profil                            │
+                 └─────────────────────────────────────────────┘</div>
+
+<h2>2.2 Alur Pengguna Lama (Returning Member)</h2>
+
+<div class="flow-diagram">┌─────────────────────────────────────────────────────────────────┐
+│                    ALUR PENGGUNA LAMA                            │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────┐
+  │  SPLASH  │───▶│ LANDING  │───▶│  LOGIN   │───▶│  DASHBOARD   │
+  │  (5 detik)│    │   PAGE   │    │  PAGE    │    │   ANGGOTA    │
+  └──────────┘    └──────────┘    └──────────┘    └──────────────┘
+                                                      │
+                                                      ▼
+                 ┌─────────────────────────────────────────────┐
+                 │           MENU ANGGOTA (UNLOCKED)            │
+                 │      (Langsung akses semua fitur)            │
+                 └─────────────────────────────────────────────┘</div>
+
+<h2>2.3 Navigasi Mobile</h2>
+
+<div class="flow-diagram">Mobile View (375px):
+┌─────────────────────┐
+│ ☰  KKPU ID    🔔 👤 │  ← Navbar dengan hamburger menu
+├─────────────────────┤
+│                     │
+│   [Page Content]    │
+│                     │
+└─────────────────────┘
+
+Menu Slide (tap ☰):
+┌─────────────────────┐
+│ KKPU ID         ✕   │
+├─────────────────────┤
+│ 🏠 Dashboard        │
+│ 💰 Simpanan         │
+│ 🎯 Tabungan         │
+│ 🏦 Pinjaman         │
+│ 🔄 Arisan           │
+│ 🛒 Jual Beli        │
+│ 📈 Investasi        │
+│ 📚 Training         │
+│ 🔔 Notifikasi       │
+│ 👤 Akun             │
+│ ─────────────────── │
+│ 🚪 Keluar           │
+└─────────────────────┘</div>
+
+<!-- ========== 3. REGISTRASI ========== -->
+<h1 id="registrasi" class="page-break">3. Registrasi Anggota Baru</h1>
+
+<div class="module-header">
+  <h2>Modul 01-02: Splash → Landing → Registrasi</h2>
+  <p>205+ screenshots tersedia di folder e2e/screenshots/</p>
+</div>
+
+<h3>3.1 Alur Registrasi</h3>
+
+<div class="flow-diagram">Splash Screen (5 detik)
+    ↓ Auto-redirect
+Landing Page
+    ↓ Klik "Daftar Sekarang"
+Form Registrasi Awal
+    ↓ Isi: nama, email, password
+    ↓ Klik submit
+SweetAlert Konfirmasi
+    ↓ Klik "Ke Halaman Login"
+Halaman Login</div>
+
+<h3>3.2 Langkah-Langkah</h3>
+
+<div class="step">
+  <div class="step-title">Step 1: Buka Aplikasi</div>
+  <p>Buka aplikasi KKPU ID di smartphone. Akan muncul splash screen selama ±5 detik, lalu auto-redirect ke halaman landing.</p>
+</div>
+
+<div class="screenshot">
+  <img src="01-splash-landing/01-globalSplash-mobile.png" alt="Splash Screen">
+  <div class="caption">Gambar 3.1 — Splash Screen (5 detik)</div>
+</div>
+
+<div class="step">
+  <div class="step-title">Step 2: Landing Page</div>
+  <p>Di halaman landing, Anda bisa membaca artikel/informasi. Klik tombol <strong>"Daftar Sekarang"</strong> di navbar untuk mulai registrasi.</p>
+</div>
+
+<div class="screenshot">
+  <img src="01-splash-landing/02-landingpage-mobile.png" alt="Landing Page">
+  <div class="caption">Gambar 3.2 — Landing Page</div>
+</div>
+
+<div class="step">
+  <div class="step-title">Step 3: Isi Form Registrasi Awal</div>
+  <p>Isi data: nama lengkap, email, password, konfirmasi password. Klik submit.</p>
+</div>
+
+<div class="screenshot">
+  <img src="02-registrasi/04-register-page-mobile.png" alt="Form Registrasi">
+  <div class="caption">Gambar 3.3 — Form Registrasi Awal</div>
+</div>
+
+<div class="screenshot">
+  <img src="02-registrasi/04-register-filled-mobile.png" alt="Form Terisi">
+  <div class="caption">Gambar 3.4 — Form Registrasi Terisi</div>
+</div>
+
+<div class="step">
+  <div class="step-title">Step 4: Konfirmasi & Login</div>
+  <p>Setelah submit, muncul SweetAlert konfirmasi. Klik "Ke Halaman Login" untuk masuk ke halaman login.</p>
+</div>
+
+<div class="screenshot">
+  <img src="02-registrasi/04-register-swalert-mobile.png" alt="SweetAlert">
+  <div class="caption">Gambar 3.5 — SweetAlert Konfirmasi</div>
+</div>
+
+<!-- ========== 4. LOGIN ========== -->
+<h1 id="login" class="page-break">4. Login & Autentikasi</h1>
+
+<div class="module-header">
+  <h2>Modul 03: Login Authentication</h2>
+  <p>5 screenshots tersedia</p>
+</div>
+
+<h3>4.1 Login dengan Email/HP</h3>
+
+<div class="flow-diagram">Splash Screen (5 detik)
+    ↓
+Landing Page
+    ↓ Klik "Masuk"
+Form Login
+    ↓ Isi email/HP + password
+    ↓ Klik "Masuk Sekarang"
+Dashboard</div>
+
+<div class="step">
+  <div class="step-title">Langkah Login</div>
+  <ol>
+    <li>Buka aplikasi KKPU ID</li>
+    <li>Tunggu splash screen 5 detik (auto-redirect)</li>
+    <li>Klik tombol <strong>"Masuk"</strong> di navbar</li>
+    <li>Masukkan email atau nomor HP</li>
+    <li>Masukkan password</li>
+    <li>Klik <strong>"Masuk Sekarang"</strong></li>
+  </ol>
+</div>
+
+<div class="screenshot">
+  <img src="03-login/03-login-page-mobile.png" alt="Login Page">
+  <div class="caption">Gambar 4.1 — Halaman Login</div>
+</div>
+
+<div class="screenshot">
+  <img src="03-login/03-login-filled-mobile.png" alt="Login Filled">
+  <div class="caption">Gambar 4.2 — Form Login Terisi</div>
+</div>
+
+<div class="screenshot">
+  <img src="03-login/03-login-success-mobile.png" alt="Login Success">
+  <div class="caption">Gambar 4.3 — Login Berhasil → Dashboard</div>
+</div>
+
+<div class="screenshot">
+  <img src="03-login/03-login-error-mobile.png" alt="Login Error">
+  <div class="caption">Gambar 4.4 — Error Kredensial Salah</div>
+</div>
+
+<div class="note">
+  Jika lupa password, klik "Lupa Password" di halaman login. Lihat bagian 5 untuk panduan reset password.
+</div>
+
+<!-- ========== 5. LUPA PASSWORD ========== -->
+<h1 id="lupa-password" class="page-break">5. Lupa Password</h1>
+
+<div class="module-header">
+  <h2>Modul 04: Lupa Password & OTP Verifikasi</h2>
+  <p>7 screenshots tersedia</p>
+</div>
+
+<h3>5.1 Alur Reset Password</h3>
+
+<div class="flow-diagram">Halaman Login
+    ↓ Klik "Lupa Password"
+Form Lupa Password
+    ↓ Masukkan email terdaftar
+    ↓ Klik "Kirim OTP"
+Cek Email (OTP 6 digit)
+    ↓ Masukkan OTP
+Verifikasi OTP
+    ↓ OTP valid
+Form Password Baru
+    ↓ Isi password baru + konfirmasi
+    ↓ Klik "Submit"
+Login dengan Password Baru</div>
+
+<div class="step">
+  <div class="step-title">Langkah Reset Password</div>
+  <ol>
+    <li>Klik <strong>"Lupa Password"</strong> di halaman login</li>
+    <li>Masukkan email terdaftar</li>
+    <li>Klik <strong>"Kirim OTP"</strong></li>
+    <li>Cek email untuk kode OTP 6 digit</li>
+    <li>Masukkan OTP</li>
+    <li>Buat password baru</li>
+    <li>Konfirmasi password baru</li>
+    <li>Klik <strong>"Submit"</strong></li>
+  </ol>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-lupa-password-mobile.png" alt="Lupa Password">
+  <div class="caption">Gambar 5.1 — Halaman Lupa Password</div>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-lupa-password-filled-mobile.png" alt="Email Filled">
+  <div class="caption">Gambar 5.2 — Email Terisi</div>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-lupa-password-sent-mobile.png" alt="OTP Sent">
+  <div class="caption">Gambar 5.3 — OTP Dikirim</div>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-lupa-password-verified-mobile.png" alt="OTP Verified">
+  <div class="caption">Gambar 5.4 — OTP Terverifikasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-reset-password-new-filled-mobile.png" alt="New Password">
+  <div class="caption">Gambar 5.5 — Password Baru Diisi</div>
+</div>
+
+<div class="screenshot">
+  <img src="04-lupa-password/04-reset-password-confirm-filled-mobile.png" alt="Confirm Password">
+  <div class="caption">Gambar 5.6 — Konfirmasi Password</div>
+</div>
+
+<!-- ========== 6. DASHBOARD ========== -->
+<h1 id="dashboard" class="page-break">6. Dashboard Anggota</h1>
+
+<div class="module-header">
+  <h2>Modul 05: Dashboard & Approval</h2>
+  <p>28 screenshots tersedia</p>
+</div>
+
+<h3>6.1 Dashboard Calon Anggota (Pending)</h3>
+
+<p>Setelah registrasi, akun berstatus <strong>Calon Anggota</strong> (status_id=1). Dashboard menampilkan:</p>
+
+<ul>
+  <li><strong>CandidateStepsCard:</strong> 4 tahap progres pendaftaran</li>
+  <li><strong>NextStepsCard:</strong> 4 langkah khusus calon anggota</li>
+  <li><strong>MainMenuSection:</strong> SEMUA MENU DINONAKTIFKAN (disabled)</li>
+  <li>Notifikasi & tagihan: tampil tapi non-interaktif</li>
+</ul>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-dashboard-main-mobile.png" alt="Dashboard Calon Anggota">
+  <div class="caption">Gambar 6.1 — Dashboard Calon Anggota</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-dashboard-menu-disabled-mobile.png" alt="Menu Disabled">
+  <div class="caption">Gambar 6.2 — Menu Terkunci (Disabled)</div>
+</div>
+
+<h3>6.2 CandidateStepsCard — 4 Tahap Progres</h3>
+
+<table>
+  <tr><th>Tahap</th><th>Status</th><th>Deskripsi</th></tr>
+  <tr><td>Tahap 1</td><td><span class="badge">Selesai</span></td><td>Buat Akun</td></tr>
+  <tr><td>Tahap 2</td><td><span class="badge badge-orange">Belum Lengkap</span></td><td>Daftar Menjadi Anggota — muncul tombol "Daftar Sekarang"</td></tr>
+  <tr><td>Tahap 3</td><td><span class="badge badge-blue">Proses Verifikasi</span></td><td>Approval — tombol "Lihat Detail" ke registrationPage</td></tr>
+  <tr><td>Tahap 4</td><td><span class="badge badge-blue">Menunggu</span></td><td>Menjadi Anggota Koperasi</td></tr>
+</table>
+
+<h3>6.3 Dashboard Anggota Reguler</h3>
+
+<p>Setelah status berubah menjadi <strong>Anggota Reguler</strong> (status_id=5), semua menu unlocked dan bisa diakses.</p>
+
+<div class="screenshot">
+  <img src="05-dashboard/02-fulljourney-regular-member-dashboard-final-mobile.png" alt="Dashboard Reguler">
+  <div class="caption">Gambar 6.3 — Dashboard Anggota Reguler (Menu Unlocked)</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-dashboard-notification-dropdown-mobile.png" alt="Notifikasi">
+  <div class="caption">Gambar 6.4 — Notifikasi Bell Dropdown</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-dashboard-lihat-detail-registration-mobile.png" alt="Lihat Detail">
+  <div class="caption">Gambar 6.5 — Tombol "Lihat Detail" → Registration Page</div>
+</div>
+
+<!-- ========== 7. FORM 8 STEP ========== -->
+<h1 id="form-8step" class="page-break">7. Formulir Keanggotaan 8 Langkah</h1>
+
+<div class="module-header">
+  <h2>Modul 05: RegistrationFormDetail (Tahap 2)</h2>
+  <p>8 langkah pengisian formulir keanggotaan</p>
+</div>
+
+<h3>7.1 Alur Form 8 Step</h3>
+
+<div class="flow-diagram">Dashboard Calon Anggota
+    ↓ Klik "Daftar Sekarang" / "Lengkapi Data"
+Form RegistrationFormDetail
+    │
+    ├─ Step 1: Data Pribadi (NIK, nama, alamat)
+    ├─ Step 2: Akun & Kontak (tipe anggota)
+    ├─ Step 3: Foto KTP (webcam)
+    ├─ Step 4: Swafoto (webcam)
+    ├─ Step 5: Pekerjaan
+    ├─ Step 6: Kontak Darurat
+    ├─ Step 7: Rekening Bank
+    └─ Step 8: Ringkasan → "Kirim Sekarang"
+         ↓
+    SweetAlert "Berhasil"
+         ↓
+    Tombol "Lihat Status Pendaftaran"</div>
+
+<h3>7.2 Detail Setiap Step</h3>
+
+<h4>Step 1: Data Pribadi</h4>
+<p>Field: NIK, nama lengkap, alamat (provinsi/kota/kecamatan/kelurahan)</p>
+<div class="screenshot">
+  <img src="02-registrasi/01-reg-step-1-data-pribadi-mobile.png" alt="Step 1">
+  <div class="caption">Gambar 7.1 — Step 1: Data Pribadi</div>
+</div>
+
+<h4>Step 2: Akun & Kontak</h4>
+<p>Field: Pilih tipe anggota (Reguler)</p>
+<div class="screenshot">
+  <img src="02-registrasi/02-reg-step-2-akun-kontak-mobile.png" alt="Step 2">
+  <div class="caption">Gambar 7.2 — Step 2: Akun & Kontak</div>
+</div>
+
+<h4>Step 3: Foto KTP</h4>
+<p>Klik "Buka Kamera" → "Ambil Foto" → Pastikan foto jelas</p>
+<div class="screenshot">
+  <img src="02-registrasi/03-reg-step-3-foto-ktp-mobile.png" alt="Step 3">
+  <div class="caption">Gambar 7.3 — Step 3: Foto KTP</div>
+</div>
+
+<h4>Step 4: Swafoto</h4>
+<p>Klik "Buka Kamera" → "Ambil Foto" → Pastikan wajah terlihat jelas</p>
+<div class="screenshot">
+  <img src="02-registrasi/04-reg-step-4-swafoto-mobile.png" alt="Step 4">
+  <div class="caption">Gambar 7.4 — Step 4: Swafoto</div>
+</div>
+
+<h4>Step 5: Pekerjaan</h4>
+<p>Field: Pekerjaan, nama perusahaan, alamat kantor</p>
+<div class="screenshot">
+  <img src="02-registrasi/05-reg-step-5-pekerjaan-mobile.png" alt="Step 5">
+  <div class="caption">Gambar 7.5 — Step 5: Pekerjaan</div>
+</div>
+
+<h4>Step 6: Kontak Darurat</h4>
+<p>Field: Nama kontak, nomor HP, hubungan</p>
+<div class="screenshot">
+  <img src="02-registrasi/06-reg-step-6-kontak-darurat-mobile.png" alt="Step 6">
+  <div class="caption">Gambar 7.6 — Step 6: Kontak Darurat</div>
+</div>
+
+<h4>Step 7: Rekening Bank</h4>
+<p>Field: Nama bank, nomor rekening, nama pemilik</p>
+<div class="screenshot">
+  <img src="02-registrasi/07-reg-step-7-rekening-bank-mobile.png" alt="Step 7">
+  <div class="caption">Gambar 7.7 — Step 7: Rekening Bank</div>
+</div>
+
+<h4>Step 8: Ringkasan</h4>
+<p>Periksa semua data → Centang commitment → Klik "Kirim Sekarang"</p>
+<div class="screenshot">
+  <img src="02-registrasi/08-reg-step-8-ringkasan-mobile.png" alt="Step 8">
+  <div class="caption">Gambar 7.8 — Step 8: Ringkasan</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-submit-sweetalert-lihat-status-mobile.png" alt="SweetAlert Berhasil">
+  <div class="caption">Gambar 7.9 — SweetAlert "Berhasil" + Tombol "Lihat Status Pendaftaran"</div>
+</div>
+
+<!-- ========== 8. APPROVAL ========== -->
+<h1 id="approval" class="page-break">8. Proses Approval Berjenjang</h1>
+
+<div class="module-header">
+  <h2>Modul 05: Approval Chain (Tahap 3)</h2>
+  <p>3 tahap approval: Pengawas → Ketua → Bendahara</p>
+</div>
+
+<h3>8.1 Alur Approval</h3>
+
+<div class="flow-diagram">Form 8-Step Disubmit
+    ↓
+[Tahap 1: Pengawas] Review Awal
+    ↓ APPROVE
+[Tahap 2: Ketua] Review Kedua + Terbitkan Tagihan
+    ↓ APPROVE + Tagihan Awal (Simpanan Pokok & Wajib)
+[Tahap 3: Anggota Bayar Tagihan]
+    ↓ Upload Bukti Transfer → PENDING_VERIFICATION
+[Tahap 4: Bendahara] Verifikasi Pembayaran (Final)
+    ↓ APPROVE
+Status Berubah: Calon Anggota → Anggota Penuh
+    ↓
+Main Menu Unlocked</div>
+
+<h3>8.2 Status Approval</h3>
+
+<table>
+  <tr><th>Status</th><th>Keterangan</th><th>Action</th></tr>
+  <tr><td><span class="badge badge-blue">PENDING</span></td><td>Menunggu review</td><td>Tunggu approval dari Pengawas/Ketua/Bendahara</td></tr>
+  <tr><td><span class="badge">APPROVED</span></td><td>Disetujui</td><td>Lanjut ke tahap berikutnya</td></tr>
+  <tr><td><span class="badge badge-orange">REJECTED</span></td><td>Ditolak</td><td>Cek alasan di notifikasi</td></tr>
+</table>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-registration-status-mobile.png" alt="Status Pendaftaran">
+  <div class="caption">Gambar 8.1 — Halaman Status Pendaftaran</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-approval-chain-final-approved-mobile.png" alt="Approval Selesai">
+  <div class="caption">Gambar 8.2 — Approval Selesai (APPROVED)</div>
+</div>
+
+<!-- ========== 9. PEMBAYARAN ========== -->
+<h1 id="pembayaran" class="page-break">9. Pembayaran Tagihan</h1>
+
+<div class="module-header">
+  <h2>Modul 05: Billing Flow</h2>
+  <p>RegistrationSummary → BAYAR SIMPANAN → BillingPage</p>
+</div>
+
+<h3>9.1 Alur Pembayaran</h3>
+
+<div class="flow-diagram">RegistrationSummary (Status Pendaftaran)
+    ↓ Klik "BAYAR SIMPANAN SEKARANG"
+BillingPage (BillList)
+    ↓ Pilih tagihan → Klik "Bayar Sekarang"
+InvoicePage
+    ↓ Upload bukti transfer
+    ↓ Klik "Kirim Bukti Pembayaran"
+Status: PENDING_VERIFICATION
+    ↓
+Bendahara Approval → Pembayaran Selesai</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/02-billingflow-registration-summary-mobile.png" alt="Registration Summary">
+  <div class="caption">Gambar 9.1 — Registration Summary</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-billingflow-billingpage-mobile.png" alt="Billing Page">
+  <div class="caption">Gambar 9.2 — Billing Page (BillList)</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-billingflow-billlist-mobile.png" alt="Bill List">
+  <div class="caption">Gambar 9.3 — Daftar Tagihan</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-fulljourney-invoicepage-loaded-mobile.png" alt="Invoice Page">
+  <div class="caption">Gambar 9.4 — Invoice Page</div>
+</div>
+
+<div class="screenshot">
+  <img src="05-dashboard/01-fulljourney-after-bukti-upload-mobile.png" alt="Bukti Upload">
+  <div class="caption">Gambar 9.5 — Setelah Upload Bukti Pembayaran</div>
+</div>
+
+<div class="note">
+  Tagihan awal yang harus dibayar: Simpanan Pokok & Simpanan Wajib. Total tagihan tergantung dari ketentuan koperasi.
+</div>
+
+<!-- ========== 10. SIMPANAN ========== -->
+<h1 id="simpanan" class="page-break">10. Simpanan</h1>
+
+<div class="module-header">
+  <h2>Modul 06: Simpanan (Pokok/Wajib/Sukarela)</h2>
+  <p>15 screenshots tersedia (5 per produk)</p>
+</div>
+
+<h3>10.1 Halaman Simpanan</h3>
+
+<p>Halaman simpanan menampilkan 3 tab produk: <strong>Pokok</strong>, <strong>Wajib</strong>, <strong>Sukarela</strong>.</p>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-pokok/01-simpanan-pokok-main-mobile.png" alt="Simpanan Pokok">
+  <div class="caption">Gambar 10.1 — Halaman Simpanan Pokok</div>
+</div>
+
+<h3>10.2 Simpanan Pokok</h3>
+
+<h4>Detail Pokok</h4>
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-pokok/02-simpanan-pokok-detail-mobile.png" alt="Detail Pokok">
+  <div class="caption">Gambar 10.2 — Detail Simpanan Pokok</div>
+</div>
+
+<h4>Setoran Pokok</h4>
+<div class="step">
+  <div class="step-title">Langkah Setoran</div>
+  <ol>
+    <li>Klik tab "Pokok"</li>
+    <li>Klik tombol "Setoran"</li>
+    <li>Masukkan nominal</li>
+    <li>Upload bukti transfer</li>
+    <li>Klik "Kirim Bukti Pembayaran"</li>
+  </ol>
+</div>
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-pokok/03-simpanan-pokok-setor-form-mobile.png" alt="Setor Pokok">
+  <div class="caption">Gambar 10.3 — Form Setoran Pokok</div>
+</div>
+
+<h4>Penarikan Pokok</h4>
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-pokok/04-simpanan-pokok-penarikan-main-mobile.png" alt="Penarikan Pokok">
+  <div class="caption">Gambar 10.4 — Penarikan Simpanan Pokok</div>
+</div>
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-pokok/05-simpanan-pokok-penarikan-form-mobile.png" alt="Form Penarikan">
+  <div class="caption">Gambar 10.5 — Form Penarikan Pokok</div>
+</div>
+
+<h3>10.3 Simpanan Wajib</h3>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-wajib/01-simpanan-wajib-main-mobile.png" alt="Simpanan Wajib">
+  <div class="caption">Gambar 10.6 — Halaman Simpanan Wajib</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-wajib/02-simpanan-wajib-detail-mobile.png" alt="Detail Wajib">
+  <div class="caption">Gambar 10.7 — Detail Simpanan Wajib</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-wajib/03-simpanan-wajib-setor-form-mobile.png" alt="Setor Wajib">
+  <div class="caption">Gambar 10.8 — Form Setoran Wajib</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-wajib/04-simpanan-wajib-penarikan-main-mobile.png" alt="Penarikan Wajib">
+  <div class="caption">Gambar 10.9 — Penarikan Simpanan Wajib</div>
+</div>
+
+<h3>10.4 Simpanan Sukarela</h3>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-sukarela/01-simpanan-sukarela-main-mobile.png" alt="Simpanan Sukarela">
+  <div class="caption">Gambar 10.10 — Halaman Simpanan Sukarela</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-sukarela/02-simpanan-sukarela-detail-mobile.png" alt="Detail Sukarela">
+  <div class="caption">Gambar 10.11 — Detail Simpanan Sukarela</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-sukarela/03-simpanan-sukarela-setor-form-mobile.png" alt="Setor Sukarela">
+  <div class="caption">Gambar 10.12 — Form Setoran Sukarela</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-sukarela/04-simpanan-sukarela-penarikan-main-mobile.png" alt="Penarikan Sukarela">
+  <div class="caption">Gambar 10.13 — Penarikan Simpanan Sukarela</div>
+</div>
+
+<div class="screenshot">
+  <img src="06-simpanan/simpanan-sukarela/05-simpanan-sukarela-penarikan-form-mobile.png" alt="Form Penarikan Sukarela">
+  <div class="caption">Gambar 10.14 — Form Penarikan Sukarela</div>
+</div>
+
+<!-- ========== 11. TABUNGAN ========== -->
+<h1 id="tabungan" class="page-break">11. Tabungan Target</h1>
+
+<div class="module-header">
+  <h2>Modul 07: Tabungan Target</h2>
+  <p>6 screenshots tersedia</p>
+</div>
+
+<h3>11.1 Kategori Tabungan</h3>
+
+<table>
+  <tr><th>Kategori</th><th>Deskripsi</th></tr>
+  <tr><td>Haji</td><td>Tabungan untuk biaya ibadah haji</td></tr>
+  <tr><td>Umrah</td><td>Tabungan untuk ibadah umrah</td></tr>
+  <tr><td>Pendidikan</td><td>Tabungan untuk biaya pendidikan</td></tr>
+  <tr><td>Qurban</td><td>Tabungan untuk ibadah qurban</td></tr>
+</table>
+
+<div class="screenshot">
+  <img src="07-tabungan/01-tabungan-main-mobile.png" alt="Tabungan">
+  <div class="caption">Gambar 11.1 — Halaman Tabungan Target</div>
+</div>
+
+<div class="screenshot">
+  <img src="07-tabungan/01-tabungan-detail-mobile.png" alt="Detail Tabungan">
+  <div class="caption">Gambar 11.2 — Detail Tabungan</div>
+</div>
+
+<div class="screenshot">
+  <img src="07-tabungan/02-tabungan-ajuan-form-mobile.png" alt="Form Ajuan">
+  <div class="caption">Gambar 11.3 — Form Ajuan Tabungan</div>
+</div>
+
+<div class="screenshot">
+  <img src="07-tabungan/01-tabungan-setor-mobile.png" alt="Setoran">
+  <div class="caption">Gambar 11.4 — Setoran Tabungan</div>
+</div>
+
+<div class="screenshot">
+  <img src="07-tabungan/01-tabungan-penarikan-mobile.png" alt="Penarikan">
+  <div class="caption">Gambar 11.5 — Pencairan Tabungan</div>
+</div>
+
+<!-- ========== 12. PINJAMAN ========== -->
+<h1 id="pinjaman" class="page-break">12. Pinjaman/Pembiayaan</h1>
+
+<div class="module-header">
+  <h2>Modul 08: Pinjaman/Pembiayaan</h2>
+  <p>3 screenshots tersedia</p>
+</div>
+
+<div class="step">
+  <div class="step-title">Langkah Ajukan Pinjaman</div>
+  <ol>
+    <li>Pilih produk pinjaman</li>
+    <li>Klik "Ajukan Pinjaman"</li>
+    <li>Masukkan nominal pinjaman</li>
+    <li>Pilih durasi</li>
+    <li>Masukkan tujuan pinjaman</li>
+    <li>Upload dokumen pendukung</li>
+    <li>Klik "Ajukan Pinjaman"</li>
+  </ol>
+</div>
+
+<div class="screenshot">
+  <img src="08-pinjaman/01-pinjaman-main-mobile.png" alt="Pinjaman">
+  <div class="caption">Gambar 12.1 — Halaman Pinjaman</div>
+</div>
+
+<div class="screenshot">
+  <img src="08-pinjaman/01-pinjaman-form-mobile.png" alt="Form Pinjaman">
+  <div class="caption">Gambar 12.2 — Form Ajuan Pinjaman</div>
+</div>
+
+<div class="screenshot">
+  <img src="08-pinjaman/02-pinjaman-form-filled-mobile.png" alt="Form Terisi">
+  <div class="caption">Gambar 12.3 — Form Pinjaman Terisi</div>
+</div>
+
+<!-- ========== 13. ARISAN ========== -->
+<h1 id="arisan" class="page-break">13. Arisan</h1>
+
+<div class="module-header">
+  <h2>Modul 09: Arisan</h2>
+  <p>5 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="09-arisan/01-arisan-pengajuan-mobile.png" alt="Arisan">
+  <div class="caption">Gambar 13.1 — Halaman Arisan</div>
+</div>
+
+<div class="screenshot">
+  <img src="09-arisan/02-arisan-pengajuan-form-mobile.png" alt="Form Pengajuan">
+  <div class="caption">Gambar 13.2 — Form Pengajuan Arisan</div>
+</div>
+
+<div class="screenshot">
+  <img src="09-arisan/01-arisan-gabung-mobile.png" alt="Gabung Arisan">
+  <div class="caption">Gambar 13.3 — Gabung Arisan</div>
+</div>
+
+<div class="screenshot">
+  <img src="09-arisan/02-arisan-gabung-form-mobile.png" alt="Form Gabung">
+  <div class="caption">Gambar 13.4 — Form Gabung Arisan</div>
+</div>
+
+<div class="screenshot">
+  <img src="09-arisan/01-arisan-konfirmasi-mobile.png" alt="Konfirmasi">
+  <div class="caption">Gambar 13.5 — Konfirmasi Arisan</div>
+</div>
+
+<!-- ========== 14. JUAL BELI ========== -->
+<h1 id="jualbeli" class="page-break">14. Jual Beli</h1>
+
+<div class="module-header">
+  <h2>Modul 10: Jual Beli</h2>
+  <p>5 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="10-jual-beli/01-jual-beli-main-mobile.png" alt="Jual Beli">
+  <div class="caption">Gambar 14.1 — Halaman Jual Beli</div>
+</div>
+
+<div class="screenshot">
+  <img src="10-jual-beli/02-jual-beli-form-mobile.png" alt="Form Jual Beli">
+  <div class="caption">Gambar 14.2 — Form Ajuan Transaksi</div>
+</div>
+
+<div class="screenshot">
+  <img src="10-jual-beli/03-jual-beli-form-filled-mobile.png" alt="Form Terisi">
+  <div class="caption">Gambar 14.3 — Form Terisi</div>
+</div>
+
+<div class="screenshot">
+  <img src="10-jual-beli/04-jual-beli-pelunasan-mobile.png" alt="Pelunasan">
+  <div class="caption">Gambar 14.4 — Pelunasan</div>
+</div>
+
+<div class="screenshot">
+  <img src="10-jual-beli/05-jual-beli-nota-mobile.png" alt="Nota">
+  <div class="caption">Gambar 14.5 — Nota/Receipt</div>
+</div>
+
+<!-- ========== 15. INVESTASI ========== -->
+<h1 id="investasi" class="page-break">15. Investasi</h1>
+
+<div class="module-header">
+  <h2>Modul 11: Investasi/Sukuk</h2>
+  <p>6 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/01-investasi-main-mobile.png" alt="Investasi">
+  <div class="caption">Gambar 15.1 — Halaman Investasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/01-investasi-halal-mobile.png" alt="Investasi Halal">
+  <div class="caption">Gambar 15.2 — Investasi Halal</div>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/01-investasi-sukuk-mobile.png" alt="Sukuk">
+  <div class="caption">Gambar 15.3 — Sukuk</div>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/01-investasi-pendanaan-mobile.png" alt="Pendanaan">
+  <div class="caption">Gambar 15.4 — Pendanaan</div>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/02-investasi-pendanaan-form-mobile.png" alt="Form Investasi">
+  <div class="caption">Gambar 15.5 — Form Ajuan Investasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="11-investasi/03-investasi-pendanaan-form-filled-mobile.png" alt="Form Terisi">
+  <div class="caption">Gambar 15.6 — Form Investasi Terisi</div>
+</div>
+
+<!-- ========== 16. TRAINING ========== -->
+<h1 id="training" class="page-break">16. Training & Evaluasi</h1>
+
+<div class="module-header">
+  <h2>Modul 12: Training & Evaluasi</h2>
+  <p>6 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/01-training-main-mobile.png" alt="Training">
+  <div class="caption">Gambar 16.1 — Halaman Training</div>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/01-training-detail-mobile.png" alt="Detail Training">
+  <div class="caption">Gambar 16.2 — Detail Materi</div>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/01-training-baca-mobile.png" alt="Baca Materi">
+  <div class="caption">Gambar 16.3 — Baca Materi</div>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/02-training-baca-scrolled-mobile.png" alt="Baca Materi Scroll">
+  <div class="caption">Gambar 16.4 — Baca Materi (Scroll)</div>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/01-training-evaluasi-mobile.png" alt="Evaluasi">
+  <div class="caption">Gambar 16.5 — Evaluasi/Kuis</div>
+</div>
+
+<div class="screenshot">
+  <img src="12-training/01-training-ranking-mobile.png" alt="Ranking">
+  <div class="caption">Gambar 16.6 — Ranking</div>
+</div>
+
+<!-- ========== 17. NOTIFIKASI ========== -->
+<h1 id="notifikasi" class="page-break">17. Notifikasi & Transaksi</h1>
+
+<div class="module-header">
+  <h2>Modul 13: Notifikasi & Transaksi</h2>
+  <p>11 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-notifikasi-main-mobile.png" alt="Notifikasi">
+  <div class="caption">Gambar 17.1 — Halaman Notifikasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-notifikasi-detail-mobile.png" alt="Detail Notifikasi">
+  <div class="caption">Gambar 17.2 — Detail Notifikasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-transaksi-detail-mobile.png" alt="Detail Transaksi">
+  <div class="caption">Gambar 17.3 — Detail Transaksi</div>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-transaksi-receipt-mobile.png" alt="Receipt">
+  <div class="caption">Gambar 17.4 — Receipt/Nota Transaksi</div>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-billing-main-mobile.png" alt="Billing">
+  <div class="caption">Gambar 17.5 — Billing Page</div>
+</div>
+
+<div class="screenshot">
+  <img src="13-notifikasi/01-billing-invoice-mobile.png" alt="Invoice">
+  <div class="caption">Gambar 17.6 — Invoice</div>
+</div>
+
+<!-- ========== 18. AKUN & PROFIL ========== -->
+<h1 id="akun" class="page-break">18. Akun & Profil</h1>
+
+<div class="module-header">
+  <h2>Modul 14: Akun & Profil</h2>
+  <p>6 screenshots tersedia</p>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/01-akun-profil-main-mobile.png" alt="Akun">
+  <div class="caption">Gambar 18.1 — Halaman Akun</div>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/02-akun-profil-registrasi-mobile.png" alt="Registrasi">
+  <div class="caption">Gambar 18.2 — Status Registrasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/03-akun-profil-form-detail-mobile.png" alt="Form Detail">
+  <div class="caption">Gambar 18.3 — Form Detail Profil</div>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/04-akun-profil-detail-registrasi-mobile.png" alt="Detail Registrasi">
+  <div class="caption">Gambar 18.4 — Detail Registrasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/05-akun-profil-resignasi-mobile.png" alt="Resignasi">
+  <div class="caption">Gambar 18.5 — Pengajuan Resignasi</div>
+</div>
+
+<div class="screenshot">
+  <img src="14-akun-profil/06-akun-profil-terminasi-mobile.png" alt="Terminasi">
+  <div class="caption">Gambar 18.6 — Status Terminasi</div>
+</div>
+
+<!-- ========== 19. LOGOUT ========== -->
+<h1 id="logout" class="page-break">19. Logout</h1>
+
+<div class="module-header">
+  <h2>Modul 15: Logout</h2>
+  <p>3 screenshots tersedia</p>
+</div>
+
+<div class="step">
+  <div class="step-title">Langkah Logout</div>
+  <ol>
+    <li>Klik menu "Akun"</li>
+    <li>Scroll ke bawah</li>
+    <li>Klik tombol "Keluar" / "Logout"</li>
+    <li>Konfirmasi</li>
+    <li>Akan redirect ke halaman login</li>
+  </ol>
+</div>
+
+<div class="screenshot">
+  <img src="15-logout/01-logout-dashboard-mobile.png" alt="Logout Dashboard">
+  <div class="caption">Gambar 19.1 — Dashboard Sebelum Logout</div>
+</div>
+
+<div class="screenshot">
+  <img src="15-logout/01-logout-fallback-mobile.png" alt="Logout Fallback">
+  <div class="caption">Gambar 19.2 — Halaman Fallback Setelah Logout</div>
+</div>
+
+<!-- ========== 20. TIPS ========== -->
+<h1 id="tips" class="page-break">20. Tips & Troubleshooting</h1>
+
+<h3>20.1 Tips Penggunaan</h3>
+
+<table>
+  <tr><th>Topik</th><th>Tips</th></tr>
+  <tr><td>Akses Menu Cepat</td><td>Gunakan menu hamburger (☰) untuk navigasi cepat. Swipe dari kiri untuk buka menu.</td></tr>
+  <tr><td>Upload Dokumen</td><td>Pastikan foto jelas dan terbaca. Format: JPG, PNG, PDF. Maksimal 5MB.</td></tr>
+  <tr><td>Pembayaran</td><td>Transfer ke rekening yang tertera di invoice. Upload bukti transfer yang jelas. Tunggu verifikasi Bendahara (1-2 hari kerja).</td></tr>
+  <tr><td>Status Approval</td><td><strong>PENDING</strong> → Menunggu review. <strong>APPROVED</strong> → Disetujui. <strong>REJECTED</strong> → Ditolak (cek alasan di notifikasi).</td></tr>
+</table>
+
+<h3>20.2 Troubleshooting</h3>
+
+<table>
+  <tr><th>Masalah</th><th>Solusi</th></tr>
+  <tr><td>Tidak bisa login</td><td>Periksa email/HP dan password. Gunakan "Lupa Password" jika lupa.</td></tr>
+  <tr><td>Menu terkunci</td><td>Status masih Calon Anggota. Lengkapi form 8-step dan tunggu approval.</td></tr>
+  <tr><td>Foto KTP tidak muncul</td><td>Pastikan kamera diizinkan. Coba refresh halaman.</td></tr>
+  <tr><td>OTP tidak masuk</td><td>Cek folder spam. Klik "Kirim Ulang OTP" jika diperlukan.</td></tr>
+  <tr><td>Tagihan tidak muncul</td><td>Tunggu approval Ketua. Tagihan diterbitkan setelah Ketua approve.</td></tr>
+  <tr><td>Bukti pembayaran ditolak</td><td>Pastikan bukti jelas dan nominal sesuai. Upload ulang dengan foto yang lebih baik.</td></tr>
+</table>
+
+<h3>20.3 Status Keanggotaan</h3>
+
+<table>
+  <tr><th>Status</th><th>status_id</th><th>Akses</th></tr>
+  <tr><td>Calon Anggota</td><td>1</td><td>Menu terkunci, hanya bisa lihat dashboard & status</td></tr>
+  <tr><td>Anggota Reguler</td><td>5</td><td>Semua menu unlocked</td></tr>
+  <tr><td>Anggota Luar Biasa</td><td>-</td><td>Semua menu unlocked + fitur tambahan</td></tr>
+</table>
+
+<div class="note">
+  Jika mengalami kendala lebih lanjut, hubungi support melalui tombol "Hubungi Kami" di halaman Status Pendaftaran atau kirim pesan ke WhatsApp: 6281234567890.
+</div>
+
+<!-- ========== APPENDIX ========== -->
+<h1 class="page-break">📎 Lampiran: Daftar Screenshot</h1>
+
+<p>Total: <strong>205+ screenshots</strong> dari E2E test suite.</p>
+
+<table>
+  <tr><th>Folder</th><th>Jumlah</th><th>Deskripsi</th></tr>
+  <tr><td>01-splash-landing/</td><td>3</td><td>Splash & Landing Page</td></tr>
+  <tr><td>02-registrasi/</td><td>15</td><td>Registrasi 8-Step</td></tr>
+  <tr><td>03-login/</td><td>5</td><td>Login & Autentikasi</td></tr>
+  <tr><td>04-lupa-password/</td><td>7</td><td>Lupa Password & OTP</td></tr>
+  <tr><td>05-dashboard/</td><td>28</td><td>Dashboard, Approval, Billing</td></tr>
+  <tr><td>06-simpanan/</td><td>15</td><td>Simpanan (Pokok/Wajib/Sukarela)</td></tr>
+  <tr><td>07-tabungan/</td><td>6</td><td>Tabungan Target</td></tr>
+  <tr><td>08-pinjaman/</td><td>3</td><td>Pinjaman/Pembiayaan</td></tr>
+  <tr><td>09-arisan/</td><td>5</td><td>Arisan</td></tr>
+  <tr><td>10-jual-beli/</td><td>5</td><td>Jual Beli</td></tr>
+  <tr><td>11-investasi/</td><td>6</td><td>Investasi</td></tr>
+  <tr><td>12-training/</td><td>6</td><td>Training & Evaluasi</td></tr>
+  <tr><td>13-notifikasi/</td><td>11</td><td>Notifikasi & Transaksi</td></tr>
+  <tr><td>14-akun-profil/</td><td>6</td><td>Akun & Profil</td></tr>
+  <tr><td>15-logout/</td><td>3</td><td>Logout</td></tr>
+  <tr><td>16-alur-penggunaan/</td><td>17</td><td>User Flow E2E</td></tr>
+  <tr><td>auth-ui/</td><td>15</td><td>Auth UI Tests</td></tr>
+  <tr><td>derived-pages/</td><td>7</td><td>Derived Pages</td></tr>
+  <tr><td>user-workflow/</td><td>43</td><td>User Workflow E2E</td></tr>
+</table>
+
+<div class="footer">
+  <p>© 2026 KKPU ID — Koperasi Digital</p>
+  <p>Dokumen ini dihasilkan dari E2E Test Suite @kkpusid</p>
+  <p>Branch: rollback/2026-11-02 | Tanggal: November 2026</p>
+</div>
+
+</body>
+</html>
