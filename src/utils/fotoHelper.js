@@ -94,7 +94,7 @@ export function resizeImageToBase64(file, { maxSize = 1000, quality = 0.85 } = {
  * @param {number} [options.quality=0.85] - kualitas JPEG (0..1)
  * @returns {Promise<string>} data URL JPEG
  */
-export function compressDataUrl(dataUrl, { maxSize = 1280, quality = 0.85 } = {}) {
+export function compressDataUrl(dataUrl, { maxSize = 1000, quality = 0.78 } = {}) {
   return new Promise((resolve) => {
     if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image")) {
       resolve(dataUrl);

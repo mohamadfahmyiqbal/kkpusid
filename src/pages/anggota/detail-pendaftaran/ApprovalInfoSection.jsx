@@ -1,15 +1,16 @@
 import React from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
-import { FaCheck, FaTimes, FaClock } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
 
 /**
  * Peta status persetujuan → ikon, warna, dan label yang konsisten.
  * Warna dipilih agar kontras teks/ikon memenuhi WCAG 2.2 AA pada latar
  * tint tipis (status tidak hanya dibedakan oleh warna — ada ikon + label).
+ * Ikon memakai varian *Circle agar makna status langsung dikenali (Jakob's Law).
  */
 const STATUS_MAP = {
-  approved: { icon: FaCheck, color: "#157347", bg: "#e7f4ec", label: "Disetujui" },
-  rejected: { icon: FaTimes, color: "#b02a37", bg: "#f7e4e6", label: "Ditolak" },
+  approved: { icon: FaCheckCircle, color: "#157347", bg: "#e7f4ec", label: "Disetujui" },
+  rejected: { icon: FaTimesCircle, color: "#b02a37", bg: "#f7e4e6", label: "Ditolak" },
   pending: { icon: FaClock, color: "#a16207", bg: "#fdf3e2", label: "Menunggu" },
 };
 
