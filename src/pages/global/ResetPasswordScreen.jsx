@@ -11,6 +11,7 @@ import {
 import { FaSignInAlt } from "react-icons/fa";
 import UAnggota from "../../utils/UAnggota";
 import Notification from "../../comp/global/Notification";
+import "./ResetPasswordScreen.css";
 
 const INITIAL_FORM = { password: "", rePassword: "" };
 
@@ -146,20 +147,14 @@ export default function ResetPasswordScreen() {
               <h3 className="m-0 fw-bold text-white">PUS</h3>
             </Col>
             <Col className="d-flex justify-content-end">
-              <FaSignInAlt
-                color="white"
-                size={32}
-                title="Sign In"
-                style={{ cursor: "pointer" }}
+              <button
+                type="button"
+                className="reset-signin"
                 onClick={() => window.location.assign("/login")}
-                tabIndex={0}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    window.location.assign("/login");
-                  }
-                }}
                 aria-label="Sign In"
-              />
+              >
+                <FaSignInAlt color="white" size={26} aria-hidden="true" />
+              </button>
             </Col>
           </Row>
         </Container>
@@ -170,22 +165,22 @@ export default function ResetPasswordScreen() {
         <Row className="w-100 justify-content-center">
           <Col xs={12} sm={10} md={7} lg={5} xl={4}>
             <Card
-              className="shadow-lg border-0 my-4"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                backdropFilter: "blur(10px)",
-                borderRadius: "16px",
-              }}
+              className="shadow-lg border-0 my-4 reset-card"
+              style={{ borderRadius: "16px" }}
             >
               <Card.Body className="p-4">
                 <div className="mb-4">
                   <h2 className="fw-bold text-white mb-1">Reset Password</h2>
-                  <p className="text-white-50 mb-0">
+                  <p className="reset-subtitle mb-0">
                     Silakan masukkan password baru (minimal 6 karakter, boleh
                     huruf, angka, dan simbol).
                   </p>
                   {!otp && (
-                    <div className="alert alert-warning mt-3 py-2 px-3">
+                    <div
+                      className="alert alert-warning mt-3 py-2 px-3 mb-0"
+                      role="alert"
+                      aria-live="polite"
+                    >
                       Kode OTP tidak ditemukan. Silakan ulangi proses reset
                       password.
                     </div>
@@ -207,8 +202,15 @@ export default function ResetPasswordScreen() {
                       spellCheck={false}
                       minLength={6}
                       maxLength={32}
+                      aria-invalid={!!errors.password}
+                      aria-describedby={
+                        errors.password ? "reset-password-feedback" : undefined
+                      }
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback
+                      type="invalid"
+                      id="reset-password-feedback"
+                    >
                       {errors.password}
                     </Form.Control.Feedback>
                   </Form.Group>
@@ -227,8 +229,17 @@ export default function ResetPasswordScreen() {
                       autoComplete="new-password"
                       minLength={6}
                       maxLength={32}
+                      aria-invalid={!!errors.rePassword}
+                      aria-describedby={
+                        errors.rePassword
+                          ? "reset-repassword-feedback"
+                          : undefined
+                      }
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback
+                      type="invalid"
+                      id="reset-repassword-feedback"
+                    >
                       {errors.rePassword}
                     </Form.Control.Feedback>
                   </Form.Group>
@@ -274,7 +285,7 @@ export default function ResetPasswordScreen() {
         <Container>
           <Row className="align-items-center">
             <Col xs={6} className="text-start small fw-bold">
-              Paguyuban Usaha Sukses @2025
+              Paguyuban Usaha Sukses &copy;2025
             </Col>
             <Col xs={6} className="text-end small fw-bold">
               Powered By Manova
