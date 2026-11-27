@@ -74,10 +74,12 @@ self.addEventListener('fetch', (event) => {
       // Other same-origin requests - Stale While Revalidate
       event.respondWith(staleWhileRevalidate(request));
     }
-  } else {
-    // Cross-origin requests - Network First
-    event.respondWith(networkFirst(request));
   }
+  // Cross-origin requests (mis. API/file di origin berbeda) TIDAK di-intercept.
+  // Biarkan browser menanganinya secara native. Meng-intercept request lintas
+  // origin (mis. GET /api/files/* yang butuh header Authorization) sering gagal
+  // di fetch() service worker lalu jatuh ke fallback 503 "Offline", sehingga
+  // gambar/dokumen terproteksi gagal tampil walau server sehat.
 });
 
 // Cache First Strategy

@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ApprovalPlaceholder from "../../../../components/ui/ApprovalPlaceholder";
+import ProtectedFileViewer from "../../../global/ReceiptPage/components/ProtectedFileViewer";
 import { jwtEncode } from "../../../../utils/helpers";
 import useApprovalStatus from "../hooks/useApprovalStatus";
 import useRegistrationSocket from "../hooks/useRegistrationSocket";
@@ -166,30 +167,24 @@ export default function RegistrationSummary({
           <Col md={6}>
             <div className="text-center p-3 border rounded-12 bg-light shadow-sm">
               <p className="small fw-bold text-muted mb-2">Foto KTP</p>
-              <img
-                src={getImgSrc(foto_ktp || ktp_photo_path)}
+              <ProtectedFileViewer
+                url={getImgSrc(foto_ktp || ktp_photo_path)}
+                title="KTP"
+                isImage
                 className="img-fluid rounded border shadow-sm"
-                alt="KTP"
                 style={{ maxHeight: "200px", objectFit: "contain", width: "100%", backgroundColor: "#fff" }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://placehold.co/400x300?text=Gambar+Tidak+Ditemukan";
-                }}
               />
             </div>
           </Col>
           <Col md={6}>
             <div className="text-center p-3 border rounded-12 bg-light shadow-sm">
               <p className="small fw-bold text-muted mb-2">Swafoto</p>
-              <img
-                src={getImgSrc(foto_swafoto || selfie_photo_path)}
+              <ProtectedFileViewer
+                url={getImgSrc(foto_swafoto || selfie_photo_path)}
+                title="Swafoto"
+                isImage
                 className="img-fluid rounded border shadow-sm"
-                alt="Selfie"
                 style={{ maxHeight: "200px", objectFit: "contain", width: "100%", backgroundColor: "#fff" }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://placehold.co/400x300?text=Gambar+Tidak+Ditemukan";
-                }}
               />
             </div>
           </Col>
