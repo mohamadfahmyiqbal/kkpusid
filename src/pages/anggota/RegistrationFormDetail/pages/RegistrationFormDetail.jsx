@@ -64,7 +64,16 @@ export default function RegistrationFormDetail() {
 
   // Save to localStorage on data change
   useEffect(() => {
-    localStorage.setItem("temp_reg_data", JSON.stringify(formData));
+    try {
+      localStorage.setItem("temp_reg_data", JSON.stringify(formData));
+    } catch (err) {
+      // Kuota localStorage dapat terlampaui bila foto base64 masih besar.
+      // Jangan gagalkan render — cukup catat peringatan.
+      console.warn(
+        "Gagal menyimpan draf pendaftaran ke localStorage:",
+        err?.name || err,
+      );
+    }
   }, [formData]);
 
   const handleBack = useCallback(() => {

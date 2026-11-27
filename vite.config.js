@@ -39,6 +39,9 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/setupTests.js',
+      // Unit test hanya di src/. Tanpa ini, vitest ikut mengumpulkan
+      // e2e/**/*.spec.mjs (spec Playwright) dan menggagalkannya.
+      include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
     },
     define: envWithProcess,
     resolve: {

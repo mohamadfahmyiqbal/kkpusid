@@ -25,6 +25,21 @@ describe("getFotoSrc", () => {
     expect(getFotoSrc(raw, fallback)).toBe(expected);
   });
 
+  test("base64 mentah PNG (iVBORw0KGgo...) diberi awalan data:image/png", () => {
+    const raw = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB";
+    const expected = `data:image/png;base64,${raw}`;
+    expect(getFotoSrc(raw, fallback)).toBe(expected);
+  });
+
+  test("path relatif backend dibiarkan apa adanya (tidak dianggap base64)", () => {
+    expect(getFotoSrc("/api/files/uploads/anggota/a.jpg", fallback)).toBe(
+      "/api/files/uploads/anggota/a.jpg",
+    );
+    expect(getFotoSrc("uploads/anggota/a.jpg", fallback)).toBe(
+      "uploads/anggota/a.jpg",
+    );
+  });
+
   test("fallback default adalah default-user.png saat tidak disertakan", () => {
     expect(getFotoSrc(null)).toBe("/assets/icons/default-user.png");
     expect(getFotoSrc(undefined)).toBe("/assets/icons/default-user.png");

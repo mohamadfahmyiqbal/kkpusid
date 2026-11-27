@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 // 💡 IMPORT UTAMA: Komponen dari library react-webcam
 import Webcam from "react-webcam";
+import { compressDataUrl } from "../../utils/fotoHelper";
 
 // Helper lokal
 const getPhotoStatus = (photoData) => {
@@ -44,18 +45,23 @@ export default function WebcamCaptureField({
   }, [isCameraActive]);
 
   // 2. Mengambil Foto (Capture)
-  const handleCapture = useCallback(() => {
+  const handleCapture = useCallback(async () => {
     if (webcamRef.current) {
       setLoading(true);
-      // Ambil gambar dalam format Base64
-      const imageSrc = webcamRef.current.getScreenshot();
+      try {
+        // Ambil gambar dalam format Base64 lalu kompres agar hemat kuota
+        // localStorage dan ringan saat dirender di ringkasan.
+        const rawImage = webcamRef.current.getScreenshot();
+        const imageSrc = await compressDataUrl(rawImage);
 
-      // Simpan gambar ke state parent
-      setCapturedImage(fieldName, imageSrc);
+        // Simpan gambar ke state parent
+        setCapturedImage(fieldName, imageSrc);
 
-      // Setelah berhasil mengambil, MATIKAN KAMERA dan reset loading
-      setIsCameraActive(false);
-      setLoading(false);
+        // Setelah berhasil mengambil, MATIKAN KAMERA
+        setIsCameraActive(false);
+      } finally {
+        setLoading(false);
+      }
     }
   }, [fieldName, setCapturedImage]);
 

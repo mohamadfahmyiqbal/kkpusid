@@ -1,17 +1,21 @@
-import React from "react";
-import { FaCamera, FaIdCard } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaCamera, FaIdCard, FaExclamationTriangle } from "react-icons/fa";
+import { getFotoSrc } from "../../../../../utils/fotoHelper";
 
-export default React.memo(function PhotoDisplay({ label, base64Image: imageSource }) {
-  // Menggunakan label untuk menentukan ikon placeholder
+export default React.memo(function PhotoDisplay({ label, base64Image }) {
+  const [failed, setFailed] = useState(false);
+
+  // Ikon placeholder mengikuti jenis dokumen.
   const PlaceholderIcon = label === "KTP" ? FaIdCard : FaCamera;
 
-  // Variabel src mengambil data dari imageSource (alias dari props base64Image)
-  const src = imageSource;
+  // Normalisasi sumber gambar: menerima data URL (webcam), URL lengkap,
+  // path relatif, maupun base64 mentah dari API.
+  const src = getFotoSrc(base64Image, "");
 
   return (
-    <div className="text-center p-2 border rounded-12 bg-light shadow-sm">
+    <div className="text-center p-2 border rounded-12 bg-light shadow-sm h-100">
       <p className="small fw-bold text-muted mb-2">{label}</p>
-      {src ? (
+      {src && !failed ? (
         <img
           src={src}
           alt={label}
@@ -22,18 +26,25 @@ export default React.memo(function PhotoDisplay({ label, base64Image: imageSourc
             objectFit: "contain",
             backgroundColor: "#000",
           }}
-          onError={(e) => {
-            e.target.onerror = null; // Mencegah looping error
-            e.target.src =
-              "https://placehold.co/400x300?text=Error+Loading+Image";
-          }}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
         />
       ) : (
         <div
-          className="border rounded-8 bg-white d-flex align-items-center justify-content-center"
+          className="border rounded-8 bg-white d-flex flex-column align-items-center justify-content-center gap-2"
           style={{ height: "140px" }}
         >
-          <PlaceholderIcon size={30} className="opacity-25" />
+          {failed ? (
+            <>
+              <FaExclamationTriangle size={28} className="text-warning" />
+              <span className="small text-muted px-2">
+                Gambar tidak dapat dimuat
+              </span>
+            </>
+          ) : (
+            <PlaceholderIcon size={30} className="opacity-25" />
+          )}
         </div>
       )}
     </div>

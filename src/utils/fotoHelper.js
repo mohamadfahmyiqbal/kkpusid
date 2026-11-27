@@ -18,6 +18,10 @@ export function getFotoSrc(foto, fallback = "/assets/icons/default-user.png") {
   if (foto.startsWith("http://") || foto.startsWith("https://")) return foto;
   // Sudah lengkap sebagai data URL, gunakan langsung
   if (foto.startsWith("data:image")) return foto;
+  // Base64 mentah JPEG (/9j/...) atau PNG (iVBORw0KGgo...) — walau diawali "/",
+  // ini BUKAN path relatif. Tanpa cek ini, base64 JPEG akan salah dibaca sebagai path.
+  if (foto.startsWith("/9j/")) return `data:image/jpeg;base64,${foto}`;
+  if (foto.startsWith("iVBORw0KGgo")) return `data:image/png;base64,${foto}`;
   // Path relatif (mis. /api/files/... atau uploads/...) — biarkan browser
   // me-resolve terhadap origin. Jangan perlakukan sebagai base64 mentah.
   if (foto.startsWith("/") || foto.startsWith("uploads/")) return foto;
@@ -73,5 +77,53 @@ export function resizeImageToBase64(file, { maxSize = 1000, quality = 0.85 } = {
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Resize & kompres gambar dari data URL (mis. hasil webcam getScreenshot)
+ * menjadi data URL JPEG yang lebih kecil. Mengurangi ukuran agar aman
+ * disimpan di state/localStorage (kuota ~5MB) dan ringan saat dirender.
+ *
+ * Mengembalikan data URL asli bila input bukan gambar valid atau proses gagal,
+ * sehingga pemanggil tidak pernah kehilangan foto.
+ *
+ * @param {string} dataUrl - data URL gambar (data:image/...;base64,...)
+ * @param {Object} [options]
+ * @param {number} [options.maxSize=1280] - sisi terpanjang maksimum (px)
+ * @param {number} [options.quality=0.85] - kualitas JPEG (0..1)
+ * @returns {Promise<string>} data URL JPEG
+ */
+export function compressDataUrl(dataUrl, { maxSize = 1280, quality = 0.85 } = {}) {
+  return new Promise((resolve) => {
+    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image")) {
+      resolve(dataUrl);
+      return;
+    }
+
+    const img = new Image();
+    img.onerror = () => resolve(dataUrl);
+    img.onload = () => {
+      try {
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const scale = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        // Latar putih agar gambar transparan tidak menjadi hitam saat jadi JPEG.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      } catch {
+        resolve(dataUrl);
+      }
+    };
+    img.src = dataUrl;
   });
 }
