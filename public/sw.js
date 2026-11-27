@@ -1,7 +1,7 @@
 // Enhanced Service Worker for PWA Features
-const CACHE_NAME = 'koperasi-v1.0.0';
-const STATIC_CACHE = 'static-v1.0.0';
-const DYNAMIC_CACHE = 'dynamic-v1.0.0';
+const CACHE_NAME = 'koperasi-v1.0.1';
+const STATIC_CACHE = 'static-v1.0.1';
+const DYNAMIC_CACHE = 'dynamic-v1.0.1';
 
 const STATIC_ASSETS = [
   '/',
@@ -62,6 +62,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Jangan pernah intercept request API (mis. GET /api/files/* yang butuh header
+  // Authorization / cookie auth_token). Biarkan browser menanganinya secara native
+  // agar status asli (200/401/404) tidak tertutup fallback 503 "Offline" palsu.
+  if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
   // Handle different request types
   if (url.origin === self.location.origin) {
     if (STATIC_ASSETS.includes(url.pathname)) {

@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { Card, Button } from "react-bootstrap";
 import { FaCamera, FaIdCard, FaShieldAlt, FaSpinner } from "react-icons/fa";
 import { getFotoSrc, resizeImageToBase64 } from "../../../../utils/fotoHelper";
+import ProtectedImage from "../../../../components/ui/ProtectedImage";
 
 // Helper untuk format tanggal Indonesia
 const formatDate = (dateStr) => {
@@ -96,7 +97,12 @@ export default function ProfileHeaderCard({ userProfile, onEditPhoto, isUploadin
           {/* Avatar with Camera overlay */}
           <div className="ap-avatar-wrapper">
             {fotoSrc ? (
-              <img src={fotoSrc} alt="Foto Profil" className="ap-avatar-img" />
+              <ProtectedImage
+                src={userProfile?.fotoImg}
+                alt="Foto Profil"
+                className="ap-avatar-img"
+                fallback="/assets/icons/default-user.png"
+              />
             ) : (
               <div
                 className="ap-avatar-img d-flex align-items-center justify-content-center"

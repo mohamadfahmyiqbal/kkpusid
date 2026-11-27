@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, Button, Row, Col } from "react-bootstrap";
+import ProtectedImage from "../../../../components/ui/ProtectedImage";
 import {
   FaUser,
   FaEdit,
@@ -137,11 +138,10 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
               <div className="ap-photo-wrapper">
                 <span className="ap-photo-label">Foto KTP</span>
                 {userProfile?.foto_ktp ? (
-                  <img
+                  <ProtectedImage
                     src={userProfile.foto_ktp}
                     alt="Foto KTP"
                     className="ap-photo-img"
-                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 ) : (
                   <div className="ap-photo-placeholder">Belum tersedia</div>
@@ -153,11 +153,10 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
               <div className="ap-photo-wrapper">
                 <span className="ap-photo-label">Swafoto (Selfie + KTP)</span>
                 {userProfile?.foto_swafoto ? (
-                  <img
+                  <ProtectedImage
                     src={userProfile.foto_swafoto}
                     alt="Swafoto"
                     className="ap-photo-img"
-                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 ) : (
                   <div className="ap-photo-placeholder">Belum tersedia</div>
@@ -180,7 +179,7 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
               </div>
               <Button
                 variant="link"
-                className="p-0 text-primary text-decoration-none fw-semibold fs-7"
+                className="ap-text-link text-primary text-decoration-none fw-semibold fs-7"
                 onClick={() => onOpenEditModal("bank")}
               >
                 <FaEdit className="me-1" /> Ubah
@@ -225,7 +224,7 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
               </div>
               <Button
                 variant="link"
-                className="p-0 text-primary text-decoration-none fw-semibold fs-7"
+                className="ap-text-link text-primary text-decoration-none fw-semibold fs-7"
                 onClick={() => onOpenEditModal("pekerjaan")}
               >
                 <FaEdit className="me-1" /> Ubah
@@ -262,7 +261,7 @@ export default function ProfileInfoCards({ userProfile, onOpenEditModal }) {
               </div>
               <Button
                 variant="link"
-                className="p-0 text-primary text-decoration-none fw-semibold fs-7"
+                className="ap-text-link text-primary text-decoration-none fw-semibold fs-7"
                 onClick={() => onOpenEditModal("darurat")}
               >
                 <FaEdit className="me-1" /> Ubah
