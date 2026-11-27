@@ -22,11 +22,15 @@ const GREEN = "27AE60";
 const ORANGE = "E67E22";
 const GRAY = "95A5A6";
 
-// ── Helper: add screenshot to slide ──
+// ── Helper: add screenshot to slide (crop if too long) ──
 function addScreenshot(slide, imgPath, x, y, w, h) {
   const fullPath = path.join(SCREENSHOT_DIR, imgPath);
   if (fs.existsSync(fullPath)) {
-    slide.addImage({ path: fullPath, x, y, w, h });
+    slide.addImage({
+      path: fullPath,
+      x, y, w, h,
+      sizing: "crop",
+    });
     return true;
   }
   console.warn(`[PPTX] Missing: ${imgPath}`);
@@ -528,7 +532,7 @@ async function generatePPTX() {
   });
 
   // ── Write file ──
-  const outputPath = path.join(__dirname, "TUTORIAL-KKPU-ID.pptx");
+  const outputPath = path.join(__dirname, "TUTORIAL-KKPU-ID-v2.pptx");
   await pptx.writeFile({ fileName: outputPath });
   console.log(`[PPTX] ✅ Generated: ${outputPath}`);
 }
