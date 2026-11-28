@@ -137,7 +137,7 @@ const Evaluasi = () => {
   }, []);
 
   const handleBackToDashboard = useCallback(() => {
-    const token = jwtEncode({ page: "trainingDashboard" });
+    const token = jwtEncode({ page: "trainingPage" });
     navigate(`/${token}`);
   }, [navigate]);
 
