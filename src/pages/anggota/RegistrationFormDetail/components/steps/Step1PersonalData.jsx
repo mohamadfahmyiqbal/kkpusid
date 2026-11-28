@@ -4,6 +4,22 @@ import { FaMapMarkerAlt, FaIdCard, FaInfoCircle, FaUser } from "react-icons/fa";
 import Select from "react-select";
 import UGlobal from "../../../../../utils/api/UGlobal";
 
+const useFocusManagement = (_fieldName) => {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    // Optional: could add custom focus logic here
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    // Call parent blur handler if provided
+  };
+
+  return { isFocused, handleFocus, handleBlur };
+};
+
 const Step1PersonalData = ({
   formData,
   handleChange,
@@ -15,6 +31,18 @@ const Step1PersonalData = ({
   const [regencies, setRegencies] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [villages, setVillages] = useState([]);
+
+  // Focus management for personal data fields
+  const {
+    isFocused: isNikFocused,
+    handleFocus: handleNikFocus,
+    handleBlur: handleNikBlur,
+  } = useFocusManagement("nik_ktp");
+  const {
+    isFocused: isFullNameFocused,
+    handleFocus: handleFullNameFocus,
+    handleBlur: handleFullNameBlur,
+  } = useFocusManagement("full_name");
 
   // Load Awal Provinsi
   useEffect(() => {
@@ -53,14 +81,11 @@ const Step1PersonalData = ({
       subdistrict_id: "",
       kelurahan: "",
     });
+    // Turunan (kota/kecamatan/kelurahan) dikosongkan; pengisian opsi
+    // dilakukan oleh useEffect sync di bawah agar tidak ada fetch ganda.
     setRegencies([]);
     setDistricts([]);
     setVillages([]);
-    if (opt) {
-      UGlobal.getRegencies(opt.value).then((res) =>
-        setRegencies(res.data.map((r) => ({ value: r.id, label: r.name }))),
-      );
-    }
   };
 
   const handleRegencySelect = (opt) => {
@@ -74,11 +99,6 @@ const Step1PersonalData = ({
     });
     setDistricts([]);
     setVillages([]);
-    if (opt) {
-      UGlobal.getDistricts(opt.value).then((res) =>
-        setDistricts(res.data.map((d) => ({ value: d.id, label: d.name }))),
-      );
-    }
   };
 
   const handleDistrictSelect = (opt) => {
@@ -89,11 +109,6 @@ const Step1PersonalData = ({
       kelurahan: "",
     });
     setVillages([]);
-    if (opt) {
-      UGlobal.getVillages(opt.value).then((res) =>
-        setVillages(res.data.map((v) => ({ value: v.id, label: v.name }))),
-      );
-    }
   };
 
   const selectStyles = {
@@ -138,23 +153,41 @@ const Step1PersonalData = ({
               <Form.Label className="fw-bold small mb-2">
                 NIK KTP <span className="text-danger">*</span>
               </Form.Label>
-              <InputGroup className="shadow-sm rounded-12 overflow-hidden">
-                <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
+              <InputGroup className="shadow-sm rounded-12 overflow-hidden" style={{ pointerEvents: 'auto' }}>
+                <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted" style={{ pointerEvents: 'none' }}>
                   <FaIdCard size={14} />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
                   name="nik_ktp"
                   value={formData.nik_ktp || ""}
-                  onChange={handleChange}
-                  onBlur={() => handleFieldBlur("nik_ktp")}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: "nik_ktp",
+                        value: e.target.value.replace(/\D/g, "").slice(0, 16),
+                      },
+                    })
+                  }
+                  onFocus={handleNikFocus}
+                  onBlur={() => {
+                    handleNikBlur();
+                    handleFieldBlur("nik_ktp");
+                  }}
+                  inputMode="numeric"
+                  autoComplete="off"
                   id="registration-nik_ktp"
                   aria-describedby={
                     errors.nik_ktp ? "registration-nik_ktp-error" : undefined
                   }
                   isInvalid={!!errors.nik_ktp}
                   maxLength={16}
-                  className="border-0 py-2"
+                  style={{
+                    borderColor: isNikFocused ? "#86b7fe" : undefined,
+                    boxShadow: isNikFocused
+                      ? "0 0 0 0.25rem rgba(13,110,253,.25)"
+                      : undefined,
+                  }}
                   placeholder="Masukkan 16 digit NIK"
                 />
                 <Form.Control.Feedback
@@ -174,8 +207,8 @@ const Step1PersonalData = ({
               <Form.Label className="fw-bold small mb-2">
                 Nama Lengkap <span className="text-danger">*</span>
               </Form.Label>
-              <InputGroup className="shadow-sm rounded-12 overflow-hidden">
-                <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted">
+              <InputGroup className="shadow-sm rounded-12 overflow-hidden" style={{ pointerEvents: 'auto' }}>
+                <InputGroup.Text className="bg-white border-0 py-2 ps-3 text-muted" style={{ pointerEvents: 'none' }}>
                   <FaUser size={14} />
                 </InputGroup.Text>
                 <Form.Control
@@ -183,7 +216,11 @@ const Step1PersonalData = ({
                   name="full_name"
                   value={formData.full_name || ""}
                   onChange={handleChange}
-                  onBlur={() => handleFieldBlur("full_name")}
+                  onFocus={handleFullNameFocus}
+                  onBlur={() => {
+                    handleFullNameBlur();
+                    handleFieldBlur("full_name");
+                  }}
                   id="registration-full_name"
                   aria-describedby={
                     errors.full_name
@@ -192,7 +229,12 @@ const Step1PersonalData = ({
                   }
                   isInvalid={!!errors.full_name}
                   placeholder="Nama lengkap sesuai KTP"
-                  className="border-0 py-2"
+                  style={{
+                    borderColor: isFullNameFocused ? "#86b7fe" : undefined,
+                    boxShadow: isFullNameFocused
+                      ? "0 0 0 0.25rem rgba(13,110,253,.25)"
+                      : undefined,
+                  }}
                 />
                 <Form.Control.Feedback
                   id="registration-full_name-error"
@@ -235,6 +277,12 @@ const Step1PersonalData = ({
               placeholder="Pilih Provinsi..."
               onChange={handleProvinceSelect}
               onBlur={() => handleFieldBlur("province_id")}
+              aria-invalid={!!errors.province_id}
+              aria-describedby={
+                errors.province_id
+                  ? "registration-province_id-error"
+                  : undefined
+              }
               value={
                 provinces.find((p) => p.value === formData.province_id) || null
               }
@@ -263,6 +311,10 @@ const Step1PersonalData = ({
               isDisabled={!formData.province_id}
               onChange={handleRegencySelect}
               onBlur={() => handleFieldBlur("city_id")}
+              aria-invalid={!!errors.city_id}
+              aria-describedby={
+                errors.city_id ? "registration-city_id-error" : undefined
+              }
               value={
                 regencies.find((r) => r.value === formData.city_id) || null
               }
@@ -294,6 +346,10 @@ const Step1PersonalData = ({
               isDisabled={!formData.city_id}
               onChange={handleDistrictSelect}
               onBlur={() => handleFieldBlur("district_id")}
+              aria-invalid={!!errors.district_id}
+              aria-describedby={
+                errors.district_id ? "registration-district_id-error" : undefined
+              }
               value={
                 districts.find((d) => d.value === formData.district_id) || null
               }
@@ -327,6 +383,12 @@ const Step1PersonalData = ({
                 });
               }}
               onBlur={() => handleFieldBlur("subdistrict_id")}
+              aria-invalid={!!errors.subdistrict_id}
+              aria-describedby={
+                errors.subdistrict_id
+                  ? "registration-subdistrict_id-error"
+                  : undefined
+              }
               value={
                 villages.find((v) => v.value === formData.subdistrict_id) ||
                 null
@@ -352,7 +414,16 @@ const Step1PersonalData = ({
               type="text"
               name="rt"
               value={formData.rt || ""}
-              onChange={handleChange}
+              onChange={(e) =>
+                handleChange({
+                  target: {
+                    name: "rt",
+                    value: e.target.value.replace(/\D/g, "").slice(0, 10),
+                  },
+                })
+              }
+              inputMode="numeric"
+              maxLength={10}
               className="rounded-12 border-0 shadow-sm py-2 px-3 bg-white"
               placeholder="Contoh: 001"
             />
@@ -364,7 +435,16 @@ const Step1PersonalData = ({
               type="text"
               name="rw"
               value={formData.rw || ""}
-              onChange={handleChange}
+              onChange={(e) =>
+                handleChange({
+                  target: {
+                    name: "rw",
+                    value: e.target.value.replace(/\D/g, "").slice(0, 10),
+                  },
+                })
+              }
+              inputMode="numeric"
+              maxLength={10}
               className="rounded-12 border-0 shadow-sm py-2 px-3 bg-white"
               placeholder="Contoh: 001"
             />
