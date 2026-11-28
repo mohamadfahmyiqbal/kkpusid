@@ -52,16 +52,21 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Input OTP: target sentuh >= 44px tinggi + font mono untuk digit. */
+/* Input OTP: target sentuh >= 44px tinggi + font mono untuk digit.
+   Responsive: ukuran & letter-spacing mengecil di layar sempit
+   agar tidak overflow dari card. */
 .otp-input {
   min-height: var(--otp-touch-min);
   border-radius: var(--otp-radius-input);
-  font-size: 1.5rem;
-  letter-spacing: 0.5rem;
+  font-size: clamp(1rem, 4vw, 1.5rem); /* 1rem di mobile kecil, 1.5rem di desktop */
+  letter-spacing: clamp(0.15rem, 1.5vw, 0.25rem);
   text-align: center;
   font-variant-numeric: tabular-nums;
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid transparent;
+  /* Mencegah overflow horizontal */
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .otp-input:focus {
   background: #fff;

@@ -276,7 +276,6 @@ const Step1PersonalData = ({
               options={provinces}
               placeholder="Pilih Provinsi..."
               onChange={handleProvinceSelect}
-              onBlur={() => handleFieldBlur("province_id")}
               aria-invalid={!!errors.province_id}
               aria-describedby={
                 errors.province_id
@@ -310,7 +309,6 @@ const Step1PersonalData = ({
               placeholder="Pilih Kota..."
               isDisabled={!formData.province_id}
               onChange={handleRegencySelect}
-              onBlur={() => handleFieldBlur("city_id")}
               aria-invalid={!!errors.city_id}
               aria-describedby={
                 errors.city_id ? "registration-city_id-error" : undefined
@@ -345,7 +343,6 @@ const Step1PersonalData = ({
               placeholder="Pilih Kecamatan..."
               isDisabled={!formData.city_id}
               onChange={handleDistrictSelect}
-              onBlur={() => handleFieldBlur("district_id")}
               aria-invalid={!!errors.district_id}
               aria-describedby={
                 errors.district_id ? "registration-district_id-error" : undefined
@@ -382,7 +379,6 @@ const Step1PersonalData = ({
                   kelurahan: opt?.label || "",
                 });
               }}
-              onBlur={() => handleFieldBlur("subdistrict_id")}
               aria-invalid={!!errors.subdistrict_id}
               aria-describedby={
                 errors.subdistrict_id
