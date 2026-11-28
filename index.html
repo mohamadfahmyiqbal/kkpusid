@@ -4,10 +4,25 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" type="image/png" href="/assets/icons/pus.png" />
-  <link rel="apple-touch-icon" href="/assets/icons/pus.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/pus.png" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#0d47a1" />
   <meta name="description" content="Koperasi frontend app" />
+
+  <!-- iOS PWA / Add to Home Screen support.
+       iOS Safari tidak menghormati "display: standalone" dari manifest,
+       sehingga meta apple-mobile-web-app-* diperlukan agar app tampil
+       full-screen saat dipasang di home screen. status-bar-style "default"
+       dipakai (bukan black-translucent) agar konten tidak tertutup status
+       bar pada layar yang belum menerapkan safe-area-inset. -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="PUS" />
+  <!-- Cegah iOS Safari mengubah nomor telepon/ID menjadi tautan otomatis. -->
+  <meta name="format-detection" content="telephone=no" />
   
   <!-- Prevent caching of index.html -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />

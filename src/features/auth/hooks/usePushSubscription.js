@@ -12,9 +12,16 @@ const usePushSubscription = (vapidPublicKey) => {
   const handlePushSubscription = useCallback(
     async (memberId) => {
       try {
-        if (!("serviceWorker" in navigator) || !vapidPublicKey) {
+        // PushManager hanya tersedia di browser modern & (khusus iOS) hanya pada
+        // PWA yang dipasang di home screen dengan iOS 16.4+. Tanpa guard ini,
+        // iPhone lama / tab biasa akan melempar error berulang di konsol.
+        if (
+          !("serviceWorker" in navigator) ||
+          !("PushManager" in window) ||
+          !vapidPublicKey
+        ) {
           logger.warn(
-            "Service Worker tidak didukung atau VAPID key belum tersedia",
+            "Push tidak didukung (butuh iOS 16.4+ & PWA terpasang) atau VAPID key belum tersedia",
           );
           return;
         }

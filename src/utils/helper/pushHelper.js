@@ -23,6 +23,13 @@ const getVapidPublicKey = async () => {
 };
 
 export const subscribeUser = async (memberId) => {
+  // PushManager tidak tersedia di semua browser (mis. iOS Safari <16.4 atau tab
+  // biasa yang bukan PWA terpasang). Berhenti lebih awal agar tidak melempar
+  // error berulang; caller lain (NotificationPrompt) ikut terlindungi.
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    return;
+  }
+
   try {
     const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
