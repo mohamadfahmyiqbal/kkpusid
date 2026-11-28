@@ -234,6 +234,7 @@ const Step1PersonalData = ({
               options={provinces}
               placeholder="Pilih Provinsi..."
               onChange={handleProvinceSelect}
+              onBlur={() => handleFieldBlur("province_id")}
               value={
                 provinces.find((p) => p.value === formData.province_id) || null
               }
@@ -261,6 +262,7 @@ const Step1PersonalData = ({
               placeholder="Pilih Kota..."
               isDisabled={!formData.province_id}
               onChange={handleRegencySelect}
+              onBlur={() => handleFieldBlur("city_id")}
               value={
                 regencies.find((r) => r.value === formData.city_id) || null
               }
@@ -291,6 +293,7 @@ const Step1PersonalData = ({
               placeholder="Pilih Kecamatan..."
               isDisabled={!formData.city_id}
               onChange={handleDistrictSelect}
+              onBlur={() => handleFieldBlur("district_id")}
               value={
                 districts.find((d) => d.value === formData.district_id) || null
               }
@@ -323,6 +326,7 @@ const Step1PersonalData = ({
                   kelurahan: opt?.label || "",
                 });
               }}
+              onBlur={() => handleFieldBlur("subdistrict_id")}
               value={
                 villages.find((v) => v.value === formData.subdistrict_id) ||
                 null

@@ -122,14 +122,11 @@ export default function RegistrationFormDetail() {
   }, []);
 
   const handleFieldBlur = useCallback((name) => {
-    setFormData((currentData) => {
-      const fieldStep = FIELD_STEP_MAP[name];
-      if (!fieldStep) return currentData;
-      const fieldError = validateStep(fieldStep, currentData)[name];
-      setErrors((prev) => ({ ...prev, [name]: fieldError }));
-      return currentData;
-    });
-  }, []);
+    const fieldStep = FIELD_STEP_MAP[name];
+    if (!fieldStep) return;
+    const fieldError = validateStep(fieldStep, formData)[name];
+    setErrors((prev) => ({ ...prev, [name]: fieldError }));
+  }, [formData]);
 
   const handleSetCapturedImage = useCallback(
     (fieldName, base64Image) => {
