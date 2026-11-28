@@ -30,15 +30,15 @@ class UAnggota {
   }
 
   forgot(fields) {
-    return this.postJSON("/forgot", fields);
+    return this.postJSON("/auth/forgot-password/send-otp", fields);
   }
 
   verifikasiOTP(fields) {
-    return this.postJSON("/verifikasiOTP", fields);
+    return this.postJSON("/auth/forgot-password/verify-otp", fields);
   }
 
   resetPassword(fields) {
-    return this.postJSON("/resetPassword", fields);
+    return this.postJSON("/auth/forgot-password/reset", fields);
   }
 
   register(fields) {
