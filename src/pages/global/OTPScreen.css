@@ -1,0 +1,120 @@
+/* OTPScreen.css — perbaikan UI/UX mobile (WCAG 2.2 AA).
+   Mengikuti pola ResetPasswordScreen.css: warna lain tetap inline
+   agar konsisten dgn layar auth lain; CSS hanya menambah yang
+   tak bisa via inline: :focus-visible, hover, safe-area, token. */
+
+:root {
+  --otp-bg-start: #13547a;
+  --otp-bg-end: #44938a;
+  --otp-radius-card: 16px;
+  --otp-radius-input: 8px;
+  --otp-touch-min: 44px;
+}
+
+/* Kartu glass: overlay gelap tipis agar teks putih memenuhi kontras 4.5:1
+   di atas gradien terang (#44938A), tanpa kehilangan efek glassmorphism.
+   Fallback solid color untuk browser yang tidak mendukung backdrop-filter. */
+.otp-card {
+  background: rgba(9, 33, 54, 0.32);
+  background: rgba(9, 33, 54, 0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--otp-radius-card);
+}
+
+/* Teks deskripsi: putih 92% (bukan 50%) agar kontras aman. */
+.otp-subtitle {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Tombol Sign-In: target sentuh >= 44x44 (Fitts) + indikator fokus jelas. */
+.otp-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--otp-touch-min);
+  min-height: var(--otp-touch-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.otp-signin:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.otp-signin:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Input OTP: target sentuh >= 44px tinggi + font mono untuk digit. */
+.otp-input {
+  min-height: var(--otp-touch-min);
+  border-radius: var(--otp-radius-input);
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid transparent;
+}
+.otp-input:focus {
+  background: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.3);
+}
+.otp-input.is-invalid {
+  border-color: #dc3545;
+  background: rgba(255, 245, 245, 0.95);
+}
+
+/* Tombol submit: target sentuh >= 44px tinggi. */
+.otp-btn {
+  min-height: var(--otp-touch-min);
+  border-radius: var(--otp-radius-input);
+}
+
+/* Tombol "Kirim Ulang OTP": link yang terlihat seperti tombol,
+   target sentuh >= 44px, dengan indikator fokus. */
+.otp-resend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--otp-touch-min);
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: background-color 150ms ease;
+}
+.otp-resend:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+.otp-resend:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.otp-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Safe area inset untuk perangkat dengan notch/punch-hole. */
+.otp-header {
+  padding-top: env(safe-area-inset-top);
+}
+.otp-footer {
+  padding-bottom: env(safe-area-inset-bottom);
+}

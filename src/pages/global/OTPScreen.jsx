@@ -11,6 +11,7 @@ import {
 import { FaSignInAlt } from "react-icons/fa";
 import UAnggota from "../../utils/UAnggota";
 import Notification from "../../comp/global/Notification";
+import "./OTPScreen.css";
 
 const INITIAL_FORM = { otp: "" };
 
@@ -29,6 +30,8 @@ export default function OTPScreen() {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -78,6 +81,36 @@ export default function OTPScreen() {
     [formData, loading]
   );
 
+  const handleResend = useCallback(async () => {
+    if (resendLoading || resendCooldown > 0) return;
+    setResendLoading(true);
+
+    try {
+      // Kirim ulang OTP via endpoint forgot (memicu email OTP baru)
+      await UAnggota.forgot({});
+      Notification({
+        title: "OTP Dikirim Ulang",
+        message: "Kode OTP baru telah dikirim ke email Anda.",
+        icon: "success",
+      });
+      // Mulai cooldown 60 detik
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      Notification(error?.response || error);
+    } finally {
+      setResendLoading(false);
+    }
+  }, [resendLoading, resendCooldown]);
+
   const isSubmitDisabled = useMemo(
     () => loading || !(formData.otp && formData.otp.trim().length === 6),
     [loading, formData.otp]
@@ -93,7 +126,7 @@ export default function OTPScreen() {
     >
       {/* Header */}
       <header
-        className="border-bottom border-white"
+        className="border-bottom border-white otp-header"
         style={{ background: "#13547A" }}
       >
         <Container fluid="lg">
@@ -102,20 +135,14 @@ export default function OTPScreen() {
               <h3 className="m-0 fw-bold text-white">PUS</h3>
             </Col>
             <Col className="d-flex justify-content-end">
-              <FaSignInAlt
-                color="white"
-                size={32}
-                title="Sign In"
-                style={{ cursor: "pointer" }}
+              <button
+                type="button"
+                className="otp-signin"
                 onClick={() => window.location.assign("/login")}
-                tabIndex={0}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    window.location.assign("/login");
-                  }
-                }}
                 aria-label="Sign In"
-              />
+              >
+                <FaSignInAlt color="white" size={26} aria-hidden="true" />
+              </button>
             </Col>
           </Row>
         </Container>
@@ -125,18 +152,11 @@ export default function OTPScreen() {
       <Container className="flex-grow-1 d-flex align-items-center justify-content-center">
         <Row className="w-100 justify-content-center">
           <Col xs={12} sm={10} md={7} lg={5} xl={4}>
-            <Card
-              className="shadow-lg border-0 my-4"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                backdropFilter: "blur(10px)",
-                borderRadius: "16px",
-              }}
-            >
+            <Card className="shadow-lg border-0 my-4 otp-card">
               <Card.Body className="p-4">
                 <div className="mb-4">
                   <h2 className="fw-bold text-white mb-1">Verifikasi OTP</h2>
-                  <p className="text-white-50 mb-0">
+                  <p className="otp-subtitle mb-0">
                     Silakan masukkan kode OTP 6 digit yang telah dikirim ke
                     email Anda.
                   </p>
@@ -156,17 +176,26 @@ export default function OTPScreen() {
                       isInvalid={!!errors.otp}
                       disabled={loading}
                       autoComplete="one-time-code"
+                      autoFocus
                       spellCheck={false}
                       maxLength={6}
+                      className="otp-input"
+                      aria-invalid={!!errors.otp}
+                      aria-describedby={
+                        errors.otp ? "forgot-otp-feedback" : undefined
+                      }
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Control.Feedback
+                      type="invalid"
+                      id="forgot-otp-feedback"
+                    >
                       {errors.otp}
                     </Form.Control.Feedback>
                   </Form.Group>
 
                   <Button
                     type="submit"
-                    className="w-100 fw-bold text-uppercase py-2 mt-3"
+                    className="w-100 fw-bold text-uppercase mt-3 otp-btn"
                     style={{
                       backgroundColor: "#13547A",
                       border: "none",
@@ -190,6 +219,22 @@ export default function OTPScreen() {
                       "Verifikasi OTP"
                     )}
                   </Button>
+
+                  {/* Kirim Ulang OTP */}
+                  <div className="text-center mt-2">
+                    <button
+                      type="button"
+                      className="otp-resend"
+                      onClick={handleResend}
+                      disabled={resendLoading || resendCooldown > 0}
+                    >
+                      {resendLoading
+                        ? "Mengirim..."
+                        : resendCooldown > 0
+                          ? `Kirim Ulang OTP (${resendCooldown}s)`
+                          : "Kirim Ulang OTP"}
+                    </button>
+                  </div>
                 </Form>
               </Card.Body>
             </Card>
@@ -199,15 +244,15 @@ export default function OTPScreen() {
 
       {/* Footer */}
       <footer
-        className="w-100 border-top border-white text-white py-2"
+        className="w-100 border-top border-white text-white py-2 otp-footer"
         style={{ background: "#13547A" }}
       >
         <Container>
           <Row className="align-items-center">
-            <Col xs={6} className="text-start small fw-bold">
+            <Col xs={12} sm={6} className="text-center text-sm-start small fw-bold">
               Paguyuban Usaha Sukses @2025
             </Col>
-            <Col xs={6} className="text-end small fw-bold">
+            <Col xs={12} sm={6} className="text-center text-sm-end small fw-bold">
               Powered By Manova
             </Col>
           </Row>
