@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import {
-  FaPlus,
   FaClock,
   FaShieldAlt,
   FaHeadset,
@@ -45,10 +44,6 @@ function BillingSidebar({ bankInfo }) {
             {m.isPrimary && <span className="bp-badge-primary-sm">Utama</span>}
           </div>
         ))}
-        <button className="bp-add-method">
-          <FaPlus size={11} />
-          Kelola Rekening
-        </button>
       </div>
 
       <div className="bp-sidebar-card">
