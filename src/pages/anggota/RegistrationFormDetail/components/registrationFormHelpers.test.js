@@ -77,4 +77,28 @@ describe("registrationFormHelpers", () => {
       bank_account_no: "00123456",
     });
   });
+
+  // Regresi: field yang valid tidak boleh menghasilkan key error bernilai
+  // undefined, karena Object.keys(errors) dipakai sebagai sinyal "ada error"
+  // oleh RegistrationFormDetail.jsx (lihat plan perbaikan handler validasi
+  // tanggal 2026-11-28).
+  test("validateStep tidak menyertakan key untuk field yang sudah valid", () => {
+    const stepErrors = validateStep(1, validRegistration);
+    expect(stepErrors).toEqual({});
+    expect(Object.prototype.hasOwnProperty.call(stepErrors, "nik_ktp")).toBe(
+      false,
+    );
+  });
+
+  test("validateStep hanya menyertakan key untuk field yang benar-benar invalid", () => {
+    const stepErrors = validateStep(1, {
+      ...validRegistration,
+      full_name: "",
+    });
+    expect(Object.keys(stepErrors)).toEqual(["full_name"]);
+    expect(stepErrors.nik_ktp).toBeUndefined();
+    expect(Object.prototype.hasOwnProperty.call(stepErrors, "nik_ktp")).toBe(
+      false,
+    );
+  });
 });

@@ -42,6 +42,12 @@ export default function RegistrationFormDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCommitmentChecked, setIsCommitmentChecked] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  // One-shot focus request: hanya diisi oleh aksi Next/Submit yang diblokir
+  // validasi, bukan oleh setiap perubahan `errors` (lihat plan perbaikan
+  // handler validasi tanggal 2026-11-28). `token` memastikan permintaan
+  // fokus yang sama tidak dikonsumsi dua kali oleh efek di bawah.
+  const [focusRequest, setFocusRequest] = useState(null);
+  const focusTokenRef = useRef(0);
 
   const isLastStep = step === TOTAL_STEPS;
   const progressPercent = (step / TOTAL_STEPS) * 100;
@@ -86,14 +92,25 @@ export default function RegistrationFormDetail() {
     }
   }, [formData]);
 
+  // Fokus hanya dipindahkan sebagai reaksi satu-kali terhadap aksi Next/Submit
+  // yang diblokir validasi (diisi lewat `focusRequest`), bukan setiap kali
+  // object `errors` berubah. Dengan begitu mengetik untuk memperbaiki field
+  // yang error tidak akan memindahkan fokus ke field lain.
   useEffect(() => {
-    const firstErrorField = Object.keys(errors)[0];
-    if (!firstErrorField) return undefined;
+    if (!focusRequest) return undefined;
+    const { fieldName, token } = focusRequest;
     const timer = window.setTimeout(() => {
-      document.getElementById(`registration-${firstErrorField}`)?.focus();
+      document.getElementById(`registration-${fieldName}`)?.focus();
+      setFocusRequest((current) => (current?.token === token ? null : current));
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [errors, step]);
+  }, [focusRequest]);
+
+  const requestFocus = useCallback((fieldName) => {
+    if (!fieldName) return;
+    focusTokenRef.current += 1;
+    setFocusRequest({ fieldName, token: focusTokenRef.current });
+  }, []);
 
   const handleBack = useCallback(() => {
     navigate(`/${jwtEncode({ page: "registrationPage" })}`);
@@ -126,7 +143,18 @@ export default function RegistrationFormDetail() {
       const fieldStep = FIELD_STEP_MAP[name];
       if (!fieldStep) return currentData;
       const fieldError = validateStep(fieldStep, currentData)[name];
-      setErrors((prev) => ({ ...prev, [name]: fieldError }));
+      setErrors((prev) => {
+        const nextErrors = { ...prev };
+        if (fieldError) {
+          nextErrors[name] = fieldError;
+        } else {
+          // Jangan simpan key dengan nilai undefined/kosong; Object.keys(errors)
+          // dipakai di tempat lain untuk mendeteksi "ada error", sehingga key
+          // yang bernilai undefined akan salah terbaca sebagai error.
+          delete nextErrors[name];
+        }
+        return nextErrors;
+      });
       return currentData;
     });
   }, []);
@@ -140,13 +168,15 @@ export default function RegistrationFormDetail() {
 
   const nextStep = useCallback(() => {
     const currentErrors = validateStep(step, formData);
-    if (Object.keys(currentErrors).length > 0) {
+    const invalidFields = Object.keys(currentErrors);
+    if (invalidFields.length > 0) {
       setErrors(currentErrors);
+      requestFocus(invalidFields[0]);
       return;
     }
     setErrors({});
     if (step < TOTAL_STEPS) setStep((s) => s + 1);
-  }, [step, formData]);
+  }, [step, formData, requestFocus]);
 
   const prevStep = useCallback(() => {
     setErrors({});
@@ -163,6 +193,10 @@ export default function RegistrationFormDetail() {
       setErrors(finalErrors);
       setSubmitError("Masih ada data yang belum lengkap. Silakan cek kembali.");
       setStep(firstInvalidStep);
+      const firstInvalidField = Object.keys(
+        validateStep(firstInvalidStep, normalizedData),
+      )[0];
+      requestFocus(firstInvalidField);
       return;
     }
 
@@ -195,7 +229,7 @@ export default function RegistrationFormDetail() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isCommitmentChecked, formData, navigate]);
+  }, [isCommitmentChecked, formData, navigate, requestFocus]);
 
   return (
     <div className="pb-5 dash-fade-in dashboard-shell">
@@ -232,7 +266,6 @@ export default function RegistrationFormDetail() {
                     handleChange={handleChange}
                     handleFieldChange={handleFieldChange}
                     handleFieldBlur={handleFieldBlur}
-                    setFormData={setFormData}
                     handleSetCapturedImage={handleSetCapturedImage}
                     isCommitmentChecked={isCommitmentChecked}
                     setIsCommitmentChecked={setIsCommitmentChecked}
