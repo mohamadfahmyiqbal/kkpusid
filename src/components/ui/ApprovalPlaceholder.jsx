@@ -1,13 +1,12 @@
-// src/components/ui/ApprovalPlaceholder.jsx
-import React from "react";
 import {
   FaUserShield,
   FaUserTie,
   FaCheckCircle,
   FaTimesCircle,
+  FaCreditCard,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
-import DOMPurify from "dompurify";
+import "./ApprovalPlaceholder.css";
 
 export default function ApprovalPlaceholder({
   role,
@@ -19,126 +18,74 @@ export default function ApprovalPlaceholder({
 }) {
   const IconRole =
     role === "PENGAWAS" || role === "Pengawas" ? FaUserShield : FaUserTie;
+  const status = isRejected
+    ? { text: "Ditolak", type: "rejected", icon: "error" }
+    : isReadyToPay
+      ? { text: "Siap bayar", type: "payment", icon: "info" }
+      : isApproved
+        ? { text: "Selesai", type: "approved", icon: "success" }
+        : { text: "Menunggu", type: "pending", icon: "info" };
+  const StatusIcon = isRejected
+    ? FaTimesCircle
+    : isReadyToPay
+      ? FaCreditCard
+      : FaCheckCircle;
 
   const handleClick = () => {
-    let statusText = "Pending";
-    let iconType = "info";
-    
-    if (isRejected) {
-      statusText = "Ditolak";
-      iconType = "error";
-    } else if (isReadyToPay) {
-      statusText = "Siap Bayar";
-      iconType = "success";
-    } else if (isApproved) {
-      statusText = "Selesai";
-      iconType = "success";
+    // SweetAlert accepts a DOM element; textContent keeps API values as text.
+    const content = document.createElement("div");
+    content.className = "approval-placeholder__dialog-content";
+    const addField = (label, value) => {
+      const paragraph = document.createElement("p");
+      const heading = document.createElement("strong");
+      heading.textContent = `${label}: `;
+      paragraph.append(heading, document.createTextNode(value));
+      content.appendChild(paragraph);
+    };
+    addField("Status", status.text);
+    if (approverName) addField("Oleh", String(approverName));
+    if (note) {
+      addField("Catatan", String(note));
+    } else {
+      const empty = document.createElement("p");
+      empty.textContent = "Tidak ada catatan.";
+      content.appendChild(empty);
     }
 
     Swal.fire({
-      title: `Detail Persetujuan - ${role}`,
-      html: `
-        <div class="text-center" style="font-size: 14px;">
-          <p class="mb-2"><strong>Status:</strong> <span class="badge ${isRejected ? 'bg-danger' : isApproved || isReadyToPay ? 'bg-success' : 'bg-secondary'}">${statusText}</span></p>
-          ${approverName ? `<p class="mb-2"><strong>Oleh:</strong> ${approverName}</p>` : ''}
-          ${note ? `<div class="mt-3 p-3 bg-light rounded text-start"><strong class="d-block mb-1">Catatan:</strong> <span class="fst-italic">"${DOMPurify.sanitize(note, { ALLOWED_TAGS: [] })}"</span></div>` : '<p class="text-muted mt-2">Tidak ada catatan.</p>'}
-        </div>
-      `,
-      icon: iconType,
+      titleText: `Detail Persetujuan - ${role}`,
+      html: content,
+      icon: status.icon,
       confirmButtonText: "Tutup",
-      confirmButtonColor: "#0d9488"
+      confirmButtonColor: "#0d9488",
+      returnFocus: true,
     });
   };
 
   return (
-    <button className="text-center" type="button" aria-label="Detail Persetujuan" onClick={handleClick} style={{ cursor: "pointer" }}>
-      <div
-        className="mx-auto rounded-circle d-flex align-items-center justify-content-center position-relative"
-        style={{
-          width: "65px",
-          height: "65px",
-          backgroundColor: isRejected
-            ? "#ffebee"
-            : isReadyToPay
-              ? "#e3f2fd"
-              : isApproved
-                ? "#e8f5e9"
-                : "#f8f9fa",
-          border: isRejected
-            ? "2px solid #f44336"
-            : isReadyToPay
-              ? "2px solid #2196f3"
-              : isApproved
-                ? "2px solid #28a745"
-                : "2px dashed #dee2e6",
-          color: isRejected
-            ? "#f44336"
-            : isReadyToPay
-              ? "#2196f3"
-              : isApproved
-                ? "#28a745"
-                : "#adb5bd",
-          transition: "all 0.3s ease",
-        }}
-      >
-        <IconRole size={28} />
-
-        {(isApproved || isReadyToPay || isRejected) && (
-          <div
-            className="position-absolute bg-white rounded-circle"
-            style={{ bottom: "-2px", right: "-2px", lineHeight: 0 }}
-          >
-            {isRejected ? (
-              <FaTimesCircle size={20} className="text-danger" />
-            ) : (
-              <FaCheckCircle
-                size={20}
-                className={isReadyToPay ? "text-primary" : "text-success"}
-              />
-            )}
-          </div>
-        )}
-      </div>
-
-      <small
-        className={`mt-2 d-block fw-bold text-uppercase`}
-        style={{
-          fontSize: "10px",
-          color: isRejected
-            ? "#f44336"
-            : isReadyToPay
-              ? "#2196f3"
-              : isApproved
-                ? "#28a745"
-                : "#6c757d",
-          letterSpacing: "0.5px",
-        }}
-      >
-        {role}
-        {isRejected ? (
-          <span className="d-block" style={{ fontSize: "9px" }}>
-            DITOLAK
-          </span>
-        ) : isReadyToPay ? (
-          <span className="d-block" style={{ fontSize: "9px" }}>
-            SIAP BAYAR
-          </span>
-        ) : isApproved ? (
-          <span className="d-block" style={{ fontSize: "9px" }}>
-            SELESAI
-          </span>
-        ) : (
-          <span className="d-block" style={{ fontSize: "9px" }}>
-            PENDING
+    <button
+      className={`approval-placeholder approval-placeholder--${status.type}`}
+      type="button"
+      aria-label={`Detail persetujuan ${role}, ${status.text}`}
+      onClick={handleClick}
+    >
+      <span className="approval-placeholder__icon">
+        <IconRole size={28} aria-hidden="true" focusable="false" />
+        {status.type !== "pending" && (
+          <span className="approval-placeholder__status-icon">
+            <StatusIcon size={20} aria-hidden="true" focusable="false" />
           </span>
         )}
-      </small>
-
+      </span>
+      <span className="approval-placeholder__label">
+        <span>{role}</span>
+        <span>{status.text}</span>
+      </span>
       {note && (
-        <div className="mt-2 text-muted" style={{ fontSize: "10px", maxWidth: "120px", margin: "0 auto", wordWrap: "break-word" }}>
-          {approverName && <span className="d-block fw-bold text-dark mb-1" style={{ fontSize: "9px" }}>{approverName}</span>}
-          <span className="fst-italic">&quot;{note}&quot;</span>
-        </div>
+        <span className="approval-placeholder__note">
+          {approverName && <strong>{approverName}</strong>}
+          <span>&quot;{note}&quot;</span>
+        </span>
       )}
     </button>
   );

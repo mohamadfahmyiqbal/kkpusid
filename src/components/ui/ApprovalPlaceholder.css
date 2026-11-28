@@ -1,0 +1,94 @@
+.approval-placeholder {
+  --approval-color: #495057;
+  --approval-background: #f8f9fa;
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--approval-color);
+  text-align: center;
+  cursor: pointer;
+}
+
+.approval-placeholder--rejected {
+  --approval-color: #b42318;
+  --approval-background: #ffebee;
+}
+
+.approval-placeholder--payment {
+  --approval-color: #0759a5;
+  --approval-background: #e3f2fd;
+}
+
+.approval-placeholder--approved {
+  --approval-color: #176b32;
+  --approval-background: #e8f5e9;
+}
+
+.approval-placeholder:hover {
+  background: #f1f5f4;
+}
+
+.approval-placeholder:focus-visible {
+  outline: 3px solid #0759a5;
+  outline-offset: 3px;
+}
+
+.approval-placeholder__icon {
+  position: relative;
+  display: flex;
+  width: 65px;
+  height: 65px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: var(--approval-background);
+}
+
+.approval-placeholder--pending .approval-placeholder__icon {
+  border-style: dashed;
+}
+
+.approval-placeholder__status-icon {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: #fff;
+  line-height: 0;
+}
+
+.approval-placeholder__label {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.approval-placeholder__note {
+  display: flex;
+  max-width: 160px;
+  flex-direction: column;
+  margin-top: 8px;
+  color: #343a40;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.approval-placeholder__note span {
+  font-style: italic;
+}
+
+.approval-placeholder__dialog-content {
+  text-align: left;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
