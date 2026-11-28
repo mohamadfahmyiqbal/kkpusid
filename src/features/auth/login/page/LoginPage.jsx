@@ -94,13 +94,9 @@ export default function LoginPage() {
 
                   <div className="text-center my-5">
                     <img
-                      src="/assets/images/login_illustration.png"
+                      src="/assets/images/register_illustration.png"
                       alt="Illustration"
                       className="img-fluid animate-float pbs-login-illustration"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/assets/images/register_illustration.png"; // Fallback to register illustration if login one missing
-                      }}
                     />
                   </div>
 
