@@ -10,10 +10,12 @@ export default function NotificationPrompt({ memberId }) {
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    // Cek apakah browser mendukung notifikasi dan belum pernah meminta izin
+    // Cek apakah browser mendukung notifikasi dan belum pernah meminta izin.
+    // PushManager wajib ada (iOS <16.4 / tab non-PWA tidak punya PushManager).
     if (
       "Notification" in window &&
       "serviceWorker" in navigator &&
+      "PushManager" in window &&
       Notification.permission === "default"
     ) {
       // Tampilkan prompt setelah delay 2 detik agar tidak terlalu intrusif
@@ -23,7 +25,7 @@ export default function NotificationPrompt({ memberId }) {
       return () => clearTimeout(timer);
     } else {
       // Jika izin sudah granted, langsung subscribe
-      if (Notification.permission === "granted") {
+      if ("Notification" in window && Notification.permission === "granted") {
         subscribeUser(memberId);
       }
     }
